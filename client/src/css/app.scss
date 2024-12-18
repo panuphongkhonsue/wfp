@@ -1,0 +1,224 @@
+// app global css in SCSS form
+@font-face {
+  font-family: 'BaiJamjureeExtraLightitalic';
+  src: url('./fonts/BaiJamjuree-ExtraLightitalic.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'BaiJamjureeLightitalic';
+  src: url('./fonts/BaiJamjuree-Lightitalic.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'BaiJamjureeitalic';
+  src: url('./fonts/BaiJamjuree-italic.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'BaiJamjureeMediumitalic';
+  src: url('./fonts/BaiJamjuree-Mediumitalic.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'BaiJamjureeSemiBolditalic';
+  src: url('./fonts/BaiJamjuree-SemiBolditalic.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'BaiJamjureeBolditalic';
+  src: url('./fonts/BaiJamjuree-Bolditalic.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'BaiJamjureeExtraLight';
+  src: url('./fonts/BaiJamjuree-ExtraLight.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'BaiJamjureeLight';
+  src: url('./fonts/BaiJamjuree-Light.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'BaiJamjureeRegular';
+  src: url('./fonts/BaiJamjuree-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'BaiJamjureeMedium';
+  src: url('./fonts/BaiJamjuree-Medium.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'BaiJamjureeSemiBold';
+  src: url('./fonts/BaiJamjuree-SemiBold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'BaiJamjureeBold';
+  src: url('./fonts/BaiJamjuree-Bold.woff') format('woff');
+}
+::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+/* Track */
+::-webkit-scrollbar-track {
+  background: #a7cef0cc;
+  border-radius: 4px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #027ae373;
+  border-radius: 10px !important;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #0087fdcc;
+}
+.font-30 {
+  font-size: 30px !important;
+}
+.font-24 {
+  font-size: 24px !important;
+}
+.font-20 {
+  font-size: 20px !important;
+}
+.font-18 {
+  font-size: 18px !important;
+}
+.font-16 {
+  font-size: 16px;
+  font-weight: normal;
+}
+.font-14 {
+  font-size: 14px;
+}
+.font-bold {
+  font-family: 'BaiJamjureeBold';
+}
+.font-semi-bold {
+  font-family: 'BaiJamjureeSemiBold';
+}
+.font-extra-light-i {
+  font-family: 'BaiJamjureeExtraLightitalic';
+}
+.font-light-i {
+  font-family: 'BaiJamjureeLightitalic';
+}
+
+.font-regular {
+  font-family: 'BaiJamjureeRegular';
+}
+.font-i {
+  font-family: 'BaiJamjureeitalic';
+}
+.font-medium-i {
+  font-family: 'BaiJamjureeMediumitalic';
+}
+.font-semi-bold-i {
+  font-family: 'BaiJamjureeSemiBolditalic';
+}
+.fon-bold-i {
+  font-family: 'BaiJamjureeBolditalic';
+}
+.font-extra-light {
+  font-family: 'BaiJamjureeExtraLight';
+}
+.font-light {
+  font-family: 'BaiJamjureeLight';
+}
+.font-medium {
+  font-family: 'BaiJamjureeMedium';
+}
+.w-1 {
+  font-weight: 100;
+}
+.w-2 {
+  font-weight: 200;
+}
+.w-3 {
+  font-weight: 300;
+}
+.w-4 {
+  font-weight: 400;
+}
+.w-5 {
+  font-weight: 500;
+}
+.w-6 {
+  font-weight: 600;
+}
+.w-7 {
+  font-weight: 700;
+}
+.w-8 {
+  font-weight: 800;
+}
+.w-9 {
+  font-weight: 900;
+}
+.require:after {
+  content: ' *';
+  color: red;
+}
+div:where(.swal2-container) {
+  z-index: 9999 !important;
+}
+body {
+  font-family: 'BaiJamjureeRegular';
+  font-style: normal;
+  background-color: #ffffff;
+  height: auto;
+  font-size: clamp(14px, 2vw, 16px) !important;
+}
+$xs-breakpoint: 718px;
+$sm-breakpoint: 1024px;
+$md-breakpoint: 1439px;
+$lg-breakpoint: 1920px;
+.container,
+.container-sm,
+.container-md,
+.container-lg,
+.container-xl {
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (min-width: $xs-breakpoint) {
+  .container,
+  .container-sm {
+    max-width: 540px;
+  }
+}
+
+@media (min-width: $sm-breakpoint) {
+  .container,
+  .container-sm,
+  .container-md {
+    max-width: 920px;
+  }
+}
+
+@media (min-width: $md-breakpoint) {
+  .container,
+  .container-sm,
+  .container-md,
+  .container-lg {
+    max-width: 1140px;
+  }
+}
+
+@media (min-width: $lg-breakpoint) {
+  .container,
+  .container-sm,
+  .container-md,
+  .container-lg,
+  .container-xl {
+    max-width: 1440px;
+  }
+}
