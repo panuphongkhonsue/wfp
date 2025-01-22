@@ -1,10 +1,17 @@
 services:
+  client:
+    container_name: WFP
+    build:
+      context: ./client
+    ports:
+      - "8003:80"
+    restart: always
   db:
-    image: mariadb:latest # Change from mysql:latest to mariadb:latest
+    image: mariadb:latest
     restart: always
     container_name: wfpdb
     environment:
-      MARIADB_ROOT_PASSWORD: rootpassword # Change MYSQL_ to MARIADB_
+      MARIADB_ROOT_PASSWORD: rootpassword 
       MARIADB_DATABASE: wfpdb
       MARIADB_USER: user
       MARIADB_PASSWORD: user

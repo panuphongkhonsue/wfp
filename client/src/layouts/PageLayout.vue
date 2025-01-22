@@ -13,9 +13,9 @@
             <slot name="page"></slot>
           </div>
         </q-card>
-        <q-card class="q-mt-sm" v-if="$slots['action']" style="border-radius: 10px;">
+        <q-card class="q-mt-md" v-if="$slots['action']" style="border-radius: 10px;">
           <!-- Action Section -->
-          <q-card-section class="q-px-md q-py-sm">
+          <q-card-section class="q-px-xl q-py-sm">
             <slot name="action"></slot>
           </q-card-section>
         </q-card>
