@@ -37,7 +37,7 @@
       </div>
       <div class="col-12 col-md-6 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
-          icon="add" :to="{ name: 'health_check_up_welfare_new' }" />
+          icon="add" :to="{ name: 'various_welfare_new' }" />
       </div>
     </template>
     <template v-slot:table>
@@ -46,7 +46,7 @@
         table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
         @request="onRequest" @row-click="(evt, row, index) => viewData(row.requestId)">
         <template v-slot:body-cell-index="props">
-          <q-td :props="props">
+          <q-td :props="props" >
             {{ props.rowIndex + 1 }}
           </q-td>
         </template>
@@ -143,9 +143,9 @@ const model = ref([
     requestId: '670001',
     requestDate: new Date(),
     updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
+    // money: 3000,
+    // otherWelfare: 3000,
+    // moneyCanGet: 3000,
     status: {
       statusId: 2,
       name: "รอตรวจสอบ"
@@ -155,9 +155,9 @@ const model = ref([
     requestId: '670002',
     requestDate: new Date(),
     updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
+    // money: 3000,
+    // otherWelfare: 3000,
+    // moneyCanGet: 3000,
     status: {
       statusId: 1,
       name: "บันทึกฉบับร่าง"
@@ -167,9 +167,9 @@ const model = ref([
     requestId: '670003',
     requestDate: new Date(),
     updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
+    // money: 3000,
+    // otherWelfare: 3000,
+    // moneyCanGet: 3000,
     status: {
       statusId: 3,
       name: "อนุมัติ"
@@ -179,9 +179,9 @@ const model = ref([
     requestId: '670004',
     requestDate: new Date(),
     updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
+    // money: 3000,
+    // otherWelfare: 3000,
+    // moneyCanGet: 3000,
     status: {
       statusId: 1,
       name: "บันทึกฉบับร่าง"
@@ -191,9 +191,9 @@ const model = ref([
     requestId: '670005',
     requestDate: new Date(),
     updateDate: new Date(),
-    money: "3000",
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
+    // money: "3000",
+    // otherWelfare: 3000,
+    // moneyCanGet: 3000,
     status: {
       statusId: 1,
       name: "บันทึกฉบับร่าง"
@@ -286,13 +286,13 @@ function onRequest(props) {
 
 function viewData(requestId) {
   router.push({
-    name: "health_check_up_welfare_view",
+    name: "various_welfare_view",
     params: { id: requestId },
   });
 }
 function goto(requestId) {
   router.push({
-    name: "health_check_up_welfare_edit",
+    name: "various_welfare_edit",
     params: { id: requestId },
   });
 }
@@ -392,48 +392,48 @@ const columns = ref([
     format: (val) => formatDateThaiSlash(val),
     classes: "ellipsis",
   },
-  {
-    name: "money",
-    label: "จำนวนเงินที่เบิกตามใบเสร็จ",
-    align: "right",
-    field: (row) => row.money ?? "-",
-    format: (val) => {
-      const number = Number(val); // Convert to number
-      if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
-      }
-      return `${val}`; // If conversion fails, return a fallback value
-    },
-    classes: "ellipsis",
-  },
-  {
-    name: "otherWelfare",
-    label: "จำนวนเงินที่เบิกจากสิทธิ์อื่น ๆ",
-    align: "right",
-    field: (row) => row.otherWelfare ?? "-",
-    format: (val) => {
-      const number = Number(val); // Convert to number
-      if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
-      }
-      return `${val}`; // If conversion fails, return a fallback value
-    },
-    classes: "ellipsis",
-  },
-  {
-    name: "moneyCanGet",
-    label: "จำนวนเงินที่เบิกได้",
-    align: "right",
-    field: (row) => row.moneyCanGet ?? "-",
-    format: (val) => {
-      const number = Number(val); // Convert to number
-      if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
-      }
-      return `${val}`; // If conversion fails, return a fallback value
-    },
-    classes: "ellipsis",
-  },
+  // {
+  //   name: "money",
+  //   label: "จำนวนเงินที่เบิกตามใบเสร็จ",
+  //   align: "right",
+  //   field: (row) => row.money ?? "-",
+  //   format: (val) => {
+  //     const number = Number(val); // Convert to number
+  //     if (!isNaN(number)) {
+  //       return number.toLocaleString("en-US"); // Format as '3,000'
+  //     }
+  //     return `${val}`; // If conversion fails, return a fallback value
+  //   },
+  //   classes: "ellipsis",
+  // },
+  // {
+  //   name: "otherWelfare",
+  //   label: "จำนวนเงินที่เบิกจากสิทธิ์อื่น ๆ",
+  //   align: "right",
+  //   field: (row) => row.otherWelfare ?? "-",
+  //   format: (val) => {
+  //     const number = Number(val); // Convert to number
+  //     if (!isNaN(number)) {
+  //       return number.toLocaleString("en-US"); // Format as '3,000'
+  //     }
+  //     return `${val}`; // If conversion fails, return a fallback value
+  //   },
+  //   classes: "ellipsis",
+  // },
+  // {
+  //   name: "moneyCanGet",
+  //   label: "จำนวนเงินที่เบิกได้",
+  //   align: "right",
+  //   field: (row) => row.moneyCanGet ?? "-",
+  //   format: (val) => {
+  //     const number = Number(val); // Convert to number
+  //     if (!isNaN(number)) {
+  //       return number.toLocaleString("en-US"); // Format as '3,000'
+  //     }
+  //     return `${val}`; // If conversion fails, return a fallback value
+  //   },
+  //   classes: "ellipsis",
+  // },
   {
     name: "statusName",
     label: "สถานะ",
