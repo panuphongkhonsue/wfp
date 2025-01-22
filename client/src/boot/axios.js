@@ -33,18 +33,13 @@ export default defineBoot(({ app, router }) => {
     },
     function (error) {
       const authStore = useAuthStore();
-      if (error?.response?.status === 401) {
+      if (error?.response?.status === 401 || error?.response?.status === 440) {
         authStore.clearToken();
         router.push({
-          name: "unauthorized",
+          name: "login",
         });
       }
-      if (error?.response?.status === 440) {
-        authStore.clearToken();
-        router.push({
-          name: "sessionexpired",
-        });
-      } else {
+      else {
         return Promise.reject(error);
       }
     }

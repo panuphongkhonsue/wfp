@@ -2,17 +2,233 @@ const routes = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
+    redirect: { name: 'home' },
     children: [
-      { path: '', component: () => import('pages/IndexPage.vue') }
-    ]
+      {
+        path: '/home',
+        name: 'home',
+        meta: { breadcrumbs: [{ name: 'หน้าหลัก' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'health-check-up-welfare',
+        name: 'health_check_up_welfare_list',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าตรวจสุขภาพ' }] },
+        component: () => import('pages/health-check-up-welfare/ListPage.vue'),
+      },
+      {
+        path: 'health-check-up-welfare-new',
+        name: 'health_check_up_welfare_new',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าตรวจสุขภาพ' }, { name: 'เบิกสวัสดิการ' }] },
+        component: () => import('pages/health-check-up-welfare/EditPage.vue'),
+      },
+      {
+        path: 'health-check-up-welfare-edit/:id',
+        name: 'health_check_up_welfare_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าตรวจสุขภาพ' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/health-check-up-welfare/EditPage.vue'),
+      },
+      {
+        path: 'health-check-up-welfare/:id',
+        name: 'health_check_up_welfare_view',
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าตรวจสุขภาพ' }, { name: 'ดูใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/health-check-up-welfare/EditPage.vue'),
+      },
+      {
+        path: 'midecal-welfare',
+        name: 'medical_welfare_list',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'กรณีเจ็บป่วย' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'midecal-welfare-new',
+        name: 'medical_welfare_new',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'กรณีเจ็บป่วย' }, { name: 'เบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'midecal-welfare-edit/:id',
+        name: 'medical_welfare_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'กรณีเจ็บป่วย' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'midecal-welfare/:id',
+        name: 'medical_welfare_view',
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'กรณีเจ็บป่วย' }, { name: 'ดูใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'dental-care-welfare',
+        name: 'dental_care_welfare_list',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าทำฟัน' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'dental-care-welfare-new',
+        name: 'dental_care_welfare_new',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าทำฟัน' }, { name: 'เบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'dental-care-welfare-edit/:id',
+        name: 'dental_care_welfare_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าทำฟัน' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'dental-care-welfare/:id',
+        name: 'dental_care_welfare_view',
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าทำฟัน' }, { name: 'ดูใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'various-welfare',
+        name: 'various_welfare_list',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' },{ name: 'ค่าสงเคราะห์ต่าง ๆ' }] },
+        component: () => import('pages/various-welfare/ListPage.vue'),
+      },
+      {
+        path: 'various-welfare-new',
+        name: 'various_welfare_new',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' },{ name: 'ค่าสงเคราะห์ต่าง ๆ' }, { name: 'เบิกสวัสดิการ' }] },
+        component: () => import('pages/various-welfare/EditPage.vue'),
+      },
+      {
+        path: 'various-welfare-edit/:id',
+        name: 'various_welfare_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' },{ name: 'ค่าสงเคราะห์ต่าง ๆ' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/various-welfare/EditPage.vue'),
+      },
+      {
+        path: 'various-welfare/:id',
+        name: 'various_welfare_view',
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' },{ name: 'ค่าสงเคราะห์ต่าง ๆ' }, { name: 'ดูใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/various-welfare/EditPage.vue'),
+      },
+      {
+        path: 'various-welfare-funeral-family',
+        name: 'various_welfare_funeral_family_list',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' },{ name: 'ค่าสงเคราะห์การเสียชีวิตครอบครัว' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'various-welfare-funeral-family-new',
+        name: 'various_welfare_funeral_family_new',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' },{ name: 'ค่าสงเคราะห์การเสียชีวิตครอบครัว' }, { name: 'เบิกสวัสดิการ' }] },
+        component: () => import('pages/various-welfare-family-funeral/EditPage.vue'),
+      },
+      {
+        path: 'various-welfare-funeral-family-edit/:id',
+        name: 'various_welfare_funeral_family_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' },{ name: 'ค่าสงเคราะห์การเสียชีวิตครอบครัว' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/various-welfare-family-funeral/EditPage.vue'),
+      },
+      {
+        path: 'various-welfare-funeral-family/:id',
+        name: 'various_welfare_funeral_family_view',
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' },{ name: 'ค่าสงเคราะห์การเสียชีวิตครอบครัว' }, { name: 'ดูใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/various-welfare-family-funeral/EditPage.vue'),
+      },
+      {
+        path: 'children-edu-welfare',
+        name: 'children_edu_welfare_list',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'children-edu-welfare-new',
+        name: 'children_edu_welfare_new',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' }, { name: 'เบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'children-edu-welfare-edit/:id',
+        name: 'children_edu_welfare_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'children-edu-welfare/:id',
+        name: 'children_edu_welfare_view',
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' }, { name: 'ดูใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'funeral-welfare',
+        name: 'funeral_welfare_list',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'funeral-welfare-new',
+        name: 'funeral_welfare_new',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }, { name: 'เบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'funeral-welfare-edit/:id',
+        name: 'funeral_welfare_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'funeral-welfare/:id',
+        name: 'funeral_welfare_view',
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }, { name: 'ดูใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'welfare-management',
+        name: 'welfare_management_list',
+        meta: { breadcrumbs: [{ name: 'จัดการข้อมูลการเบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'welfare-management-edit/:id',
+        name: 'welfare_management_edit',
+        meta: { breadcrumbs: [{ name: 'จัดการข้อมูลการเบิกสวัสดิการ' }, { name: 'จัดการใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'welfare-management/:id',
+        name: 'welfare_management-view',
+        meta: { isView: true, breadcrumbs: [{ name: 'จัดการข้อมูลการเบิกสวัสดิการ' }, { name: 'ดูใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'user-management',
+        name: 'user_management_list',
+        meta: { breadcrumbs: [{ name: 'จัดการข้อมูลบุคลากร' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'user-management-edit/:id',
+        name: 'user_management_edit',
+        meta: { breadcrumbs: [{ name: 'จัดการข้อมูลบุคลากร' }, { name: 'แก้ไขข้อมูลบุคลากร' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'user-management/:id',
+        name: 'user_management_view',
+        meta: { isView: true, breadcrumbs: [{ name: 'จัดการข้อมูลบุคลากร' }, { name: 'ดูข้อมูลบุคลากร' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+      {
+        path: 'report',
+        name: 'report',
+        meta: { breadcrumbs: [{ name: 'รายงาน' }] },
+        component: () => import('pages/IndexPage.vue'),
+      },
+    ],
   },
 
   // Always leave this as last one,
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue')
-  }
+    component: () => import('pages/ErrorNotFound.vue'),
+  },
 ]
 
-export default routes;
+export default routes

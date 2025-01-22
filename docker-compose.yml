@@ -1,13 +1,13 @@
 services:
   db:
-    image: mysql:latest
+    image: mariadb:latest # Change from mysql:latest to mariadb:latest
     restart: always
     container_name: wfpdb
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: wfpdb
-      MYSQL_USER: user
-      MYSQL_PASSWORD: user
+      MARIADB_ROOT_PASSWORD: rootpassword # Change MYSQL_ to MARIADB_
+      MARIADB_DATABASE: wfpdb
+      MARIADB_USER: user
+      MARIADB_PASSWORD: user
       TZ: Asia/Bangkok
     command: --default-authentication-plugin=mysql_native_password
     volumes:
@@ -25,4 +25,4 @@ networks:
     driver: bridge
 
 volumes:
-  mysql_data: 
+  mysql_data:

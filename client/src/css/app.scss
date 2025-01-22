@@ -78,6 +78,9 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #0087fdcc;
 }
+.bor {
+  border: 1px solid red;
+}
 .font-30 {
   font-size: 30px !important;
 }
@@ -91,11 +94,11 @@
   font-size: 18px !important;
 }
 .font-16 {
-  font-size: 16px;
+  font-size: 16px !important;
   font-weight: normal;
 }
 .font-14 {
-  font-size: 14px;
+  font-size: 14px !important;
 }
 .font-bold {
   font-family: 'BaiJamjureeBold';
@@ -165,11 +168,20 @@
   content: ' *';
   color: red;
 }
+.q-table th {
+  font-size: 14px !important;
+}
+.q-table tbody td {
+  font-size: 14px !important;
+}
+.q-table--bordered {
+  border-radius: 10px;
+}
 div:where(.swal2-container) {
   z-index: 9999 !important;
 }
 body {
-  font-family: 'BaiJamjureeRegular';
+  font-family: 'BaiJamjureeRegular' !important;
   font-style: normal;
   background-color: #ffffff;
   height: auto;

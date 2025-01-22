@@ -2,14 +2,17 @@ import { defineStore } from 'pinia'
 import { parse, stringify } from 'zipson'
 export const useMenuStore = defineStore('menu', {
   state: () => ({
-    menu: true,
+    isOpenMenu: true,
   }),
   actions: {
-    setState(menu) {
-      this.menu = menu;
+    setState(isOpenMenu) {
+      this.isOpenMenu = isOpenMenu;
     },
     getState() {
-      return this.menu;
+      return this.isOpenMenu;
+    },
+    clearState(){
+      this.isOpenMenu = null;
     },
   },
   persist: {
