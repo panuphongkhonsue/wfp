@@ -61,13 +61,13 @@
                     <p>(จ่ายไม่เกินคนละ 2,000 บาท)</p>
                     <p>(จ่ายไม่เกินคนละ 10,000 บาท)</p>
                   </div>
-                  <div class="col-3 q-mr-xl q-pr-xl">
-                    <InputGroup for-id="fund" is-dense v-model="model.fund1" is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" 
+                  <div class="col-5">
+                    <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" 
                     type="number" class="" :is-view="isView">
                   </InputGroup>
                   </div>
-                  <div class="col-3 q-pl-xl ">
-              <InputGroup for-id="fund" is-dense v-model="model.fund2" is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท"
+                  <div class="col-7 ">
+              <InputGroup for-id="fund" is-dense v-model="model.fund2" :data="model.fund ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท"
                 type="number" class="" :is-view="isView">
               </InputGroup>
             </div>
