@@ -12,7 +12,7 @@
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-pt-md q-pb-sm font-16 font-bold">
               <div class="col-12 row wrap q-col-gutter-y-md">
                 <p class="col-lg-3 col-12 q-mb-none">
-                  ชื่อ : <span class="font-medium font-16 text-grey-7">สุทะพัด บุญทัน</span>
+                  ชื่อ : <span class="font-medium font-16 text-grey-7">สุทธพัฒน์ บุญทัน</span>
                 </p>
                 <p class="col-lg-3 col-12 q-mb-none">
                   ตำแหน่ง : <span class="font-medium font-16 text-grey-7">รองศาสตราจารย์</span>
@@ -51,9 +51,30 @@
               <p class="q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
-              <InputGroup for-id="fund" is-dense v-model="model.fund" is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท"
+              <p class="col-12 q-mb-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
+                  <!-- <q-radio v-model="fund" val="การเบิกค่าสมรสโดยนิตินัย" label="การเบิกค่าสมรสโดยนิตินัย" class="col-12 q-mb-none"></q-radio>
+                  <q-radio v-model="fund1" val="การเบิกค่าอุปสมหรือการไปประกอบพิธีฮัจญ์" label="การเบิกค่าอุปสมหรือการไปประกอบพิธีฮัจญ์" class="col-12 q-mb-none"></q-radio>
+                  <q-radio v-model="fund2" val="การเบิกค่ารับขวัญบุตรแรกเกิด" label="การเบิกค่ารับขวัญบุตรแรกเกิด" class="col-12 q-mb-none"></q-radio>
+                  <q-radio v-model="fund3" val="การเบิกสวัสดิการค่าสงเคราะห์ กรณีประสบภัยพิบัติ" label="การเบิกสวัสดิการค่าสงเคราะห์ กรณีประสบภัยพิบัติ" class="col-12 q-mb-none"></q-radio> -->
+                  <div class="col-5 q-mb-none">
+                    <q-option-group v-model="selection" type="radio" :options="options" />
+                  </div>
+                  <div class="col-7 q-mb-none">
+                    <p>(จ่ายไม่เกินคนละ 2,000 บาท)</p>
+                    <p>(จ่ายไม่เกินคนละ 2,000 บาท)</p>
+                    <p>(จ่ายไม่เกินคนละ 2,000 บาท)</p>
+                    <p>(จ่ายไม่เกินคนละ 10,000 บาท)</p>
+                  </div>
+                  <div class="">
+                    <InputGroup for-id="fund" is-dense v-model="model.fund1" is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" 
+                    type="number" class="" :is-view="isView">
+                  </InputGroup>
+                  </div>
+                  <div class="">
+              <InputGroup for-id="fund" is-dense v-model="model.fund2" is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท"
                 type="number" class="" :is-view="isView">
               </InputGroup>
+            </div>
             </q-card-section>
           </q-card>
         </div>
@@ -75,7 +96,7 @@
     <template v-slot:action>
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="bg-white font-semi-bold font-normal-size weight-8 q-px-lg" dense type="button"
-          style="color: #77747e" label="Back" no-caps :to="{ name: 'health_check_up_welfare_list' }" />
+          style="color: #77747e" label="Back" no-caps :to="{ name: 'various_welfare_list' }" />
         <q-btn id="button-reject" class="text-white font-semi-bold bg-negative font-normal-size weight-8 q-px-lg" dense
           type="submit" label="Reject" no-caps @click="submit(4)" v-if="!isLoadings" />
         <q-btn id="button-approve" class="font-semi-bold font-normal-size weight-8 text-white q-px-md" dense
@@ -91,18 +112,38 @@ import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
 
-
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 defineOptions({
-  name: "healthCheckUpWelfareEdit",
+  name: "various_welfare_edit",
 });
 const router = useRouter();
 const route = useRoute();
 const model = ref({
-  fund: null,
+  fund1: null,
+  fund2: null,
 });
+
+const options = [
+  {
+    label: 'การเบิกค่าสมรสโดยนิตินัย',
+    value: 'การเบิกค่าสมรสโดยนิตินัย'
+  },
+  {
+    label: 'การเบิกค่าอุปสมหรือการไปประกอบพิธีฮัจญ์',
+    value: 'การเบิกค่าอุปสมหรือการไปประกอบพิธีฮัจญ์'
+  },
+  {
+    label: 'การเบิกค่ารับขวัญบุตรแรกเกิด',
+    value: 'การเบิกค่ารับขวัญบุตรแรกเกิด'
+  },
+  {
+    label: 'การเบิกสวัสดิการค่าสงเคราะห์ กรณีประสบภัยพิบัติ',
+    value: 'การเบิกสวัสดิการค่าสงเคราะห์ กรณีประสบภัยพิบัติ'
+  }
+]
+const selection = ref(null)
 
 const isError = ref({});
 
@@ -216,4 +257,10 @@ async function init() {
   isView.value = route.meta.isView;
   isLoadings.value = true;
 }
+
+// const options = [
+//         { label: 'Battery too low', value: 'bat'},
+//         { label: 'Friend request', value: 'friend'},
+//         { label: 'Picture uploaded', value: 'upload'}
+//       ]
 </script>
