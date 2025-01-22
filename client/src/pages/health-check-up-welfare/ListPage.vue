@@ -53,14 +53,14 @@
         <template v-slot:no-data="{ icon }">
           <div class="full-width row flex-center text-negative q-gutter-sm">
             <q-icon size="2em" :name="icon" />
-            <span class="font-remark font-regular ">
+            <span class="font-14 font-regular ">
               Sorry, There isn't data from server.
             </span>
           </div>
         </template>
         <template v-slot:body-cell-statusName="props">
           <q-td :props="props" class="text-center">
-            <q-badge class="font-regular font-remark weight-5 q-py-xs full-width"
+            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width"
               :color="statusColor(props.row.status)">
               <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.status)">
                 {{ props.row.status.name }}

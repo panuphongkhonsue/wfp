@@ -8,12 +8,12 @@
       </q-card-section>
       <q-separator />
       <!-- Filter Section -->
-      <q-card-section v-if="$slots['filter']" flat class="col q-px-md q-pb-md">
+      <q-card-section v-if="$slots['filter']" flat class="col q-pb-md">
         <div class="row q-col-gutter-x-md items-center">
           <slot name="filter"></slot>
         </div>
       </q-card-section>
-      <q-card-section v-if="$slots['toolbar']" flat class="col q-px-md q-pb-md">
+      <q-card-section v-if="$slots['toolbar']" flat class="col q-pb-md">
         <div class="row q-col-gutter-x-md items-center">
           <slot name="toolbar"></slot>
         </div>
