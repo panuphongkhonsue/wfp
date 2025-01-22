@@ -8,7 +8,7 @@ const routes = [
         path: '/home',
         name: 'home',
         meta: { breadcrumbs: [{ name: 'หน้าหลัก' }] },
-        component: () => import('pages/IndexPage.vue'),
+        component: () => import('pages/home/HomePage.vue'),
       },
       {
         path: 'health-check-up-welfare',
