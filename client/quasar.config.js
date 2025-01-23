@@ -50,7 +50,7 @@ export default defineConfig((/* ctx */) => {
 
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
-      publicPath: '/wfp',
+      publicPath: '/',
       // analyze: true,
       // env: {},
       // rawDefine: {}
