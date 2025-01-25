@@ -74,7 +74,7 @@
                   </q-td>
                   <q-td v-else :props="props" class="text-grey-9">
                     <q-input class="font-14 font-regular" dense v-model="model.claimFund[props.row.id]" outlined
-                      autocomplete="off" color="dark" type="number" :for="'input-claimFund' + props.row.id"
+                      autocomplete="off" color="dark" type="number" :forId="'input-claimFund' + props.row.id"
                       placeholder="0">
                     </q-input>
                   </q-td>
@@ -136,9 +136,9 @@ const model = ref({
   fund: null,
   claimName: null,
   claimFund: {
-    first: null,
-    second: null,
-    thrid: null,
+    1: null,
+    2: null,
+    3: null,
   },
 });
 
