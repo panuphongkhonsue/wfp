@@ -31,11 +31,19 @@
       </q-form>
     </template>
     <template v-slot:toolbar>
-      <div class="col-12 col-md-6 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none">สิทธิ์คงเหลือ : 1</p>
-        <p class="col q-ma-none">จำนวนเงินการเบิกคงเหลือ : 3,000 </p>
+      <div class="col-12 row font-bold font-14 q-col-gutter-x-md q-mb-md">
+        <p class="col q-ma-none">จำนวนเงินคงเหลือ (การเบิกสมรส) : 2,000</p>
+        <p class="col q-ma-none">จำนวนเงินคงเหลือ (การเบิกอุปสมบทหรือพิธีฮัจญ)์ : 2,000</p>
+        <p class="col q-ma-none">จำนวนเงินคง (รับขวัญบุตร) : 1,000</p>
+        <p class="col q-ma-none">จำนวนเงินคง (เหลือกรณีประสบภัยพิบัติ) : 10,000</p>
       </div>
-      <div class="col-12 col-md-6 flex justify-end">
+      <div class="col-12 col-md-10 row font-bold font-14  q-col-gutter-x-md">
+        <p class="col q-ma-none">สิทธิ์คงเหลือ (การเบิกสมรส) : 1</p>
+        <p class="col q-ma-none">สิทธิ์คงเหลือ (การเบิกอุปสมบทหรือพิธีฮัจญ)์ : 1</p>
+        <p class="col q-ma-none">สิทธิ์คงเหลือ (รับขวัญบุตร) : -</p>
+        <p class="col q-ma-none">สิทธิ์คงเหลือ (กรณีภัยพิบัติ) : -</p>
+      </div>
+      <div class="col-12 col-md-2 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
           icon="add" :to="{ name: 'various_welfare_new' }" />
       </div>
@@ -116,7 +124,7 @@ import {
   outlinedDownload,
 } from "@quasar/extras/material-icons-outlined";
 defineOptions({
-  name: "healthCheckUpWelfareList",
+  name: "various_welfare_list",
 });
 const listStore = useListStore();
 const router = useRouter();
@@ -143,9 +151,9 @@ const model = ref([
     requestId: '670001',
     requestDate: new Date(),
     updateDate: new Date(),
-    // money: 3000,
-    // otherWelfare: 3000,
-    // moneyCanGet: 3000,
+    money: 3000,
+    otherWelfare: 3000,
+    moneyCanGet: 3000,
     status: {
       statusId: 2,
       name: "รอตรวจสอบ"
@@ -155,9 +163,9 @@ const model = ref([
     requestId: '670002',
     requestDate: new Date(),
     updateDate: new Date(),
-    // money: 3000,
-    // otherWelfare: 3000,
-    // moneyCanGet: 3000,
+    money: 3000,
+    otherWelfare: 3000,
+    moneyCanGet: 3000,
     status: {
       statusId: 1,
       name: "บันทึกฉบับร่าง"
@@ -167,9 +175,9 @@ const model = ref([
     requestId: '670003',
     requestDate: new Date(),
     updateDate: new Date(),
-    // money: 3000,
-    // otherWelfare: 3000,
-    // moneyCanGet: 3000,
+    money: 3000,
+    otherWelfare: 3000,
+    moneyCanGet: 3000,
     status: {
       statusId: 3,
       name: "อนุมัติ"
@@ -179,9 +187,9 @@ const model = ref([
     requestId: '670004',
     requestDate: new Date(),
     updateDate: new Date(),
-    // money: 3000,
-    // otherWelfare: 3000,
-    // moneyCanGet: 3000,
+    money: 3000,
+    otherWelfare: 3000,
+    moneyCanGet: 3000,
     status: {
       statusId: 1,
       name: "บันทึกฉบับร่าง"
@@ -191,9 +199,9 @@ const model = ref([
     requestId: '670005',
     requestDate: new Date(),
     updateDate: new Date(),
-    // money: "3000",
-    // otherWelfare: 3000,
-    // moneyCanGet: 3000,
+    money: "3000",
+    otherWelfare: 3000,
+    moneyCanGet: 3000,
     status: {
       statusId: 1,
       name: "บันทึกฉบับร่าง"
@@ -392,48 +400,48 @@ const columns = ref([
     format: (val) => formatDateThaiSlash(val),
     classes: "ellipsis",
   },
-  // {
-  //   name: "money",
-  //   label: "จำนวนเงินที่เบิกตามใบเสร็จ",
-  //   align: "right",
-  //   field: (row) => row.money ?? "-",
-  //   format: (val) => {
-  //     const number = Number(val); // Convert to number
-  //     if (!isNaN(number)) {
-  //       return number.toLocaleString("en-US"); // Format as '3,000'
-  //     }
-  //     return `${val}`; // If conversion fails, return a fallback value
-  //   },
-  //   classes: "ellipsis",
-  // },
-  // {
-  //   name: "otherWelfare",
-  //   label: "จำนวนเงินที่เบิกจากสิทธิ์อื่น ๆ",
-  //   align: "right",
-  //   field: (row) => row.otherWelfare ?? "-",
-  //   format: (val) => {
-  //     const number = Number(val); // Convert to number
-  //     if (!isNaN(number)) {
-  //       return number.toLocaleString("en-US"); // Format as '3,000'
-  //     }
-  //     return `${val}`; // If conversion fails, return a fallback value
-  //   },
-  //   classes: "ellipsis",
-  // },
-  // {
-  //   name: "moneyCanGet",
-  //   label: "จำนวนเงินที่เบิกได้",
-  //   align: "right",
-  //   field: (row) => row.moneyCanGet ?? "-",
-  //   format: (val) => {
-  //     const number = Number(val); // Convert to number
-  //     if (!isNaN(number)) {
-  //       return number.toLocaleString("en-US"); // Format as '3,000'
-  //     }
-  //     return `${val}`; // If conversion fails, return a fallback value
-  //   },
-  //   classes: "ellipsis",
-  // },
+  {
+    name: "money",
+    label: "จำนวนเงินตามใบเสร็จ / ใบสำคัญรับเงิน",
+    align: "right",
+    field: (row) => row.money ?? "-",
+    format: (val) => {
+      const number = Number(val); // Convert to number
+      if (!isNaN(number)) {
+        return number.toLocaleString("en-US"); // Format as '3,000'
+      }
+      return `${val}`; // If conversion fails, return a fallback value
+    },
+    classes: "ellipsis",
+  },
+  {
+    name: "otherWelfare",
+    label: "จำนวนเงินที่เบิกได้ตามสิทธิ์",
+    align: "right",
+    field: (row) => row.otherWelfare ?? "-",
+    format: (val) => {
+      const number = Number(val); // Convert to number
+      if (!isNaN(number)) {
+        return number.toLocaleString("en-US"); // Format as '3,000'
+      }
+      return `${val}`; // If conversion fails, return a fallback value
+    },
+    classes: "ellipsis",
+  },
+  {
+    name: "moneyCanGet",
+    label: "จำนวนเงินที่ขอเบิกทั้งหมด",
+    align: "right",
+    field: (row) => row.moneyCanGet ?? "-",
+    format: (val) => {
+      const number = Number(val); // Convert to number
+      if (!isNaN(number)) {
+        return number.toLocaleString("en-US"); // Format as '3,000'
+      }
+      return `${val}`; // If conversion fails, return a fallback value
+    },
+    classes: "ellipsis",
+  },
   {
     name: "statusName",
     label: "สถานะ",

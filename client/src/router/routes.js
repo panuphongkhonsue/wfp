@@ -110,7 +110,7 @@ const routes = [
         path: 'various-welfare-funeral-family',
         name: 'various_welfare_funeral_family_list',
         meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' },{ name: 'ค่าสงเคราะห์การเสียชีวิตครอบครัว' }] },
-        component: () => import('pages/IndexPage.vue'),
+        component: () => import('pages/various-welfare-family-funeral/ListPage.vue'),
       },
       {
         path: 'various-welfare-funeral-family-new',

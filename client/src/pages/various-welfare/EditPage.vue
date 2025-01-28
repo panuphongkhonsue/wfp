@@ -52,79 +52,82 @@
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
               <p class="col-12 q-mb-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
-                  <div class="col-5 q-mb-none">
-                    <q-option-group v-model="selection" type="radio" :options="options " />
-                  </div>
-                  <div class="col-7 q-mb-none">
-                    <p>(จ่ายไม่เกินคนละ 2,000 บาท)</p>
-                    <p>(จ่ายไม่เกินคนละ 2,000 บาท)</p>
-                    <p>(จ่ายไม่เกินคนละ 2,000 บาท)</p>
-                    <p>(จ่ายไม่เกินคนละ 10,000 บาท)</p>
-                  </div>
-                  <div class="col-4 q-mr-xl">
-                    <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" 
-                    type="number" class="" :is-view="isView">
-                  </InputGroup>
-                  </div>
-                  <div class="col-4 q-ml-xl">
-              <InputGroup for-id="fund" is-dense v-model="model.fund2" :data="model.fund ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท"
-                type="number" class="" :is-view="isView">
-              </InputGroup>
-            </div>
+              <div class="col-lg-6 col-12 q-mb-none">
+                <q-option-group class="q-gutter-y-sm" v-model="selection" type="radio" :options="options" />
+              </div>
+              <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
+                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p>
+                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p> 
+                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p>
+                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 10,000 บาท)</p>
+              </div>
             </q-card-section>
+            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
+                <div class="col-lg-4 col-12 ">
+                  <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" is-require
+                    label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
+                  </InputGroup>
+                </div>
+                <div class="col-lg-2"></div>
+                <div class="col-lg-4 col-12 ">
+                  <InputGroup for-id="fund" is-dense v-model="model.fund2" :data="model.fund ?? '-'" is-require
+                    label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView">
+                  </InputGroup>
+                </div>
+              </q-card-section>
           </q-card>
         </div>
         <div class="col-md-3 col-12">
           <div class="q-pb-md">
+            <q-card flat bordered>
+              <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
+                <p class="q-mb-none">จำนวนเงินคงเหลือ</p>
+              </q-card-section>
+              <q-separator />
+              <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
+                <p class="col-12 q-mb-none">ค่าสมรส : 2,000</p>
+                <p class="col-12 q-mb-none">ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ : 2,000</p>
+                <p class="col-12 q-mb-none">ค่ารับขวัญบุตร : 1,000</p>
+                <p class="col-12 q-mb-none">กรณีประสบภัยพิบัติ : 10,000</p>
+              </q-card-section>
+            </q-card>
+          </div>
+
           <q-card flat bordered>
-            <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
-              <p class="q-mb-none">จำนวนเงินคงเหลือ</p>
-            </q-card-section>
-            <q-separator />
-            <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">ค่าสมรส : 2,000</p>
-              <p class="col-12 q-mb-none">ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ : 2,000</p>
-              <p class="col-12 q-mb-none">ค่ารับขวัญบุตร : 1,000</p>
-              <p class="col-12 q-mb-none">กรณีประสบภัยพิบัติ : 10,000</p>
-            </q-card-section>
-          </q-card>
-        </div>
-        
-          <q-card flat bordered >
             <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
               <p class="q-mb-none">หลักฐานที่ต้องแนบ</p>
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">ค่าสมรสโดยนิตินัย</p>
+              <p class="col-12 q-mb-none font-18">ค่าสมรสโดยนิตินัย</p>
               <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none">2. สำเนาทะเบียนสมรส</p>
-              <p class="col-12 q-mb-none">ค่าอุปสมบทหรือการไปประกอบพิธีฮัจญ์</p>
+              <p class="col-12 q-mb-none font-18">ค่าอุปสมบทหรือการไปประกอบพิธีฮัจญ์</p>
               <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none">2. สำเนาคำสั่งลาอุปสมบท<br>หรือเอกสารประกอบพิธีฮัจญ์</p>
-              <p class="col-12 q-mb-none">ค่ารับขวัญบุตรแรกเกิด</p>
+              <p class="col-12 q-mb-none font-18">ค่ารับขวัญบุตรแรกเกิด</p>
               <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none">2. สำเนาสูติบัตรบุตร<br>หรือสำเนาทะเบียนรับรองบุตร</p>
-              <p class="col-12 q-mb-none">ค่าประสบภัยพิบัติ</p>
+              <p class="col-12 q-mb-none font-18">ค่าประสบภัยพิบัติ</p>
               <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none">2. รูปภาพ</p>
               <p class="col-12 q-mb-none">3. สำเนาทะเบียนบ้าน</p>
             </q-card-section>
           </q-card>
-        
-          
+
+
         </div>
       </div>
     </template>
-     <!--Action Slot -->
-     <template v-slot:action>
+    <!--Action Slot -->
+    <template v-slot:action>
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'various_welfare_list' }" />
         <q-btn id="button-reject" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
           type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(4)" v-if="!isView && !isLoadings" />
-        <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense
-          type="submit" style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(3)"
+        <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
+          style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(3)"
           v-if="!isView && !isLoadings" />
       </div>
     </template>
@@ -271,7 +274,7 @@ async function submit() {
           confirmButton: "save-button",
         },
       }).then(() => {
-        router.replace({ name: "health_check_up_welfare_list" });
+        router.replace({ name: "various_welfare_list" });
       });
     }
   });
