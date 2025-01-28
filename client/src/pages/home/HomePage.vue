@@ -3,7 +3,7 @@
     <DynamicBreadcrumb />
 
     <div class="row q-pb-md">
-      <div class="col-md-8 col-12">
+      <div class="col-lg-8 col-12 q-pb-md-lg q-pb-sm-lg">
         <p class="q-mb-none col-8 q-mb-md">สิทธิ์คงเหลือ</p>
         <!-- card แถวที่ 1 -->
         <div class="row q-pb-md">
@@ -23,7 +23,7 @@
           </div>
 
           <div class="col-12 col-md q-mr-md">
-            <q-card class="border-card bg-blue-9" :class="{'q-mt-md': $q.screen.lt.md}">
+            <q-card class="border-card bg-blue-9" :class="{ 'q-mt-md': $q.screen.lt.md }">
               <q-card-section class="q-px-lg row items-center justify-between">
                 <!-- ข้อความ -->
                 <div>
@@ -56,7 +56,7 @@
           </div>
 
           <div class="col-12 col-md q-mr-md">
-            <q-card class="border-card bg-blue-9" :class="{'q-mt-md': $q.screen.lt.md}">
+            <q-card class="border-card bg-blue-9" :class="{ 'q-mt-md': $q.screen.lt.md }">
               <q-card-section class="q-px-lg row items-center justify-between">
                 <!-- ข้อความ -->
                 <div>
@@ -73,147 +73,141 @@
       </div>
 
       <!-- ส่วนที่ 2: card ที่มีปุ่มดาวน์โหลด -->
-      <div class="col-md-4 col-12">
-        <div class="row q-mb-md items-center justify-between" :class="{'q-mt-md': $q.screen.lt.md}">
-  <p class="q-mb-none col-4">ระเบียบการเบิกสวัสดิการ</p>
-  <!-- แสดงปุ่มแก้ไขเมื่อไม่อยู่ในโหมดแก้ไข -->
-  <q-btn
-    v-if="!isEditing"
-    color="orange-4"
-    text-color="white"
-    label="แก้ไข"
-    class="font-14 border-button-edit"
-    @click="toggleEdit"
-  />
-  <!-- แสดงปุ่มอัปโหลดและบันทึกเมื่ออยู่ในโหมดแก้ไข -->
-  <div v-else class="row q-gutter-sm">
-    <q-btn
-      color="blue-10"
-      text-color="white"
-      label="อัปโหลด"
-      class="font-14 border-button-edit"
-    />
-    <q-btn
-      color="green-6"
-      text-color="white"
-      label="บันทึก"
-      class="font-14 border-button-edit"
-      @click="toggleEdit"
-    />
-  </div>
-</div>
-        <div class="col-4 col-md q-pb-sm">
-          <q-card class="bg-grey-11 no-shadow no-border-radius">
-            <q-card-section class="q-px-lg row items-center justify-between ">
-              <div class="row">
-                <!-- รูปภาพ -->
-                <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
-                <!-- ข้อความ -->
-                <div>
-                  <p class="q-mb-none font-14 q-px-md col-12">ระเบียบการเบิก_สวัสดิการทั่วไป.pdf</p>
-                </div>
-              </div>
-              <q-btn  v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด" class="font-14 border-button" />
-              <img v-else src="../../assets/deletefile.svg" alt="dental-work" class="q-mr-md" />
-            </q-card-section>
-          </q-card>
+      <div class="col-lg-4 col-12 q-gutter-y-sm ">
+        <div class="row q-mb-md items-center justify-between " :class="{ 'q-mt-md': $q.screen.lt.md }">
+          <p class="q-mb-none col-4 ">ระเบียบการเบิกสวัสดิการ</p>
+          <!-- แสดงปุ่มแก้ไขเมื่อไม่อยู่ในโหมดแก้ไข -->
+          <q-btn v-if="!isEditing" color="orange-4" text-color="white" label="แก้ไข" class="font-14 border-button-edit"
+            @click="toggleEdit" />
+          <!-- แสดงปุ่มอัปโหลดและบันทึกเมื่ออยู่ในโหมดแก้ไข -->
+          <div v-else class="row q-gutter-sm">
+            <q-btn color="blue-10" text-color="white" label="อัปโหลด" class="font-14 border-button-edit" />
+            <q-btn color="green-6" text-color="white" label="บันทึก" class="font-14 border-button-edit"
+              @click="toggleEdit" />
+          </div>
         </div>
+        <q-scroll-area  style="height: 300px;">
+        <div class="q-gutter-y-sm">
+          <div class="col-4 col-md ">
+            <q-card class="bg-grey-11 no-shadow no-border-radius">
+              <q-card-section class="q-px-lg row items-center justify-between ">
+                <div class="row">
+                  <!-- รูปภาพ -->
+                  <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
+                  <!-- ข้อความ -->
+                  <div class="regulation-name">
+                    <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">ระเบียบการเบิก_สวัสดิการทั่วไป.pdf</p>
+                  </div>
+                </div>
+                <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
+                  class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
+                <q-icon v-else name="remove_circle" color="red" @click="deleteFile" class="cursor-pointer btn-delete-file" />
+              </q-card-section>
+            </q-card>
+          </div>
 
 
-        <div class="col-4 col-md q-pb-sm">
-          <q-card class="bg-grey-11 no-shadow no-border-radius">
-            <q-card-section class="q-px-lg row items-center justify-between">
-              <div class="row">
-                <!-- รูปภาพ -->
-                <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
-                <!-- ข้อความ -->
-                <div>
-                  <p class="q-mb-none font-14 q-px-md ">ระเบียบการเบิก_สวัสดิการสงเคราะห์ต่าง_ๆ.pdf</p>
+          <div class="col-4 col-md ">
+            <q-card class="bg-grey-11 no-shadow no-border-radius">
+              <q-card-section class="q-px-lg row items-center justify-between">
+                <div class="row">
+                  <!-- รูปภาพ -->
+                  <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
+                  <!-- ข้อความ -->
+                  <div class="regulation-name">
+                    <p class="q-mb-none font-14 q-px-md  text-ellipsis ellipsis">ระเบียบการเบิก_สวัสดิการสงเคราะห์ต่างๆ.pdf</p>
+                  </div>
                 </div>
-              </div>
-              <q-btn  v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด" class="font-14 border-button" />
-              <img v-else src="../../assets/deletefile.svg" alt="dental-work" class="q-mr-md" />
-            </q-card-section>
-          </q-card>
-        </div>
+                <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
+                  class="font-14 border-button q-px-sm  q-mt-xs-sm q-mt-md-none " />
+                <q-icon v-else name="remove_circle" color="red" @click="deleteFile" class="cursor-pointer btn-delete-file" />
+              </q-card-section>
+            </q-card>
+          </div>
 
-        <div class="col-4 col-md q-pb-sm">
-          <q-card class="bg-grey-11 no-shadow no-border-radius">
-            <q-card-section class="q-px-lg row items-center justify-between">
-              <div class="row">
-                <!-- รูปภาพ -->
-                <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
-                <!-- ข้อความ -->
-                <div>
-                  <p class="q-mb-none font-14 q-px-md ">ระเบียบการเบิก_สวัสดิการเกี่ยวกับการศึกษาของบุตร.pdf</p>
+          <div class="col-4 col-md ">
+            <q-card class="bg-grey-11 no-shadow no-border-radius">
+              <q-card-section class="q-px-lg row items-center justify-between ">
+                <div class="row">
+                  <!-- รูปภาพ -->
+                  <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
+                  <!-- ข้อความ -->
+                  <div class="regulation-name">
+                    <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">
+                      ระเบียบการเบิก_สวัสดิการเกี่ยวกับการศึกษาของบุตร.pdf</p>
+                  </div>
                 </div>
-              </div>
-              <q-btn  v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด" class="font-14 border-button" />
-              <img v-else src="../../assets/deletefile.svg" alt="dental-work" class="q-mr-md" />
-            </q-card-section>
-          </q-card>
-        </div>
+                <q-btn v-if="!isEditing" color="blue-10" height="64" text-color="white" label="ดาวน์โหลด"
+                  class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
+                <q-icon v-else name="remove_circle" color="red" @click="deleteFile" class="cursor-pointer btn-delete-file" />
+              </q-card-section>
+            </q-card>
+          </div>
 
-        <div class="col-4 col-md q-pb-sm">
-          <q-card class="bg-grey-11 no-shadow no-border-radius">
-            <q-card-section class="q-px-lg row items-center justify-between">
-              <div class="row">
-                <!-- รูปภาพ -->
-                <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
-                <!-- ข้อความ -->
-                <div>
-                  <p class="q-mb-none font-14 q-px-md">ระเบียบการเบิก_สวัสดิการค่าสงเคราะห์การเสียชีวิต.pdf</p>
+          <div class="col-4 col-md">
+            <q-card class="bg-grey-11 no-shadow no-border-radius">
+              <q-card-section class="q-px-lg row items-center justify-between">
+                <div class="row">
+                  <!-- รูปภาพ -->
+                  <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
+                  <!-- ข้อความ -->
+                  <div class="regulation-name">
+                    <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">ระเบียบการเบิก_สวัสดิการค่าสงเคราะห์การเสียชีวิต.pdf</p>
+                  </div>
                 </div>
-              </div>
-              <q-btn  v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด" class="font-14 border-button" />
-              <img v-else src="../../assets/deletefile.svg" alt="dental-work" class="q-mr-md" />
-            </q-card-section>
-          </q-card>
+                <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
+                  class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
+                <q-icon v-else name="remove_circle" color="red" @click="deleteFile" class="cursor-pointer btn-delete-file" />
+              </q-card-section>
+            </q-card>
+          </div>
         </div>
-        <hr class="q-mt-xs bg-grey-2">
+        </q-scroll-area>
+
+        <q-separator />
       </div>
     </div>
     <div class="row">
-          <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
-            row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
-            table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
-            @request="onRequest" @row-click="(evt, row, index) => viewData(row.requestId)" class="col-12 ">
-            <template v-slot:body-cell-index="props">
-              <q-td :props="props">
-                {{ props.rowIndex + 1 }}
-              </q-td>
-            </template>
-            <template v-slot:no-data="{ icon }">
-              <div class="full-width row flex-center text-negative q-gutter-sm">
-                <q-icon size="2em" :name="icon" />
-                <span class="font-14 font-regular ">
-                  Sorry, There isn't data from server.
-                </span>
-              </div>
-            </template>
-            <template v-slot:body-cell-statusName="props">
-              <q-td :props="props" class="text-center">
-                <q-badge class="font-regular font-14 weight-5 q-py-xs full-width"
-                  :color="statusColor(props.row.status)">
-                  <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.status)">
-                    {{ props.row.status.name }}
-                  </p>
-                </q-badge>
-              </q-td>
-            </template>
-            <template v-slot:body-cell-tools="props">
-              <q-td :props="props" class="">
-                <a v-show="props.row.status.statusId == 2" @click.stop.prevent="viewData(props.row.requestId)" class="text-dark q-py-sm q-px-xs cursor-pointer">
-                  <q-icon :name="outlinedVisibility" size="xs" />
-                </a>
-                <a v-show="props.row.status.statusId == 3" @click.stop.prevent="goto(props.row.requestId)"
-                  class="text-dark q-py-sm q-px-xs cursor-pointer">
-                  <q-icon :name="outlinedEdit" size="xs" color="blue" />
-                </a>
-              </q-td>
-            </template>
-          </q-table>
-        </div>
+      <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
+        row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
+        table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
+        @request="onRequest" @row-click="(evt, row, index) => viewData(row.requestId)" class="col-12 ">
+        <template v-slot:body-cell-index="props">
+          <q-td :props="props">
+            {{ props.rowIndex + 1 }}
+          </q-td>
+        </template>
+        <template v-slot:no-data="{ icon }">
+          <div class="full-width row flex-center text-negative q-gutter-sm">
+            <q-icon size="2em" :name="icon" />
+            <span class="font-14 font-regular ">
+              Sorry, There isn't data from server.
+            </span>
+          </div>
+        </template>
+        <template v-slot:body-cell-statusName="props">
+          <q-td :props="props" class="text-center">
+            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width" :color="statusColor(props.row.status)">
+              <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.status)">
+                {{ props.row.status.name }}
+              </p>
+            </q-badge>
+          </q-td>
+        </template>
+        <template v-slot:body-cell-tools="props">
+          <q-td :props="props" class="">
+            <a v-show="props.row.status.statusId == 2" @click.stop.prevent="viewData(props.row.requestId)"
+              class="text-dark q-py-sm q-px-xs cursor-pointer">
+              <q-icon :name="outlinedVisibility" size="xs" />
+            </a>
+            <a v-show="props.row.status.statusId == 3" @click.stop.prevent="goto(props.row.requestId)"
+              class="text-dark q-py-sm q-px-xs cursor-pointer">
+              <q-icon :name="outlinedEdit" size="xs" color="blue" />
+            </a>
+          </q-td>
+        </template>
+      </q-table>
+    </div>
   </q-page>
 </template>
 
@@ -289,6 +283,9 @@ function onRequest(props) {
     }
     isLoading.value = false;
   }, 100);
+}
+function deleteFile() {
+  console.log("delete")
 }
 
 
@@ -414,7 +411,6 @@ const columns = ref([
 
 .border-button {
   border-radius: 15px;
-  padding: 8px 8px;
 
 }
 
@@ -429,4 +425,23 @@ const columns = ref([
   /* กำหนดขนาดรูปภาพ */
   height: auto;
 }
+.btn-delete-file{
+  padding: 10px 0px;
+}
+/* .regulation-name{
+  max-width: 13em;
+} */
+
+@media (min-width: 1440px) and (max-width: 1900px) { 
+  .regulation-name {
+    max-width: 13em;
+  }
+}
+@media (max-width: 533px) { 
+  .regulation-name {
+    max-width: 13em;
+  }
+}
+
+ 
 </style>
