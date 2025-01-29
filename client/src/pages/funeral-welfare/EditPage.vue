@@ -58,7 +58,7 @@
               <div class="col-lg-4 col-12 q-mb-none">
                 <InputGroup label="ชื่อ - นามสุกล" is-require>
                   <q-select :loading="isLoading" id="selected-status" class="" outlined v-model="filter.usernameId"
-                    :options="options" label="test" dense clearable option-value="usernameId" emit-value map-options
+                    :options="options" label="" dense clearable option-value="usernameId" emit-value map-options
                     option-label="name">
                     <template v-slot:no-option>
                       <q-item>
