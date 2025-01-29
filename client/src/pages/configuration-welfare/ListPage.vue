@@ -7,10 +7,11 @@
             placeholder="ค้นหาจากเลขที่ใบเบิก">
           </InputGroup>
         </div>
+
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
           <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm" outlined v-model="filter.welfareId"
-            :options="options" label="ประเภทสวัสดิการ" multiple dense clearable option-value="welfareId" emit-value
-            map-optionsoption-label="name">
+            :options="optionWelfareType" label="ประเภทสวัสดิการ" multiple dense clearable option-value="welfareId" emit-value
+            map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">No option</q-item-section>
@@ -18,6 +19,7 @@
             </template>
           </q-select>
         </div>
+        
         <div class="content-center q-pt-lg q-pt-md-xs col-2">
           <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm q-pt-sm weight-8 q-mt-xs"
             dense type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
@@ -111,6 +113,12 @@ const filter = ref({
   keyword: null,
   welfareId: null,
 });
+
+let optionWelfareType = [
+  { welfareId: 1, name: "สวัสดิการทั่วไป" },
+  { welfareId: 2, name: "สวัสดิการค่าสงเคราะห์ต่างๆ" },
+  { welfareId: 3, name: "สวัสดิการค่าเทอมบุตร" },
+];
 
 const columns = [
   { name: "index", label: "ลำดับ", align: "left", field: "index" },
