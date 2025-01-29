@@ -88,7 +88,7 @@
         </div>
 
         <div class="col-md-3 col-12">
-          <div class="q-pb-md">
+          <!-- <div class="q-pb-md">
             <q-card flat bordered>
               <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
                 <p class="q-mb-none">จำนวนเงินคงเหลือ</p>
@@ -101,7 +101,7 @@
                 <p class="col-12 q-mb-none">กรณีประสบภัยพิบัติ : 10,000</p>
               </q-card-section>
             </q-card>
-          </div>
+          </div> -->
 
           <q-card flat bordered>
             <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
