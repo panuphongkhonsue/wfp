@@ -3,7 +3,7 @@
     <template v-slot:page>
       <!--General Information Section -->
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
-        <div class="col-md-9 col-12">
+        <div :class="{ 'col-12': isView || isLoadings, 'col-md-9 col-12': !isView && !isLoadings }">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md q-py-md font-18 font-bold">
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
@@ -22,15 +22,17 @@
                 </p>
               </div>
               <div class="col-12 row wrap q-col-gutter-y-md">
-                <p class="col-lg-3 col-12 q-mb-none">ส่วนงาน : <span
-                    class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span></p>
-                <p class="col-lg col-12 q-mb-none">ภาควิชา : <span
-                    class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span></p>
+                <p class="col-lg-3 col-12 q-mb-none">
+                  ส่วนงาน : <span class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span>
+                </p>
+                <p class="col-lg col-12 q-mb-none">
+                  ภาควิชา : <span class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span>
+                </p>
               </div>
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-md-3 col-12">
+        <div class="col-md-3 col-12" v-if="!isView && !isLoadings">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md q-py-md font-18 font-bold">
               <p class="q-mb-none">สิทธิ์คงเหลือ</p>
@@ -43,13 +45,14 @@
           </q-card>
         </div>
       </div>
+
       <!-- Request Section -->
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
         <div class="col-md-9 col-12">
           <q-card flat bordered class="full-height">
             <q-card-section class="col row">
-              <p class="q-px-md q-pt-md q-pb-md font-18 font-bold q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
-              <p class="q-px-md q-pt-md q-pb-md font-16 q-mb-none">(จ่ายจริงคนละไม่เกิน 10,000 บาท)</p>
+              <p class="q-pb-md font-18 font-bold q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
+              <p class="q-pl-md q-pb-md font-16 q-mb-none">(จ่ายจริงคนละไม่เกิน 10,000 บาท)</p>
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-none font-medium font-16 text-grey-9">
               <div class="col-lg-4 col-12 q-mb-none">
@@ -72,22 +75,22 @@
               </div>
               <q-card-section class="col row justify-around  q-pt-none">
                 <div class="col-lg-2 col-12 q-mb-none q-pt-md">
-                <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" label="ตำแหน่ง :"
-                  placeholder="" type="text" class="" :is-view="true">
-                </InputGroup>
-              </div>
-              <div class="col-lg-2 col-12 q-mb-none q-pt-md">
-                <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" label="ภาควิชา :"
-                  placeholder="" type="text" class="" :is-view="true">
-                </InputGroup>
-              </div>
-              <div class="col-lg-2 col-12 q-mb-none q-pt-md">
-                <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" label="ส่วนงาน :"
-                  placeholder="" type="text" class="" :is-view="true">
-                </InputGroup>
-              </div>
+                  <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" label="ตำแหน่ง :"
+                    placeholder="" type="text" class="" :is-view="true">
+                  </InputGroup>
+                </div>
+                <div class="col-lg-2 col-12 q-mb-none q-pt-md">
+                  <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" label="ภาควิชา :"
+                    placeholder="" type="text" class="" :is-view="true">
+                  </InputGroup>
+                </div>
+                <div class="col-lg-2 col-12 q-mb-none q-pt-md">
+                  <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" label="ส่วนงาน :"
+                    placeholder="" type="text" class="" :is-view="true">
+                  </InputGroup>
+                </div>
               </q-card-section>
-              
+
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
               <div class="col-lg-4 col-12 ">
@@ -182,9 +185,9 @@ const model = ref({
   fund3: null,
 });
 let options = [
-  { usernameId: 1, name: "นายศรันย์ เป็นเกย์" },
-  { usernameId: 2, name: "น้องมอส บูรพา" },
-  { usernameId: 3, name: "พรี่มอส 3ทาง" },
+  { usernameId: 1, name: "test1" },
+  { usernameId: 2, name: "test2" },
+  { usernameId: 3, name: "test3" },
 ];;
 const filter = ref({
   usernameId: null,

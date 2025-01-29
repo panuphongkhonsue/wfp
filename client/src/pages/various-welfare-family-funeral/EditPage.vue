@@ -3,12 +3,12 @@
     <template v-slot:page>
       <!--General Information Section -->
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
-        <div class="col-md-9 col-12">
+        <div :class="{ 'col-12': isView || isLoadings, 'col-md-9 col-12': !isView && !isLoadings }">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md q-py-md font-18 font-bold">
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
             </q-card-section>
-            <q-separator/>
+            <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-pt-md q-pb-sm font-16 font-bold">
               <div class="col-12 row wrap q-col-gutter-y-md">
                 <p class="col-lg-3 col-12 q-mb-none">
@@ -22,15 +22,17 @@
                 </p>
               </div>
               <div class="col-12 row wrap q-col-gutter-y-md">
-                <p class="col-lg-3 col-12 q-mb-none">ส่วนงาน : <span
-                    class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span></p>
-                <p class="col-lg col-12 q-mb-none">ภาควิชา : <span
-                    class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span></p>
+                <p class="col-lg-3 col-12 q-mb-none">
+                  ส่วนงาน : <span class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span>
+                </p>
+                <p class="col-lg col-12 q-mb-none">
+                  ภาควิชา : <span class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span>
+                </p>
               </div>
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-md-3 col-12">
+        <div class="col-md-3 col-12" v-if="!isView && !isLoadings">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md q-py-md font-18 font-bold">
               <p class="q-mb-none">สิทธิ์คงเหลือ</p>
@@ -43,26 +45,31 @@
           </q-card>
         </div>
       </div>
+
       <!-- Request Section -->
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
         <div class="col-md-9 col-12">
           <q-card flat bordered class="full-height">
-            <q-card-section class="col row">
-              <p class="q-px-md q-pt-md q-pb-md font-18 font-bold q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
-              <p class="q-px-md q-pt-md q-pb-md font-16 q-mb-none">(จ่ายจริงคนละไม่เกิน 5,000 บาท)</p>
+            <q-card-section class="col row q-pb-none">
+              <p class="q-pb-md font-18 font-bold q-pb-md">ข้อมูลการเบิกสวัสดิการ</p>
+              <p class="q-pl-md q-pb-md font-16 q-mb-none">(จ่ายจริงคนละไม่เกิน 5,000 บาท)</p>
             </q-card-section>
-            <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
-              <p class="col-12 q-mb-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
-              <div class="col-lg-6 col-12 q-mb-none">
-                <q-option-group class="q-gutter-y-sm" v-model="selection" type="radio" :options="options" />
-              </div>
-              <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
-                <div>{{ selection }}</div>
+            <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md  font-medium font-16 text-grey-9">
+              <p class="col-12 q-mb-none q-pt-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
+              <!-- <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
+                <q-input v-if="selection" v-model="nameInput" outlined dense label="ชื่อ-นามสกุล" class="" />
+              </div> -->
+              <div v-for="option in options" :key="option.value" class="col-12 row q-mb-none">
+                <div class="col-md-2"><q-radio v-model="selection" :val="option.value" :label="option.label"
+                    class="q-mr-md" />
+                </div>
+                <q-input v-if="selection === option.value" v-model="inputValues[option.value]" :data="model.fund ?? '-'"
+                  outlined dense placeholder="ชื่อ-นามสกุล" class="q-ml-md" />
               </div>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
               <div class="col-lg-4 col-12 ">
-                <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" is-require
+                <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? 'พรี่มอส'" is-require
                   label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
@@ -75,9 +82,10 @@
               <div class="q-pb-md q-mb-none font-16 font-bold">
                 <q-radio v-model="supwreath" val="wreathRequire" label="ค่าสนับสนุนค่าพวงหรีด" />
               </div>
-              <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายไม่เกิน 2,000 บาท ในนามมหาวิทยาลัย และไม่เกิน 2,000 บาท ในนามส่วนงาน)</p>
+              <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายไม่เกิน 2,000 บาท ในนามมหาวิทยาลัย และไม่เกิน
+                2,000 บาท ในนามส่วนงาน)</p>
             </q-card-section>
-            <q-separator  inset />
+            <q-separator inset />
             <q-card-section class="col row">
               <div class=" q-pb-md q-mb-none font-16 font-bold">
                 <q-checkbox v-model="suptransportation" label="ค่าสนับสนุนค่าพาหนะเหมาจ่าย" />
@@ -88,21 +96,6 @@
         </div>
 
         <div class="col-md-3 col-12">
-          <!-- <div class="q-pb-md">
-            <q-card flat bordered>
-              <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
-                <p class="q-mb-none">จำนวนเงินคงเหลือ</p>
-              </q-card-section>
-              <q-separator />
-              <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
-                <p class="col-12 q-mb-none">ค่าสมรส : 2,000</p>
-                <p class="col-12 q-mb-none">ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ : 2,000</p>
-                <p class="col-12 q-mb-none">ค่ารับขวัญบุตร : 1,000</p>
-                <p class="col-12 q-mb-none">กรณีประสบภัยพิบัติ : 10,000</p>
-              </q-card-section>
-            </q-card>
-          </div> -->
-
           <q-card flat bordered>
             <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
               <p class="q-mb-none">หลักฐานที่ต้องแนบ</p>
@@ -187,7 +180,8 @@ const options = [
   }
 ]
 const selection = ref(null)
-const suptransportation =  ref(false)
+const suptransportation = ref(false)
+const inputValues = ref({});
 const supwreath = ref('wreathRequire')
 
 const isError = ref({});
@@ -308,4 +302,11 @@ async function init() {
 //         { label: 'Friend request', value: 'friend'},
 //         { label: 'Picture uploaded', value: 'upload'}
 //       ]
+
+
+// const handleSelection = (value) => {
+//   if (!inputValues.value[value]) {
+//     inputValues.value[value] = "";
+//   }
+// };
 </script>

@@ -31,19 +31,11 @@
       </q-form>
     </template>
     <template v-slot:toolbar>
-      <div class="col-12 row font-bold font-14 q-col-gutter-x-md q-mb-md">
-        <p class="col q-ma-none">จำนวนเงินคงเหลือ (การเบิกสมรส) : 2,000</p>
-        <p class="col q-ma-none">จำนวนเงินคงเหลือ (การเบิกอุปสมบทหรือพิธีฮัจญ)์ : 2,000</p>
-        <p class="col q-ma-none">จำนวนเงินคง (รับขวัญบุตร) : 1,000</p>
-        <p class="col q-ma-none">จำนวนเงินคง (เหลือกรณีประสบภัยพิบัติ) : 10,000</p>
+      <div class="col-12 col-md-6 row font-bold font-16  q-col-gutter-x-md">
+        <p class="col q-ma-none">สิทธิ์คงเหลือ : 1</p>
+        <p class="col q-ma-none">จำนวนเงินการเบิกคงเหลือ : 3,000 </p>
       </div>
-      <div class="col-12 col-md-10 row font-bold font-14  q-col-gutter-x-md">
-        <p class="col q-ma-none">สิทธิ์คงเหลือ (การเบิกสมรส) : 1</p>
-        <p class="col q-ma-none">สิทธิ์คงเหลือ (การเบิกอุปสมบทหรือพิธีฮัจญ)์ : 1</p>
-        <p class="col q-ma-none">สิทธิ์คงเหลือ (รับขวัญบุตร) : -</p>
-        <p class="col q-ma-none">สิทธิ์คงเหลือ (กรณีภัยพิบัติ) : -</p>
-      </div>
-      <div class="col-12 col-md-2 flex justify-end">
+      <div class="col-12 col-md-6 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
           icon="add" :to="{ name: 'various_welfare_funeral_family_new' }" />
       </div>
