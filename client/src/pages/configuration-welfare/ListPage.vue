@@ -100,15 +100,30 @@
 <script setup>
 import InputGroup from "src/components/InputGroup.vue";
 import ListLayout from "src/layouts/ListLayout.vue";
-import { ref } from "vue";
-
+import { ref, onMounted, watch, onBeforeUnmount } from "vue";
+import { useRoute } from "vue-router";
+import { useListStore } from "src/stores/listStore";
+import { Notify } from "quasar";
 import {
   outlinedEdit,
 } from "@quasar/extras/material-icons-outlined";
+import axios from "axios";
+
 
 const clickEditIndex = ref(null);
+const modelDate = ref(null);
+const route = useRoute();
+const isLoading = ref(false);
+const listStore = useListStore();
+const tableRef = ref();
 
-const pagination = ref({ page: 1, rowsPerPage: 5 });
+const pagination = ref({
+  sortBy: "desc",
+  descending: false,
+  page: 1,
+  rowsPerPage: 20,
+});
+
 const filter = ref({
   keyword: null,
   welfareId: null,
@@ -160,4 +175,89 @@ function onClickEdit(index) {
     clickEditIndex.value = index;  // Set the row as being edited
   }
 }
+
+onMounted(async () => {
+  await init();
+});
+
+onBeforeUnmount(() => {
+  isLoading.value = false;
+  model.value = null;
+});
+
+watch(
+  () => filter.value.dateSelected,
+  (newValue) => {
+    modelDate.value = newValue.from + " - " + newValue.to;
+  }
+);
+
+watch(
+  () => route.query,
+  async () => {
+    await init();
+  }
+);
+
+async function init() {
+  const { keyword, dateSelected, statusId } = route.query;
+  if (Object.keys(route.query).length) {
+    filter.value.keyword = keyword ?? null;
+    filter.value.dateSelected = dateSelected ? JSON.parse(dateSelected) : null;
+    filter.value.statusId = statusId ?? null;
+  }
+  pagination.value.rowsPerPage = listStore.getState();
+  await tableRef.value.requestServerInteraction();
+}
+
+async function fetchFromServer() {
+  try {
+    // const result = await GspcApproveSerivce.list({
+    //   pageNo: page,
+    //   itemPerPage: count,
+    //   keyword: filter.value.keyword,
+    //   dateSelected: formatDateServer(filter.value.dateSelected),
+    //   endDate: formatDateServer(filter.value.endDate),
+    // });
+    const result = await axios.get('http://localhost:3001/sub-category/')
+    console.log(`Result : `, result);
+    pagination.value.rowsNumber = 5;
+    return;
+  } catch (error) {
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "Something wrong please try again later.",
+      position: "bottom-left",
+      type: "negative",
+    });
+  }
+}
+
+function onRequest(props) {
+  const { page, rowsPerPage, sortBy, descending } = props.pagination;
+  listStore.setState(rowsPerPage);
+  isLoading.value = true;
+  setTimeout(async () => {
+    try {
+      const returnedData = await fetchFromServer(
+        page,
+        rowsPerPage,
+        filter,
+        sortBy,
+        descending
+      );
+      if (returnedData) model.value.splice(0, model.value.length, ...returnedData);
+      pagination.value.page = page;
+      pagination.value.rowsPerPage = rowsPerPage;
+      pagination.value.sortBy = sortBy;
+      pagination.value.descending = descending;
+    } catch (error) {
+      Promise.reject(error)
+    }
+    isLoading.value = false;
+  }, 100);
+}
+
+
 </script>
