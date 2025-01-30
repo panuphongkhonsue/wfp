@@ -182,7 +182,7 @@ const routes = [
         path: 'welfare-management',
         name: 'welfare_management_list',
         meta: { breadcrumbs: [{ name: 'จัดการข้อมูลการเบิกสวัสดิการ' }] },
-        component: () => import('pages/IndexPage.vue'),
+        component: () => import('pages/welfare-management/ListPage.vue'),
       },
       {
         path: 'welfare-management-edit/:id',

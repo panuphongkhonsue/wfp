@@ -1,4 +1,4 @@
-<template>
+<template>blue
   <ListLayout title="สวัสดิการทั่วไป (ค่าตรวจสุขภาพ)">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
