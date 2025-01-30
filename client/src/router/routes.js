@@ -109,8 +109,8 @@ const routes = [
       {
         path: 'various-welfare-funeral-family',
         name: 'various_welfare_funeral_family_list',
-        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' }, { name: 'ค่าสงเคราะห์การเสียชีวิตครอบครัว' }] },
-        component: () => import('pages/IndexPage.vue'),
+        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' },{ name: 'ค่าสงเคราะห์การเสียชีวิตครอบครัว' }] },
+        component: () => import('pages/various-welfare-family-funeral/ListPage.vue'),
       },
       {
         path: 'various-welfare-funeral-family-new',
@@ -158,25 +158,25 @@ const routes = [
         path: 'funeral-welfare',
         name: 'funeral_welfare_list',
         meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }] },
-        component: () => import('pages/IndexPage.vue'),
+        component: () => import('pages/funeral-welfare/ListPage.vue'),
       },
       {
         path: 'funeral-welfare-new',
         name: 'funeral_welfare_new',
         meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }, { name: 'เบิกสวัสดิการ' }] },
-        component: () => import('pages/IndexPage.vue'),
+        component: () => import('pages/funeral-welfare/EditPage.vue'),
       },
       {
         path: 'funeral-welfare-edit/:id',
         name: 'funeral_welfare_edit',
         meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
-        component: () => import('pages/IndexPage.vue'),
+        component: () => import('pages/funeral-welfare/EditPage.vue'),
       },
       {
         path: 'funeral-welfare/:id',
         name: 'funeral_welfare_view',
         meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }, { name: 'ดูใบเบิกสวัสดิการ' }] },
-        component: () => import('pages/IndexPage.vue'),
+        component: () => import('pages/funeral-welfare/EditPage.vue'),
       },
       {
         path: 'configuration-welfare',
