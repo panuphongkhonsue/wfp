@@ -77,7 +77,6 @@ defineOptions({
 const listStore = useListStore();
 const router = useRouter();
 const route = useRoute();
-const modelDate = ref(null);
 const filter = ref({
   keyword: null,
 });
