@@ -1,4 +1,4 @@
-<template>blue
+<template>
   <ListLayout title="สวัสดิการทั่วไป (ค่าตรวจสุขภาพ)">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
@@ -54,7 +54,7 @@
           <div class="full-width row flex-center text-negative q-gutter-sm">
             <q-icon size="2em" :name="icon" />
             <span class="font-14 font-regular ">
-              Sorry, There isn't data from server.
+              ไม่พบข้อมูล
             </span>
           </div>
         </template>
