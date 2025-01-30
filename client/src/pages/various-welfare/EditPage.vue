@@ -3,7 +3,7 @@
     <template v-slot:page>
       <!--General Information Section -->
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
-        <div :class="{ 'col-12': isView || isLoadings, 'col-md-9 col-12': !isView && !isLoadings }">
+        <div :class="{ 'col-12': isView || isLoading, 'col-md-9 col-12': !isView && !isLoading }">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md q-py-md font-18 font-bold">
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
@@ -32,7 +32,7 @@
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-md-3 col-12" v-if="!isView && !isLoadings">
+        <div class="col-md-3 col-12" v-if="!isView && !isLoading">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md q-py-md font-18 font-bold">
               <p class="q-mb-none">สิทธิ์คงเหลือ</p>
@@ -80,7 +80,7 @@
           </q-card>
         </div>
         <div class="col-md-3 col-12">
-          <div class="q-pb-md" v-if="!isView && !isLoadings">
+          <div class="q-pb-md" v-if="!isView && !isLoading">
             <q-card flat bordered>
               <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
                 <p class="q-mb-none">จำนวนเงินคงเหลือ</p>
@@ -101,16 +101,16 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none font-18">ค่าสมรสโดยนิตินัย</p>
+              <p class="col-12 q-mb-none font-18 font-bold text-black ">ค่าสมรสโดยนิตินัย</p>
               <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none">2. สำเนาทะเบียนสมรส</p>
-              <p class="col-12 q-mb-none font-18">ค่าอุปสมบทหรือการไปประกอบพิธีฮัจญ์</p>
+              <p class="col-12 q-mb-none font-18 font-bold text-black ">ค่าอุปสมบทหรือการไปประกอบพิธีฮัจญ์</p>
               <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none">2. สำเนาคำสั่งลาอุปสมบท<br>หรือเอกสารประกอบพิธีฮัจญ์</p>
-              <p class="col-12 q-mb-none font-18">ค่ารับขวัญบุตรแรกเกิด</p>
+              <p class="col-12 q-mb-none font-18 font-bold text-black ">ค่ารับขวัญบุตรแรกเกิด</p>
               <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none">2. สำเนาสูติบัตรบุตร<br>หรือสำเนาทะเบียนรับรองบุตร</p>
-              <p class="col-12 q-mb-none font-18">ค่าประสบภัยพิบัติ</p>
+              <p class="col-12 q-mb-none font-18 font-bold text-black ">ค่าประสบภัยพิบัติ</p>
               <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none">2. รูปภาพ</p>
               <p class="col-12 q-mb-none">3. สำเนาทะเบียนบ้าน</p>
@@ -127,10 +127,10 @@
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'various_welfare_list' }" />
         <q-btn id="button-reject" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(4)" v-if="!isView && !isLoadings" />
+          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
         <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
           style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(3)"
-          v-if="!isView && !isLoadings" />
+          v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -177,7 +177,7 @@ const selection = ref(null)
 const isError = ref({});
 
 const isView = ref(false);
-const isLoadings = ref(false);
+const isLoading = ref(false);
 
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
@@ -185,7 +185,7 @@ const isEdit = computed(() => {
 
 onMounted(async () => {
   await init();
-  isLoadings.value = false;
+  isLoading.value = false;
   isEdit.value = false;
 });
 
@@ -284,7 +284,7 @@ async function submit() {
 
 async function init() {
   isView.value = route.meta.isView;
-  isLoadings.value = true;
+  isLoading.value = true;
 }
 
 // const options = [
