@@ -179,9 +179,15 @@ const routes = [
         component: () => import('pages/IndexPage.vue'),
       },
       {
+        path: 'configuration-welfare',
+        name: 'configuration_welfare',
+        meta: { breadcrumbs: [{ name: 'ตั้งค่าการเบิกสวัสดิการ' }] },
+        component: () => import('pages/configuration-welfare/ListPage.vue'),
+      },
+      {
         path: 'welfare-management',
         name: 'welfare_management_list',
-        meta: { breadcrumbs: [{ name: 'จัดการข้อมูลการเบิกสวัสดิการ' }] },
+        meta: { breadcrumbs: [{ name: 'จัดการการเบิกสวัสดิการ' }] },
         component: () => import('pages/welfare-management/ListPage.vue'),
       },
       {
