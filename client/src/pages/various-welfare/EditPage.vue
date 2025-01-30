@@ -39,8 +39,10 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">คงเหลือ 3,000 บาท</p>
-              <p class="col-12 q-mb-none">คงเหลือจำนวน 1 ครั้ง</p>
+              <p class="col-12 q-mb-none">ค่าสมรส : 1</p>
+                <p class="col-12 q-mb-none">ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ : 1</p>
+                <p class="col-12 q-mb-none">ค่ารับขวัญบุตร : -</p>
+                <p class="col-12 q-mb-none">กรณีประสบภัยพิบัติ : -</p>
             </q-card-section>
           </q-card>
         </div>
