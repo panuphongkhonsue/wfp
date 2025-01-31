@@ -1,7 +1,7 @@
-const Sequelize = require('sequelize');
 const sequelizePaginate = require('sequelize-paginate');
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  const reimbursementsGeneral = sequelize.define('reimbursementsGeneral', {
+  const model = sequelize.define('reimbursementsGeneral', {
     id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -18,6 +18,14 @@ module.exports = function(sequelize, DataTypes) {
     fund_sum_request: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
+    },
+    fund_receipt_patient_visit: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
+    fund_sum_request_patient_visit: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
     },
     status: {
       type: DataTypes.ENUM('DRAFT','WAIT_VERIFY','APPROVED'),
@@ -96,14 +104,6 @@ module.exports = function(sequelize, DataTypes) {
         model: 'categories',
         key: 'id'
       }
-    },
-    sub_categories_id: {
-      type: DataTypes.BIGINT,
-      allowNull: true,
-      references: {
-        model: 'sub_categories',
-        key: 'id'
-      }
     }
   }, {
     sequelize,
@@ -127,13 +127,6 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "fk_reimbursements_general_sub_categories1_idx",
-        using: "BTREE",
-        fields: [
-          { name: "sub_categories_id" },
-        ]
-      },
-      {
         name: "fk_reimbursements_general_categories1_idx",
         using: "BTREE",
         fields: [
@@ -142,7 +135,6 @@ module.exports = function(sequelize, DataTypes) {
       },
     ]
   });
-  sequelizePaginate.paginate(reimbursementsGeneral);
-
-  return reimbursementsGeneral;
+  sequelizePaginate.paginate(model);
+  return model;
 };

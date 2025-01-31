@@ -1,7 +1,7 @@
-const Sequelize = require('sequelize');
 const sequelizePaginate = require('sequelize-paginate');
-module.exports = function (sequelize, DataTypes) {
-  const reimbursementsAssistHasSubCategories = sequelize.define('reimbursementsAssistHasSubCategories', {
+const Sequelize = require('sequelize');
+module.exports = function(sequelize, DataTypes) {
+  const model = sequelize.define('reimbursementsAssistHasSubCategories', {
     reimbursements_assist_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -50,7 +50,6 @@ module.exports = function (sequelize, DataTypes) {
       },
     ]
   });
-  sequelizePaginate.paginate(reimbursementsAssistHasSubCategories);
-
-  return reimbursementsAssistHasSubCategories;
+  sequelizePaginate.paginate(model);
+  return model;
 };
