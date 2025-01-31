@@ -63,8 +63,8 @@
                 </InputGroup>
               </div>
               <div class="col-12 col-lg">
-                <InputGroup more-class="font-16 font-medium" label="วันที่ร้องขอ" :is-view="isView" clearable
-                  :data="model.date ?? '-'">
+                <InputGroup label="วันที่ร้องขอ" :is-view="isView" clearable
+                  :data="model.date ?? '-'" is-require>
                   <DatePicker class="col-12" is-dense v-model:model="model.date" v-model:dateShow="model.date"
                     for-id="date" :no-time="true" />
                 </InputGroup>

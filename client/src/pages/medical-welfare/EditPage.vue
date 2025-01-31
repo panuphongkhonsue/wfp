@@ -59,15 +59,13 @@
                 label="ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน 1,000 บาท ต่อครั้ง ปีนึงไม่เกิน 3 ครั้ง" />
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-sm font-16 text-grey-9">
-              <InputGroup more-class="font-16 font-medium" label="ตั้งแต่วันที่" :is-view="isView"
-                compclass="col-xs-12 col-lg-3 col-xl-2 q-mr-lg-xl" clearable
-                :data="model.startDate ?? '-'">
+              <InputGroup label="ตั้งแต่วันที่" :is-view="isView" compclass="col-xs-12 col-lg-3 col-xl-2 q-mr-lg-xl"
+                clearable :data="model.startDate ?? '-'" is-require>
                 <DatePicker class="col-12" is-dense v-model:model="model.startDate" v-model:dateShow="model.startDate"
                   for-id="start-date" :no-time="true" />
               </InputGroup>
-              <InputGroup more-class="font-16 font-medium" label="ถึงวันที่" :is-view="isView"
-                compclass="col-xs-12 col-lg-3 col-xl-2 q-ml-lg-xl" clearable
-                :data="model.endDate ?? '-'">
+              <InputGroup label="ถึงวันที่" :is-view="isView" compclass="col-xs-12 col-lg-3 col-xl-2 q-ml-lg-xl"
+                clearable :data="model.endDate ?? '-'" is-require>
                 <DatePicker is-dense v-model:model="model.endDate" v-model:dateShow="model.endDate" for-id="end-date"
                   :no-time="true" />
               </InputGroup>
@@ -75,8 +73,7 @@
             <q-card-section class="q-pt-none row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund-receipt" is-dense v-model="model.claimFundByReceipt"
                 :data="model.claimFundByReceipt ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน" placeholder="บาท"
-                type="number" class="" :is-view="isView"
-                compclass="col-xs-12 col-lg-3 col-xl-2 q-mr-lg-xl">
+                type="number" class="" :is-view="isView" compclass="col-xs-12 col-lg-3 col-xl-2 q-mr-lg-xl">
               </InputGroup>
               <InputGroup for-id="fund-claim" is-dense v-model="model.claimFund" :data="model.claimFund ?? '-'"
                 is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView"
