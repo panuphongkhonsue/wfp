@@ -71,7 +71,6 @@
       localStorage.removeItem('rememberedUsername');
     }
   
-    // ทำการ login ตาม logic ของระบบ เช่น API call
   };
   </script>
   
