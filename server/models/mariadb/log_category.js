@@ -1,7 +1,7 @@
 const sequelizePaginate = require('sequelize-paginate');
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  const model = sequelize.define('logSubCategory', {
+  const model = sequelize.define('logCategory', {
     id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -45,17 +45,17 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: Sequelize.Sequelize.fn('current_timestamp')
     },
-    sub_categories_id: {
+    categories_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
       references: {
-        model: 'sub_categories',
+        model: 'categories',
         key: 'id'
       }
     }
   }, {
     sequelize,
-    tableName: 'log_sub_category',
+    tableName: 'log_category',
     timestamps: false,
     indexes: [
       {
@@ -67,10 +67,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "fk_log_sub_category_sub_categories1_idx",
+        name: "fk_log_category_categories1_idx",
         using: "BTREE",
         fields: [
-          { name: "sub_categories_id" },
+          { name: "categories_id" },
         ]
       },
     ]
