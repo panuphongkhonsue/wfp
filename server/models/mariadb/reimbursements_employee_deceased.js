@@ -1,7 +1,7 @@
-const Sequelize = require('sequelize');
 const sequelizePaginate = require('sequelize-paginate');
-module.exports = function (sequelize, DataTypes) {
-  const reimbursementsEmployeeDeceased = sequelize.define('reimbursementsEmployeeDeceased', {
+const Sequelize = require('sequelize');
+module.exports = function(sequelize, DataTypes) {
+  const model = sequelize.define('reimbursementsEmployeeDeceased', {
     id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -12,19 +12,19 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     },
     fund_receipt: {
-      type: DataTypes.DECIMAL(10, 0),
+      type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
     fund_eligible: {
-      type: DataTypes.DECIMAL(10, 0),
+      type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
     fund_sum_request: {
-      type: DataTypes.DECIMAL(10, 0),
+      type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
     status: {
-      type: DataTypes.ENUM('DRAFT', 'WAIT_VERIFY', 'APPROVED'),
+      type: DataTypes.ENUM('DRAFT','WAIT_VERIFY','APPROVED'),
       allowNull: false
     },
     organizer: {
@@ -100,7 +100,6 @@ module.exports = function (sequelize, DataTypes) {
       },
     ]
   });
-  sequelizePaginate.paginate(reimbursementsEmployeeDeceased);
-
-  return reimbursementsEmployeeDeceased;
+  sequelizePaginate.paginate(model);
+  return model;
 };
