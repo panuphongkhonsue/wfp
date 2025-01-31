@@ -220,9 +220,13 @@ const routes = [
         meta: { breadcrumbs: [{ name: 'รายงาน' }] },
         component: () => import('pages/IndexPage.vue'),
       },
+      
     ],
   },
-
+  {
+    path: '/login',
+    component: () => import('pages/login/LoginPage.vue'),
+  },
   // Always leave this as last one,
   // but you can also remove it
   {
