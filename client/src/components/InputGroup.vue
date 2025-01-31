@@ -1,5 +1,5 @@
 <template>
-  <div :class="compclass ? compclass : 'col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2'">
+  <div :class="compclass ? compclass : 'col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 text-grey-9'">
     <p :class="[isRequire ? 'require' : '', moreClass ? moreClass : 'font-semi-bold font-14']"
       class="q-mb-sm">{{ label }} </p>
     <div v-if="!isView">

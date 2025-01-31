@@ -124,7 +124,7 @@ let options = [
   { statusId: 1, name: "บันทึกฉบับร่าง" },
   { statusId: 2, name: "รอตรวจสอบ" },
   { statusId: 3, name: "อนุมัติ" },
-];;
+];
 const modelDate = ref(null);
 const filter = ref({
   keyword: null,
