@@ -1,3 +1,4 @@
+const sequelizePaginate = require('sequelize-paginate');
 var DataTypes = require("sequelize").DataTypes;
 var _categories = require("./categories");
 var _children = require("./children");
@@ -78,8 +79,6 @@ function initModels(sequelize) {
   subCategories.hasMany(reimbursementsAssistHasSubCategories, { as: "reimbursements_assist_has_sub_categories", foreignKey: "sub_categories_id"});
   reimbursementsChildrenEducation.belongsTo(subCategories, { as: "sub_category", foreignKey: "sub_categories_id"});
   subCategories.hasMany(reimbursementsChildrenEducation, { as: "reimbursements_children_educations", foreignKey: "sub_categories_id"});
-  reimbursementsGeneral.belongsTo(subCategories, { as: "sub_category", foreignKey: "sub_categories_id"});
-  subCategories.hasMany(reimbursementsGeneral, { as: "reimbursements_generals", foreignKey: "sub_categories_id"});
   children.belongsTo(users, { as: "user", foreignKey: "users_id"});
   users.hasMany(children, { as: "children", foreignKey: "users_id"});
   reimbursementsAssist.belongsTo(users, { as: "created_by_user", foreignKey: "created_by"});

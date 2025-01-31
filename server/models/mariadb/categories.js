@@ -1,7 +1,7 @@
-const Sequelize = require('sequelize');
 const sequelizePaginate = require('sequelize-paginate');
-module.exports = function (sequelize, DataTypes) {
-  const categories = sequelize.define('categories', {
+const Sequelize = require('sequelize');
+module.exports = function(sequelize, DataTypes) {
+  const model = sequelize.define('categories', {
     id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -12,11 +12,11 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     },
     fund: {
-      type: DataTypes.DECIMAL(10, 0),
+      type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },
     per_times: {
-      type: DataTypes.DECIMAL(10, 0),
+      type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },
     per_years: {
@@ -63,7 +63,6 @@ module.exports = function (sequelize, DataTypes) {
       },
     ]
   });
-  sequelizePaginate.paginate(categories);
-
-  return categories;
+  sequelizePaginate.paginate(model);
+  return model;
 };
