@@ -20,7 +20,7 @@
                 v-model="username" 
                 label="Username" 
                 :rules="[val => !!val || 'กรุณากรอก Username']"
-              />
+              />s
               <!-- Password -->
               <q-input 
                 v-model="password" 
@@ -71,7 +71,6 @@
       localStorage.removeItem('rememberedUsername');
     }
   
-    // ทำการ login ตาม logic ของระบบ เช่น API call
   };
   </script>
   
