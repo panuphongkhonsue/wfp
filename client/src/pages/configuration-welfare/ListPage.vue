@@ -107,8 +107,8 @@ import { Notify } from "quasar";
 import {
   outlinedEdit,
 } from "@quasar/extras/material-icons-outlined";
-import axios from "axios";
-
+import subCategoryService from "src/boot/service/subCategoryService"
+import categoryService from "src/boot/service/categoryService";
 
 const clickEditIndex = ref(null);
 const modelDate = ref(null);
@@ -219,8 +219,10 @@ async function fetchFromServer() {
     //   dateSelected: formatDateServer(filter.value.dateSelected),
     //   endDate: formatDateServer(filter.value.endDate),
     // });
-    const result = await axios.get('http://localhost:3001/sub-category/')
-    console.log(`Result : `, result);
+    const subCategory = await subCategoryService.getSubCategory();
+    console.log(`subCategory : `, subCategory.data);
+    const category = await categoryService.getCategory();
+    console.log(`category : `, category.data);
     pagination.value.rowsNumber = 5;
     return;
   } catch (error) {
