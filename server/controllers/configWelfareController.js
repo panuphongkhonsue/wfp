@@ -1,6 +1,5 @@
 const BaseController = require('./BaseControllers');
 const { viewCategoryWelfareSub } = require('../models/mariadb');
-const { isNullOrEmpty } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('configWelfareController');
 
@@ -31,7 +30,6 @@ class Controller extends BaseController {
             next(error);
         }
     }
-    
     
 }
 

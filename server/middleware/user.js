@@ -1,4 +1,4 @@
-const { checkRequire, isNullOrEmpty } = require('../controllers/utility');
+const { isNullOrEmpty } = require('../controllers/utility');
 const bcrypt = require('bcryptjs');
 const { initLogger } = require('../logger');
 const logger = initLogger('UserValidator');

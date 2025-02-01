@@ -17,6 +17,8 @@ const userRouter = require('./routes/user');
 const subCategoryRouter = require('./routes/subCategory');
 const categoryRouter = require('./routes/category');
 const configWelfareRouter = require('./routes/configWelfare');
+const logCategoryRouter = require('./routes/logCategory');
+const logSubCategoryRouter = require('./routes/logSubCategory');
 
 var app = express();
 app.set('trust proxy', true);
@@ -55,6 +57,8 @@ app.use('/user', auth, userRouter);
 app.use('/sub-category', auth, subCategoryRouter)
 app.use('/category', auth, categoryRouter)
 app.use('/config-welfare', auth, configWelfareRouter)
+app.use('/log-category', auth, logCategoryRouter)
+app.use('/log-sub-category', auth, logSubCategoryRouter)
 
 // error handling
 app.use((error, req, res, next) => {

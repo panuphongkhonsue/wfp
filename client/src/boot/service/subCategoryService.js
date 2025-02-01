@@ -6,4 +6,8 @@ export default {
   getSubCategory() {
     return api.get(`${path}/`);
   }
+  ,
+  updateSubCategory(subCategoryId, updateData){
+    return api.put(`${path}/${subCategoryId}`, updateData)
+  }
 };

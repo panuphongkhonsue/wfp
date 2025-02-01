@@ -2,9 +2,9 @@
   <ListLayout title="จัดการข้อมูลการเบิกสวัสดิการ">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
-        
+
         <div class="content-center col-12 col-md-4 col-lg-3">
-          <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm" outlined v-model="filter.welfareId"
+          <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm font-14 font-regular" popup-content-class="font-14 font-regular" outlined v-model="filter.welfareId"
             :options="optionWelfareType" label="ประเภทสวัสดิการ" dense clearable option-value="welfareId" emit-value
             map-options option-label="name">
             <template v-slot:no-option>
@@ -14,7 +14,7 @@
             </template>
           </q-select>
         </div>
-        
+
         <div class="content-center q-pt-lg q-pt-md-xs col-2">
           <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm q-pt-sm weight-8 q-mt-xs"
             dense type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
@@ -48,8 +48,8 @@
             {{ formatNumber(props.row.fund) }}
           </q-td>
           <q-td v-else :props="props">
-            <q-input class="font-14 font-regular" dense v-model="payload.fund" outlined autocomplete="off"
-              color="dark" type="number" :forId="'input-fund' + props.row.id" :placeholder=props.row.fund>
+            <q-input class="font-14 font-regular" dense v-model="payload.fund" outlined autocomplete="off" color="dark"
+              type="number" :forId="'input-fund' + props.row.id" :placeholder=props.row.fund>
             </q-input>
           </q-td>
         </template>
@@ -83,9 +83,9 @@
             </a>
           </q-td>
           <q-td v-else :props="props">
-            <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-md weight-8"
-            dense type="submit" label="บันทึก" no-caps :loading="isLoading" />
-            {{ props.row }}
+            <q-btn @click="updateConfigWelfare(props.row)" id="button-search"
+              class="font-medium bg-blue-10 text-white font-16 q-px-md weight-8" dense type="submit" label="บันทึก"
+              no-caps :loading="isLoading" />
           </q-td>
         </template>
 
@@ -107,11 +107,14 @@ import {
   outlinedEdit,
 } from "@quasar/extras/material-icons-outlined";
 import configWelfareService from "src/boot/service/configWelfareService";
-import {formatNumber} from "src/components/format"
+import { formatNumber } from "src/components/format"
 
 import { useAuthStore } from "src/stores/authStore";
+import categoryService from "src/boot/service/categoryService";
+import subCategoryService from "src/boot/service/subCategoryService";
+import logCategoryService from "src/boot/service/logCategoryService";
+import logSubCategoryService from "src/boot/service/logSubCategoryService";
 
-const authStore = useAuthStore();
 const clickEditIndex = ref(null);
 const modelDate = ref(null);
 const route = useRoute();
@@ -126,9 +129,31 @@ const payload = ref(
     perYears: null,
   }
 );
+const payloadLogCategory = ref(
+  {
+    name: null,
+    fundOld: null,
+    fundNew: null,
+    perTimesOld: null,
+    perTimesNew: null,
+    perYearsOld: null,
+    perYearsNew: null,
+    categoryId: null,
+  }
+);
+const payloadLogSubCategory = ref(
+  {
+    name: null,
+    fundOld: null,
+    fundNew: null,
+    perTimesOld: null,
+    perTimesNew: null,
+    perYearsOld: null,
+    perYearsNew: null,
+    subCategoryId: null,
+  }
+);
 const pagination = ref({
-  sortBy: "desc",
-  descending: false,
   page: 1,
   rowsPerPage: 20,
 });
@@ -156,7 +181,7 @@ const columns = [
 ];
 
 const model = ref([
-  
+
 ]);
 
 function onClickEdit(index) {
@@ -170,7 +195,6 @@ function onClickEdit(index) {
 
 onMounted(async () => {
   await init();
-  authStore.setToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJuYW1lIjoiIiwiZW1haWwiOiIiLCJwb3NpdGlvbiI6IuC4reC4suC4iOC4suC4o-C4ouC5jCIsImRlcGFydG1lbnQiOiLguKrguJbguLLguJrguLHguJnguIHguLLguKPguKjguLbguIHguKnguLIiLCJzZWN0b3IiOiLguKfguLTguKjguKfguIHguKPguKPguKHguIvguK3guJ_guJXguYzguYHguKfguKPguYwiLCJyb2xlSUQiOjR9LCJyb2xlIjp7ImlkIjo0LCJuYW1lIjoi4Lic4Li54LmJ4LiU4Li54LmB4Lil4Lij4Liw4Lia4LiaIn0sImlhdCI6MTczODMzOTkxOCwiZXhwIjoxNzM4NDI2MzE4fQ.aXVtg5AuLMp2ERYH4b09Uh0FCLAhkTIWpCDeqIAPCSM");
 });
 
 onBeforeUnmount(() => {
@@ -201,29 +225,48 @@ async function init() {
         : Number(welfareId)
       : null;
   }
+  payload.value = {
+    fund: null,
+    perTimes: null,
+    perYears: null
+  };
+  payloadLogCategory.value = 
+  {
+    name: null,
+    fundOld: null,
+    fundNew: null,
+    perTimesOld: null,
+    perTimesNew: null,
+    perYearsOld: null,
+    perYearsNew: null,
+    categoryId: null
+  };
+  payloadLogSubCategory.value =
+  {
+    name: null,
+    fundOld: null,
+    fundNew: null,
+    perTimesOld: null,
+    perTimesNew: null,
+    perYearsOld: null,
+    perYearsNew: null,
+    subCategoryId: null,
+  }
+  clickEditIndex.value = null;  // If the same row is clicked again, toggle it off
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
 }
 
-async function fetchFromServer() {
+async function fetchFromServer(page, rowPerPage, filters) {
   try {
     const allConfigWelfare = await configWelfareService.getConfigWelfare({
-      welfareId : filter.value.welfareId ?? '', 
-      page : pagination.value.page,
-      itemPerPage : pagination.value.rowsPerPage,
+      welfareId: filters.value.welfareId ?? '',
+      page: page,
+      itemPerPage: rowPerPage,
     });
+    pagination.value.rowsNumber = allConfigWelfare.data.total;
     console.log(`configWelfare : `, allConfigWelfare)
-    model.value = allConfigWelfare.data.docs.map(item => ({
-      welfareId: item.welfare_id,
-      welfareType: item.welfare_name,
-      subCategory: item.category_name,
-      description: item.sub_category_name ?? '-',
-      fund: item.category_fund ?? item.sub_category_fund ?? '-',
-      perYears: item.category_per_years ?? item.sub_category_per_years ?? '-',
-      perTimes: item.category_per_times ?? item.sub_category_per_times ?? '-',
-    }));
-    pagination.value.rowsNumber = 5;
-    return;
+    return allConfigWelfare.data.docs;
   } catch (error) {
     Notify.create({
       message:
@@ -236,7 +279,7 @@ async function fetchFromServer() {
 }
 
 function onRequest(props) {
-  const { page, rowsPerPage, sortBy, descending } = props.pagination;
+  const { page, rowsPerPage} = props.pagination;
   listStore.setState(rowsPerPage);
   isLoading.value = true;
   setTimeout(async () => {
@@ -245,14 +288,24 @@ function onRequest(props) {
         page,
         rowsPerPage,
         filter,
-        sortBy,
-        descending
       );
-      if (returnedData) model.value.splice(0, model.value.length, ...returnedData);
+      model.value = returnedData.map(item => ({
+      welfareId: item.welfare_id,
+      welfareType: item.welfare_name,
+      subCategory: item.category_name,
+      description: item.sub_category_name ?? '-',
+      fund: item.category_fund ?? item.sub_category_fund ?? '-',
+      perYears: item.category_per_years ?? item.sub_category_per_years ?? '-',
+      perTimes: item.category_per_times ?? item.sub_category_per_times ?? '-',
+      categoryId: item.category_id,
+      categoryFund: item.category_fund,
+      categoryName: item.category_name,
+      subCategoryId: item.sub_category_id,
+      subCategoryFund: item.sub_category_fund,
+      subCategoryName: item.sub_category_name
+    }));
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
-      pagination.value.sortBy = sortBy;
-      pagination.value.descending = descending;
     } catch (error) {
       Promise.reject(error)
     }
@@ -269,5 +322,133 @@ function search() {
   });
 }
 
+async function updateConfigWelfare(propsRowData) {
+  try {
+    let validateMessage = "";
+
+    if (payload.value.fund == null && payload.value.perYears == null && payload.value.perTimes == null) {
+      validateMessage = "ข้อมูลไม่ได้ถูกแก้ไข";
+    }
+    else {
+      if (payload.value.fund != null) {
+        if (payload.value.fund <= 0) {
+          validateMessage = "ข้อมูลเพดานเงินไม่ถูกต้อง";
+        }
+      }
+      else{
+        if(propsRowData.categoryFund){
+          payload.value.fund = propsRowData.categoryFund;
+        }
+        else{
+          payload.value.fund = propsRowData.subCategoryFund;
+        }
+      }
+      
+      if (payload.value.perYears != null) {
+        if (payload.value.perYears < 0) {
+          validateMessage = "ข้อมูลจำนวนครั้ง(ต่อปี)ไม่ถูกต้อง";
+        }
+        else if(payload.value.perYears == 0){
+          payload.value.perYears = null;
+        }
+      }
+      else{
+        if(propsRowData.categoryFund){
+          payload.value.perYears = propsRowData.category_per_years;
+        }
+        else{
+          payload.value.perYears = propsRowData.sub_category_per_years;
+        }
+      }
+      if (payload.value.perTimes != null) {
+        if (payload.value.perTimes < 0) {
+          validateMessage = "ข้อมูลครั้งละไม่เกินไม่ถูกต้อง";
+        }
+        else if(payload.value.perTimes == 0){
+          payload.value.perTimes = null;
+        }
+        else if(payload.value.perTimes > payload.value.fund){
+          validateMessage = "ข้อมูลครั้งละไม่เกินสูงกว่าเพดานเงิน";
+        }
+      }
+      else{
+        if(propsRowData.categoryFund){
+          payload.value.perTimes = propsRowData.category_perTimes;
+        }
+        else{
+          payload.value.perTimes = propsRowData.sub_category_perTimes;
+        }
+      }
+    }
+    if (validateMessage) {
+      Notify.create({
+        message: validateMessage,
+        position: "bottom-left",
+        type: "negative",
+      });
+      clickEditIndex.value = null; // Reset the editing state
+      return;
+    }
+
+    payloadLogCategory.value = (
+      {
+        name: propsRowData.categoryName,
+        fundOld: propsRowData.categoryFund,
+        fundNew: payload.value.fund,
+        perTimesOld: propsRowData.perTimes === '-' ? null : propsRowData.perTimes,
+        perTimesNew: payload.value.perTimes === '-' ? null : payload.value.perTimes,
+        perYearsOld: propsRowData.perYears === '-' ? null : propsRowData.perYears,
+        perYearsNew: payload.value.perYears === '-' ? null : payload.value.perYears,
+        categoryId: propsRowData.categoryId === '-' ? null : propsRowData.categoryId
+      }
+    );
+
+    payloadLogSubCategory.value = (
+      {
+        name: propsRowData.subCategoryName,
+        fundOld: propsRowData.subCategoryFund,
+        fundNew: payload.value.fund,
+        perTimesOld: propsRowData.perTimes === '-' ? null : propsRowData.perTimes,
+        perTimesNew: payload.value.perTimes === '-' ? null : payload.value.perTimes,
+        perYearsOld: propsRowData.perYears === '-' ? null : propsRowData.perYears,
+        perYearsNew: payload.value.perYears === '-' ? null : payload.value.perYears,
+        subCategoryId: propsRowData.subCategoryId === '-' ? null : propsRowData.subCategoryId
+      }
+    );
+
+    if (propsRowData.categoryFund) {
+      const response = await categoryService.updateCategory(propsRowData.categoryId, payload.value);
+      Notify.create({
+        message: "Success",
+        position: "bottom-left",
+        type: "positive",
+      });
+      
+      const responseLogCategory = await logCategoryService.addLogCategory(payloadLogCategory.value);
+
+      await init();
+      console.log("ResponseLog: ", responseLogCategory)
+      console.log("ResponseCategory: ", response.data.message);
+    }
+    else {
+      const response = await subCategoryService.updateSubCategory(propsRowData.subCategoryId, payload.value);
+      Notify.create({
+        message: "Success",
+        position: "bottom-left",
+        type: "positive",
+      });
+
+      console.log(propsRowData)
+
+      const responseLogSubCategory = await logSubCategoryService.addLogSubCategory(payloadLogSubCategory.value);
+
+      await init();
+      console.log("ResponseLog: ", responseLogSubCategory)
+      console.log(response.data.message);
+    }
+  } catch (error) {
+    console.log(`Error : `, error)
+  }
+}
 
 </script>

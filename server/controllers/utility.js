@@ -24,4 +24,10 @@ const checkFilterNull = (whereObj, query) => {
     return whereObjCopy;
 };
 
-module.exports = { isNullOrEmpty, checkFilterNull, checkRequire };
+const checkValueMinus = (value) => {
+    if(value < 0){
+        return true;
+    }
+};
+
+module.exports = { isNullOrEmpty, checkFilterNull, checkRequire, checkValueMinus };

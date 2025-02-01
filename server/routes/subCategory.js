@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 const subCategoryController = require('../controllers/subCategoryController');
-const { authPermission, bindFilter} = require('../middleware/user')
+const { bindUpdate, authPermission } = require('../middleware/configWelfare')
 
-router.get('/', authPermission, bindFilter ,subCategoryController.list);
+router.get('/', authPermission ,subCategoryController.list);
+router.put('/:id', authPermission, bindUpdate, subCategoryController.update);
 module.exports = router;

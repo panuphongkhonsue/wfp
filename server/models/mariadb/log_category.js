@@ -3,6 +3,7 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   const model = sequelize.define('logCategory', {
     id: {
+      autoIncrement: true,
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true
@@ -21,19 +22,19 @@ module.exports = function(sequelize, DataTypes) {
     },
     per_times_old: {
       type: DataTypes.DECIMAL(10,0),
-      allowNull: false
+      allowNull: true
     },
     per_times_new: {
       type: DataTypes.DECIMAL(10,0),
-      allowNull: false
+      allowNull: true
     },
     per_years_old: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     },
     per_years_new: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     },
     created_at: {
       type: DataTypes.DATE,
