@@ -14,6 +14,9 @@ const auth = require('./middleware/auth');
 const indexRouter = require('./routes/index');
 const accountRouter = require('./routes/account');
 const userRouter = require('./routes/user');
+const subCategoryRouter = require('./routes/subCategory');
+const categoryRouter = require('./routes/category');
+const configWelfareRouter = require('./routes/configWelfare');
 
 var app = express();
 app.set('trust proxy', true);
@@ -49,6 +52,9 @@ app.use(cookieParser());
 app.use('/', indexRouter);
 app.use('/account', accountRouter);
 app.use('/user', auth, userRouter);
+app.use('/sub-category', auth, subCategoryRouter)
+app.use('/category', auth, categoryRouter)
+app.use('/config-welfare', auth, configWelfareRouter)
 
 // error handling
 app.use((error, req, res, next) => {

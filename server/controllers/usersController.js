@@ -38,6 +38,7 @@ class Controller extends BaseController {
                 ],
                 where: whereObj
             });
+            
             if (userDataList) {
                 var userList = {};
                 userList.pagination = {

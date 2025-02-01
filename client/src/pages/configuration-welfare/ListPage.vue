@@ -2,15 +2,10 @@
   <ListLayout title="จัดการข้อมูลการเบิกสวัสดิการ">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
-        <div class="col-12 col-md-4 col-lg-3">
-          <InputGroup more-class="font-16 font-medium" for-id="requesId" is-dense v-model="filter.keyword" label="ค้นหา"
-            placeholder="ค้นหาจากเลขที่ใบเบิก">
-          </InputGroup>
-        </div>
-
-        <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
+        
+        <div class="content-center col-12 col-md-4 col-lg-3">
           <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm" outlined v-model="filter.welfareId"
-            :options="optionWelfareType" label="ประเภทสวัสดิการ" multiple dense clearable option-value="welfareId" emit-value
+            :options="optionWelfareType" label="ประเภทสวัสดิการ" dense clearable option-value="welfareId" emit-value
             map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
@@ -48,44 +43,49 @@
           </div>
         </template>
 
-        <template v-slot:body-cell-tools="props">
-          <q-td :props="props">
-            <a @click.stop.prevent="onClickEdit(props.rowIndex)" class="text-dark q-py-sm q-px-xs cursor-pointer">
-              <q-icon :name="outlinedEdit" size="xs" color="blue" />
-            </a>
-          </q-td>
-        </template>
-
         <template v-slot:body-cell-fund="props">
-          <q-td v-if="clickEditIndex !== props.rowIndex" :props="props" class="text-center text-grey-9">
-            {{ props.row.fund }}
+          <q-td v-if="clickEditIndex !== props.rowIndex" :props="props" class="text-center">
+            {{ formatNumber(props.row.fund) }}
           </q-td>
-          <q-td v-else :props="props" class="text-grey-9">
-            <q-input class="font-14 font-regular" dense v-model="props.row.fund" outlined autocomplete="off"
+          <q-td v-else :props="props">
+            <q-input class="font-14 font-regular" dense v-model="payload.fund" outlined autocomplete="off"
               color="dark" type="number" :forId="'input-fund' + props.row.id" :placeholder=props.row.fund>
             </q-input>
           </q-td>
         </template>
 
         <template v-slot:body-cell-perYears="props">
-          <q-td v-if="clickEditIndex !== props.rowIndex" :props="props" class="text-center text-grey-9">
+          <q-td v-if="clickEditIndex !== props.rowIndex" :props="props" class="text-center">
             {{ props.row.perYears }}
           </q-td>
-          <q-td v-else :props="props" class="text-grey-9">
-            <q-input class="font-14 font-regular" dense v-model="props.row.perYears" outlined autocomplete="off"
+          <q-td v-else :props="props">
+            <q-input class="font-14 font-regular" dense v-model="payload.perYears" outlined autocomplete="off"
               color="dark" type="number" :forId="'input-per-years' + props.row.id" :placeholder=props.row.perYears>
             </q-input>
           </q-td>
         </template>
 
         <template v-slot:body-cell-perTimes="props">
-          <q-td v-if="clickEditIndex !== props.rowIndex" :props="props" class="text-center text-grey-9">
-            {{ props.row.perTimes }}
+          <q-td v-if="clickEditIndex !== props.rowIndex" :props="props" class="text-center">
+            {{ formatNumber(props.row.perTimes) }}
           </q-td>
-          <q-td v-else :props="props" class="text-grey-9">
-            <q-input class="font-14 font-regular" dense v-model="props.row.perTimes" outlined autocomplete="off"
+          <q-td v-else :props="props">
+            <q-input class="font-14 font-regular" dense v-model="payload.perTimes" outlined autocomplete="off"
               color="dark" type="number" :forId="'input-per-times' + props.row.id" :placeholder=props.row.perTimes>
             </q-input>
+          </q-td>
+        </template>
+
+        <template v-slot:body-cell-tools="props">
+          <q-td v-if="clickEditIndex !== props.rowIndex" :props="props">
+            <a @click.stop.prevent="onClickEdit(props.rowIndex)" class="text-dark q-py-sm q-px-xs cursor-pointer">
+              <q-icon :name="outlinedEdit" size="xs" color="blue" />
+            </a>
+          </q-td>
+          <q-td v-else :props="props">
+            <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-md weight-8"
+            dense type="submit" label="บันทึก" no-caps :loading="isLoading" />
+            {{ props.row }}
           </q-td>
         </template>
 
@@ -98,58 +98,65 @@
 </template>
 
 <script setup>
-import InputGroup from "src/components/InputGroup.vue";
 import ListLayout from "src/layouts/ListLayout.vue";
-import { ref } from "vue";
-
+import { ref, onMounted, watch, onBeforeUnmount } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useListStore } from "src/stores/listStore";
+import { Notify } from "quasar";
 import {
   outlinedEdit,
 } from "@quasar/extras/material-icons-outlined";
+import configWelfareService from "src/boot/service/configWelfareService";
+import {formatNumber} from "src/components/format"
 
+import { useAuthStore } from "src/stores/authStore";
+
+const authStore = useAuthStore();
 const clickEditIndex = ref(null);
+const modelDate = ref(null);
+const route = useRoute();
+const router = useRouter();
+const isLoading = ref(false);
+const listStore = useListStore();
+const tableRef = ref();
+const payload = ref(
+  {
+    fund: null,
+    perTimes: null,
+    perYears: null,
+  }
+);
+const pagination = ref({
+  sortBy: "desc",
+  descending: false,
+  page: 1,
+  rowsPerPage: 20,
+});
 
-const pagination = ref({ page: 1, rowsPerPage: 5 });
 const filter = ref({
-  keyword: null,
   welfareId: null,
 });
 
 let optionWelfareType = [
   { welfareId: 1, name: "สวัสดิการทั่วไป" },
-  { welfareId: 2, name: "สวัสดิการค่าสงเคราะห์ต่างๆ" },
-  { welfareId: 3, name: "สวัสดิการค่าเทอมบุตร" },
+  { welfareId: 2, name: "สวัสดิการค่าสงเคราะห์ต่าง ๆ" },
+  { welfareId: 3, name: "สวัสดิการค่าสงเคราะห์การเสียชีวิตของผู้ปฏิบัติงาน" },
+  { welfareId: 4, name: "สวัสดิการเกี่ยวกับการศึกษาของบุตร" },
 ];
 
 const columns = [
-  { name: "index", label: "ลำดับ", align: "left", field: "index" },
+  { name: "index", label: "ลำดับ", align: "center", field: "index" },
   { name: "welfareType", label: "ประเภทสวัสดิการ", align: "left", field: "welfareType" },
   { name: "subCategory", label: "ประเภทย่อย", align: "left", field: "subCategory" },
   { name: "description", label: "รายละเอียดเพิ่มเติม", align: "left", field: "description" },
-  { name: "fund", label: "เพดานเงิน", align: "left", field: "fund" },
-  { name: "perYears", label: "จำนวนครั้ง (ต่อปี)", align: "left", field: "perYears" },
-  { name: "perTimes", label: "ครั้งละไม่เกิน", align: "left", field: "perTimes" },
-  { name: "tools", label: "จัดการ", align: "left", field: "tools" },
+  { name: "fund", label: "เพดานเงิน", align: "right", field: (row) => row.fund ?? "-" },
+  { name: "perYears", label: "จำนวนครั้ง (ต่อปี)", align: "right", field: "perYears" },
+  { name: "perTimes", label: "ครั้งละไม่เกิน", align: "right", field: "perTimes" },
+  { name: "tools", label: "จัดการ", align: "center", field: "tools" },
 ];
 
 const model = ref([
-  {
-    id: 1,
-    welfareType: 'สวัสดิการทั่วไป',
-    subCategory: 'ค่าตรวจสุขภาพ',
-    description: '-',
-    fund: '3,000',
-    perYears: '-',
-    perTimes: '-',
-  },
-  {
-    id: 2,
-    welfareType: 'สวัสดิการทั่วไป',
-    subCategory: 'ค่าทำฟัน',
-    description: '-',
-    fund: '2,000',
-    perYears: '3',
-    perTimes: '-',
-  },
+  
 ]);
 
 function onClickEdit(index) {
@@ -160,4 +167,107 @@ function onClickEdit(index) {
     clickEditIndex.value = index;  // Set the row as being edited
   }
 }
+
+onMounted(async () => {
+  await init();
+  authStore.setToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxLCJuYW1lIjoiIiwiZW1haWwiOiIiLCJwb3NpdGlvbiI6IuC4reC4suC4iOC4suC4o-C4ouC5jCIsImRlcGFydG1lbnQiOiLguKrguJbguLLguJrguLHguJnguIHguLLguKPguKjguLbguIHguKnguLIiLCJzZWN0b3IiOiLguKfguLTguKjguKfguIHguKPguKPguKHguIvguK3guJ_guJXguYzguYHguKfguKPguYwiLCJyb2xlSUQiOjR9LCJyb2xlIjp7ImlkIjo0LCJuYW1lIjoi4Lic4Li54LmJ4LiU4Li54LmB4Lil4Lij4Liw4Lia4LiaIn0sImlhdCI6MTczODMzOTkxOCwiZXhwIjoxNzM4NDI2MzE4fQ.aXVtg5AuLMp2ERYH4b09Uh0FCLAhkTIWpCDeqIAPCSM");
+});
+
+onBeforeUnmount(() => {
+  isLoading.value = false;
+  model.value = null;
+});
+
+watch(
+  () => filter.value.dateSelected,
+  (newValue) => {
+    modelDate.value = newValue.from + " - " + newValue.to;
+  }
+);
+
+watch(
+  () => route.query,
+  async () => {
+    await init();
+  }
+);
+
+async function init() {
+  const { welfareId } = route.query;
+  if (Object.keys(route.query).length) {
+    filter.value.welfareId = welfareId
+      ? Array.isArray(welfareId)
+        ? welfareId.map(Number)
+        : Number(welfareId)
+      : null;
+  }
+  pagination.value.rowsPerPage = listStore.getState();
+  await tableRef.value.requestServerInteraction();
+}
+
+async function fetchFromServer() {
+  try {
+    const allConfigWelfare = await configWelfareService.getConfigWelfare({
+      welfareId : filter.value.welfareId ?? '', 
+      page : pagination.value.page,
+      itemPerPage : pagination.value.rowsPerPage,
+    });
+    console.log(`configWelfare : `, allConfigWelfare)
+    model.value = allConfigWelfare.data.docs.map(item => ({
+      welfareId: item.welfare_id,
+      welfareType: item.welfare_name,
+      subCategory: item.category_name,
+      description: item.sub_category_name ?? '-',
+      fund: item.category_fund ?? item.sub_category_fund ?? '-',
+      perYears: item.category_per_years ?? item.sub_category_per_years ?? '-',
+      perTimes: item.category_per_times ?? item.sub_category_per_times ?? '-',
+    }));
+    pagination.value.rowsNumber = 5;
+    return;
+  } catch (error) {
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "Something wrong please try again later.",
+      position: "bottom-left",
+      type: "negative",
+    });
+  }
+}
+
+function onRequest(props) {
+  const { page, rowsPerPage, sortBy, descending } = props.pagination;
+  listStore.setState(rowsPerPage);
+  isLoading.value = true;
+  setTimeout(async () => {
+    try {
+      const returnedData = await fetchFromServer(
+        page,
+        rowsPerPage,
+        filter,
+        sortBy,
+        descending
+      );
+      if (returnedData) model.value.splice(0, model.value.length, ...returnedData);
+      pagination.value.page = page;
+      pagination.value.rowsPerPage = rowsPerPage;
+      pagination.value.sortBy = sortBy;
+      pagination.value.descending = descending;
+    } catch (error) {
+      Promise.reject(error)
+    }
+    isLoading.value = false;
+  }, 100);
+}
+
+function search() {
+  router.push({
+    name: router.name,
+    query: {
+      welfareId: filter.value.welfareId,
+    },
+  });
+}
+
+
 </script>
