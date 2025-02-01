@@ -156,6 +156,11 @@ const essentialLinksEditor = ref([
     to: "welfare_management_list",
   },
   {
+    title: "จัดการข้อมูลสวัสดิการ",
+    icon: outlinedAssignment,
+    to: "configuration_welfare",
+  },
+  {
     title: "จัดการข้อมูลบุคลากร",
     icon: outlinedManageAccounts,
     to: "user_management_list"

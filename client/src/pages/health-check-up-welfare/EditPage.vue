@@ -3,7 +3,7 @@
     <template v-slot:page>
       <!--General Information Section -->
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
-        <div class="col-md-9 col-12">
+        <div :class="isView ? 'col' : 'col-md-9 col-12'">
           <q-card flat bordered class="full-height">
             <q-card-section class="font-18 font-bold">
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
@@ -30,7 +30,7 @@
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-md-3 col-12">
+        <div class="col-md-3 col-12" v-if="!isView">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md font-18 font-bold">
               <p class="q-mb-none">สิทธิ์คงเหลือ</p>
@@ -51,20 +51,22 @@
               <p class="q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
-              <InputGroup for-id="fund" is-dense v-model="model.fund" :data="model.fund ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ"
-                placeholder="บาท" type="number" class="" :is-view="isView">
+              <InputGroup for-id="fund" is-dense v-model="model.claimFund" :data="model.claimFund ?? '-'" is-require
+                label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" compclass="col-xs-12 col-lg-3 col-xl-2" :is-view="isView">
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-none font-medium font-16">
               <q-table flat bordered :rows="row ?? []" :columns="columns" row-key="id" :wrap-cells="$q.screen.gt.lg"
-                table-header-class="font-bold bg-blue-10 text-white" separator="cell" hide-bottom>
+                table-header-class="font-bold bg-blue-10 text-white" separator="cell" hide-bottom ref="tableRef"
+                :loading="isLoading" @request="onRequest">
                 <template v-slot:body-cell-claimName="props">
                   <q-td v-if="props.row.claimName" :props="props" class="text-center text-grey-9">
                     {{ props.row.claimName }}
                   </q-td>
                   <q-td v-else :props="props" class="text-grey-9">
-                    <q-input class="font-14 font-regular" dense v-model="model.claimName" outlined autocomplete="off"
-                      color="dark" type="number" :for="'input-claimName' + props.row.id" placeholder="0">
+                    <q-input class="font-14 font-regular" dense v-model="model.claimByFund[props.row.id].claimName"
+                      outlined autocomplete="off" color="dark" type="text" :for="'input-claimName' + props.row.id"
+                      placeholder="">
                     </q-input>
                   </q-td>
                 </template>
@@ -73,8 +75,8 @@
                     {{ props.row.claimFund }}
                   </q-td>
                   <q-td v-else :props="props" class="text-grey-9">
-                    <q-input class="font-14 font-regular" dense v-model="model.claimFund[props.row.id]" outlined
-                      autocomplete="off" color="dark" type="number" :forId="'input-claimFund' + props.row.id"
+                    <q-input class="font-14 font-regular" dense v-model="model.claimByFund[props.row.id].claimFund"
+                      outlined autocomplete="off" color="dark" type="number" :forId="'input-claimFund' + props.row.id"
                       placeholder="0">
                     </q-input>
                   </q-td>
@@ -86,7 +88,7 @@
         <div class="col-md-3 col-12">
           <q-card flat bordered class="full-height">
             <q-card-section class="font-18 font-bold">
-              <p class="q-mb-none">สิทธิ์คงเหลือ</p>
+              <p class="q-mb-none">หลักฐานที่ต้องแนบ</p>
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
@@ -102,11 +104,11 @@
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'health_check_up_welfare_list' }" />
-        <q-btn id="button-reject" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(4)" v-if="!isView && !isLoadings" />
-        <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense
-          type="submit" style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(3)"
-          v-if="!isView && !isLoadings" />
+        <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
+          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
+        <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
+          style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(3)"
+          v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -115,7 +117,6 @@
 .q-table--bordered {
   border-radius: 0;
 }
-
 </style>
 <script setup>
 import PageLayout from "src/layouts/PageLayout.vue";
@@ -133,19 +134,28 @@ defineOptions({
 const router = useRouter();
 const route = useRoute();
 const model = ref({
-  fund: null,
+  claimFund: null,
   claimName: null,
-  claimFund: {
-    1: null,
-    2: null,
-    3: null,
+  claimByFund: {
+    1: {
+      claimName: null,
+      claimFund: null,
+    },
+    2: {
+      claimName: null,
+      claimFund: null,
+    },
+    3: {
+      claimName: null,
+      claimFund: null,
+    },
   },
 });
-
+const tableRef = ref();
+const isLoading = ref(false);
 const isError = ref({});
 
 const isView = ref(false);
-const isLoadings = ref(false);
 
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
@@ -153,13 +163,48 @@ const isEdit = computed(() => {
 
 onMounted(async () => {
   await init();
-  isLoadings.value = false;
+  isLoading.value = false;
   isEdit.value = false;
 });
 
 onBeforeUnmount(() => {
   clearData(model);
 });
+
+async function fetchFromServer() {
+  try {
+    // const result = await GspcApproveSerivce.list({
+    //   pageNo: page,
+    //   itemPerPage: count,
+    //   keyword: filter.value.keyword,
+    //   dateSelected: formatDateServer(filter.value.dateSelected),
+    //   endDate: formatDateServer(filter.value.endDate),
+    // });
+    console.log(true);
+    return;
+  } catch (error) {
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "Something wrong please try again later.",
+      position: "bottom-left",
+      type: "negative",
+    });
+  }
+}
+
+function onRequest() {
+  isLoading.value = true;
+  setTimeout(async () => {
+    try {
+      const returnedData = await fetchFromServer();
+      if (returnedData) row.value.splice(0, row.value.length, ...returnedData);
+    } catch (error) {
+      Promise.reject(error)
+    }
+    isLoading.value = false;
+  }, 100);
+}
 
 const resetObject = (obj) => {
   for (const key in obj) {
@@ -272,7 +317,7 @@ const columns = ref([
     name: "claimName",
     label: "ชื่อสิทธิ",
     align: "left",
-    field: (row) => row.tools ?? "-",
+    field: (row) => row.claimName ?? "-",
     format: (val) => `${val}`,
     classes: "ellipsis",
   },
@@ -280,7 +325,7 @@ const columns = ref([
     name: "claimFund",
     label: "จำนวนเงิน (บาท)",
     align: "right",
-    field: (row) => row.tools ?? "-",
+    field: (row) => row.claimFund ?? "-",
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
@@ -292,7 +337,8 @@ const columns = ref([
   },
 ]);
 async function init() {
+  await tableRef.value.requestServerInteraction();
   isView.value = route.meta.isView;
-  isLoadings.value = true;
+  isLoading.value = true;
 }
 </script>

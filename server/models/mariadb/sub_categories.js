@@ -1,7 +1,7 @@
-const Sequelize = require('sequelize');
 const sequelizePaginate = require('sequelize-paginate');
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  const subCategories = sequelize.define('subCategories', {
+  const model = sequelize.define('subCategories', {
     id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -63,7 +63,6 @@ module.exports = function(sequelize, DataTypes) {
       },
     ]
   });
-  sequelizePaginate.paginate(subCategories);
-
-  return subCategories;
+  sequelizePaginate.paginate(model);
+  return model;
 };

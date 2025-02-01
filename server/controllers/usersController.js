@@ -3,6 +3,7 @@ const { users, positions, sector, employeeTypes, roles, departments, children, s
 const { isNullOrEmpty } = require('../middleware/utility');
 
 const { initLogger } = require('../logger');
+const { where } = require('sequelize');
 const logger = initLogger('UserController');
 
 class Controller extends BaseController {
@@ -39,6 +40,7 @@ class Controller extends BaseController {
                 ],
                 where: whereObj
             });
+            
             if (userDataList) {
                 var userList = {};
                 userList.pagination = {
@@ -103,6 +105,16 @@ class Controller extends BaseController {
                     },
                 ],
             });
+            const childrenData = await children.findAll({
+                attributes: [
+                    'id',
+                    'name',
+                    'birthday',
+                ],
+                where: {
+                    users_id: dataId,
+                }
+            })
             if (userData) {
                 const datas = JSON.parse(JSON.stringify(userData));
                 var user = {};
@@ -112,7 +124,8 @@ class Controller extends BaseController {
                     employeeType: datas.employee_type,
                     sector: datas.sector,
                     role: datas.role,
-                    department: datas.department
+                    department: datas.department,
+                    children: childrenData,
                 };
                 delete user.datas.employee_type;
                 logger.info('Complete', { method, data: { userId } });
@@ -176,26 +189,30 @@ class Controller extends BaseController {
         const dataId = req.params['id'];
         try {
             const result = await sequelize.transaction(async t => {
-                // to do [NET]
-                // const [updated] = await this.model.update(dataUpdate, {
-                //     where: {
-                //         [this.primaryKey]: dataId ?? req.body[this.primaryKey],
-                //     },
-                // });
-                // var childData = child.map((childObj) => ({
-                //     id: childObj.id,
-                //     users_id: newItemUser.id,
-                //     name: childObj.name,
-                //     birthday: childObj.birthDay,
-                // }));
-
-                // const newItemChild = await children.bulkCreate(childData);
-                // const itemsReturned = {
-                //     ...newItemUser.toJSON(),
-                //     child: newItemChild,
-                // };
-                // return itemsReturned;
+                const [updated] = await users.update(dataUpdate, {
+                    where: {
+                        id: dataId,
+                    },
+                });
+                if (Array.isArray(child) && child.length > 0) {
+                    for (const c of child) {
+                        await children.update(
+                            {
+                                name: c.name,
+                                birthDay: c.birthDay,
+                            },
+                            {
+                                where: {
+                                    users_id: dataId,
+                                    name: c.name,
+                                },
+                            }
+                        );
+                    }
+                }
+                return updated;
             });
+            logger.info('Complete', { method, data: { userId } });
             res.status(201).json({ newItem: result, message: "สำเร็จ" });
         }
         catch (error) {

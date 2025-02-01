@@ -1,28 +1,28 @@
 const sequelizePaginate = require('sequelize-paginate');
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  const model = sequelize.define('reimbursementsEmployeeDeceasedHasCategories', {
-    reimbursements_employee_deceased_id: {
+  const model = sequelize.define('reimbursementsGeneralHasSubCategories', {
+    reimbursements_general_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true,
       references: {
-        model: 'reimbursements_employee_deceased',
+        model: 'reimbursements_general',
         key: 'id'
       }
     },
-    categories_id: {
+    sub_categories_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true,
       references: {
-        model: 'categories',
+        model: 'sub_categories',
         key: 'id'
       }
     }
   }, {
     sequelize,
-    tableName: 'reimbursements_employee_deceased_has_categories',
+    tableName: 'reimbursements_general_has_sub_categories',
     timestamps: false,
     indexes: [
       {
@@ -30,22 +30,22 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         using: "BTREE",
         fields: [
-          { name: "reimbursements_employee_deceased_id" },
-          { name: "categories_id" },
+          { name: "reimbursements_general_id" },
+          { name: "sub_categories_id" },
         ]
       },
       {
-        name: "fk_reimbursements_employee_deceased_has_categories_categori_idx",
+        name: "fk_reimbursements_general_has_sub_categories_sub_categories_idx",
         using: "BTREE",
         fields: [
-          { name: "categories_id" },
+          { name: "sub_categories_id" },
         ]
       },
       {
-        name: "fk_reimbursements_employee_deceased_has_categories_reimburs_idx",
+        name: "fk_reimbursements_general_has_sub_categories_reimbursements_idx",
         using: "BTREE",
         fields: [
-          { name: "reimbursements_employee_deceased_id" },
+          { name: "reimbursements_general_id" },
         ]
       },
     ]

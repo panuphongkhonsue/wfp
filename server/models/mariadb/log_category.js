@@ -1,7 +1,7 @@
 const sequelizePaginate = require('sequelize-paginate');
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  const model = sequelize.define('categories', {
+  const model = sequelize.define('logCategory', {
     id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -11,17 +11,29 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: false
     },
-    fund: {
+    fund_old: {
       type: DataTypes.DECIMAL(10,0),
-      allowNull: true
+      allowNull: false
     },
-    per_times: {
+    fund_new: {
       type: DataTypes.DECIMAL(10,0),
-      allowNull: true
+      allowNull: false
     },
-    per_years: {
+    per_times_old: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: false
+    },
+    per_times_new: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: false
+    },
+    per_years_old: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: false
+    },
+    per_years_new: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     },
     created_at: {
       type: DataTypes.DATE,
@@ -33,17 +45,17 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: Sequelize.Sequelize.fn('current_timestamp')
     },
-    welfare_types_id: {
+    categories_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
       references: {
-        model: 'welfare_types',
+        model: 'categories',
         key: 'id'
       }
     }
   }, {
     sequelize,
-    tableName: 'categories',
+    tableName: 'log_category',
     timestamps: false,
     indexes: [
       {
@@ -55,10 +67,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "fk_categories_welfare_types1_idx",
+        name: "fk_log_category_categories1_idx",
         using: "BTREE",
         fields: [
-          { name: "welfare_types_id" },
+          { name: "categories_id" },
         ]
       },
     ]
