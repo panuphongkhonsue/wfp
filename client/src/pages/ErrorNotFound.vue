@@ -1,7 +1,7 @@
 <template>
   <div class="fullscreen bg-white text-center q-pa-md flex flex-center">
     <div class="error-container">
-      <div class="error-code text-primary text-h1 text-weight-bold q-mb-md">
+      <div class="error-code text-blue-9 text-primary text-h1 text-weight-bold q-mb-md">
         404
       </div>
 
@@ -34,7 +34,6 @@
 
 .error-code {
   font-size: 8rem;
-  color: #1e3a8a; /* Navy Blue */
 }
 
 .error-message {
@@ -52,7 +51,7 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* แอนิเมชัน */
+/* animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -65,7 +64,7 @@
 }
 .error-container {
   max-width: 500px;
-  animation: fadeIn 0.5s ease-out; /* ลดเวลาเหลือ 0.5 วินาที */
+  animation: fadeIn 0.5s ease-out; 
 }
 
 </style>
