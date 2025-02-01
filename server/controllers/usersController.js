@@ -1,9 +1,7 @@
 const BaseController = require('./BaseControllers');
 const { users, positions, sector, employeeTypes, roles, departments, children, sequelize } = require('../models/mariadb');
-const { isNullOrEmpty } = require('../middleware/utility');
-
+const { Op } = require('sequelize')
 const { initLogger } = require('../logger');
-const { where } = require('sequelize');
 const logger = initLogger('UserController');
 
 class Controller extends BaseController {
@@ -76,10 +74,15 @@ class Controller extends BaseController {
         const { userId } = req.user;
         const dataId = req.params['id'];
         try {
-            const userData = await users.findByPk(dataId, {
+            const userData = await users.findOne({
+                where: {
+                    id: dataId,
+                    deleted_at: { [Op.is]: null }
+                },
                 attributes: [
                     'id',
                     'name',
+                    'deleted_at'
                 ],
                 include: [
                     {
@@ -194,25 +197,23 @@ class Controller extends BaseController {
                     },
                 });
                 if (Array.isArray(child) && child.length > 0) {
-                    for (const c of child) {
-                        await children.update(
-                            {
-                                name: c.name,
-                                birthDay: c.birthDay,
-                            },
-                            {
-                                where: {
-                                    users_id: dataId,
-                                    name: c.name,
-                                },
-                            }
-                        );
-                    }
+                    var childData = child.map((childObj) => ({
+                        id: childObj.id,
+                        users_id: dataId,
+                        name: childObj.name,
+                        birthday: childObj.birthDay,
+                    }));
+                    await children.bulkCreate(childData, {
+                        updateOnDuplicate: ["name", "birthday", "users_id"]
+                    });
                 }
                 return updated;
             });
-            logger.info('Complete', { method, data: { userId } });
-            res.status(201).json({ newItem: result, message: "สำเร็จ" });
+            if (result) {
+                logger.info('Complete', { method, data: { userId } });
+                return res.status(201).json({ newItem: result, message: "สำเร็จ" });
+            }
+            res.status(201).json({ newItem: result, message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {

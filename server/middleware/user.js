@@ -61,7 +61,7 @@ const bindCreate = async (req, res, next) => {
 };
 const bindUpdate = async (req, res, next) => {
 	try {
-		const { username, name, positionsId, employeeTypesId, departmentId, sectorId, firstWorkingDate, roleId } = req.body;
+		const { username, name, positionsId, employeeTypesId, departmentId, sectorId, firstWorkingDate, roleId, child } = req.body;
 		const errorObj = {};
 		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
 		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
@@ -81,7 +81,8 @@ const bindUpdate = async (req, res, next) => {
 			departments_id: departmentId,
 			sector_id: sectorId,
 			first_working_date: firstWorkingDate,
-			roles_id: roleId
+			roles_id: roleId,
+			child: !isNullOrEmpty(child) ? child : null,
 		}
 		req.body = dataBinding;
 		next();
@@ -95,12 +96,21 @@ const bindUpdate = async (req, res, next) => {
 const validateDuplicate = async (req, res, next) => {
 	try {
 		const { username } = req.body;
-		const isDuplicate = await users.count({
-			where: {
-				username: { [Op.eq]: username },
-			},
-		});
-		if (isDuplicate) res.status(400).json({ errors: "บัญชีผู้ใช้นี้มีอยู่แล้ว" });
+		const dataId = req.params['id'];
+		var filter = {};
+		if (!isNullOrEmpty(dataId)) {
+			filter[Op.and] = [
+				{ '$users.username$': { [Op.eq]: username } },
+				{ '$users.id$': { [Op.ne]: dataId } }
+			];
+		} else {
+			filter = {
+				'$users.username$': { [Op.eq]: username }
+			};
+		}
+		const isDuplicate = await users.count({ where: filter });
+
+		if (isDuplicate) return res.status(400).json({ errors: "บัญชีผู้ใช้นี้มีอยู่แล้ว" });
 		next();
 	} catch (error) {
 		logger.error(error);
@@ -109,7 +119,6 @@ const validateDuplicate = async (req, res, next) => {
 		});
 	}
 };
-
 
 const bindFilter = async (req, res, next) => {
 	const method = 'BindFilter';
@@ -129,7 +138,7 @@ const bindFilter = async (req, res, next) => {
 	}
 	catch (error) {
 		logger.error(`Error ${error.message}`, { method });
-		res.status(401).json({ error: error.message });
+		res.status(400).json({ error: error.message });
 	}
 };
 
