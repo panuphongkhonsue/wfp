@@ -8,8 +8,8 @@ import { useAuthStore } from 'src/stores/authStore';
 // "export default () => {}" function below (which runs individually
 // for each client)
 const baseURL = process.env.PRODUCTION
-  ? "http://localhost:3000/"
-  : "http://localhost:3000/";
+  ? "http://localhost:3001/"
+  : "http://localhost:3001/";
 
 const api = axios.create({ baseURL });
 
