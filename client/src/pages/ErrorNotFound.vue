@@ -26,10 +26,6 @@
   </div>
 </template>
 
-<script setup>
-// ไม่มี logic พิเศษในส่วนนี้
-</script>
-
 <style scoped>
 .error-container {
   max-width: 500px;
