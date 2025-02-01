@@ -133,26 +133,26 @@ const routes = [
       {
         path: 'children-edu-welfare',
         name: 'children_edu_welfare_list',
-        meta: { breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' }] },
-        component: () => import('pages/IndexPage.vue'),
+        meta: { breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' },{name: 'เบิกสวัสดิการ'}] },
+        component: () => import('pages/children-edi-welfare/ListPage.vue'),
       },
       {
         path: 'children-edu-welfare-new',
         name: 'children_edu_welfare_new',
         meta: { breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' }, { name: 'เบิกสวัสดิการ' }] },
-        component: () => import('pages/IndexPage.vue'),
+        component: () => import('pages/children-edi-welfare/EditPage.vue'),
       },
       {
         path: 'children-edu-welfare-edit/:id',
         name: 'children_edu_welfare_edit',
         meta: { breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
-        component: () => import('pages/IndexPage.vue'),
+        component: () => import('pages/children-edi-welfare/EditPage.vue'),
       },
       {
         path: 'children-edu-welfare/:id',
         name: 'children_edu_welfare_view',
         meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' }, { name: 'ดูใบเบิกสวัสดิการ' }] },
-        component: () => import('pages/IndexPage.vue'),
+        component: () => import('pages/children-edi-welfare/EditPage.vue'),
       },
       {
         path: 'funeral-welfare',
