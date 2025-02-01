@@ -3,12 +3,12 @@ import { parse, stringify } from 'zipson'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: null,
-    isAdmin: false,
-    redirectTo: null,
     name: null,
     position: null,
-    externalEmail : null,
     roleId : null,
+    email : null,
+    department : null,
+    id : null,
   }),
   actions: {
     setToken(token) {
@@ -16,12 +16,12 @@ export const useAuthStore = defineStore('auth', {
     },
     clearToken() {
       this.token = null;
-      this.isAdmin = false;
-      this.redirectTo = null;
       this.name = null;
       this.position = null;
-      this.externalEmail = null;
       this.roleId = null;
+      this.email = null;
+      this.department = null;
+      this.id = null;
     },
   },
   getters: {
