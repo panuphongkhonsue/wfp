@@ -50,3 +50,11 @@ export function dateDiff(d1, d2) {
   return df;
 }
 
+export function formatNumber(val) {
+  const number = Number(val); // Convert to number
+  if (!isNaN(number)) {
+    return number.toLocaleString("en-US"); // Format as '3,000'
+  }
+  return `${val}`; // If conversion fails, return a fallback value
+}
+
