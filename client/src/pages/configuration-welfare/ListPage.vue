@@ -109,7 +109,6 @@ import {
 import configWelfareService from "src/boot/service/configWelfareService";
 import { formatNumber } from "src/components/format"
 
-import { useAuthStore } from "src/stores/authStore";
 import categoryService from "src/boot/service/categoryService";
 import subCategoryService from "src/boot/service/subCategoryService";
 import logCategoryService from "src/boot/service/logCategoryService";
