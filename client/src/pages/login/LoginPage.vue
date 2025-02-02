@@ -60,17 +60,12 @@ const isLoading = ref(false);
 const isPwd = ref(true);
 const menuStore = useMenuStore();
 const router = useRouter();
-// โหลด Username จาก localStorage 
+// โหลด Username จาก localStorage
 onMounted(() => {
     authStore.clearToken();
     const savedUsername = localStorage.getItem('rememberedUsername');
-    const savedPassword = localStorage.getItem('rememberedPassword');
     if (savedUsername) {
         model.value.username = savedUsername;
-        remember.value = true;
-    }
-    if (savedPassword) {
-        model.value.password = savedPassword;
         remember.value = true;
     }
 });
@@ -78,7 +73,6 @@ onMounted(() => {
 // Login
 async function login() {
     var validate = false;
-    console.log(model.value);
     if (!model.value.username) {
         isError.value.username = "กรุณากรอกบัญชีผู้ใช้งาน";
         validate = true;
@@ -132,7 +126,6 @@ async function login() {
     }
     if (remember.value) {
         localStorage.setItem('rememberedUsername', model.value.username);
-        localStorage.setItem('rememberedPassword', model.value.password);
     } else {
         localStorage.removeItem('rememberedUsername');
     }

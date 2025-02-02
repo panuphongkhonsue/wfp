@@ -1,5 +1,5 @@
 <template>
-  <PageLayout title="เบิกสวัสดิการทั่วไป (กรณีเจ็บป่วย)">
+  <PageLayout title="จัดการข้อมูลบุคลากร">
     <template v-slot:page>
       <!--User Information Section -->
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
@@ -11,51 +11,80 @@
             <q-card-section
               class="row wrap q-col-gutter-y-sm q-col-gutter-x-md font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="username" is-dense v-model="model.username" :data="model.username ?? '-'" is-require
-                label="บัญชีผู้ใช้งาน" placeholder="" type="text" :is-view="isView">
+                label="บัญชีผู้ใช้งาน" placeholder="" type="text" :is-view="isView" :error-message="isError?.username"
+                :error="!!isError?.username" :rules="[(val) => !!val || 'กรุณากรอกบัญชีผู้ใช้งาน']">
               </InputGroup>
               <InputGroup for-id="name" is-dense v-model="model.name" :data="model.name ?? '-'" is-require
-                label="ชื่อ-นามสกุล (ไม่ต้องมีคำนำหน้า)" placeholder="" type="text" :is-view="isView">
+                label="ชื่อ - นามสกุล (ไม่ต้องมีคำนำหน้า)" placeholder="" type="text" :is-view="isView"
+                :error-message="isError?.name" :error="!!isError?.name"
+                :rules="[(val) => !!val || 'กรุณากรอกชื่อ - นามสกุล']">
               </InputGroup>
               <InputGroup for-id="position" :data="model.positionsName ?? '-'" is-require label="ตำแหน่ง"
                 :is-view="isView">
-                <q-select :loading="isLoading" id="selected-status" outlined v-model="model.positionsId"
-                  :options="optionsPosition" label="สถานะ" multiple dense clearable option-value="id" emit-value
-                  map-options option-label="name">
+                <q-select popup-content-class="font-14 font-regular" class="font-14 font-regular" :loading="isLoading"
+                  for="selected-status" outlined v-model="model.positionId" :options="optionsPosition" dense clearable
+                  option-value="id" emit-value map-options option-label="name" :error-message="isError?.positionId"
+                  :error="!!isError?.positionId" :rules="[(val) => !!val || 'กรุณาเลือกตำแหน่ง']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup for-id="employee-type" :data="model.employeeTypesName ?? '-'" is-require label="ประเภทบุคลากร"
+              <InputGroup for-id="employee-type" :data="model.employeeTypeName ?? '-'" is-require label="ประเภทบุคลากร"
                 :is-view="isView">
-                <q-select :loading="isLoading" id="selected-status" outlined
-                  v-model="model.employeeTypesId" :options="optionsEmployeeType" label="สถานะ" multiple dense clearable
-                  option-value="id" emit-value map-options option-label="name">
+                <q-select popup-content-class="font-14 font-regular" class="font-14 font-regular" :loading="isLoading"
+                  for="selected-employee-type" outlined v-model="model.employeeTypeId" :options="optionsemployeeType"
+                  dense clearable option-value="id" emit-value map-options option-label="name"
+                  :error-message="isError?.employeeTypeId" :error="!!isError?.employeeTypeId"
+                  :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup for-id="department" is-dense v-model="model.name" :data="model.name ?? '-'" is-require
-                label="ส่วนงาน" placeholder="" type="text" :is-view="isView">
+              <InputGroup for-id="department" :data="model.departmentName ?? '-'" is-require label="ส่วนงาน"
+                :is-view="isView">
+                <q-select popup-content-class="font-14 font-regular" class="font-14 font-regular" :loading="isLoading"
+                  id="selected-department" outlined v-model="model.departmentId" :options="optionsDepartment" dense
+                  clearable option-value="id" emit-value map-options option-label="name"
+                  :error-message="isError?.departmentId" :error="!!isError?.departmentId"
+                  :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']">
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
               </InputGroup>
-              <InputGroup for-id="sector" is-dense v-model="model.name" :data="model.name ?? '-'" is-require
-                label="ภาควิชา" placeholder="" type="text" :is-view="isView">
+              <InputGroup for-id="sector" :data="model.sectorName ?? '-'" is-require label="ภาควิชา" :is-view="isView">
+                <q-select popup-content-class="font-14 font-regular" class="font-14 font-regular" :loading="isLoading"
+                  id="selected-sector" outlined v-model="model.sectorId" :options="optionsSection" dense clearable
+                  option-value="id" emit-value map-options option-label="name" :error-message="isError?.sectorId"
+                  :error="!!isError?.sectorId" :rules="[(val) => !!val || 'กรุณาเลือกภาควิชา']">
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
               </InputGroup>
-              <InputGroup label="วันที่เข้าปฏิบัติงาน" is-require :is-view="isView" clearable
-                :data="model.firstWorkingDate ?? '-'">
+              <InputGroup for-id="first-working-date" label="วันที่เข้าปฏิบัติงาน" is-require :is-view="isView"
+                clearable :data="model.firstWorkingDate ?? '-'">
                 <DatePicker is-dense v-model:model="model.firstWorkingDate" v-model:dateShow="model.firstWorkingDate"
-                  for-id="first-working-date" :no-time="true" />
+                  for-id="first-working-date" :no-time="true" :err="isError?.firstWorkingDate"
+                  :rules="[(val) => !!val || 'กรุณาเลือกวันที่เข้าปฏิบัติงาน']" />
               </InputGroup>
             </q-card-section>
             <q-card-section class="row column wrap font-medium q-pt-none q-pb-sm font-16 text-grey-9">
-              <p class="q-mb-sm">บทบาท</p>
-              <q-option-group v-model="model.roleId" :options="optionRole" option-value="id" option-label="name"
-                color="primary" />
+              <p class="q-mb-sm require">บทบาท</p>
+              <q-option-group v-if="!isView && !isLoading" v-model="model.roleId" :options="optionRole"
+                option-value="id" option-label="name" :color="isError.roleId ? 'red' : 'primary'"
+                :keep-color="isError.roleId ?? false" id="role" />
+              <p v-else> {{ model.roleName }} </p>
             </q-card-section>
           </q-card>
         </div>
@@ -69,22 +98,23 @@
               class="row items-center wrap q-col-gutter-md wrap font-medium q-pt-sm q-pb-none font-16 text-grey-9"
               v-for="(item, index) in model.child" :key="index">
               <p class="col-12 q-mb-none">บุตรคนที่ {{ index + 1 }}</p>
-              <InputGroup for-id="child-name" is-dense v-model="item.name" :data="item.name ?? '-'" is-require
-                label="ชื่อ (ไม่ต้องมีคำนำหน้า)" placeholder="" type="text" :is-view="isView">
+              <InputGroup v-if="!isView && !isLoading" for-id="child-name" is-dense v-model="item.name"
+                :data="item.name ?? '-'" label="ชื่อ - นามสกุล (ไม่ต้องมีคำนำหน้า)" placeholder="" type="text"
+                :is-view="isView">
               </InputGroup>
-              <InputGroup for-id="child-surname" is-dense v-model="item.surname" :data="item.surname ?? '-'" is-require
-                label="นามสกุล" placeholder="" type="text" :is-view="isView">
+              <InputGroup v-else for-id="child-name" is-dense v-model="item.name" :data="item.name ?? '-'"
+                label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView">
               </InputGroup>
-              <InputGroup label="เกิดเมื่อ" is-require :is-view="isView" clearable
-                :data="model.firstWorkingDate ?? '-'">
-                <DatePicker is-dense v-model:model="item.birthDay" v-model:dateShow="item.birthDay" for-id="birthday"
+              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable :data="item.birthday ?? '-'">
+                <DatePicker is-dense v-model:model="item.birthday" v-model:dateShow="item.birthday" for-id="birthday"
                   :no-time="true" />
               </InputGroup>
               <div>
-                <q-btn v-if="index > 0" color="red" @click="removeChildForm(index)" class="q-mt-sm">ลบ</q-btn>
+                <q-btn v-if="index > 0 && !isView && !isLoading" color="red" @click="removeChildForm(index)"
+                  class="q-mt-sm">ลบ</q-btn>
               </div>
             </q-card-section>
-            <div v-if="!isView">
+            <div v-if="!isView && !isLoading">
               <q-separator inset class="q-mt-md" />
               <q-card-section class="row justify-end">
                 <q-btn icon="add" id="add-req" @click="addChildForm" class=" bg-blue-10 text-white">เพิ่ม</q-btn>
@@ -100,7 +130,7 @@
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-md" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'user_management_list' }" />
         <q-btn id="button-save" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึก" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
+          type="submit" label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -118,10 +148,16 @@ import DatePicker from "src/components/DatePicker.vue";
 
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
+import { formatDateThaiSlash } from "src/components/format";
 
-
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import userManagementService from "src/boot/service/userManagementService";
+import departmentService from "src/boot/service/departmentService";
+import sectorService from "src/boot/service/sectorService";
+import positionService from "src/boot/service/positionService";
+import employeeTypeService from "src/boot/service/employeeTypeService";
+import roleService from "src/boot/service/roleService";
 
 defineOptions({
   name: "MedicalfareEdit",
@@ -129,51 +165,31 @@ defineOptions({
 const router = useRouter();
 const route = useRoute();
 const model = ref({
+  id: null,
   username: null,
   name: null,
-  positionsId: null,
+  positionId: null,
   positionsName: null,
-  employeeTypesId: null,
-  employeeTypesName: null,
+  employeeTypeId: null,
+  employeeTypeName: null,
   departmentId: null,
+  departmentName: null,
   sectorId: null,
+  sectorName: null,
   firstWorkingDate: null,
   roleId: null,
+  roleName: null,
   child: [
     {
       name: null,
       surname: null,
-      birthDay: null,
-    }
+      birthday: null,
+    },
   ],
 });
-const optionRole = ref(
-  [
-    {
-      name: 'บุคลากรทั่วไป',
-      id: 1
-    },
-    {
-      name: 'เจ้าหน้าที่ตรวจสอบ',
-      id: 2
-    },
-    {
-      name: 'ตัวแทนผู้เบิก',
-      id: 3
-    }
-  ]
-)
-let optionsPosition = [
-  { id: 1, name: "อาจารย์" },
-];
-let optionsEmployeeType = [
-  { id: 1, name: "ข้าราชการ" },
-  { id: 2, name: "พนักงานมหาวิทยาลัย (สิทธิข้าราชการบำนาญ)" },
-  { id: 3, name: "พนักงานมหาวิทยาลัย" },
-  { id: 3, name: "ลูกจ้างมหาวิทยาลัย" },
-];
 
-const isLoading = ref(false);
+
+const isLoading = ref();
 const isError = ref({});
 const isView = ref(false);
 
@@ -184,7 +200,6 @@ const isEdit = computed(() => {
 onMounted(async () => {
   await init();
   isLoading.value = false;
-  isEdit.value = false;
 });
 
 onBeforeUnmount(() => {
@@ -209,37 +224,85 @@ function addChildForm() {
   model.value.child.push({
     name: null,
     surname: null,
-    birthDay: null,
+    birthday: null,
   });
 }
 function removeChildForm(index) {
   model.value.child.splice(index, 1);
 };
+
+
+watch(
+  model,
+  () => {
+    Object.keys(model.value).forEach((key) => {
+      if (model.value[key] !== null) {
+        delete isError.value[key];
+      }
+    });
+  },
+  { deep: true }
+);
+
 async function submit() {
   let validate = false;
-  // if (!model.value.gspc?.equipment?.equipmentId) {
-  //   isError.value.equipmentId.messageError = "IT Asset No. Is Required";
-  //   let navigate = document.getElementById("selected-it-asset");
-  //   window.location.hash = "selected-it-asset";
-  //   navigate.scrollIntoView(false);
-  //   validate = true;
-  // }
+  if (!model.value.username) {
+    isError.value.username = "กรุณากรอกข้อมูลบัญชีผู้ใช้";
+    validate = true;
+  }
+  if (!model.value.name) {
+    isError.value.name = "กรุณากรอกชื่อ - นามสกุล";
+    validate = true;
+  }
+  if (!model.value.positionId) {
+    isError.value.positionId = "กรุณาเลือกตำแหน่ง";
+    validate = true;
+  }
+  if (!model.value.employeeTypeId) {
+    isError.value.employeeTypeId = "กรุณาเลือกประเภทบุคลากร";
+    validate = true;
+  }
+  if (!model.value.departmentId) {
+    isError.value.departmentId = "กรุณาเลือกส่วนงาน";
+    validate = true;
+  }
+  if (!model.value.sectorId) {
+    isError.value.sectorId = "กรุณาเลือกภาควิชา";
+    validate = true;
+  }
+  if (!model.value.firstWorkingDate) {
+    isError.value.firstWorkingDate = "กรุณาเลือกวันที่เข้าปฏิบัติงาน";
+    validate = true;
+  }
+  if (!model.value.roleId) {
+    isError.value.roleId = true;
+    validate = true;
+  }
   if (validate === true) {
+    let navigate = document.getElementById("username");
+    window.location.hash = "username";
+    navigate.scrollIntoView(false);
     Notify.create({
-      message: "Please Correct Input",
+      message: "กรุณากรอกข้อมูลให้ถูกต้อง",
       position: "bottom-left",
       type: "negative",
     });
     return;
   }
+  const hasNull = model.value.child.some(item =>
+    Object.values(item).some(value => value === null || value === "")
+  );
+  if (hasNull) {
+    delete model.value.child;
+  }
   let isValid = false;
   Swal.fire({
-    title: "Do you want to save the changes??",
-    html: `You won't be able to revert this!`,
+    title: "ยืนยันการทำรายการหรือไม่ ???",
+    html: `โปรดตรวจสอบข้อมูลให้แน่ใจก่อนยืนยัน`,
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: "Yes",
-    cancelButtonText: "Cancel",
+    confirmButtonText: "ยืนยัน",
+    cancelButtonText: "ยกเลิก",
     showLoaderOnConfirm: true,
     reverseButtons: true,
     customClass: {
@@ -248,7 +311,12 @@ async function submit() {
     },
     preConfirm: async () => {
       try {
-        // code
+        if (isEdit.value) {
+          await userManagementService.update(route.params.id, model.value);
+        }
+        else {
+          await userManagementService.create(model.value);
+        }
         isValid = true;
       } catch (error) {
         if (error?.response?.status == 400) {
@@ -259,15 +327,8 @@ async function submit() {
             };
           }
         }
-        Swal.showValidationMessage(
-          `Save Data Failed. ${error.response?.data?.message ??
-          "Something wrong please try again later."
-          }`
-        );
         Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "Something wrong please try again later.",
+          message: `[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง`,
           position: "bottom-left",
           type: "negative",
         });
@@ -276,20 +337,94 @@ async function submit() {
   }).then((result) => {
     if (isValid && result.isConfirmed) {
       Swal.fire({
-        html: `Request Save.`,
+        html: `บันทึกข้อมูลสำเร็จ`,
         icon: "success",
-        confirmButtonText: "OK",
+        confirmButtonText: "ตกลง",
         customClass: {
           confirmButton: "save-button",
         },
       }).then(() => {
-        router.replace({ name: "health_check_up_welfare_list" });
+        router.replace({ name: "user_management_list" });
       });
     }
+    else {
+      model.value.child = [];
+      addChildForm()
+    }
   });
+}
+const optionsPosition = ref([]);
+const optionsemployeeType = ref([]);
+const optionsDepartment = ref([]);
+const optionsSection = ref([]);
+const optionRole = ref([]);
+async function fetchInitialData() {
+  try {
+    const [fetchPosition, fetchDepartment, fetchSector, fetchemployeeType, fetchRole] = await Promise.all([
+      positionService.list(),
+      departmentService.list(),
+      sectorService.list(),
+      employeeTypeService.list(),
+      roleService.list(),
+    ]);
+
+    optionsPosition.value = fetchPosition.data;
+    optionsemployeeType.value = fetchemployeeType.data;
+    optionsDepartment.value = fetchDepartment.data;
+    optionsSection.value = fetchSector.data;
+    optionRole.value = fetchRole.data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
 }
 async function init() {
   isView.value = route.meta.isView;
   isLoading.value = true;
+  await fetchInitialData();
+  if (isEdit.value) {
+    try {
+      let res = await userManagementService.dataById(route.params.id);
+      const dataBinding = res.data.datas;
+      const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : dataBinding.firstWorkingDate;
+      const childData = [{
+        name: null,
+        surname: null,
+        birthday: null,
+      }]
+      model.value = {
+        id: dataBinding.id,
+        name: dataBinding.name,
+        username: dataBinding.username,
+        firstWorkingDate: convertDate,
+        positionId: dataBinding.position.id,
+        positionsName: dataBinding.position.name,
+        employeeTypeId: dataBinding.employeeType.id,
+        employeeTypeName: dataBinding.employeeType.name,
+        departmentId: dataBinding.department.id,
+        departmentName: dataBinding.department.name,
+        sectorId: dataBinding.sector.id,
+        sectorName: dataBinding.sector.name,
+        roleId: dataBinding.role.id,
+        roleName: dataBinding.role.name,
+        child: Array.isArray(dataBinding.children) && dataBinding.children.length > 0 ? dataBinding.children : childData,
+      };
+
+      isLoading.value = false;
+    } catch (error) {
+      console.log(error);
+      Notify.create({
+        message:
+          error.response?.data?.errors ??
+          "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
+        position: "bottom-left",
+        type: "negative",
+      });
+      router.replace({ name: "user_management_list" });
+    }
+  }
+  else {
+    isLoading.value = false;
+  }
+
 }
 </script>
