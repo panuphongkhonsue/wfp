@@ -6,6 +6,22 @@ services:
     ports:
       - "8003:80"
     restart: always
+  nodejs:
+    container_name: WFP_API
+    depends_on:
+      - db
+    restart: always
+    image: node:18-alpine
+    working_dir: /usr/src/app
+    volumes:
+      - ./server:/usr/src/app
+    command: sh -c "npm install -g nodemon && npm install && nodemon app.js"
+    ports:
+      - "8004:3000"
+    expose:
+      - "3000"
+    networks:
+      - my_network
   db:
     image: mariadb:latest
     restart: always
