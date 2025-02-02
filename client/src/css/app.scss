@@ -168,6 +168,9 @@
   content: ' *';
   color: red;
 }
+.q-field--dense .q-field__bottom {
+  font-size: 14px !important;
+}
 .q-table th {
   font-size: 14px !important;
 }
@@ -179,6 +182,18 @@
 }
 div:where(.swal2-container) {
   z-index: 9999 !important;
+}
+.save-button {
+  color: #fff;
+  background-color: #28a745 !important;
+  border-color: #28a745 !important;
+  margin-left: 8px !important;
+}
+.cancel-button {
+  color: #fff;
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  margin-right: 8px !important;
 }
 body {
   font-family: 'BaiJamjureeRegular' !important;

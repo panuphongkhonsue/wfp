@@ -1,10 +1,9 @@
 const BaseController = require('./BaseControllers');
 const { users, positions, sector, employeeTypes, roles, departments, children, sequelize } = require('../models/mariadb');
-const { isNullOrEmpty } = require('../middleware/utility');
-
+const { Op } = require('sequelize')
 const { initLogger } = require('../logger');
-const { where } = require('sequelize');
 const logger = initLogger('UserController');
+const { isNullOrEmpty } = require('../controllers/utility');
 
 class Controller extends BaseController {
     constructor() {
@@ -12,7 +11,7 @@ class Controller extends BaseController {
     }
 
     list = async (req, res, next) => {
-        const method = 'GetAllUser';
+        const method = 'GetListUser';
         const { userId } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
@@ -37,10 +36,15 @@ class Controller extends BaseController {
                         model: sector, as: 'sector',
                         attributes: ['name'], required: false
                     },
+                    {
+                        model: departments, as: 'department',
+                        attributes: ['name'], required: false
+                    },
                 ],
-                where: whereObj
+                where: whereObj,
+                order: [['id', 'ASC']]
             });
-            
+
             if (userDataList) {
                 var userList = {};
                 userList.pagination = {
@@ -52,12 +56,14 @@ class Controller extends BaseController {
                     var position = plainObj.position?.name;
                     var employeeType = plainObj.employee_type?.name;
                     var sector = plainObj.sector?.name;
+                    var department = plainObj.department?.name;
                     delete plainObj.employee_type;
                     return {
                         ...plainObj,
                         position: position,
                         employeeType: employeeType,
                         sector: sector,
+                        department: department,
                     }
                 });
                 logger.info('Complete', { method, data: { userId } });
@@ -77,10 +83,16 @@ class Controller extends BaseController {
         const { userId } = req.user;
         const dataId = req.params['id'];
         try {
-            const userData = await users.findByPk(dataId, {
+            const userData = await users.findOne({
+                where: {
+                    id: dataId,
+                    deleted_at: { [Op.is]: null }
+                },
                 attributes: [
                     'id',
                     'name',
+                    'username',
+                    'first_working_date',
                 ],
                 include: [
                     {
@@ -120,6 +132,7 @@ class Controller extends BaseController {
                 var user = {};
                 user.datas = {
                     ...datas,
+                    firstWorkingDate: datas.first_working_date,
                     position: datas.position,
                     employeeType: datas.employee_type,
                     sector: datas.sector,
@@ -128,6 +141,7 @@ class Controller extends BaseController {
                     children: childrenData,
                 };
                 delete user.datas.employee_type;
+                delete user.datas.first_working_date;
                 logger.info('Complete', { method, data: { userId } });
                 res.status(200).json(user);
             } else {
@@ -151,24 +165,29 @@ class Controller extends BaseController {
     create = async (req, res, next) => {
         const method = 'CreateUser';
         const { userId } = req.user;
-        const child = req.body.child;
+        const child = req.body.child ?? null;
         delete req.body.child;
         const dataCreate = req.body;
         try {
             const result = await sequelize.transaction(async t => {
                 const newItemUser = await users.create(dataCreate);
-                var childData = child.map((childObj) => ({
-                    users_id: newItemUser.id,
-                    name: childObj.name,
-                    birthday: childObj.birthDay,
-                }));
 
-                const newItemChild = await children.bulkCreate(childData);
-                const itemsReturned = {
-                    ...newItemUser.toJSON(),
-                    child: newItemChild,
-                };
-                return itemsReturned;
+                if (!isNullOrEmpty(child)) {
+                    var childData = child.map((childObj) => ({
+                        users_id: newItemUser.id,
+                        name: childObj.name,
+                        birthday: childObj.birthday,
+                    }));
+                    const newItemChild = await children.bulkCreate(childData,{
+                        fields: ['name' , "birthday"],
+                    });
+                    var itemsReturned = {
+                        ...newItemUser.toJSON(),
+                        child: newItemChild,
+                    };
+                }
+                if (!isNullOrEmpty(child)) return itemsReturned
+                return newItemUser;
             });
             res.status(201).json({ newItem: result, message: "สำเร็จ" });
         }
@@ -183,7 +202,7 @@ class Controller extends BaseController {
     update = async (req, res, next) => {
         const method = 'UpdateUser';
         const { userId } = req.user;
-        const child = req.body.child;
+        const child = req.body.child ?? null;
         delete req.body.child;
         const dataUpdate = req.body;
         const dataId = req.params['id'];
@@ -194,26 +213,28 @@ class Controller extends BaseController {
                         id: dataId,
                     },
                 });
-                if (Array.isArray(child) && child.length > 0) {
-                    for (const c of child) {
-                        await children.update(
-                            {
-                                name: c.name,
-                                birthDay: c.birthDay,
-                            },
-                            {
-                                where: {
-                                    users_id: dataId,
-                                    name: c.name,
-                                },
-                            }
-                        );
-                    }
+                if (!isNullOrEmpty(child)) {
+                    var childData = child.map((childObj) => ({
+                        id: childObj.id,
+                        users_id: dataId,
+                        name: childObj.name,
+                        birthday: childObj.birthDay,
+                    }));
+                    const updateItemChild = await children.bulkCreate(childData, {
+                        updateOnDuplicate: ["name", "birthday", "users_id"]
+                    });
+                    var itemsReturned = {
+                        ...updated,
+                        child: updateItemChild,
+                    };
                 }
-                return updated;
+                return itemsReturned;
             });
-            logger.info('Complete', { method, data: { userId } });
-            res.status(201).json({ newItem: result, message: "สำเร็จ" });
+            if (result) {
+                logger.info('Complete', { method, data: { userId } });
+                return res.status(201).json({ newItem: result, message: "สำเร็จ" });
+            }
+            res.status(201).json({ newItem: result, message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {

@@ -40,8 +40,13 @@ export function formatCurrency(n) {
   return n ? new Intl.NumberFormat().format(n) : "-";
 }
 export function formatDateThaiSlash(d) {
-  if (d) return `${format(d, 'dd/MMM', { locale: th })}/${d.getFullYear() + 543}`;
-  return "-";
+  if (!d) return "-"; 
+
+  const dateObj = new Date(d);
+
+  if (isNaN(dateObj)) return "-";
+
+  return `${format(dateObj, "dd/MMM", { locale: th })}/${dateObj.getFullYear() + 543}`;
 }
 export function dateDiff(d1, d2) {
   if (!d1 || !d2) return null;

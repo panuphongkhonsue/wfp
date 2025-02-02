@@ -19,6 +19,11 @@ const categoryRouter = require('./routes/category');
 const configWelfareRouter = require('./routes/configWelfare');
 const logCategoryRouter = require('./routes/logCategory');
 const logSubCategoryRouter = require('./routes/logSubCategory');
+const departmentRouter = require('./routes/department');
+const employeeTypeRouter = require('./routes/employeeType');
+const postitionRouter = require('./routes/position');
+const sectorRouter = require('./routes/sector');
+const roleRouter = require('./routes/role');
 
 var app = express();
 app.set('trust proxy', true);
@@ -59,6 +64,14 @@ app.use('/category', auth, categoryRouter)
 app.use('/config-welfare', auth, configWelfareRouter)
 app.use('/log-category', auth, logCategoryRouter)
 app.use('/log-sub-category', auth, logSubCategoryRouter)
+app.use('/sub-category', auth, subCategoryRouter);
+app.use('/category', auth, categoryRouter);
+app.use('/config-welfare', auth, configWelfareRouter);
+app.use('/department', auth, departmentRouter);
+app.use('/employee-type', auth, employeeTypeRouter);
+app.use('/position', auth, postitionRouter);
+app.use('/sector', auth, sectorRouter);
+app.use('/role', auth, roleRouter);
 
 // error handling
 app.use((error, req, res, next) => {

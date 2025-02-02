@@ -8,10 +8,10 @@
           <div class="row q-btn--actionable items-center">
             <div class="row text-right q-mt-xs q-mr-sm">
               <div class="col-12 text-body2 text-grey-9 text-weight-bold">
-                Panuphong Khonsue
+                {{ user.name }}
               </div>
               <div style="margin-top: -4px" class="col-12 text-body2 text-grey-5 q-mt-md">
-                <small> Position </small>
+                <small> {{ user.position }} </small>
               </div>
             </div>
             <q-icon name="account_circle" size="md" />
@@ -79,98 +79,54 @@
 }
 </style>
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
 import { useMenuStore } from "src/stores/menuStore";
 import EssentialLink from "components/EssentialLink.vue";
-import { outlinedHome, outlinedDescription, outlinedBusiness, outlinedManageAccounts, outlinedAssessment, outlinedAssignment } from "@quasar/extras/material-icons-outlined";
-
+import { outlinedHome, outlinedDescription, outlinedBusiness, outlinedManageAccounts, outlinedAssessment, outlinedAssignment, outlinedSummarize } from "@quasar/extras/material-icons-outlined";
 const authStore = useAuthStore();
 const menuStore = useMenuStore();
 
 const leftDrawerOpen = ref(menuStore.getState());
 const router = useRouter();
-// const url = ref(null);
 
-// const user = ref({
-//   name: authStore.name,
-//   position: authStore.position,
-//   isAdmin: authStore.isAdmin,
-//   roleId: authStore.roleId,
-// });
-
-const essentialLinksUser = ref([
-  {
-    title: "หน้าหลัก",
-    icon: outlinedHome,
-    to: "home",
-  },
-  {
-    title: "สวัสดิการทั่วไป",
-    icon: outlinedDescription,
-    childs: [
-      {
-        title: "ค่าตรวจสุขภาพ",
-        to: { name: "health_check_up_welfare_list" },
-      },
-      {
-        title: "กรณีเจ็บป่วย",
-        to: { name: "medical_welfare_list" },
-      },
-      {
-        title: "ค่าทำฟัน",
-        to: { name: "dental_care_welfare_list" },
-      },
-    ],
-  },
-  {
-    title: "สวัสดิการค่าสงเคราะห์ต่าง ๆ",
-    icon: "diversity_1",
-    childs: [
-      {
-        title: "ค่าสงเคราะห์ต่าง ๆ",
-        to: { name: "various_welfare_list" },
-      },
-      {
-        title: "ค่าสงเคราะห์การเสียชีวิตครอบครัว",
-        to: { name: "various_welfare_funeral_family_list" },
-      },
-    ],
-  },
-  {
-    title: "สวัสดิการเกี่ยวกับการศึกษาของบุตร",
-    icon: outlinedBusiness,
-    to: 'children_edu_welfare_list',
-  },
-  {
-    title: "สวัสดิการค่าสงเคราะห์การเสียชีวิต",
-    icon: outlinedDescription,
-    to: 'funeral_welfare_list',
-  },
-]);
-const essentialLinksEditor = ref([
-  {
-    title: "จัดการข้อมูลการเบิกสวัสดิการ",
-    icon: outlinedAssignment,
-    to: "welfare_management_list",
-  },
-  {
-    title: "จัดการข้อมูลสวัสดิการ",
-    icon: outlinedAssignment,
-    to: "configuration_welfare",
-  },
-  {
-    title: "จัดการข้อมูลบุคลากร",
-    icon: outlinedManageAccounts,
-    to: "user_management_list"
-  },
-  {
-    title: "รายงาน",
-    icon: outlinedAssessment,
-    to: 'report',
-  },
-]);
+const user = ref({
+  name: authStore.name,
+  position: authStore.position,
+});
+const iconMap = {
+  outlinedHome,
+  outlinedDescription,
+  outlinedBusiness,
+  outlinedAssignment,
+  outlinedManageAccounts,
+  outlinedAssessment,
+  diversity_1: "diversity_1",
+  outlinedSummarize
+};
+const rawMenuData = ref(menuStore.getPath());
+const rawMenuEditorData = ref(menuStore.getPathEditor());
+const essentialLinksUser = computed(() => {
+  return rawMenuData.value.map(item => ({
+    ...item,
+    icon: iconMap[item.icon] ?? null,
+    childs: item.childs?.map(child => ({
+      ...child,
+      icon: iconMap[child.icon] ?? null
+    })) || null,
+  }));
+});
+const essentialLinksEditor = computed(() => {
+  return rawMenuEditorData.value.map(item => ({
+    ...item,
+    icon: iconMap[item.icon] ?? null,
+    childs: item.childs?.map(child => ({
+      ...child,
+      icon: iconMap[child.icon] ?? null
+    })) || null,
+  }));
+});;
 function toggleLeftDrawer() {
   menuStore.setState(!leftDrawerOpen.value);
   leftDrawerOpen.value = !leftDrawerOpen.value;

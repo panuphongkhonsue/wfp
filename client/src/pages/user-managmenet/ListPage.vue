@@ -1,5 +1,5 @@
 <template>
-  <ListLayout title="สวัสดิการทั่วไป (ค่าตรวจสุขภาพ)">
+  <ListLayout title="จัดการข้อมูลบุคลากร">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
@@ -16,8 +16,8 @@
 
     <template v-slot:table>
       <div class="col-12 q-pb-md q-pr-md flex justify-end">
-        <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มบุคลากร"
-          icon="add" :to="{ name: 'user_management_new' }" />
+        <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มบุคลากร" icon="add"
+          :to="{ name: 'user_management_new' }" />
       </div>
       <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
         row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
@@ -65,6 +65,7 @@ import { Notify } from "quasar";
 import { useListStore } from "src/stores/listStore";
 import { useRoute, useRouter } from "vue-router";
 
+import userManagementService from "src/boot/service/userManagementService";
 import { ref, onMounted, watch, onBeforeUnmount } from "vue";
 
 import {
@@ -81,21 +82,10 @@ const filter = ref({
   keyword: null,
 });
 const pagination = ref({
-  sortBy: "desc",
-  descending: false,
   page: 1,
   rowsPerPage: 20,
 });
-const model = ref([
-  {
-    id: 1,
-    name: 'ภานุพงศ์ คนซื่อ',
-    position: "อาจารย์",
-    employeeType: "นักศึกษา",
-    department: "สถาบันการศึกษา",
-    sector: "วิศวกรรมซอฟต์แวร์",
-  },
-]);
+const model = ref([]);
 const tableRef = ref();
 
 onMounted(async () => {
@@ -124,22 +114,20 @@ async function init() {
   await tableRef.value.requestServerInteraction();
 }
 
-async function fetchFromServer() {
+async function fetchFromServer(page, itemPerPage, filter) {
   try {
-    // const result = await GspcApproveSerivce.list({
-    //   pageNo: page,
-    //   itemPerPage: count,
-    //   keyword: filter.value.keyword,
-    //   dateSelected: formatDateServer(filter.value.dateSelected),
-    //   endDate: formatDateServer(filter.value.endDate),
-    // });
-    pagination.value.rowsNumber = 5;
-    return;
+    const result = await userManagementService.list({
+      page: page,
+      itemPerPage: itemPerPage,
+      keyword: filter.keyword,
+    });
+    pagination.value.rowsNumber = result.data?.pagination?.total;
+    return result.data.datas;
   } catch (error) {
     Notify.create({
       message:
-        error?.response?.data?.message ??
-        "Something wrong please try again later.",
+         error?.response?.data?.errors ??
+        "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
       position: "bottom-left",
       type: "negative",
     });
@@ -147,7 +135,7 @@ async function fetchFromServer() {
 }
 
 function onRequest(props) {
-  const { page, rowsPerPage, sortBy, descending } = props.pagination;
+  const { page, rowsPerPage, } = props.pagination;
   listStore.setState(rowsPerPage);
   isLoading.value = true;
   setTimeout(async () => {
@@ -155,15 +143,11 @@ function onRequest(props) {
       const returnedData = await fetchFromServer(
         page,
         rowsPerPage,
-        filter,
-        sortBy,
-        descending
+        filter.value,
       );
       if (returnedData) model.value.splice(0, model.value.length, ...returnedData);
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
-      pagination.value.sortBy = sortBy;
-      pagination.value.descending = descending;
     } catch (error) {
       Promise.reject(error)
     }

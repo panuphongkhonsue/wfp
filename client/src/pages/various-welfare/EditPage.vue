@@ -39,8 +39,10 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">คงเหลือ 3,000 บาท</p>
-              <p class="col-12 q-mb-none">คงเหลือจำนวน 1 ครั้ง</p>
+              <p class="col-12 q-mb-none">ค่าสมรส : 1</p>
+              <p class="col-12 q-mb-none">ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ : 1</p>
+              <p class="col-12 q-mb-none">ค่ารับขวัญบุตร : -</p>
+              <p class="col-12 q-mb-none">กรณีประสบภัยพิบัติ : -</p>
             </q-card-section>
           </q-card>
         </div>
@@ -59,24 +61,24 @@
               </div>
               <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
                 <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p>
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p> 
+                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p>
                 <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p>
                 <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 10,000 บาท)</p>
               </div>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
-                <div class="col-lg-4 col-12 ">
-                  <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" is-require
-                    label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
-                  </InputGroup>
-                </div>
-                <div class="col-lg-2"></div>
-                <div class="col-lg-4 col-12 ">
-                  <InputGroup for-id="fund" is-dense v-model="model.fund2" :data="model.fund ?? '-'" is-require
-                    label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView">
-                  </InputGroup>
-                </div>
-              </q-card-section>
+              <div class="col-lg-4 col-12 ">
+                <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" is-require
+                  label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
+                </InputGroup>
+              </div>
+              <div class="col-lg-2"></div>
+              <div class="col-lg-4 col-12 ">
+                <InputGroup for-id="fund" is-dense v-model="model.fund2" :data="model.fund ?? '-'" is-require
+                  label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView">
+                </InputGroup>
+              </div>
+            </q-card-section>
           </q-card>
         </div>
         <div class="col-md-3 col-12">
