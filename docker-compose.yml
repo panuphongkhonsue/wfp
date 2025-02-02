@@ -6,7 +6,7 @@ services:
     ports:
       - "8003:80"
     restart: always
-  nodejs:
+  wfp_server:
     container_name: WFP_API
     depends_on:
       - db
@@ -20,8 +20,6 @@ services:
       - "8004:3000"
     expose:
       - "3000"
-    networks:
-      - my_network
   db:
     image: mariadb:latest
     restart: always
