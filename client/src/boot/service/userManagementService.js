@@ -27,4 +27,12 @@ export default {
       Promise.reject(error);
     }
   },
+  delete(id) {
+    try {
+      return api.delete(`${path}/${id}`);
+    }
+    catch (error) {
+      Promise.reject(error);
+    }
+  },
 };

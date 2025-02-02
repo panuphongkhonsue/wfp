@@ -49,6 +49,10 @@
             <a @click.stop.prevent="goto(props.row.id)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
+            <a @click.stop.prevent="deleteData(props.row.id, props.row.name)"
+              class="text-dark q-py-sm q-px-xs cursor-pointer">
+              <q-icon :name="outlinedDelete" size="xs" color="red" />
+            </a>
           </q-td>
         </template>
       </q-table>
@@ -60,6 +64,7 @@
 import ListLayout from "src/layouts/ListLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 
+import Swal from "sweetalert2";
 import { Notify } from "quasar";
 
 import { useListStore } from "src/stores/listStore";
@@ -71,6 +76,7 @@ import { ref, onMounted, watch, onBeforeUnmount } from "vue";
 import {
   outlinedEdit,
   outlinedVisibility,
+  outlinedDelete,
 } from "@quasar/extras/material-icons-outlined";
 defineOptions({
   name: "healthCheckUpWelfareList",
@@ -113,7 +119,49 @@ async function init() {
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
 }
-
+async function deleteData(id, name) {
+  Swal.fire({
+    title: "ยืนยันการลบข้อมูลหรือไม่ ???",
+    html: `โปรดตรวจสอบข้อมูลให้แน่ใจก่อนยืนยัน`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "ยืนยัน",
+    cancelButtonText: "ยกเลิก",
+    showLoaderOnConfirm: true,
+    reverseButtons: true,
+    customClass: {
+      confirmButton: "save-button",
+      cancelButton: "cancel-button",
+    },
+    preConfirm: async () => {
+      try {
+        await userManagementService.delete(id);
+      } catch (error) {
+        Swal.showValidationMessage(`Delete Request Failed.`);
+        Notify.create({
+          message:
+            error?.response?.data?.errors ??
+            "ลบไม่สำเร็จกรุณาลองอีกครั้ง",
+          position: "bottom-left",
+          type: "negative",
+        });
+      }
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        html: `ผู้ใช้งาน <b>${name}</b> ถูกลบ`,
+        icon: "success",
+        confirmButtonText: "ตกลง",
+        customClass: {
+          confirmButton: "save-button",
+        },
+      }).then(() => {
+        location.reload();
+      });
+    }
+  });
+}
 async function fetchFromServer(page, itemPerPage, filter) {
   try {
     const result = await userManagementService.list({
@@ -126,7 +174,7 @@ async function fetchFromServer(page, itemPerPage, filter) {
   } catch (error) {
     Notify.create({
       message:
-         error?.response?.data?.errors ??
+        error?.response?.data?.errors ??
         "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
       position: "bottom-left",
       type: "negative",
