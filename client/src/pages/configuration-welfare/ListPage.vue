@@ -436,34 +436,14 @@ async function updateConfigWelfare(propsRowData) {
           // Code
           //Api
           if (propsRowData.categoryFund) {
-            const response = await categoryService.updateCategory(propsRowData.categoryId, payload.value);
-            Notify.create({
-              message: "Success",
-              position: "bottom-left",
-              type: "positive",
-            });
-
-            const responseLogCategory = await logCategoryService.addLogCategory(payloadLogCategory.value);
-
+            await categoryService.updateCategory(propsRowData.categoryId, payload.value);
+            await logCategoryService.addLogCategory(payloadLogCategory.value);
             await init();
-            console.log("ResponseLog: ", responseLogCategory)
-            console.log("ResponseCategory: ", response.data.message);
           }
           else {
-            const response = await subCategoryService.updateSubCategory(propsRowData.subCategoryId, payload.value);
-            Notify.create({
-              message: "Success",
-              position: "bottom-left",
-              type: "positive",
-            });
-
-            console.log(propsRowData)
-
-            const responseLogSubCategory = await logSubCategoryService.addLogSubCategory(payloadLogSubCategory.value);
-
+            await subCategoryService.updateSubCategory(propsRowData.subCategoryId, payload.value);
+            await logSubCategoryService.addLogSubCategory(payloadLogSubCategory.value);
             await init();
-            console.log("ResponseLog: ", responseLogSubCategory)
-            console.log(response.data.message);
           }
         } catch (error) {
           if (error?.response?.status == 400) {
@@ -474,12 +454,12 @@ async function updateConfigWelfare(propsRowData) {
               };
             }
           }
-          await init();
-          // Notify.create({
-          //   message: `[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง`,
-          //   position: "bottom-left",
-          //   type: "negative",
-          // });
+          location.reload();
+          Notify.create({
+            message: `[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง`,
+            position: "bottom-left",
+            type: "negative",
+          });
         }
       },
     }).then((result) => {
@@ -492,7 +472,7 @@ async function updateConfigWelfare(propsRowData) {
             confirmButton: "save-button",
           },
         }).then(() => {
-          router.replace({ name: "configuration_welfare" });
+          location.reload();
         });
       }
     });
