@@ -438,12 +438,10 @@ async function updateConfigWelfare(propsRowData) {
           if (propsRowData.categoryFund) {
             await categoryService.updateCategory(propsRowData.categoryId, payload.value);
             await logCategoryService.addLogCategory(payloadLogCategory.value);
-            await init();
           }
           else {
             await subCategoryService.updateSubCategory(propsRowData.subCategoryId, payload.value);
             await logSubCategoryService.addLogSubCategory(payloadLogSubCategory.value);
-            await init();
           }
         } catch (error) {
           if (error?.response?.status == 400) {
