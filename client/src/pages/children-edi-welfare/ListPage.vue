@@ -14,9 +14,9 @@
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
-          <q-select :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusId"
-            :options="options" label="สถานะ" multiple dense clearable option-value="statusId" emit-value map-options
-            option-label="name">
+          <q-select :loading="isLoading" id="selected-status" popup-content-class="font-14 font-regular"
+            class="font-14 font-regular q-pt-sm" outlined v-model="filter.statusId" :options="options" label="สถานะ"
+            multiple dense clearable option-value="statusId" emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey"> No option </q-item-section>
@@ -46,7 +46,7 @@
         table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
         @request="onRequest" @row-click="(evt, row, index) => viewData(row.requestId)">
         <template v-slot:body-cell-index="props">
-          <q-td :props="props" >
+          <q-td :props="props">
             {{ props.rowIndex + 1 }}
           </q-td>
         </template>
