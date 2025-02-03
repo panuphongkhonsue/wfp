@@ -3,7 +3,8 @@ const { initLogger } = require('../logger');
 const logger = initLogger('ConfigWelfareValidator');
 const { Op } = require('sequelize')
 const permissionType = require('../enum/permission')
-const { permissionsHasRoles } = require('../models/mariadb')
+const { permissionsHasRoles } = require('../models/mariadb');
+const role = require('../enum/role');
 
 
 const bindFilter = async (req, res, next) => {
@@ -67,11 +68,12 @@ const bindUpdate = async (req, res, next) => {
 
 const authPermission = async (req, res, next) => {
 	const method = 'AuthPermission';
-	const { roleID } = req.user;
+	const { roleId } = req.user;
 	try {
+		console.log("reg: " , req)
 		const isAccess = await permissionsHasRoles.count({
 			where: {
-				[Op.and]: [{ roles_id: roleID }, { permissions_id: permissionType.configWelfare }],
+				[Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.configWelfare }],
 			},
 		});
 		if (!isAccess) {

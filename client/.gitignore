@@ -30,6 +30,11 @@ yarn-error.log*
 *.sln
 
 # local .env files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 .env.local*
 /test-results/
 /playwright-report/

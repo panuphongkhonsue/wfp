@@ -52,7 +52,8 @@
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund" is-dense v-model="model.claimFund" :data="model.claimFund ?? '-'" is-require
-                label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" compclass="col-xs-12 col-lg-3 col-xl-2" :is-view="isView">
+                label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" compclass="col-xs-12 col-lg-3 col-xl-2"
+                :is-view="isView">
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-none font-medium font-16">
@@ -185,7 +186,7 @@ async function fetchFromServer() {
   } catch (error) {
     Notify.create({
       message:
-        error?.response?.data?.message ??
+        error?.response?.data?.errors ??
         "Something wrong please try again later.",
       position: "bottom-left",
       type: "negative",
@@ -265,15 +266,8 @@ async function submit() {
             };
           }
         }
-        Swal.showValidationMessage(
-          `Save Data Failed. ${error.response?.data?.message ??
-          "Something wrong please try again later."
-          }`
-        );
         Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "Something wrong please try again later.",
+          message: `[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง`,
           position: "bottom-left",
           type: "negative",
         });
@@ -284,7 +278,7 @@ async function submit() {
       Swal.fire({
         html: `Request Save.`,
         icon: "success",
-        confirmButtonText: "OK",
+        confirmButtonText: "ตกลง",
         customClass: {
           confirmButton: "save-button",
         },

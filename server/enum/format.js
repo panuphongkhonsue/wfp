@@ -3,7 +3,7 @@ const getpathMenu = (e) => {
         case 1:
             return {
                 title: "สวัสดิการทั่วไป",
-                icon: "$outlinedDescription$",
+                icon: "outlinedDescription",
                 childs: [
                     {
                         title: "ค่าตรวจสุขภาพ",
@@ -22,7 +22,7 @@ const getpathMenu = (e) => {
         case 2:
             return {
                 title: "สวัสดิการค่าสงเคราะห์ต่าง ๆ",
-                icon: "$diversity_1$",
+                icon: "diversity_1",
                 childs: [
                     {
                         title: "ค่าสงเคราะห์ต่าง ๆ",
@@ -37,13 +37,13 @@ const getpathMenu = (e) => {
         case 3:
             return {
                 title: "สวัสดิการเกี่ยวกับการศึกษาของบุตร",
-                icon: "$outlinedBusiness$",
+                icon: "outlinedBusiness",
                 to: 'children_edu_welfare_list',
             };
         case 4:
             return {
                 title: "สวัสดิการค่าสงเคราะห์การเสียชีวิต",
-                icon: "$outlinedDescription$",
+                icon: "outlinedDescription",
                 to: 'funeral_welfare_list',
             };
     }
@@ -53,25 +53,25 @@ const getpathMenuEditor = (e) => {
         case 5:
             return {
                 title: "จัดการข้อมูลการเบิกสวัสดิการ",
-                icon: "$outlinedAssignment$",
+                icon: "outlinedAssignment",
                 to: "welfare_management_list",
             };
         case 6:
             return {
                 title: "จัดการข้อมูลสวัสดิการ",
-                icon: "$outlinedAssignment$",
+                icon: "outlinedSummarize",
                 to: "configuration_welfare",
             };
         case 7:
             return {
                 title: "จัดการข้อมูลบุคลากร",
-                icon: "$outlinedManageAccounts$",
+                icon: "outlinedManageAccounts",
                 to: "user_management_list"
             };
         case 8:
             return {
                 title: "รายงาน",
-                icon: "$outlinedAssessment$",
+                icon: "outlinedAssessment",
                 to: 'report',
             };
     }

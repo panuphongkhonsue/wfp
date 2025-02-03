@@ -3,6 +3,7 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   const model = sequelize.define('permissions', {
     id: {
+      autoIncrement: true,
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true

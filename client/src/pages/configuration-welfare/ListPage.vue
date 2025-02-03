@@ -4,9 +4,9 @@
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
 
         <div class="content-center col-12 col-md-4 col-lg-3">
-          <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm font-14 font-regular" popup-content-class="font-14 font-regular" outlined v-model="filter.welfareId"
-            :options="optionWelfareType" label="ประเภทสวัสดิการ" dense clearable option-value="welfareId" emit-value
-            map-options option-label="name">
+          <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm font-14 font-regular"
+            popup-content-class="font-14 font-regular" outlined v-model="filter.welfareId" :options="optionWelfareType"
+            label="ประเภทสวัสดิการ" dense clearable option-value="welfareId" emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">No option</q-item-section>
@@ -113,6 +113,7 @@ import categoryService from "src/boot/service/categoryService";
 import subCategoryService from "src/boot/service/subCategoryService";
 import logCategoryService from "src/boot/service/logCategoryService";
 import logSubCategoryService from "src/boot/service/logSubCategoryService";
+import Swal from "sweetalert2";
 
 const clickEditIndex = ref(null);
 const modelDate = ref(null);
@@ -121,6 +122,7 @@ const router = useRouter();
 const isLoading = ref(false);
 const listStore = useListStore();
 const tableRef = ref();
+const isError = ref({});
 const payload = ref(
   {
     fund: null,
@@ -229,7 +231,7 @@ async function init() {
     perTimes: null,
     perYears: null
   };
-  payloadLogCategory.value = 
+  payloadLogCategory.value =
   {
     name: null,
     fundOld: null,
@@ -278,7 +280,7 @@ async function fetchFromServer(page, rowPerPage, filters) {
 }
 
 function onRequest(props) {
-  const { page, rowsPerPage} = props.pagination;
+  const { page, rowsPerPage } = props.pagination;
   listStore.setState(rowsPerPage);
   isLoading.value = true;
   setTimeout(async () => {
@@ -289,20 +291,20 @@ function onRequest(props) {
         filter,
       );
       model.value = returnedData.map(item => ({
-      welfareId: item.welfare_id,
-      welfareType: item.welfare_name,
-      subCategory: item.category_name,
-      description: item.sub_category_name ?? '-',
-      fund: item.category_fund ?? item.sub_category_fund ?? '-',
-      perYears: item.category_per_years ?? item.sub_category_per_years ?? '-',
-      perTimes: item.category_per_times ?? item.sub_category_per_times ?? '-',
-      categoryId: item.category_id,
-      categoryFund: item.category_fund,
-      categoryName: item.category_name,
-      subCategoryId: item.sub_category_id,
-      subCategoryFund: item.sub_category_fund,
-      subCategoryName: item.sub_category_name
-    }));
+        welfareId: item.welfare_id,
+        welfareType: item.welfare_name,
+        subCategory: item.category_name,
+        description: item.sub_category_name ?? '-',
+        fund: item.category_fund ?? item.sub_category_fund ?? '-',
+        perYears: item.category_per_years ?? item.sub_category_per_years ?? '-',
+        perTimes: item.category_per_times ?? item.sub_category_per_times ?? '-',
+        categoryId: item.category_id,
+        categoryFund: item.category_fund,
+        categoryName: item.category_name,
+        subCategoryId: item.sub_category_id,
+        subCategoryFund: item.sub_category_fund,
+        subCategoryName: item.sub_category_name
+      }));
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
     } catch (error) {
@@ -323,128 +325,155 @@ function search() {
 
 async function updateConfigWelfare(propsRowData) {
   try {
-    let validateMessage = "";
+    Swal.fire({
+      title: "คุณต้องการแก้ไขข้อมูลสวัสดิการนี้หรือไม่",
+      // html: `You won't be able to revert this!`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
+      showLoaderOnConfirm: true,
+      reverseButtons: true,
+      customClass: {
+        confirmButton: "save-button",
+        cancelButton: "cancel-button",
+      },
+      preConfirm: async () => {
+        try {
 
-    if (payload.value.fund == null && payload.value.perYears == null && payload.value.perTimes == null) {
-      validateMessage = "ข้อมูลไม่ได้ถูกแก้ไข";
-    }
-    else {
-      if (payload.value.fund != null) {
-        if (payload.value.fund <= 0) {
-          validateMessage = "ข้อมูลเพดานเงินไม่ถูกต้อง";
-        }
-      }
-      else{
-        if(propsRowData.categoryFund){
-          payload.value.fund = propsRowData.categoryFund;
-        }
-        else{
-          payload.value.fund = propsRowData.subCategoryFund;
-        }
-      }
-      
-      if (payload.value.perYears != null) {
-        if (payload.value.perYears < 0) {
-          validateMessage = "ข้อมูลจำนวนครั้ง(ต่อปี)ไม่ถูกต้อง";
-        }
-        else if(payload.value.perYears == 0){
-          payload.value.perYears = null;
-        }
-      }
-      else{
-        if(propsRowData.categoryFund){
-          payload.value.perYears = propsRowData.category_per_years;
-        }
-        else{
-          payload.value.perYears = propsRowData.sub_category_per_years;
-        }
-      }
-      if (payload.value.perTimes != null) {
-        if (payload.value.perTimes < 0) {
-          validateMessage = "ข้อมูลครั้งละไม่เกินไม่ถูกต้อง";
-        }
-        else if(payload.value.perTimes == 0){
-          payload.value.perTimes = null;
-        }
-        else if(payload.value.perTimes > payload.value.fund){
-          validateMessage = "ข้อมูลครั้งละไม่เกินสูงกว่าเพดานเงิน";
-        }
-      }
-      else{
-        if(propsRowData.categoryFund){
-          payload.value.perTimes = propsRowData.category_perTimes;
-        }
-        else{
-          payload.value.perTimes = propsRowData.sub_category_perTimes;
-        }
-      }
-    }
-    if (validateMessage) {
-      Notify.create({
-        message: validateMessage,
-        position: "bottom-left",
-        type: "negative",
-      });
-      clickEditIndex.value = null; // Reset the editing state
-      return;
-    }
+          //Validate
+          let validateMessage = "";
 
-    payloadLogCategory.value = (
-      {
-        name: propsRowData.categoryName,
-        fundOld: propsRowData.categoryFund,
-        fundNew: payload.value.fund,
-        perTimesOld: propsRowData.perTimes === '-' ? null : propsRowData.perTimes,
-        perTimesNew: payload.value.perTimes === '-' ? null : payload.value.perTimes,
-        perYearsOld: propsRowData.perYears === '-' ? null : propsRowData.perYears,
-        perYearsNew: payload.value.perYears === '-' ? null : payload.value.perYears,
-        categoryId: propsRowData.categoryId === '-' ? null : propsRowData.categoryId
+          if (payload.value.fund == null && payload.value.perYears == null && payload.value.perTimes == null) {
+            validateMessage = "ข้อมูลไม่ได้ถูกแก้ไข";
+          }
+          else {
+            if (payload.value.fund != null) {
+              if (payload.value.fund <= 0) {
+                validateMessage = "ข้อมูลเพดานเงินไม่ถูกต้อง";
+              }
+            }
+            else {
+              if (propsRowData.categoryFund) {
+                payload.value.fund = propsRowData.categoryFund;
+              }
+              else {
+                payload.value.fund = propsRowData.subCategoryFund;
+              }
+            }
+
+            if (payload.value.perYears != null) {
+              if (payload.value.perYears < 0) {
+                validateMessage = "ข้อมูลจำนวนครั้ง(ต่อปี)ไม่ถูกต้อง";
+              }
+              else if (payload.value.perYears == 0) {
+                payload.value.perYears = null;
+              }
+            }
+            else {
+              if (propsRowData.categoryFund) {
+                payload.value.perYears = propsRowData.category_per_years;
+              }
+              else {
+                payload.value.perYears = propsRowData.sub_category_per_years;
+              }
+            }
+            if (payload.value.perTimes != null) {
+              if (payload.value.perTimes < 0) {
+                validateMessage = "ข้อมูลครั้งละไม่เกินไม่ถูกต้อง";
+              }
+              else if (payload.value.perTimes == 0) {
+                payload.value.perTimes = null;
+              }
+              else if (payload.value.perTimes > payload.value.fund) {
+                validateMessage = "ข้อมูลครั้งละไม่เกินสูงกว่าเพดานเงิน";
+              }
+            }
+            else {
+              if (propsRowData.categoryFund) {
+                payload.value.perTimes = propsRowData.category_perTimes;
+              }
+              else {
+                payload.value.perTimes = propsRowData.sub_category_perTimes;
+              }
+            }
+          }
+
+          payloadLogCategory.value = (
+            {
+              name: propsRowData.categoryName,
+              fundOld: propsRowData.categoryFund,
+              fundNew: payload.value.fund,
+              perTimesOld: propsRowData.perTimes === '-' ? null : propsRowData.perTimes,
+              perTimesNew: payload.value.perTimes === '-' ? null : payload.value.perTimes,
+              perYearsOld: propsRowData.perYears === '-' ? null : propsRowData.perYears,
+              perYearsNew: payload.value.perYears === '-' ? null : payload.value.perYears,
+              categoryId: propsRowData.categoryId === '-' ? null : propsRowData.categoryId
+            }
+          );
+
+          payloadLogSubCategory.value = (
+            {
+              name: propsRowData.subCategoryName,
+              fundOld: propsRowData.subCategoryFund,
+              fundNew: payload.value.fund,
+              perTimesOld: propsRowData.perTimes === '-' ? null : propsRowData.perTimes,
+              perTimesNew: payload.value.perTimes === '-' ? null : payload.value.perTimes,
+              perYearsOld: propsRowData.perYears === '-' ? null : propsRowData.perYears,
+              perYearsNew: payload.value.perYears === '-' ? null : payload.value.perYears,
+              subCategoryId: propsRowData.subCategoryId === '-' ? null : propsRowData.subCategoryId
+            }
+          );
+          if (validateMessage) {
+            Notify.create({
+              message: validateMessage,
+              position: "bottom-left",
+              type: "negative",
+            });
+            clickEditIndex.value = null; // Reset the editing state
+            return;
+          }
+          // Code
+          //Api
+          if (propsRowData.categoryFund) {
+            await categoryService.updateCategory(propsRowData.categoryId, payload.value);
+            await logCategoryService.addLogCategory(payloadLogCategory.value);
+          }
+          else {
+            await subCategoryService.updateSubCategory(propsRowData.subCategoryId, payload.value);
+            await logSubCategoryService.addLogSubCategory(payloadLogSubCategory.value);
+          }
+        } catch (error) {
+          if (error?.response?.status == 400) {
+            if (Object.keys(error?.response?.data?.errors ?? {}).length) {
+              isError.value = {
+                ...isError.value,
+                ...error.response?.data?.errors,
+              };
+            }
+          }
+          location.reload();
+          Notify.create({
+            message: `[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง`,
+            position: "bottom-left",
+            type: "negative",
+          });
+        }
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: `แก้ไขข้อมูลสำเร็จ.`,
+          icon: "success",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
+        }).then(() => {
+          location.reload();
+        });
       }
-    );
-
-    payloadLogSubCategory.value = (
-      {
-        name: propsRowData.subCategoryName,
-        fundOld: propsRowData.subCategoryFund,
-        fundNew: payload.value.fund,
-        perTimesOld: propsRowData.perTimes === '-' ? null : propsRowData.perTimes,
-        perTimesNew: payload.value.perTimes === '-' ? null : payload.value.perTimes,
-        perYearsOld: propsRowData.perYears === '-' ? null : propsRowData.perYears,
-        perYearsNew: payload.value.perYears === '-' ? null : payload.value.perYears,
-        subCategoryId: propsRowData.subCategoryId === '-' ? null : propsRowData.subCategoryId
-      }
-    );
-
-    if (propsRowData.categoryFund) {
-      const response = await categoryService.updateCategory(propsRowData.categoryId, payload.value);
-      Notify.create({
-        message: "Success",
-        position: "bottom-left",
-        type: "positive",
-      });
-      
-      const responseLogCategory = await logCategoryService.addLogCategory(payloadLogCategory.value);
-
-      await init();
-      console.log("ResponseLog: ", responseLogCategory)
-      console.log("ResponseCategory: ", response.data.message);
-    }
-    else {
-      const response = await subCategoryService.updateSubCategory(propsRowData.subCategoryId, payload.value);
-      Notify.create({
-        message: "Success",
-        position: "bottom-left",
-        type: "positive",
-      });
-
-      console.log(propsRowData)
-
-      const responseLogSubCategory = await logSubCategoryService.addLogSubCategory(payloadLogSubCategory.value);
-
-      await init();
-      console.log("ResponseLog: ", responseLogSubCategory)
-      console.log(response.data.message);
-    }
+    });
   } catch (error) {
     console.log(`Error : `, error)
   }

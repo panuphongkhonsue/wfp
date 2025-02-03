@@ -3,6 +3,7 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   const model = sequelize.define('reimbursementsEmployeeDeceased', {
     id: {
+      autoIncrement: true,
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true
@@ -39,18 +40,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATEONLY,
       allowNull: true
     },
-    daft_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    send_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    approve_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -72,10 +61,6 @@ module.exports = function(sequelize, DataTypes) {
         model: 'users',
         key: 'id'
       }
-    },
-    created_by_children: {
-      type: DataTypes.BIGINT,
-      allowNull: false
     }
   }, {
     sequelize,
@@ -95,7 +80,6 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "created_by" },
-          { name: "created_by_children" },
         ]
       },
     ]

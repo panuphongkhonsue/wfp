@@ -184,7 +184,7 @@ async function fetchFromServer() {
   } catch (error) {
     Notify.create({
       message:
-        error?.response?.data?.message ??
+        error?.response?.data?.errors ??
         "Something wrong please try again later.",
       position: "bottom-left",
       type: "negative",
@@ -264,15 +264,8 @@ async function submit() {
             };
           }
         }
-        Swal.showValidationMessage(
-          `Save Data Failed. ${error.response?.data?.message ??
-          "Something wrong please try again later."
-          }`
-        );
         Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "Something wrong please try again later.",
+          message: `[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง`,
           position: "bottom-left",
           type: "negative",
         });
@@ -283,7 +276,7 @@ async function submit() {
       Swal.fire({
         html: `Request Save.`,
         icon: "success",
-        confirmButtonText: "OK",
+        confirmButtonText: "ตกลง",
         customClass: {
           confirmButton: "save-button",
         },

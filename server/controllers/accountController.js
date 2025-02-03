@@ -65,7 +65,7 @@ exports.login = async (req, res, next) => {
                 const positions = user?.position?.name;
                 const department = user?.department?.name;
                 const sector = user?.sector.name;
-                user.roleID = role?.id ? role.id : null;
+                user.roleId = role?.id ? role.id : null;
                 user.position = positions;
                 user.department = department;
                 user.sector = sector;
@@ -82,11 +82,18 @@ exports.login = async (req, res, next) => {
                 );
                 const userPermission = await permissionsHasRoles.findAll(
                     {
-                        where: { roles_id: user.roleID },
+                        where: { roles_id: user.roleId },
                         attributes: ['permissions_id'],
                     }
                 );
-                const path = userPermission.map((userObj) => getpathMenu(userObj)).filter((result) => result !== null && result !== undefined);
+                const path = [
+                    {
+                        title: "หน้าหลัก",
+                        icon: "outlinedHome",
+                        to: "home",
+                    },
+                    ...userPermission.map((userObj) => getpathMenu(userObj)).filter((result) => result !== null && result !== undefined)
+                ];
                 const pathEditor = userPermission.map((userObj) => getpathMenuEditor(userObj)).filter((result) => result !== null && result !== undefined);
                 user.path = path;
                 if (pathEditor) user.pathEditor = pathEditor;

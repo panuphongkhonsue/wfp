@@ -14,7 +14,7 @@
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
-          <q-select :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusId"
+          <q-select popup-content-class="font-14 font-regular" :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusId"
             :options="options" label="สถานะ" multiple dense clearable option-value="statusId" emit-value map-options
             option-label="name">
             <template v-slot:no-option>
@@ -235,7 +235,7 @@ async function fetchFromServer() {
   } catch (error) {
     Notify.create({
       message:
-        error?.response?.data?.message ??
+         error?.response?.data?.errors ??
         "Something wrong please try again later.",
       position: "bottom-left",
       type: "negative",
@@ -310,7 +310,7 @@ async function deleteData(id) {
         Swal.showValidationMessage(`Delete Request Failed.`);
         Notify.create({
           message:
-            error?.response?.data?.message ??
+             error?.response?.data?.errors ??
             "Delete Request Failed, Something wrong please try again later.",
           position: "bottom-left",
           type: "negative",

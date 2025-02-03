@@ -3,6 +3,7 @@ const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
   const model = sequelize.define('reimbursementsGeneral', {
     id: {
+      autoIncrement: true,
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true
@@ -15,20 +16,12 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
+    fund_eligible: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
     fund_sum_request: {
       type: DataTypes.DECIMAL(10,0),
-      allowNull: false
-    },
-    fund_receipt_patient_visit: {
-      type: DataTypes.DECIMAL(10,0),
-      allowNull: true
-    },
-    fund_sum_request_patient_visit: {
-      type: DataTypes.DECIMAL(10,0),
-      allowNull: true
-    },
-    status: {
-      type: DataTypes.ENUM('DRAFT','WAIT_VERIFY','APPROVED'),
       allowNull: false
     },
     fund_decree: {
@@ -39,19 +32,31 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },
-    fund_other: {
+    fund_receipt_patient_visit: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },
-    date_receipt: {
-      type: DataTypes.DATEONLY,
+    fund_sum_request_patient_visit: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
+    fund_eligible_name: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    fund_eligible_sum: {
+      type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },
     start_date: {
       type: DataTypes.DATEONLY,
       allowNull: true
     },
-    due_date: {
+    end_date: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    date_receipt: {
       type: DataTypes.DATEONLY,
       allowNull: true
     },
@@ -59,17 +64,9 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATEONLY,
       allowNull: true
     },
-    draft_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    send_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    approve_date: {
-      type: DataTypes.DATE,
-      allowNull: true
+    status: {
+      type: DataTypes.ENUM('DRAFT','WAIT_VERIFY','APPROVED'),
+      allowNull: false
     },
     created_at: {
       type: DataTypes.DATE,
@@ -82,10 +79,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: Sequelize.Sequelize.fn('current_timestamp')
     },
     updated_by: {
-      type: DataTypes.BIGINT,
-      allowNull: false
-    },
-    created_by_children: {
       type: DataTypes.BIGINT,
       allowNull: false
     },
@@ -123,7 +116,6 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "created_by" },
-          { name: "created_by_children" },
         ]
       },
       {

@@ -7,9 +7,7 @@ import { useAuthStore } from 'src/stores/authStore';
 // good idea to move this instance creation inside of the
 // "export default () => {}" function below (which runs individually
 // for each client)
-const baseURL = process.env.PRODUCTION
-  ? "http://localhost:3000/"
-  : "http://localhost:3000/";
+const baseURL = process.env.API;
 
 const api = axios.create({ baseURL });
 
