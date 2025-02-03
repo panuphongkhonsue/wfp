@@ -1,8 +1,9 @@
-const Sequelize = require('sequelize');
 const sequelizePaginate = require('sequelize-paginate');
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  const departments = sequelize.define('departments', {
+  const model = sequelize.define('departments', {
     id: {
+      autoIncrement: true,
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true
@@ -36,8 +37,6 @@ module.exports = function(sequelize, DataTypes) {
       },
     ]
   });
-  
-  sequelizePaginate.paginate(departments);
-
-  return departments;
+  sequelizePaginate.paginate(model);
+  return model;
 };

@@ -1,76 +1,149 @@
 <template>
-    <div class="row bg-blue-10" style="height: 100vh;">
-      <div class="col-0 col-md-6 flex justify-center content-center">
-        <img src="../../assets/loginimage.svg" alt="login-image" class="responsive" />
-      </div>
-      <div class="col-12 col-md-6 flex justify-center content-center">
-        <q-card class="q-pa-lg shadow-2" :style="{ width: $q.screen.lt.sm ? '90%' : '60%' }">
-          <q-card-section class="flex justify-center">
-            <img src="../../assets/loginlogo.svg" alt="login-logo" />
-          </q-card-section>
-  
-          <q-card-section class="text-center">
-            <h2 class="text-h4 font-bold text-uppercase">ระบบเบิกสวัสดิการ</h2>
-          </q-card-section>
-          
-          <q-card-section>
-            <q-form @submit.prevent="login" class="q-gutter-md">
-              <!-- Username -->
-              <q-input 
-                v-model="username" 
-                label="Username" 
-                :rules="[val => !!val || 'กรุณากรอก Username']"
-              />
-              <!-- Password -->
-              <q-input 
-                v-model="password" 
-                label="Password" 
-                type="password" 
-                :rules="[val => !!val || 'กรุณากรอก Password']"
-              />
-  
-              <!-- Remember Me -->
-              <q-checkbox v-model="remember" label="Remember Me" />
-              <!-- Login Button -->
-              <q-btn class="full-width" type="submit" color="primary" label="Login" />
-            </q-form>
-          </q-card-section>
-        </q-card>
-      </div>
-    </div>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted } from 'vue';
+    <div class="row bg-blue-10 justify-center" style="height: 100vh;">
+        <div class="col-12 col-md-6 flex justify-center content-center">
+            <q-card class="q-pa-md " :style="{
+                width: $q.screen.lt.sm ? '90%' : '60%',
 
-  const username = ref('');
-  const password = ref('');
-  const remember = ref(false);
-  
-  // โหลด Username จาก localStorage 
-  onMounted(() => {
+                borderRadius: '12px',
+                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.7)'
+            }">
+                <q-card-section class="flex justify-center">
+                    <img src="../../assets/loginlogo.svg" alt="login-logo" />
+                </q-card-section>
+
+                <q-card-section class="text-center">
+                    <h2 class="text-h4 font-bold text-uppercase">ระบบเบิกสวัสดิการ</h2>
+                </q-card-section>
+
+                <q-card-section>
+                    <q-form @submit="login" class="q-gutter-md q-px-xl">
+                        <!-- Username -->
+                        <q-input v-model="model.username" label="Username" :error-message="isError.username"
+                            :error="!!isError.username" :rule="[val => val || 'กรุณากรอกบัญชีผู้ใช้']" />
+                        <!-- Password -->
+                        <q-input v-model="model.password" label="Password" :type="isPwd ? 'password' : 'text'"
+                            :error-message="isError.password" :error="!!isError.password"
+                            :rule="[val => val || 'กรุณากรอกรหัสผ่าน']">
+                            <template v-slot:append>
+                                <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" class="cursor-pointer"
+                                    @click="isPwd = !isPwd" />
+                            </template>
+                        </q-input>
+                        <!-- Remember Me -->
+                        <q-checkbox size="sm" v-model="remember" label="Remember Me" />
+                        <!-- Login Button -->
+
+                        <q-btn :loading="isLoading" class="full-width" type="submit" color="primary" label="Login" />
+                    </q-form>
+                </q-card-section>
+            </q-card>
+        </div>
+
+    </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { useAuthStore } from "src/stores/authStore";
+import { Notify } from "quasar";
+import accountService from 'src/boot/service/accountService';
+import { useMenuStore } from 'src/stores/menuStore';
+import { useRouter } from 'vue-router';
+const model = ref({
+    username: null,
+    password: null,
+});
+
+const remember = ref(false);
+const authStore = useAuthStore();
+const isLoading = ref(false);
+const isPwd = ref(true);
+const menuStore = useMenuStore();
+const router = useRouter();
+// โหลด Username จาก localStorage
+onMounted(() => {
+    authStore.clearToken();
     const savedUsername = localStorage.getItem('rememberedUsername');
     if (savedUsername) {
-      username.value = savedUsername;
-      remember.value = true;
+        model.value.username = savedUsername;
+        remember.value = true;
     }
-  });
-  
-  // Login
-  const login = () => {
-    if (!username.value || !password.value) {
-      console.log('กรุณากรอก Username และ Password');
-      return;
+});
+
+// Login
+async function login() {
+    var validate = false;
+    if (!model.value.username) {
+        isError.value.username = "กรุณากรอกบัญชีผู้ใช้งาน";
+        validate = true;
     }
-  
-    console.log('เข้าสู่ระบบด้วย', username.value, password.value);
-  
+    if (!model.value.password) {
+        isError.value.password = "กรุณากรอกรหัสผ่าน";
+        validate = true;
+    }
+    if (validate === true) {
+        Notify.create({
+            message: "กรุณากรอกบัญชีผู้ใช้งานและรหัสผ่านให้ถูกต้อง",
+            position: "bottom-left",
+            type: "negative",
+        });
+        return;
+    }
+    isLoading.value = true;
+    try {
+        const result = await accountService.login(model.value)
+        if (result.data.user) {
+            authStore.setToken(result.data?.accessToken);
+            authStore.name = result.data?.user?.name;
+            authStore.id = result.data?.user?.id;
+            authStore.position = result.data?.user?.position;
+            authStore.email = result.data?.user?.email;
+            authStore.department = result.data?.user?.department;
+            authStore.roleId = result.data?.user?.roleID;
+            menuStore.setPath(result.data?.user?.path);
+            menuStore.setPathEditor(result.data?.user?.pathEditor);
+            router.push({ name: "home" });
+            Notify.create({
+                message: "Success",
+                position: "bottom-left",
+                type: "positive",
+            });
+        }
+        isLoading.value = false;
+    } catch (error) {
+        isLoading.value = false;
+        isError.value.password =
+            error?.response?.data?.errors?.password ??
+            "เข้าสู่ระบบล้มเหลว กรุณาลองอีกครั้ง";
+        isError.value.username =
+            error?.response?.data?.errors?.username
+        Notify.create({
+            message:
+                "เข้าสู่ระบบล้มเหลว กรุณาลองอีกครั้ง",
+            position: "bottom-left",
+            type: "negative",
+        });
+    }
     if (remember.value) {
-      localStorage.setItem('rememberedUsername', username.value);
+        localStorage.setItem('rememberedUsername', model.value.username);
     } else {
-      localStorage.removeItem('rememberedUsername');
+        localStorage.removeItem('rememberedUsername');
     }
-  
-  };
-  </script>
-  
+
+};
+
+const isError = ref({
+    username: null,
+    password: null,
+});
+
+onBeforeUnmount(() => {
+    clearData();
+});
+
+function clearData() {
+    Object.keys(model.value).forEach((key) => {
+        model.value[key] = null;
+    });
+}
+</script>

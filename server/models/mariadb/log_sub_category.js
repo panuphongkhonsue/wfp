@@ -1,14 +1,15 @@
-const Sequelize = require('sequelize');
 const sequelizePaginate = require('sequelize-paginate');
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  const logSubCategory = sequelize.define('logSubCategory', {
+  const model = sequelize.define('logSubCategory', {
     id: {
+      autoIncrement: true,
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true
     },
     name: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: false
     },
     fund_old: {
@@ -20,20 +21,20 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     per_times_old: {
-      type: DataTypes.INTEGER,
-      allowNull: false
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
     },
     per_times_new: {
-      type: DataTypes.INTEGER,
-      allowNull: false
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
     },
     per_years_old: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     },
     per_years_new: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     },
     created_at: {
       type: DataTypes.DATE,
@@ -75,8 +76,6 @@ module.exports = function(sequelize, DataTypes) {
       },
     ]
   });
-  
-  sequelizePaginate.paginate(logSubCategory);
-
-  return logSubCategory;
+  sequelizePaginate.paginate(model);
+  return model;
 };
