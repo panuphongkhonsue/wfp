@@ -13,7 +13,10 @@ exports.login = async (req, res, next) => {
     const { username, password } = req.body;
     try {
         const userData = await users.findOne({
-            where: { username },
+            where: {
+                username,
+                deleted_at: null
+            },
             attributes: [
                 'id',
                 'name',
