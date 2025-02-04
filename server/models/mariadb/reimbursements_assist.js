@@ -1,8 +1,9 @@
-const Sequelize = require('sequelize');
 const sequelizePaginate = require('sequelize-paginate');
-module.exports = function (sequelize, DataTypes) {
-  const reimbursementsAssist = sequelize.define('reimbursementsAssist', {
+const Sequelize = require('sequelize');
+module.exports = function(sequelize, DataTypes) {
+  const model = sequelize.define('reimbursementsAssist', {
     id: {
+      autoIncrement: true,
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true
@@ -12,15 +13,19 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     },
     fund_receipt: {
-      type: DataTypes.DECIMAL(10, 0),
+      type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
     fund_sum_request: {
-      type: DataTypes.DECIMAL(10, 0),
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: false
+    },
+    fund_eligible: {
+      type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
     status: {
-      type: DataTypes.ENUM('DRAFT', 'WAIT_VERIFY', 'APPROVED'),
+      type: DataTypes.ENUM('DRAFT','WAIT_VERIFY','APPROVED'),
       allowNull: false
     },
     deceased: {
@@ -35,18 +40,6 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.DATEONLY,
       allowNull: true
     },
-    draft_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    send_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    approve_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -58,10 +51,6 @@ module.exports = function (sequelize, DataTypes) {
       defaultValue: Sequelize.Sequelize.fn('current_timestamp')
     },
     updated_by: {
-      type: DataTypes.BIGINT,
-      allowNull: false
-    },
-    created_by_children: {
       type: DataTypes.BIGINT,
       allowNull: false
     },
@@ -95,23 +84,21 @@ module.exports = function (sequelize, DataTypes) {
         ]
       },
       {
-        name: "fk_reimbursements_assist_users1_idx",
-        using: "BTREE",
-        fields: [
-          { name: "created_by" },
-          { name: "created_by_children" },
-        ]
-      },
-      {
         name: "fk_reimbursements_assist_categories1_idx",
         using: "BTREE",
         fields: [
           { name: "categories_id" },
         ]
       },
+      {
+        name: "fk_reimbursements_assist_users1_idx",
+        using: "BTREE",
+        fields: [
+          { name: "created_by" },
+        ]
+      },
     ]
   });
-  sequelizePaginate.paginate(reimbursementsAssist);
-
-  return reimbursementsAssist;
+  sequelizePaginate.paginate(model);
+  return model;
 };

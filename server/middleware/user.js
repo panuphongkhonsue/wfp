@@ -1,18 +1,18 @@
-const { checkRequire, isNullOrEmpty } = require('../controllers/utility');
-const bcrypt = require('bcryptjs');
+const { isNullOrEmpty } = require('../controllers/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('UserValidator');
 const { Op } = require('sequelize')
 const permissionType = require('../enum/permission')
+const roleType = require('../enum/role')
 const { permissionsHasRoles, sequelize, users } = require('../models/mariadb')
 
 const authPermission = async (req, res, next) => {
 	const method = 'AuthPermission';
-	const { roleID } = req.user;
+	const { roleId } = req.user;
 	try {
 		const isAccess = await permissionsHasRoles.count({
 			where: {
-				[Op.and]: [{ roles_id: roleID }, { permissions_id: permissionType.userManagement }],
+				[Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.userManagement }],
 			},
 		});
 		if (!isAccess) {
@@ -28,12 +28,12 @@ const authPermission = async (req, res, next) => {
 
 const bindCreate = async (req, res, next) => {
 	try {
-		const { username, name, positionsId, employeeTypesId, departmentId, sectorId, firstWorkingDate, roleId, child } = req.body;
+		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId } = req.body;
 		const errorObj = {};
 		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
 		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
-		if (isNullOrEmpty(positionsId)) errorObj['positionsId'] = 'กรุณากรอกตำแหน่ง';
-		if (isNullOrEmpty(employeeTypesId)) errorObj['employeeTypesId'] = 'กรุณากรอกประเภทบุคลากร';
+		if (isNullOrEmpty(positionId)) errorObj['positionId'] = 'กรุณากรอกตำแหน่ง';
+		if (isNullOrEmpty(employeeTypeId)) errorObj['employeeTypeId'] = 'กรุณากรอกประเภทบุคลากร';
 		if (isNullOrEmpty(departmentId)) errorObj['departmentId'] = 'กรุณากรอกส่วนงาน';
 		if (isNullOrEmpty(sectorId)) errorObj['sectorId'] = 'กรุณากรอกภาควิชา';
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
@@ -43,13 +43,25 @@ const bindCreate = async (req, res, next) => {
 			username: username,
 			name: name,
 			email: username + "@buu.ac.th",
-			positions_id: positionsId,
-			employee_types_id: employeeTypesId,
+			positions_id: positionId,
+			employee_types_id: employeeTypeId,
 			departments_id: departmentId,
 			sector_id: sectorId,
 			first_working_date: firstWorkingDate,
 			roles_id: roleId,
-			child: !isNullOrEmpty(child) ? child : null,
+			child: req.body.child,
+		}
+		if (isNullOrEmpty(req.body.child)) {
+			delete dataBinding.child;
+		}
+		else {
+			var hasNull = false;
+			if (isNullOrEmpty(dataBinding.child)) {
+				hasNull = req.body.child.some(item =>
+					Object.values(item).some(value => value === null || value === "")
+				);
+			}
+			if (hasNull) delete dataBinding.child;
 		}
 		req.body = dataBinding;
 		next();
@@ -61,12 +73,12 @@ const bindCreate = async (req, res, next) => {
 };
 const bindUpdate = async (req, res, next) => {
 	try {
-		const { username, name, positionsId, employeeTypesId, departmentId, sectorId, firstWorkingDate, roleId } = req.body;
+		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId } = req.body;
 		const errorObj = {};
 		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
 		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
-		if (isNullOrEmpty(positionsId)) errorObj['positionsId'] = 'กรุณากรอกตำแหน่ง';
-		if (isNullOrEmpty(employeeTypesId)) errorObj['employeeTypesId'] = 'กรุณากรอกประเภทบุคลากร';
+		if (isNullOrEmpty(positionId)) errorObj['positionId'] = 'กรุณากรอกตำแหน่ง';
+		if (isNullOrEmpty(employeeTypeId)) errorObj['employeeTypeId'] = 'กรุณากรอกประเภทบุคลากร';
 		if (isNullOrEmpty(departmentId)) errorObj['departmentId'] = 'กรุณากรอกส่วนงาน';
 		if (isNullOrEmpty(sectorId)) errorObj['sectorId'] = 'กรุณากรอกภาควิชา';
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
@@ -76,16 +88,30 @@ const bindUpdate = async (req, res, next) => {
 			username: username,
 			name: name,
 			email: username + "@buu.ac.th",
-			positions_id: positionsId,
-			employee_types_id: employeeTypesId,
+			positions_id: positionId,
+			employee_types_id: employeeTypeId,
 			departments_id: departmentId,
 			sector_id: sectorId,
 			first_working_date: firstWorkingDate,
-			roles_id: roleId
+			roles_id: roleId,
+			child: req.body.child,
+		}
+		if (isNullOrEmpty(req.body.child)) {
+			delete dataBinding.child;
+		}
+		else {
+			var hasNull = false;
+			if (isNullOrEmpty(dataBinding.child)) {
+				hasNull = req.body.child.some(item =>
+					Object.values(item).some(value => value.name === null || value.name === "" || value.birthday === null || value.birthday === "")
+				);
+			}
+			if (hasNull) delete dataBinding.child;
 		}
 		req.body = dataBinding;
 		next();
 	} catch (error) {
+		console.log(error)
 		res.status(500).json({
 			message: 'Internal Server Error',
 		});
@@ -95,12 +121,21 @@ const bindUpdate = async (req, res, next) => {
 const validateDuplicate = async (req, res, next) => {
 	try {
 		const { username } = req.body;
-		const isDuplicate = await users.count({
-			where: {
-				username: { [Op.eq]: username },
-			},
-		});
-		if (isDuplicate) res.status(400).json({ errors: "บัญชีผู้ใช้นี้มีอยู่แล้ว" });
+		const dataId = req.params['id'];
+		var filter = {};
+		if (!isNullOrEmpty(dataId)) {
+			filter[Op.and] = [
+				{ '$users.username$': { [Op.eq]: username } },
+				{ '$users.id$': { [Op.ne]: dataId } }
+			];
+		} else {
+			filter = {
+				'$users.username$': { [Op.eq]: username }
+			};
+		}
+		const isDuplicate = await users.count({ where: filter });
+
+		if (isDuplicate) return res.status(400).json({ errors: "บัญชีผู้ใช้นี้มีอยู่แล้ว" });
 		next();
 	} catch (error) {
 		logger.error(error);
@@ -109,7 +144,6 @@ const validateDuplicate = async (req, res, next) => {
 		});
 	}
 };
-
 
 const bindFilter = async (req, res, next) => {
 	const method = 'BindFilter';
@@ -122,14 +156,19 @@ const bindFilter = async (req, res, next) => {
 				'$users.name$': { [Op.like]: `%${keyword}%` },
 			});
 		}
-		req.query.filter[Op.and].push({
-			'$users.deleted_at$': { [Op.is]: null }
-		});
+		req.query.filter[Op.and].push(
+			{
+				'$users.deleted_at$': { [Op.is]: null }
+			},
+			{
+				'$users.roles_id$': { [Op.ne]: roleType.adminUser }
+			},
+		);
 		next();
 	}
 	catch (error) {
 		logger.error(`Error ${error.message}`, { method });
-		res.status(401).json({ error: error.message });
+		res.status(400).json({ error: error.message });
 	}
 };
 

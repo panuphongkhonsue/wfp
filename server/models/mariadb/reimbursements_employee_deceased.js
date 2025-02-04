@@ -1,8 +1,9 @@
-const Sequelize = require('sequelize');
 const sequelizePaginate = require('sequelize-paginate');
-module.exports = function (sequelize, DataTypes) {
-  const reimbursementsEmployeeDeceased = sequelize.define('reimbursementsEmployeeDeceased', {
+const Sequelize = require('sequelize');
+module.exports = function(sequelize, DataTypes) {
+  const model = sequelize.define('reimbursementsEmployeeDeceased', {
     id: {
+      autoIncrement: true,
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true
@@ -12,19 +13,19 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false
     },
     fund_receipt: {
-      type: DataTypes.DECIMAL(10, 0),
+      type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
     fund_eligible: {
-      type: DataTypes.DECIMAL(10, 0),
+      type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
     fund_sum_request: {
-      type: DataTypes.DECIMAL(10, 0),
+      type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
     status: {
-      type: DataTypes.ENUM('DRAFT', 'WAIT_VERIFY', 'APPROVED'),
+      type: DataTypes.ENUM('DRAFT','WAIT_VERIFY','APPROVED'),
       allowNull: false
     },
     organizer: {
@@ -37,18 +38,6 @@ module.exports = function (sequelize, DataTypes) {
     },
     request_date: {
       type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    daft_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    send_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    approve_date: {
-      type: DataTypes.DATE,
       allowNull: true
     },
     created_at: {
@@ -72,10 +61,6 @@ module.exports = function (sequelize, DataTypes) {
         model: 'users',
         key: 'id'
       }
-    },
-    created_by_children: {
-      type: DataTypes.BIGINT,
-      allowNull: false
     }
   }, {
     sequelize,
@@ -95,12 +80,10 @@ module.exports = function (sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "created_by" },
-          { name: "created_by_children" },
         ]
       },
     ]
   });
-  sequelizePaginate.paginate(reimbursementsEmployeeDeceased);
-
-  return reimbursementsEmployeeDeceased;
+  sequelizePaginate.paginate(model);
+  return model;
 };

@@ -5,8 +5,7 @@ class BaseController {
     constructor(model) {
         this.model = model;
         this.modelName = model.name;
-        this.primaryKey = `${this.modelName.charAt(0).toLowerCase() + this.modelName.slice(1)
-            }Id`;
+        this.primaryKey = `id`;
         this.allowedUpdateAttributes = [];
 
         this.create = this.create.bind(this);

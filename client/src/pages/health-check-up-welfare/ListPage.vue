@@ -1,9 +1,9 @@
-<template>blue
+<template>
   <ListLayout title="สวัสดิการทั่วไป (ค่าตรวจสุขภาพ)">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
-          <InputGroup more-class="font-16 font-medium" for-id="requesId" is-dense v-model="filter.keyword" label="ค้นหา"
+          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense v-model="filter.keyword" label="ค้นหา"
             placeholder="ค้นหาจากเลขที่ใบเบิก">
           </InputGroup>
         </div>
@@ -14,7 +14,7 @@
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
-          <q-select :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusId"
+          <q-select popup-content-class="font-14 font-regular" :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusId"
             :options="options" label="สถานะ" multiple dense clearable option-value="statusId" emit-value map-options
             option-label="name">
             <template v-slot:no-option>
@@ -54,7 +54,7 @@
           <div class="full-width row flex-center text-negative q-gutter-sm">
             <q-icon size="2em" :name="icon" />
             <span class="font-14 font-regular ">
-              Sorry, There isn't data from server.
+              ไม่พบข้อมูล
             </span>
           </div>
         </template>
@@ -125,7 +125,7 @@ let options = [
   { statusId: 1, name: "บันทึกฉบับร่าง" },
   { statusId: 2, name: "รอตรวจสอบ" },
   { statusId: 3, name: "อนุมัติ" },
-];;
+];
 const modelDate = ref(null);
 const filter = ref({
   keyword: null,
@@ -251,7 +251,7 @@ async function fetchFromServer() {
   } catch (error) {
     Notify.create({
       message:
-        error?.response?.data?.message ??
+         error?.response?.data?.errors ??
         "Something wrong please try again later.",
       position: "bottom-left",
       type: "negative",
@@ -326,7 +326,7 @@ async function deleteData(id) {
         Swal.showValidationMessage(`Delete Request Failed.`);
         Notify.create({
           message:
-            error?.response?.data?.message ??
+             error?.response?.data?.errors ??
             "Delete Request Failed, Something wrong please try again later.",
           position: "bottom-left",
           type: "negative",

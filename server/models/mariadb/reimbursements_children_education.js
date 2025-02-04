@@ -1,8 +1,9 @@
-const Sequelize = require('sequelize');
 const sequelizePaginate = require('sequelize-paginate');
+const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  const reimbursementsChildrenEducation = sequelize.define('reimbursementsChildrenEducation', {
+  const model = sequelize.define('reimbursementsChildrenEducation', {
     id: {
+      autoIncrement: true,
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true
@@ -12,6 +13,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     fund_receipt: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: false
+    },
+    fund_eligible: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
@@ -35,11 +40,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: false
     },
-    role: {
-      type: DataTypes.STRING(255),
+    marry_regis: {
+      type: DataTypes.ENUM('YES','NO'),
       allowNull: false
     },
-    welfare_type: {
+    role: {
       type: DataTypes.STRING(255),
       allowNull: false
     },
@@ -51,49 +56,12 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    child_type: {
-      type: DataTypes.ENUM('DELEGATE','COMMON'),
-      allowNull: false,
-      unique: "child_type_UNIQUE"
-    },
-    school: {
-      type: DataTypes.STRING(45),
-      allowNull: true
-    },
-    education_level: {
-      type: DataTypes.STRING(45),
-      allowNull: true
-    },
-    district: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    province: {
-      type: DataTypes.STRING(255),
-      allowNull: true
-    },
-    father_child: {
-      type: DataTypes.STRING(255),
-      allowNull: false
-    },
-    mother_child: {
+    welfare_type: {
       type: DataTypes.STRING(255),
       allowNull: false
     },
     request_date: {
       type: DataTypes.DATEONLY,
-      allowNull: true
-    },
-    draft_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    send_date: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    approve_date: {
-      type: DataTypes.DATE,
       allowNull: true
     },
     created_at: {
@@ -107,10 +75,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: Sequelize.Sequelize.fn('current_timestamp')
     },
     updated_by: {
-      type: DataTypes.BIGINT,
-      allowNull: false
-    },
-    created_by_children: {
       type: DataTypes.BIGINT,
       allowNull: false
     },
@@ -144,11 +108,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "child_type_UNIQUE",
-        unique: true,
+        name: "fk_reimbursements_children_education_sub_categories1_idx",
         using: "BTREE",
         fields: [
-          { name: "child_type" },
+          { name: "sub_categories_id" },
         ]
       },
       {
@@ -156,19 +119,10 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "created_by" },
-          { name: "created_by_children" },
-        ]
-      },
-      {
-        name: "fk_reimbursements_children_education_sub_categories1_idx",
-        using: "BTREE",
-        fields: [
-          { name: "sub_categories_id" },
         ]
       },
     ]
   });
-  sequelizePaginate.paginate(reimbursementsChildrenEducation);
-
-  return reimbursementsChildrenEducation;
+  sequelizePaginate.paginate(model);
+  return model;
 };
