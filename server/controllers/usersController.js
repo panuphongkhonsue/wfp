@@ -179,7 +179,7 @@ class Controller extends BaseController {
                         birthday: childObj.birthday,
                     }));
                     const newItemChild = await children.bulkCreate(childData,{
-                        fields: ['name' , "birthday"],
+                        fields: ['name' , "birthday",'users_id'],
                     });
                     var itemsReturned = {
                         ...newItemUser.toJSON(),
