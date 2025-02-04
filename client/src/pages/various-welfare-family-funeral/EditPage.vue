@@ -5,30 +5,24 @@
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
         <div :class="{ 'col-12': isView || isLoading, 'col-md-9 col-12': !isView && !isLoading }">
           <q-card flat bordered class="full-height">
-            <q-card-section class="q-px-md q-py-md font-18 font-bold">
+            <q-card-section class="font-18 font-bold">
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
             </q-card-section>
             <q-separator />
-            <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-pt-md q-pb-sm font-16 font-bold">
-              <div class="col-12 row wrap q-col-gutter-y-md">
-                <p class="col-lg-3 col-12 q-mb-none">
-                  ชื่อ : <span class="font-medium font-16 text-grey-7">สุทธพัฒน์ บุญทัน</span>
-                </p>
-                <p class="col-lg-3 col-12 q-mb-none">
-                  ตำแหน่ง : <span class="font-medium font-16 text-grey-7">รองศาสตราจารย์</span>
-                </p>
-                <p class="col-lg col-12 q-mb-none">
-                  ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">พนักงานมหาวิทยาลัย</span>
-                </p>
-              </div>
-              <div class="col-12 row wrap q-col-gutter-y-md">
-                <p class="col-lg-3 col-12 q-mb-none">
-                  ส่วนงาน : <span class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span>
-                </p>
-                <p class="col-lg col-12 q-mb-none">
-                  ภาควิชา : <span class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span>
-                </p>
-              </div>
+            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold">
+              <p class="col-lg-4 col-12 q-mb-none">
+                ชื่อ : <span class="font-medium font-16 text-grey-7">สุทธพัฒน์ บุญทัน</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">
+                ตำแหน่ง : <span class="font-medium font-16 text-grey-7">รองศาสตราจารย์</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">
+                ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">พนักงานมหาวิทยาลัย</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">ส่วนงาน : <span
+                  class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span></p>
+              <p class="col-lg-4 col-12 q-mb-none">ภาควิชา : <span
+                  class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span></p>
             </q-card-section>
           </q-card>
         </div>
@@ -79,7 +73,7 @@
                   label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
-              <div class="q-pb-md q-mb-none font-16 font-bold">
+              <div class="q-pb-md q-mb-none font-16 font-bold text-black">
                 <q-radio v-model="supwreath" val="wreathRequire" label="ค่าสนับสนุนค่าพวงหรีด" />
               </div>
               <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายไม่เกิน 2,000 บาท ในนามมหาวิทยาลัย และไม่เกิน

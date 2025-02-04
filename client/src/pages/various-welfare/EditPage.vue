@@ -5,30 +5,24 @@
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
         <div :class="{ 'col-12': isView || isLoading, 'col-md-9 col-12': !isView && !isLoading }">
           <q-card flat bordered class="full-height">
-            <q-card-section class="q-px-md q-py-md font-18 font-bold">
+            <q-card-section class="font-18 font-bold">
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
             </q-card-section>
             <q-separator />
-            <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-pt-md q-pb-sm font-16 font-bold">
-              <div class="col-12 row wrap q-col-gutter-y-md">
-                <p class="col-lg-3 col-12 q-mb-none">
-                  ชื่อ : <span class="font-medium font-16 text-grey-7">สุทธพัฒน์ บุญทัน</span>
-                </p>
-                <p class="col-lg-3 col-12 q-mb-none">
-                  ตำแหน่ง : <span class="font-medium font-16 text-grey-7">รองศาสตราจารย์</span>
-                </p>
-                <p class="col-lg col-12 q-mb-none">
-                  ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">พนักงานมหาวิทยาลัย</span>
-                </p>
-              </div>
-              <div class="col-12 row wrap q-col-gutter-y-md">
-                <p class="col-lg-3 col-12 q-mb-none">
-                  ส่วนงาน : <span class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span>
-                </p>
-                <p class="col-lg col-12 q-mb-none">
-                  ภาควิชา : <span class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span>
-                </p>
-              </div>
+            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold">
+              <p class="col-lg-4 col-12 q-mb-none">
+                ชื่อ : <span class="font-medium font-16 text-grey-7">สุทธพัฒน์ บุญทัน</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">
+                ตำแหน่ง : <span class="font-medium font-16 text-grey-7">รองศาสตราจารย์</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">
+                ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">พนักงานมหาวิทยาลัย</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">ส่วนงาน : <span
+                  class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span></p>
+              <p class="col-lg-4 col-12 q-mb-none">ภาควิชา : <span
+                  class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span></p>
             </q-card-section>
           </q-card>
         </div>
@@ -39,10 +33,10 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">ค่าสมรส : 1</p>
-              <p class="col-12 q-mb-none">ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ : 1</p>
-              <p class="col-12 q-mb-none">ค่ารับขวัญบุตร : -</p>
-              <p class="col-12 q-mb-none">กรณีประสบภัยพิบัติ : -</p>
+              <p class="col-12 q-mb-none">ค่าสมรส : 2000 บาท (1 ครั้ง)</p>
+              <p class="col-12 q-mb-none">ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ : 2000 บาท (1 ครั้ง)</p>
+              <p class="col-12 q-mb-none">ค่ารับขวัญบุตร : 2000 บาท</p>
+              <p class="col-12 q-mb-none">กรณีประสบภัยพิบัติ : 2000 บาท</p>
             </q-card-section>
           </q-card>
         </div>
@@ -82,7 +76,7 @@
           </q-card>
         </div>
         <div class="col-md-3 col-12">
-          <div class="q-pb-md" v-if="!isView && !isLoading">
+          <!-- <div class="q-pb-md" v-if="!isView && !isLoading">
             <q-card flat bordered>
               <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
                 <p class="q-mb-none">จำนวนเงินคงเหลือ</p>
@@ -95,7 +89,7 @@
                 <p class="col-12 q-mb-none">กรณีประสบภัยพิบัติ : 10,000</p>
               </q-card-section>
             </q-card>
-          </div>
+          </div> -->
 
           <q-card flat bordered>
             <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
