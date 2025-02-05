@@ -253,7 +253,7 @@ class Controller extends BaseController {
                 logger.info('Complete', { method, data: { userId } });
                 return res.status(201).json({ newItem: result, message: "สำเร็จ" });
             }
-            res.status(201).json({ newItem: result, message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
+            res.status(400).json({ newItem: result, message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {

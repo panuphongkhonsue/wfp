@@ -326,8 +326,11 @@ async function submit() {
             };
           }
         }
+        Swal.showValidationMessage(error?.response?.data?.message ?? `เกิดข้อผิดพลาด กรุณาลองอีกครั้ง`);
         Notify.create({
-          message: `[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง`,
+          message:
+            error?.response?.data?.message ??
+            "[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
           position: "bottom-left",
           type: "negative",
         });
