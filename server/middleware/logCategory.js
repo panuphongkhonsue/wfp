@@ -1,6 +1,6 @@
 const bindAdd = async (req, res, next) => {
 	try {
-		const { name, fundOld, fundNew, perTimesOld, perTimesNew, perYearsOld, perYearsNew, categoryId} = req.body;
+		const { name, fundOld, fundNew, perTimesOld, perTimesNew, perYearsOld, perYearsNew ,createdBy ,categoryId} = req.body;
 		const dataBinding = {
             name: name,
             fund_old: fundOld,
@@ -10,6 +10,7 @@ const bindAdd = async (req, res, next) => {
             per_years_old: perYearsOld,
             per_years_new: perYearsNew,
             categories_id: categoryId,
+			created_by : req.user.id
 		}
 		req.body = dataBinding;
 		next();
