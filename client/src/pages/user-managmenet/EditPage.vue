@@ -27,7 +27,7 @@
                   :error="!!isError?.positionId" :rules="[(val) => !!val || 'กรุณาเลือกตำแหน่ง']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
@@ -41,7 +41,7 @@
                   :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
@@ -55,7 +55,7 @@
                   :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
@@ -67,7 +67,7 @@
                   :error="!!isError?.sectorId" :rules="[(val) => !!val || 'กรุณาเลือกภาควิชา']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
