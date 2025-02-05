@@ -266,7 +266,6 @@ async function fetchFromServer(page, rowPerPage, filters) {
       itemPerPage: rowPerPage,
     });
     pagination.value.rowsNumber = allConfigWelfare.data.total;
-    console.log(`configWelfare : `, allConfigWelfare)
     return allConfigWelfare.data.docs;
   } catch (error) {
     Notify.create({
@@ -457,7 +456,6 @@ async function updateConfigWelfare(propsRowData) {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        console.log("validateText : ", validateText)
         if(validateText === ""){
           Swal.fire({
           html: `ข้อมูลสวัสดิการถูกแก้ไข`,
@@ -486,7 +484,7 @@ async function updateConfigWelfare(propsRowData) {
       }
     });
   } catch (error) {
-    console.log(`Error : `, error)
+    Promise.reject(error);
   }
 }
 
