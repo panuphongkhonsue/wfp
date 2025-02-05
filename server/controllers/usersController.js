@@ -178,8 +178,8 @@ class Controller extends BaseController {
                         name: childObj.name,
                         birthday: childObj.birthday,
                     }));
-                    const newItemChild = await children.bulkCreate(childData,{
-                        fields: ['name' , "birthday",'users_id'],
+                    const newItemChild = await children.bulkCreate(childData, {
+                        fields: ['name', "birthday", 'users_id'],
                     });
                     var itemsReturned = {
                         ...newItemUser.toJSON(),
@@ -206,6 +206,7 @@ class Controller extends BaseController {
         delete req.body.child;
         const dataUpdate = req.body;
         const dataId = req.params['id'];
+        var itemsReturned = null;
         try {
             const result = await sequelize.transaction(async t => {
                 const [updated] = await users.update(dataUpdate, {
@@ -220,13 +221,31 @@ class Controller extends BaseController {
                         name: childObj.name,
                         birthday: childObj.birthDay,
                     }));
+                    // Fetch existing child data before update
+                    const existingChildren = await children.findAll({
+                        where: { users_id: dataId },
+                        attributes: ["id", "name", "birthday"],
+                        raw: true,
+                    });
                     const updateItemChild = await children.bulkCreate(childData, {
                         updateOnDuplicate: ["name", "birthday", "users_id"]
                     });
-                    var itemsReturned = {
-                        ...updated,
-                        child: updateItemChild,
-                    };
+                    // Fetch updated child data after bulkCreate
+                    const updatedChildren = await children.findAll({
+                        where: { users_id: dataId },
+                        attributes: ["id", "name", "birthday"],
+                        raw: true,
+                    });
+                    var hasChildUpdated = JSON.stringify(existingChildren) !== JSON.stringify(updatedChildren);
+                    if (updated > 0 || hasChildUpdated) {
+                        itemsReturned = {
+                            ...updated,
+                            child: updateItemChild,
+                        };
+                    }
+                    else {
+                        itemsReturned = null;
+                    }
                 }
                 return itemsReturned;
             });

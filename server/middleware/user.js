@@ -56,7 +56,7 @@ const bindCreate = async (req, res, next) => {
 		}
 		else {
 			var hasNull = false;
-			if (isNullOrEmpty(dataBinding.child)) {
+			if (!isNullOrEmpty(dataBinding.child)) {
 				hasNull = req.body.child.some(item =>
 					Object.values(item).some(value => value === null || value === "")
 				);
@@ -101,7 +101,7 @@ const bindUpdate = async (req, res, next) => {
 		}
 		else {
 			var hasNull = false;
-			if (isNullOrEmpty(dataBinding.child)) {
+			if (!isNullOrEmpty(dataBinding.child)) {
 				hasNull = req.body.child.some(item =>
 					Object.values(item).some(value => value.name === null || value.name === "" || value.birthday === null || value.birthday === "")
 				);
