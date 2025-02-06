@@ -122,8 +122,7 @@ const router = useRouter();
 const isLoading = ref(false);
 const listStore = useListStore();
 const tableRef = ref();
-let validateText = "";
-let payloadCurrentFund = null;
+let validateText = null;
 const payload = ref(
   {
     fund: null,
@@ -196,7 +195,9 @@ function onClickEdit(index) {
 }
 
 onMounted(async () => {
+  isLoading.value = true;
   await init();
+  isLoading.value = false;
 });
 
 onBeforeUnmount(() => {
@@ -272,7 +273,7 @@ async function fetchFromServer(page, rowPerPage, filters) {
     Notify.create({
       message:
         error?.response?.data?.message ??
-        "Something wrong please try again later.",
+        "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
       position: "bottom-left",
       type: "negative",
     });
@@ -449,10 +450,10 @@ async function updateConfigWelfare(propsRowData) {
             await logSubCategoryService.addLogSubCategory(payloadLogSubCategory.value);
           }
         } catch (error) {
-          Swal.showValidationMessage(`ข้อมูลไม่ได้ถูกแก้ไข.`);
+          Swal.showValidationMessage(error?.response?.data?.message ?? `ข้อมูลไม่ได้ถูกแก้ไข.`);
           Notify.create({
             message:
-              error?.response?.data?.errors ??
+              error?.response?.data?.message ??
               "แก้ไขไม่สำเร็จกรุณาลองอีกครั้ง",
             position: "bottom-left",
             type: "negative",
@@ -461,29 +462,29 @@ async function updateConfigWelfare(propsRowData) {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        if(validateText === ""){
+        if (validateText == null) {
           Swal.fire({
-          html: `ข้อมูลสวัสดิการถูกแก้ไข`,
-          icon: "success",
-          confirmButtonText: "ตกลง",
-          customClass: {
-            confirmButton: "save-button",
-          },
-        }).then(() => {
-          location.reload();
-        });
+            html: `ข้อมูลสวัสดิการถูกแก้ไข`,
+            icon: "success",
+            confirmButtonText: "ตกลง",
+            customClass: {
+              confirmButton: "save-button",
+            },
+          }).then(() => {
+            location.reload();
+          });
         }
-        else{
+        else {
           Swal.fire({
-          html: `<b>${validateText}</b>`,
-          icon: "warning",
-          confirmButtonText: "ตกลง",
-          customClass: {
-            confirmButton: "save-button",
-          },
-        }).then(() => {
-          location.reload();
-        });
+            html: `<b>${validateText}</b>`,
+            icon: "warning",
+            confirmButtonText: "ตกลง",
+            customClass: {
+              confirmButton: "save-button",
+            },
+          }).then(() => {
+            location.reload();
+          });
         }
 
       }

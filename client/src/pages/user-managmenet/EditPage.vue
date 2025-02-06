@@ -416,7 +416,7 @@ async function init() {
       console.log(error);
       Notify.create({
         message:
-          error.response?.data?.errors ??
+          error.response?.data?.message ??
           "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
         position: "bottom-left",
         type: "negative",

@@ -150,7 +150,7 @@ class Controller extends BaseController {
                     data: { userId, dataId },
                 });
                 res.status(404).json({
-                    message: `Data not found`,
+                    message: `ไม่พบข้อมูล`,
                 });
             }
         }
@@ -177,6 +177,8 @@ class Controller extends BaseController {
                         users_id: newItemUser.id,
                         name: childObj.name,
                         birthday: childObj.birthday,
+                        created_by: dataCreate.created_by,
+                        updated_by: dataCreate.updated_by,
                     }));
                     const newItemChild = await children.bulkCreate(childData, {
                         fields: ['name', "birthday", 'users_id'],
@@ -189,7 +191,7 @@ class Controller extends BaseController {
                 if (!isNullOrEmpty(child)) return itemsReturned
                 return newItemUser;
             });
-            res.status(201).json({ newItem: result, message: "สำเร็จ" });
+            res.status(201).json({ newItem: result, message: "บันทึกข้อมูลสำเร็จ" });
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {
@@ -220,6 +222,8 @@ class Controller extends BaseController {
                         users_id: dataId,
                         name: childObj.name,
                         birthday: childObj.birthDay,
+                        created_by: dataUpdate.updated_by,
+                        updated_by: dataUpdate.updated_by,
                     }));
                     // Fetch existing child data before update
                     const existingChildren = await children.findAll({
@@ -227,7 +231,7 @@ class Controller extends BaseController {
                         attributes: ["id", "name", "birthday"],
                         raw: true,
                     });
-                    const updateItemChild = await children.bulkCreate(childData, {
+                    var updateItemChild = await children.bulkCreate(childData, {
                         updateOnDuplicate: ["name", "birthday", "users_id"]
                     });
                     // Fetch updated child data after bulkCreate
@@ -237,21 +241,21 @@ class Controller extends BaseController {
                         raw: true,
                     });
                     var hasChildUpdated = JSON.stringify(existingChildren) !== JSON.stringify(updatedChildren);
-                    if (updated > 0 || hasChildUpdated) {
-                        itemsReturned = {
-                            ...updated,
-                            child: updateItemChild,
-                        };
-                    }
-                    else {
-                        itemsReturned = null;
-                    }
+                }
+                if (updated > 0 || hasChildUpdated) {
+                    itemsReturned = {
+                        ...updated,
+                        child: updateItemChild,
+                    };
+                }
+                else {
+                    itemsReturned = null;
                 }
                 return itemsReturned;
             });
             if (result) {
                 logger.info('Complete', { method, data: { userId } });
-                return res.status(201).json({ newItem: result, message: "สำเร็จ" });
+                return res.status(201).json({ newItem: result, message: "บันทึกข้อมูลสำเร็จ" });
             }
             res.status(400).json({ newItem: result, message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
         }
@@ -287,7 +291,7 @@ class Controller extends BaseController {
                     data: { userId, dataId },
                 });
                 res.status(404).json({
-                    message: `Data not found`,
+                    message: `ไม่พบข้อมูล`,
                 });
             }
         }
