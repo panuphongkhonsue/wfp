@@ -10,23 +10,19 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold">
-              <div class="col-12 row wrap q-col-gutter-y-md">
-                <p class="col-lg-3 col-12 q-mb-none">
-                  ชื่อ : <span class="font-medium font-16 text-grey-7">สุทะพัด บุญทัน</span>
-                </p>
-                <p class="col-lg-3 col-12 q-mb-none">
-                  ตำแหน่ง : <span class="font-medium font-16 text-grey-7">รองศาสตราจารย์</span>
-                </p>
-                <p class="col-lg col-12 q-mb-none">
-                  ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">พนักงานมหาวิทยาลัย</span>
-                </p>
-              </div>
-              <div class="col-12 row wrap q-col-gutter-y-md">
-                <p class="col-lg-3 col-12 q-mb-none">ส่วนงาน : <span
-                    class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span></p>
-                <p class="col-lg col-12 q-mb-none">ภาควิชา : <span
-                    class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span></p>
-              </div>
+              <p class="col-lg-4 col-12 q-mb-none">
+                ชื่อ : <span class="font-medium font-16 text-grey-7">สุทะพัด บุญทัน</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">
+                ตำแหน่ง : <span class="font-medium font-16 text-grey-7">รองศาสตราจารย์</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">
+                ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">พนักงานมหาวิทยาลัย</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">ส่วนงาน : <span
+                  class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span></p>
+              <p class="col-lg-4 col-12 q-mb-none">ภาควิชา : <span
+                  class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span></p>
             </q-card-section>
           </q-card>
         </div>
@@ -37,8 +33,8 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติหน้าที่ : 1</p>
-              <p class="col-12 q-mb-none">เยี่ยมไข้ : 1</p>
+              <p class="col-12 q-mb-none">ประสบอุบัติเหตุฯ : 1,000 บาท (1 ครั้ง)</p>
+              <p class="col-12 q-mb-none">เยี่ยมไข้ : 1,000 บาท (1 ครั้ง)</p>
             </q-card-section>
           </q-card>
         </div>
@@ -47,37 +43,64 @@
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
         <div class="col-md-9 col-12">
           <q-card flat bordered class="full-height">
-            <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
+            <q-card-section class="flex justify-between q-px-md q-pt-md q-pb-md font-18 font-bold">
               <p class="q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
+              <p class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
+                v-if="isView && (model.status == 'รอตรวจสอบ' || model.status == 'อนุมัติ')"><q-icon
+                  :name="outlinedDownload" />
+                <span> Export</span>
+              </p>
+            </q-card-section>
+            <q-card-section v-show="isView" class="row wrap font-medium q-pb-xs font-16 text-grey-9">
+              <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ model.requestDate ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
+            </q-card-section>
+            <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center" :class="isView ? '' : 'q-pl-sm'">
+              <q-checkbox v-if="!isView" v-model="model.accident.isSelected" />
+              <p class="q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ 1,000 บาท)</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
-              <q-radio v-model="model.categoryWelfare" :val="1"
-                label="ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ 1,000 บาท)" />
+              <InputGroup for-id="fund-receipt-accident" is-dense v-model="model.accident.fundReceipt"
+                :data="model.accident.fundReceipt ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน"
+                :disable="!model.accident.isSelected" placeholder="บาท" type="number" :is-view="isView"
+                compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl">
+              </InputGroup>
+              <InputGroup for-id="fund-claim-accident" is-dense v-model="model.accident.fundEligible"
+                :data="model.accident.fundEligible ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท"
+                type="number" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl"
+                :disable="!model.accident.isSelected">
+              </InputGroup>
             </q-card-section>
-            <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
-              <q-radio v-model="model.categoryWelfare" :val="2"
-                label="ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน 1,000 บาท ต่อครั้ง ปีนึงไม่เกิน 3 ครั้ง" />
+            <q-card-section class="row wrap q-pt-none font-medium q-pb-xs font-16 text-grey-9 items-center"
+              :class="isView ? '' : 'q-pl-sm'">
+              <q-checkbox v-if="!isView" v-model="model.visitPatien.isSelected" />
+              <p class="q-mb-none">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน 1,000 บาท ต่อครั้ง ปีนึงไม่เกิน
+                3 ครั้ง</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-sm font-16 text-grey-9">
-              <InputGroup label="ตั้งแต่วันที่" :is-view="isView" compclass="col-xs-12 col-lg-3 col-xl-2 q-mr-lg-xl"
-                clearable :data="model.startDate ?? '-'" is-require>
-                <DatePicker class="col-12" is-dense v-model:model="model.startDate" v-model:dateShow="model.startDate"
+              <InputGroup label="ตั้งแต่วันที่" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl"
+                clearable :data="model.visitPatien.startDate ?? '-'" is-require>
+                <DatePicker :disabled="!model.visitPatien.isSelected" class="col-12" is-dense
+                  v-model:model="model.visitPatien.startDate" v-model:dateShow="model.visitPatien.startDate"
                   for-id="start-date" :no-time="true" />
               </InputGroup>
-              <InputGroup label="ถึงวันที่" :is-view="isView" compclass="col-xs-12 col-lg-3 col-xl-2 q-ml-lg-xl"
-                clearable :data="model.endDate ?? '-'" is-require>
-                <DatePicker is-dense v-model:model="model.endDate" v-model:dateShow="model.endDate" for-id="end-date"
-                  :no-time="true" />
+              <InputGroup label="ถึงวันที่" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl"
+                clearable :data="model.visitPatien.endDate ?? '-'" is-require>
+                <DatePicker is-dense :disabled="!model.visitPatien.isSelected" v-model:model="model.visitPatien.endDate"
+                  v-model:dateShow="model.visitPatien.endDate" for-id="end-date" :no-time="true" />
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-none row wrap font-medium q-pb-xs font-16 text-grey-9">
-              <InputGroup for-id="fund-receipt" is-dense v-model="model.claimFundByReceipt"
-                :data="model.claimFundByReceipt ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน" placeholder="บาท"
-                type="number" class="" :is-view="isView" compclass="col-xs-12 col-lg-3 col-xl-2 q-mr-lg-xl">
+              <InputGroup for-id="fund-receipt-visit" is-dense v-model="model.visitPatien.fundReceiptPatientVisit"
+                :data="model.visitPatien.fundReceiptPatientVisit ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน"
+                :disable="!model.visitPatien.isSelected" placeholder="บาท" type="number" :is-view="isView"
+                compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl">
               </InputGroup>
-              <InputGroup for-id="fund-claim" is-dense v-model="model.claimFund" :data="model.claimFund ?? '-'"
-                is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView"
-                compclass="col-xs-12 col-lg-3 col-xl-2 q-ml-lg-xl">
+              <InputGroup for-id="fund-claim-visit" is-dense v-model="model.visitPatien.fundSumRequestPatientVisit"
+                :data="model.visitPatien.fundSumRequestPatientVisit ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก"
+                placeholder="บาท" type="number" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl"
+                :disable="!model.visitPatien.isSelected">
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-none font-medium font-16">
@@ -102,17 +125,7 @@
           </q-card>
         </div>
         <div class="col-md-3 col-12 row">
-          <q-card flat bordered class="col-12" v-if="!isView">
-            <q-card-section class="font-18 font-bold">
-              <p class="q-mb-none">จำนวนคงเหลือ</p>
-            </q-card-section>
-            <q-separator />
-            <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติหน้าที่ : 1,000 บาท</p>
-              <p class="col-12 q-mb-none">ค่าเยี่ยมไข้ : 1,000 บาท</p>
-            </q-card-section>
-          </q-card>
-          <q-card flat bordered class="col-12" :class="!isView ? 'q-mt-md' : ''">
+          <q-card flat bordered class="col-12 full-height">
             <q-card-section class="font-18 font-bold">
               <p class="q-mb-none">หลักฐานที่ต้องแนบ</p>
             </q-card-section>
@@ -156,9 +169,9 @@ import { formatDateThaiSlash } from "src/components/format";
 
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
+import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
 
-
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 defineOptions({
@@ -167,11 +180,21 @@ defineOptions({
 const router = useRouter();
 const route = useRoute();
 const model = ref({
-  categoryWelfare: 1,
-  startDate: null,
-  endDate: null,
-  claimFundByReceipt: null,
-  claimFund: null,
+  reimNumber: null,
+  requestDate: null,
+  status: null,
+  accident: {
+    isSelected: false,
+    fundReceipt: null,
+    fundEligible: null,
+  },
+  visitPatien: {
+    isSelected: false,
+    fundReceiptPatientVisit: null,
+    fundSumRequestPatientVisit: null,
+    startDate: null,
+    endDate: null,
+  },
 });
 const isLoading = ref(false);
 const tableRef = ref();
@@ -309,6 +332,24 @@ async function submit() {
   });
 }
 
+watch(
+  () => model.value.visitPatien.startDate,
+  (newValue) => {
+    if (model.value.visitPatien.endDate < newValue && newValue && model.value.visitPatien.endDate) {
+      model.value.visitPatien.endDate = null;
+    }
+  }
+);
+
+watch(
+  () => model.value.visitPatien.endDate,
+  (newValue) => {
+    if (newValue < model.value.visitPatien.startDate) {
+      model.value.visitPatien.endDate = model.value.visitPatien.startDate;
+    }
+  }
+);
+
 const row = ref([
   {
     id: 1,
@@ -316,7 +357,7 @@ const row = ref([
       startDate: new Date(),
       endDate: new Date()
     },
-    claimFund: 3000,
+    fundSumRequestPatientVisit: 3000,
   },
   {
     id: 2,
@@ -324,12 +365,12 @@ const row = ref([
       startDate: new Date(),
       endDate: new Date()
     },
-    claimFund: 3000,
+    fundSumRequestPatientVisit: 3000,
   },
   {
     id: 3,
     date: null,
-    claimFund: null,
+    fundSumRequestPatientVisit: null,
   },
 ]);
 const columns = ref([
@@ -359,7 +400,7 @@ const columns = ref([
     name: "claimFund",
     label: "จำนวนเงิน (บาท)",
     align: "right",
-    field: (row) => row.claimFund ?? "-",
+    field: (row) => row.fundSumRequestPatientVisit ?? "-",
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {

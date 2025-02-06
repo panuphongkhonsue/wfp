@@ -3,8 +3,8 @@
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
-          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense v-model="filter.keyword" label="ค้นหา"
-            placeholder="ค้นหาจากเลขที่ใบเบิก">
+          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense v-model="filter.keyword"
+            label="ค้นหา" placeholder="ค้นหาจากเลขที่ใบเบิก">
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-3">
@@ -14,9 +14,9 @@
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
-          <q-select popup-content-class="font-14 font-regular" :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusId"
-            :options="options" label="สถานะ" multiple dense clearable option-value="statusId" emit-value map-options
-            option-label="name">
+          <q-select popup-content-class="font-14 font-regular" :loading="isLoading" id="selected-status" class="q-pt-sm"
+            outlined v-model="filter.statusId" :options="options" label="สถานะ" multiple dense clearable
+            option-value="statusId" emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey"> No option </q-item-section>
@@ -31,11 +31,11 @@
       </q-form>
     </template>
     <template v-slot:toolbar>
-      <div class="col-12 col-md-6 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none">สิทธิ์คงเหลือ (ค่าเยี่ยมไข้) : 1</p>
-        <p class="col q-ma-none">จำนวนเงินการเบิกคงเหลือ : - </p>
+      <div class="col-12 col-md-9 row font-bold font-16  q-col-gutter-md">
+        <p class="col-lg col-12 q-ma-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ : 1,0000 บาท (1 ครั้ง)</p>
+        <p class="col-lg col-12 q-ma-none">เยี่ยมไข้ผู้ปฏิบัติงาน : 1,0000 บาท (1 ครั้ง) </p>
       </div>
-      <div class="col-12 col-md-6 flex justify-end">
+      <div class="col-12 col-md-3 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
           icon="add" :to="{ name: 'medical_welfare_new' }" />
       </div>
@@ -58,11 +58,11 @@
             </span>
           </div>
         </template>
-        <template v-slot:body-cell-statusName="props">
+        <template v-slot:body-cell-status="props">
           <q-td :props="props" class="text-center">
             <q-badge class="font-regular font-14 weight-5 q-py-xs full-width" :color="statusColor(props.row.status)">
               <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.status)">
-                {{ props.row.status.name }}
+                {{ props.row.status }}
               </p>
             </q-badge>
           </q-td>
@@ -72,16 +72,16 @@
             <a @click.stop.prevent="viewData(props.row.requestId)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
-            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="goto(props.row.requestId)"
+            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="goto(props.row.requestId)"
               class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
-            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="
+            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="
               deleteData(props.row.requestId)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDelete" size="xs" color="red" />
             </a>
-            <a v-show="props.row.status.statusId == 2 || props.row.status.statusId == 3" @click.stop.prevent="
+            <a v-show="props.row.status == 'รอตรวจสอบ' || props.row.status == 'อนุมัติ'" @click.stop.prevent="
               downloadData(props.row.requestId)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDownload" size="xs" color="blue" />
@@ -121,9 +121,9 @@ const listStore = useListStore();
 const router = useRouter();
 const route = useRoute();
 let options = [
-  { statusId: 1, name: "บันทึกฉบับร่าง" },
-  { statusId: 2, name: "รอตรวจสอบ" },
-  { statusId: 3, name: "อนุมัติ" },
+  { statusId: "บันทึกฉบับร่าง", name: "บันทึกฉบับร่าง" },
+  { statusId: "รอตรวจสอบ", name: "รอตรวจสอบ" },
+  { statusId: "อนุมัติ", name: "อนุมัติ" },
 ];
 const modelDate = ref(null);
 const filter = ref({
@@ -142,46 +142,31 @@ const model = ref([
     requestId: '670001',
     requestDate: new Date(),
     updateDate: new Date(),
-    status: {
-      statusId: 2,
-      name: "รอตรวจสอบ"
-    },
+    status: "รอตรวจสอบ"
   },
   {
     requestId: '670002',
     requestDate: new Date(),
     updateDate: new Date(),
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
+    status: "บันทึกฉบับร่าง"
   },
   {
     requestId: '670003',
     requestDate: new Date(),
     updateDate: new Date(),
-    status: {
-      statusId: 3,
-      name: "อนุมัติ"
-    },
+    status: "อนุมัติ"
   },
   {
     requestId: '670004',
     requestDate: new Date(),
     updateDate: new Date(),
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
+    status: "บันทึกฉบับร่าง"
   },
   {
     requestId: '670005',
     requestDate: new Date(),
     updateDate: new Date(),
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
+    status: "บันทึกฉบับร่าง"
   },
 ]);
 const tableRef = ref();
@@ -194,14 +179,20 @@ onBeforeUnmount(() => {
   isLoading.value = false;
   model.value = null;
 });
-
 watch(
   () => filter.value.dateSelected,
   (newValue) => {
-    modelDate.value = newValue.from + " - " + newValue.to;
+    if (filter.value.dateSelected) modelDate.value = newValue.from + " - " + newValue.to;
   }
 );
-
+watch(
+  () => modelDate.value,
+  (newValue) => {
+    if (!newValue) {
+      filter.value.dateSelected = newValue;
+    }
+  }
+);
 watch(
   () => route.query,
   async () => {
@@ -235,7 +226,7 @@ async function fetchFromServer() {
   } catch (error) {
     Notify.create({
       message:
-         error?.response?.data?.errors ??
+        error?.response?.data?.errors ??
         "Something wrong please try again later.",
       position: "bottom-left",
       type: "negative",
@@ -310,7 +301,7 @@ async function deleteData(id) {
         Swal.showValidationMessage(`Delete Request Failed.`);
         Notify.create({
           message:
-             error?.response?.data?.errors ??
+            error?.response?.data?.errors ??
             "Delete Request Failed, Something wrong please try again later.",
           position: "bottom-left",
           type: "negative",
@@ -333,11 +324,12 @@ async function deleteData(id) {
   });
 }
 function search() {
+  if (!filter.value.dateSelected) filter.value.dateSelected = '';
   router.push({
     name: router.name,
     query: {
       keyword: filter.value.keyword,
-      dateSelected: JSON.stringify(filter.value.dateSelected),
+      dateSelected: filter.value.dateSelected ? JSON.stringify(filter.value.dateSelected) : null,
       statusId: filter.value.statusId,
     },
   });
@@ -377,10 +369,10 @@ const columns = ref([
     classes: "ellipsis",
   },
   {
-    name: "statusName",
+    name: "status",
     label: "สถานะ",
     align: "center",
-    field: (row) => row.status?.name ?? "-",
+    field: (row) => row.status ?? "-",
     classes: "ellipsis",
   },
   {

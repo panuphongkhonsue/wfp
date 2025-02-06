@@ -94,7 +94,7 @@ class BaseController {
                     data: { userId, dataId },
                 });
                 res.status(404).json({
-                    message: `Data not found`,
+                    message: `ไม่พบข้อมูล`,
                 });
             }
         } catch (error) {
@@ -125,12 +125,12 @@ class BaseController {
                 });
                 res.status(200).json({ updatedItem: updatedItem, message: "สำเร็จ" });
             } else {
-                logger.info('Data not found', {
+                logger.info('ไม่มีข้อมูลที่ถูกแก้ไข', {
                     method,
                     data: { userId, dataId, model: this.modelName },
                 });
                 res.status(404).json({
-                    message: `Data not found`,
+                    message: `ไม่มีข้อมูลที่ถูกแก้ไข`,
                 });
             }
         } catch (error) {
@@ -154,7 +154,7 @@ class BaseController {
                     );
                 }
             }
-            res.status(200).json({ message: 'reorder is successfully' });
+            res.status(200).json({ message: 'สำเร็จ' });
         } catch (error) {
             this.handleError(error, method, { userId }, next);
         }
@@ -177,12 +177,12 @@ class BaseController {
                     message: `ลบข้อมูลสำเร็จ`,
                 });
             } else {
-                logger.info('Data not found', {
+                logger.info('ไม่พบข้อมูล', {
                     method,
                     data: { userId, dataId, model: this.modelName },
                 });
                 res.status(404).json({
-                    message: `Data not found`,
+                    message: `ไม่พบข้อมูล`,
                 });
             }
         } catch (error) {

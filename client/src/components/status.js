@@ -1,10 +1,10 @@
 export function statusColor(e) {
-  switch (e.statusId) {
-    case 1:
+  switch (e) {
+    case "บันทึกฉบับร่าง":
       return "grey-4";
-    case 2:
+    case "รอตรวจสอบ":
       return "amber-2";
-    case 3:
+    case "อนุมัติ":
       return "green-2";
     default:
       return "";
@@ -12,12 +12,12 @@ export function statusColor(e) {
 }
 
 export function textStatusColor(e) {
-  switch (e.statusId) {
-    case 1:
+  switch (e) {
+    case "บันทึกฉบับร่าง":
       return "text-grey-8";
-    case 2:
+    case "รอตรวจสอบ":
       return "text-amber-9";
-    case 3:
+    case "อนุมัติ":
       return "text-green-9";
     default:
       return "";

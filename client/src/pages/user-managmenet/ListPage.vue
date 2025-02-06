@@ -140,7 +140,7 @@ async function deleteData(id, name) {
         Swal.showValidationMessage(`Delete Request Failed.`);
         Notify.create({
           message:
-            error?.response?.data?.errors ??
+            error?.response?.data?.message ??
             "ลบไม่สำเร็จกรุณาลองอีกครั้ง",
           position: "bottom-left",
           type: "negative",
@@ -174,7 +174,7 @@ async function fetchFromServer(page, itemPerPage, filter) {
   } catch (error) {
     Notify.create({
       message:
-        error?.response?.data?.errors ??
+        error?.response?.data?.message ??
         "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
       position: "bottom-left",
       type: "negative",
@@ -236,7 +236,7 @@ const columns = ref([
   },
   {
     name: "name",
-    label: "ชื่อนามสกุล",
+    label: "ชื่อ - นามสกุล",
     align: "left",
     field: (row) => row.name ?? "-",
     format: (val) => `${val}`,

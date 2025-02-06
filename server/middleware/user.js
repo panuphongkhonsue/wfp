@@ -22,7 +22,7 @@ const authPermission = async (req, res, next) => {
 	}
 	catch (error) {
 		logger.error(`Error ${error.message}`, { method });
-		res.status(401).json({ error: error.message });
+		res.status(401).json({ message: error.message });
 	}
 };
 
@@ -140,7 +140,7 @@ const validateDuplicate = async (req, res, next) => {
 		}
 		const isDuplicate = await users.count({ where: filter });
 
-		if (isDuplicate) return res.status(400).json({ errors: "บัญชีผู้ใช้นี้มีอยู่แล้ว" });
+		if (isDuplicate) res.status(400).json({ message: "บัญชีผู้ใช้นี้มีอยู่แล้ว" });
 		next();
 	} catch (error) {
 		logger.error(error);
@@ -173,7 +173,7 @@ const bindFilter = async (req, res, next) => {
 	}
 	catch (error) {
 		logger.error(`Error ${error.message}`, { method });
-		res.status(400).json({ error: error.message });
+		res.status(400).json({ message: error.message });
 	}
 };
 
