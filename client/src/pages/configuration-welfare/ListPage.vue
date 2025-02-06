@@ -122,7 +122,7 @@ const router = useRouter();
 const isLoading = ref(false);
 const listStore = useListStore();
 const tableRef = ref();
-const isError = ref({});
+let validateText = "";
 const payload = ref(
   {
     fund: null,
@@ -266,7 +266,6 @@ async function fetchFromServer(page, rowPerPage, filters) {
       itemPerPage: rowPerPage,
     });
     pagination.value.rowsNumber = allConfigWelfare.data.total;
-    console.log(`configWelfare : `, allConfigWelfare)
     return allConfigWelfare.data.docs;
   } catch (error) {
     Notify.create({
@@ -326,8 +325,8 @@ function search() {
 async function updateConfigWelfare(propsRowData) {
   try {
     Swal.fire({
-      title: "คุณต้องการแก้ไขข้อมูลสวัสดิการนี้หรือไม่",
-      // html: `You won't be able to revert this!`,
+      title: "ยืนยันการแก้ไขข้อมูลหรือไม่ ???",
+      html: `โปรดตรวจสอบข้อมูลให้แน่ใจก่อนยืนยัน`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ยืนยัน",
@@ -399,6 +398,7 @@ async function updateConfigWelfare(propsRowData) {
             }
           }
 
+          validateText = validateMessage;
           payloadLogCategory.value = (
             {
               name: propsRowData.categoryName,
@@ -408,7 +408,7 @@ async function updateConfigWelfare(propsRowData) {
               perTimesNew: payload.value.perTimes === '-' ? null : payload.value.perTimes,
               perYearsOld: propsRowData.perYears === '-' ? null : propsRowData.perYears,
               perYearsNew: payload.value.perYears === '-' ? null : payload.value.perYears,
-              categoryId: propsRowData.categoryId === '-' ? null : propsRowData.categoryId
+              categoryId: propsRowData.categoryId === '-' ? null : propsRowData.categoryId,
             }
           );
 
@@ -421,7 +421,7 @@ async function updateConfigWelfare(propsRowData) {
               perTimesNew: payload.value.perTimes === '-' ? null : payload.value.perTimes,
               perYearsOld: propsRowData.perYears === '-' ? null : propsRowData.perYears,
               perYearsNew: payload.value.perYears === '-' ? null : payload.value.perYears,
-              subCategoryId: propsRowData.subCategoryId === '-' ? null : propsRowData.subCategoryId
+              subCategoryId: propsRowData.subCategoryId === '-' ? null : propsRowData.subCategoryId,
             }
           );
           if (validateMessage) {
@@ -444,17 +444,11 @@ async function updateConfigWelfare(propsRowData) {
             await logSubCategoryService.addLogSubCategory(payloadLogSubCategory.value);
           }
         } catch (error) {
-          if (error?.response?.status == 400) {
-            if (Object.keys(error?.response?.data?.errors ?? {}).length) {
-              isError.value = {
-                ...isError.value,
-                ...error.response?.data?.errors,
-              };
-            }
-          }
-          location.reload();
+          Swal.showValidationMessage(`ข้อมูลไม่ได้ถูกแก้ไข.`);
           Notify.create({
-            message: `[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง`,
+            message:
+              error?.response?.data?.errors ??
+              "แก้ไขไม่สำเร็จกรุณาลองอีกครั้ง",
             position: "bottom-left",
             type: "negative",
           });
@@ -462,8 +456,9 @@ async function updateConfigWelfare(propsRowData) {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        Swal.fire({
-          title: `แก้ไขข้อมูลสำเร็จ.`,
+        if(validateText === ""){
+          Swal.fire({
+          html: `ข้อมูลสวัสดิการถูกแก้ไข`,
           icon: "success",
           confirmButtonText: "ตกลง",
           customClass: {
@@ -472,10 +467,24 @@ async function updateConfigWelfare(propsRowData) {
         }).then(() => {
           location.reload();
         });
+        }
+        else{
+          Swal.fire({
+          html: `<b>${validateText}</b>`,
+          icon: "warning",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
+        }).then(() => {
+          location.reload();
+        });
+        }
+
       }
     });
   } catch (error) {
-    console.log(`Error : `, error)
+    Promise.reject(error);
   }
 }
 
