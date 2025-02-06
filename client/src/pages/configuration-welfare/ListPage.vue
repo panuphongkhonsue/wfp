@@ -123,6 +123,7 @@ const isLoading = ref(false);
 const listStore = useListStore();
 const tableRef = ref();
 let validateText = "";
+let payloadCurrentFund = null;
 const payload = ref(
   {
     fund: null,
@@ -351,6 +352,8 @@ async function updateConfigWelfare(propsRowData) {
               if (payload.value.fund <= 0) {
                 validateMessage = "ข้อมูลเพดานเงินไม่ถูกต้อง";
               }
+              payloadCurrentFund = payload.value.fund;
+              
             }
             else {
               if (propsRowData.categoryFund) {
@@ -384,7 +387,9 @@ async function updateConfigWelfare(propsRowData) {
               else if (payload.value.perTimes == 0) {
                 payload.value.perTimes = null;
               }
-              else if (payload.value.perTimes > payload.value.fund) {
+              else if (payload.value.perTimes > payloadCurrentFund) {
+                console.log("pT : ", payload.value.perTimes);
+                console.log("pCF : ", payloadCurrentFund);
                 validateMessage = "ข้อมูลครั้งละไม่เกินสูงกว่าเพดานเงิน";
               }
             }
