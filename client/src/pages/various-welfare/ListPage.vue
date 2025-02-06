@@ -31,17 +31,11 @@
       </q-form>
     </template>
     <template v-slot:toolbar>
-      <div class="col-12 row font-bold font-14 q-col-gutter-x-md q-mb-md">
-        <p class="col q-ma-none">จำนวนเงินคงเหลือ (การเบิกสมรส) : 2,000</p>
-        <p class="col q-ma-none">จำนวนเงินคงเหลือ (การเบิกอุปสมบทหรือพิธีฮัจญ)์ : 2,000</p>
-        <p class="col q-ma-none">จำนวนเงินคง (รับขวัญบุตร) : 1,000</p>
-        <p class="col q-ma-none">จำนวนเงินคง (เหลือกรณีประสบภัยพิบัติ) : 10,000</p>
-      </div>
-      <div class="col-12 col-md-10 row font-bold font-14  q-col-gutter-x-md">
-        <p class="col q-ma-none">สิทธิ์คงเหลือ (การเบิกสมรส) : 1</p>
-        <p class="col q-ma-none">สิทธิ์คงเหลือ (การเบิกอุปสมบทหรือพิธีฮัจญ)์ : 1</p>
-        <p class="col q-ma-none">สิทธิ์คงเหลือ (รับขวัญบุตร) : -</p>
-        <p class="col q-ma-none">สิทธิ์คงเหลือ (กรณีภัยพิบัติ) : -</p>
+      <div class="col-12 col-md-10 row font-bold font-14 q-col-gutter-x-md ">
+        <p class="col-12 col-md-3 q-ma-none">การเบิกสมรส : 2,000 บาท (1ครั้ง)</p>
+        <p class="col-12 col-md-3 q-ma-none">การเบิกอุปสมบทหรือพิธีฮัจญ์ : 2,000 บาท (1ครั้ง)</p>
+        <p class="col-12 col-md-3 q-ma-none">รับขวัญบุตร : 1,000 บาท</p>
+        <p class="col-12 col-md-3 q-ma-none">กรณีประสบภัยพิบัติ : 10,000 บาท</p>
       </div>
       <div class="col-12 col-md-2 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -53,6 +47,7 @@
         row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
         table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
         @request="onRequest" @row-click="(evt, row, index) => viewData(row.requestId)">
+        <q-inner-loading showing color="primary" />
         <template v-slot:body-cell-index="props">
           <q-td :props="props" >
             {{ props.rowIndex + 1 }}
@@ -66,12 +61,12 @@
             </span>
           </div>
         </template>
-        <template v-slot:body-cell-statusName="props">
+        <template v-slot:body-cell-status="props">
           <q-td :props="props" class="text-center">
             <q-badge class="font-regular font-remark weight-5 q-py-xs full-width"
               :color="statusColor(props.row.status)">
               <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.status)">
-                {{ props.row.status.name }}
+                {{ props.row.status }}
               </p>
             </q-badge>
           </q-td>
@@ -81,16 +76,16 @@
             <a @click.stop.prevent="viewData(props.row.requestId)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
-            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="goto(props.row.requestId)"
+            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="goto(props.row.requestId)"
               class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
-            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="
+            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="
               deleteData(props.row.requestId)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDelete" size="xs" color="red" />
             </a>
-            <a v-show="props.row.status.statusId == 2 || props.row.status.statusId == 3" @click.stop.prevent="
+            <a v-show="props.row.status == 'รอตรวจสอบ'|| props.row.status == 'อนุมัติ'" @click.stop.prevent="
               downloadData(props.row.requestId)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDownload" size="xs" color="blue" />
@@ -130,10 +125,10 @@ const listStore = useListStore();
 const router = useRouter();
 const route = useRoute();
 let options = [
-  { statusId: 1, name: "บันทึกฉบับร่าง" },
-  { statusId: 2, name: "รอตรวจสอบ" },
-  { statusId: 3, name: "อนุมัติ" },
-];;
+  { statusId: "บันทึกฉบับร่าง", name: "บันทึกฉบับร่าง" },
+  { statusId: "รอตรวจสอบ", name: "รอตรวจสอบ" },
+  { statusId: "อนุมัติ", name: "อนุมัติ" },
+];
 const modelDate = ref(null);
 const filter = ref({
   keyword: null,
@@ -154,10 +149,7 @@ const model = ref([
     money: 3000,
     otherWelfare: 3000,
     moneyCanGet: 3000,
-    status: {
-      statusId: 2,
-      name: "รอตรวจสอบ"
-    },
+    status: "รอตรวจสอบ"
   },
   {
     requestId: '670002',
@@ -166,10 +158,7 @@ const model = ref([
     money: 3000,
     otherWelfare: 3000,
     moneyCanGet: 3000,
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
+    status: "บันทึกฉบับร่าง"
   },
   {
     requestId: '670003',
@@ -178,10 +167,7 @@ const model = ref([
     money: 3000,
     otherWelfare: 3000,
     moneyCanGet: 3000,
-    status: {
-      statusId: 3,
-      name: "อนุมัติ"
-    },
+    status: "อนุมัติ"
   },
   {
     requestId: '670004',
@@ -190,10 +176,7 @@ const model = ref([
     money: 3000,
     otherWelfare: 3000,
     moneyCanGet: 3000,
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
+    status: "บันทึกฉบับร่าง"
   },
   {
     requestId: '670005',
@@ -202,10 +185,7 @@ const model = ref([
     money: "3000",
     otherWelfare: 3000,
     moneyCanGet: 3000,
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
+    status: "บันทึกฉบับร่าง"
   },
 ]);
 const tableRef = ref();
@@ -222,9 +202,10 @@ onBeforeUnmount(() => {
 watch(
   () => filter.value.dateSelected,
   (newValue) => {
-    modelDate.value = newValue.from + " - " + newValue.to;
+    if (filter.value.dateSelected) modelDate.value = newValue.from + " - " + newValue.to;
   }
 );
+
 
 watch(
   () => route.query,
@@ -233,6 +214,14 @@ watch(
   }
 );
 
+watch(
+  () => modelDate.value,
+  (newValue) => {
+    if (!newValue) {
+      filter.value.dateSelected = newValue;
+    }
+  }
+);
 
 async function init() {
   const { keyword, dateSelected, statusId } = route.query;
@@ -356,12 +345,14 @@ async function deleteData(id) {
     }
   });
 }
+
 function search() {
+  if (!filter.value.dateSelected) filter.value.dateSelected = '';
   router.push({
     name: router.name,
     query: {
       keyword: filter.value.keyword,
-      dateSelected: JSON.stringify(filter.value.dateSelected),
+      dateSelected: filter.value.dateSelected ? JSON.stringify(filter.value.dateSelected) : null,
       statusId: filter.value.statusId,
     },
   });
@@ -443,10 +434,10 @@ const columns = ref([
     classes: "ellipsis",
   },
   {
-    name: "statusName",
+    name: "status",
     label: "สถานะ",
     align: "center",
-    field: (row) => row.status?.name ?? "-",
+    field: (row) => row.status ?? "-",
     classes: "ellipsis",
   },
   {
