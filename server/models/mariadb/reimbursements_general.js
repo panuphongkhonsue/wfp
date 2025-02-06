@@ -32,19 +32,19 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },
-    fund_receipt_patient_visit: {
-      type: DataTypes.DECIMAL(10,0),
-      allowNull: true
-    },
-    fund_sum_request_patient_visit: {
-      type: DataTypes.DECIMAL(10,0),
-      allowNull: true
-    },
     fund_eligible_name: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
     fund_eligible_sum: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
+    fund_receipt_patient_visit: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
+    fund_sum_request_patient_visit: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },

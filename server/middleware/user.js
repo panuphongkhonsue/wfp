@@ -39,6 +39,7 @@ const bindCreate = async (req, res, next) => {
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
 		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
 		if (Object.keys(errorObj).length) res.status(400).json({ errors: errorObj });
+		const { id } = req.user;
 		const dataBinding = {
 			username: username,
 			name: name,
@@ -50,13 +51,15 @@ const bindCreate = async (req, res, next) => {
 			first_working_date: firstWorkingDate,
 			roles_id: roleId,
 			child: req.body.child,
+			created_by : id,
+			updated_by : id,
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
 		}
 		else {
 			var hasNull = false;
-			if (isNullOrEmpty(dataBinding.child)) {
+			if (!isNullOrEmpty(dataBinding.child)) {
 				hasNull = req.body.child.some(item =>
 					Object.values(item).some(value => value === null || value === "")
 				);
@@ -84,6 +87,7 @@ const bindUpdate = async (req, res, next) => {
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
 		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
 		if (Object.keys(errorObj).length) res.status(400).json({ errors: errorObj });
+		const { id } = req.user;
 		const dataBinding = {
 			username: username,
 			name: name,
@@ -95,13 +99,14 @@ const bindUpdate = async (req, res, next) => {
 			first_working_date: firstWorkingDate,
 			roles_id: roleId,
 			child: req.body.child,
+			updated_by : id,
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
 		}
 		else {
 			var hasNull = false;
-			if (isNullOrEmpty(dataBinding.child)) {
+			if (!isNullOrEmpty(dataBinding.child)) {
 				hasNull = req.body.child.some(item =>
 					Object.values(item).some(value => value.name === null || value.name === "" || value.birthday === null || value.birthday === "")
 				);

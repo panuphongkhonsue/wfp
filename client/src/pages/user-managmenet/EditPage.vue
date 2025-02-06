@@ -27,7 +27,7 @@
                   :error="!!isError?.positionId" :rules="[(val) => !!val || 'กรุณาเลือกตำแหน่ง']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
@@ -41,7 +41,7 @@
                   :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
@@ -55,7 +55,7 @@
                   :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
@@ -67,7 +67,7 @@
                   :error="!!isError?.sectorId" :rules="[(val) => !!val || 'กรุณาเลือกภาควิชา']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
@@ -182,7 +182,6 @@ const model = ref({
   child: [
     {
       name: null,
-      surname: null,
       birthday: null,
     },
   ],
@@ -223,7 +222,6 @@ function clearData(model) {
 function addChildForm() {
   model.value.child.push({
     name: null,
-    surname: null,
     birthday: null,
   });
 }
@@ -296,6 +294,7 @@ async function submit() {
     delete model.value.child;
   }
   let isValid = false;
+  var fetch;
   Swal.fire({
     title: "ยืนยันการทำรายการหรือไม่ ???",
     html: `โปรดตรวจสอบข้อมูลให้แน่ใจก่อนยืนยัน`,
@@ -312,10 +311,10 @@ async function submit() {
     preConfirm: async () => {
       try {
         if (isEdit.value) {
-          await userManagementService.update(route.params.id, model.value);
+          fetch = await userManagementService.update(route.params.id, model.value);
         }
         else {
-          await userManagementService.create(model.value);
+          fetch = await userManagementService.create(model.value);
         }
         isValid = true;
       } catch (error) {
@@ -327,8 +326,11 @@ async function submit() {
             };
           }
         }
+        Swal.showValidationMessage(error?.response?.data?.message ?? `เกิดข้อผิดพลาด กรุณาลองอีกครั้ง`);
         Notify.create({
-          message: `[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง`,
+          message:
+            error?.response?.data?.message ??
+            "[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
           position: "bottom-left",
           type: "negative",
         });
@@ -336,8 +338,9 @@ async function submit() {
     },
   }).then((result) => {
     if (isValid && result.isConfirmed) {
+      console.log(fetch);
       Swal.fire({
-        html: `บันทึกข้อมูลสำเร็จ`,
+        html: fetch.data?.message ?? `บันทึกข้อมูลสำเร็จ`,
         icon: "success",
         confirmButtonText: "ตกลง",
         customClass: {
@@ -388,7 +391,6 @@ async function init() {
       const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : dataBinding.firstWorkingDate;
       const childData = [{
         name: null,
-        surname: null,
         birthday: null,
       }]
       model.value = {

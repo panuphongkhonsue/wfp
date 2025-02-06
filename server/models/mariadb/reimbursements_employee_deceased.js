@@ -24,6 +24,18 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
+    fund_wreath_university: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
+    fund_wreath_arrange: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
+    fund_vehicle: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
     status: {
       type: DataTypes.ENUM('DRAFT','WAIT_VERIFY','APPROVED'),
       allowNull: false
