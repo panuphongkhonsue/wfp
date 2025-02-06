@@ -28,6 +28,9 @@
             {{ props.rowIndex + 1 }}
           </q-td>
         </template>
+        <template v-slot:loading>
+          <q-inner-loading showing color="primary" />
+        </template>
         <template v-slot:no-data="{ icon }">
           <div class="full-width row flex-center text-negative q-gutter-sm">
             <q-icon size="2em" :name="icon" />
