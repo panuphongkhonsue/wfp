@@ -123,6 +123,7 @@ const isLoading = ref(false);
 const listStore = useListStore();
 const tableRef = ref();
 let validateText = null;
+let payloadCurrentFund = null;
 const payload = ref(
   {
     fund: null,
