@@ -1,10 +1,9 @@
-const { isNullOrEmpty } = require('../controllers/utility');
+const { isNullOrEmpty, getFiscalYear } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('UserValidator');
-const { Op } = require('sequelize')
+const { Op, literal } = require('sequelize')
 const permissionType = require('../enum/permission')
-const roleType = require('../enum/role')
-const { permissionsHasRoles, sequelize, users } = require('../models/mariadb')
+const { permissionsHasRoles, reimbursementsGeneral, categories, sequelize } = require('../models/mariadb')
 
 const authPermission = async (req, res, next) => {
     const method = 'AuthPermission';
@@ -58,5 +57,67 @@ const bindFilter = async (req, res, next) => {
         res.status(400).json({ message: error.message });
     }
 };
+const getRemaining = async (req, res, next) => {
+    const method = 'RemainingMiddleware';
+    try {
+        req.query.filter = {};
+        req.query.filter[Op.and] = [];
+        const getFiscalYearWhere = getFiscalYear();
+        req.query.filter[Op.and].push(
+            { '$reimbursementsGeneral.request_date$': getFiscalYearWhere, },
+            { '$category.id$': 1 }
+        );
+        next();
+    }
+    catch (error) {
+        logger.error(`Error ${error.message}`, { method });
+        res.status(400).json({ message: error.message });
+    }
+};
 
-module.exports = { authPermission, bindFilter };
+const checkRemaining = async (req, res, next) => {
+    const method = 'CheckRemainingMiddleware';
+    try {
+        const { filter } = req.query;
+        var whereObj = { ...filter }
+        const results = await reimbursementsGeneral.findOne({
+            attributes: [
+                [
+                    literal("category.fund - SUM(reimbursementsGeneral.fund_sum_request)"),
+                    "fund_remaining"
+                ],
+                [
+                    literal("category.per_years - COUNT(reimbursementsGeneral.fund_sum_request)"),
+                    "requests_remaining"
+                ]
+            ],
+            include: [
+                {
+                    model: categories,
+                    as: "category",
+                    attributes: []
+                }
+            ],
+            where: whereObj,
+            group: ["category.id"]
+        });
+        if (results) {
+            const datas = JSON.parse(JSON.stringify(results));
+            if (datas.fund_remaining === 0 || datas.requests_remaining === 0) {
+                logger.info('No Remaining', { method });
+                return res.status(400).json({
+                    message: "คุณไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
+                });
+            };
+            return next();
+        };
+        res.status(400).json({
+            message: "ไม่พบข้อมูลสิทธ์คงเหลือ กรุณาลองอีกครั้ง"
+        });
+    }
+    catch (error) {
+        logger.error(`Error ${error.message}`, { method });
+        next(error);
+    }
+}
+module.exports = { authPermission, bindFilter, getRemaining, checkRemaining };

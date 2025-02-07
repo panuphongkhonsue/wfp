@@ -4,7 +4,7 @@
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
           <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense v-model="filter.keyword"
-            label="ค้นหา" placeholder="ค้นหาจากเลขที่ใบเบิก">
+            label="ค้นหา" placeholder="ค้นหาจากเลขที่ใบเบิก" clearable>
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-3">
@@ -15,7 +15,7 @@
         </div>
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
           <q-select popup-content-class="font-14 font-regular" :loading="isLoading" id="selected-status" class="q-pt-sm"
-            outlined v-model="filter.status" :options="options" label="สถานะ" multiple dense clearable
+            outlined v-model="filter.status" :options="options" label="สถานะ"  dense clearable
             option-value="status" emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
@@ -44,7 +44,7 @@
       <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
         row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
         table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
-        @request="onRequest" @row-click="(evt, row, index) => viewData(row.requestId)">
+        @request="onRequest" @row-click="(evt, row, index) => viewData(row.id)">
         <template v-slot:body-cell-index="props">
           <q-td :props="props">
             {{ props.rowIndex + 1 }}
@@ -72,20 +72,20 @@
         </template>
         <template v-slot:body-cell-tools="props">
           <q-td :props="props" class="">
-            <a @click.stop.prevent="viewData(props.row.requestId)" class="text-dark q-py-sm q-px-xs cursor-pointer">
+            <a @click.stop.prevent="viewData(props.row.id)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
-            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="goto(props.row.requestId)"
+            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="goto(props.row.id)"
               class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
             <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="
-              deleteData(props.row.requestId)
+              deleteData(props.row.id)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDelete" size="xs" color="red" />
             </a>
             <a v-show="props.row.status == 'รอตรวจสอบ' || props.row.status == 'อนุมัติ'" @click.stop.prevent="
-              downloadData(props.row.requestId)
+              downloadData(props.row.id)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDownload" size="xs" color="blue" />
             </a>
@@ -246,11 +246,10 @@ function goto(requestId) {
 }
 
 function downloadData(requestId) {
-  console.log(requestId);
-  // router.push({
-  //   name: "",
-  //   params: { id: requestId },
-  // });
+  router.push({
+    name: "",
+    params: { id: requestId },
+  });
 }
 
 async function deleteData(id) {

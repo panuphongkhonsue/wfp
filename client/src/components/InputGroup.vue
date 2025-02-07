@@ -6,7 +6,7 @@
       <slot v-if="model === undefined"></slot>
       <q-input v-else class="font-14 font-regular" :dense="isDense" v-model="model" outlined :placeholder="placeholder"
         autocomplete="off" color="dark" :prefix="prefix" :suffix="suffix" :type="type" :mask="mask" :min="min"
-        :rules="rules" :error="error" :disable="disable" :readonly="readonly" bottom-slots :for="forId" >
+        :rules="rules" :error="error" :disable="disable" :readonly="readonly" bottom-slots :for="forId" :clearable="clearable">
         <template v-slot:error>
           <div>
             {{ errorMessage }}
@@ -72,6 +72,9 @@ defineProps({
   },
   isDense: {
     type: Boolean
+  },
+  clearable : {
+    type : Boolean
   }
 });
 
