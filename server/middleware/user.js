@@ -1,4 +1,4 @@
-const { isNullOrEmpty } = require('../controllers/utility');
+const { isNullOrEmpty } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('UserValidator');
 const { Op } = require('sequelize')
@@ -51,8 +51,8 @@ const bindCreate = async (req, res, next) => {
 			first_working_date: firstWorkingDate,
 			roles_id: roleId,
 			child: req.body.child,
-			created_by : id,
-			updated_by : id,
+			created_by: id,
+			updated_by: id,
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
@@ -99,7 +99,7 @@ const bindUpdate = async (req, res, next) => {
 			first_working_date: firstWorkingDate,
 			roles_id: roleId,
 			child: req.body.child,
-			updated_by : id,
+			updated_by: id,
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;

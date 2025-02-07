@@ -84,11 +84,11 @@ const checkRemaining = async (req, res, next) => {
             attributes: [
                 [
                     literal("category.fund - SUM(reimbursementsGeneral.fund_sum_request)"),
-                    "fund_remaining"
+                    "fundRemaining"
                 ],
                 [
                     literal("category.per_years - COUNT(reimbursementsGeneral.fund_sum_request)"),
-                    "requests_remaining"
+                    "requestsRemaining"
                 ]
             ],
             include: [
@@ -103,7 +103,7 @@ const checkRemaining = async (req, res, next) => {
         });
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
-            if (datas.fund_remaining === 0 || datas.requests_remaining === 0) {
+            if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
                 logger.info('No Remaining', { method });
                 return res.status(400).json({
                     message: "คุณไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",

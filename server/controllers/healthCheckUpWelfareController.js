@@ -83,18 +83,18 @@ class Controller extends BaseController {
             var whereObj = { ...filter }
             const results = await reimbursementsGeneral.findOne({
                 attributes: [
-                    [col("category.id"), "category_id"],
-                    [fn("SUM", col("reimbursementsGeneral.fund_sum_request")), "total_sum_requested"],
+                    [col("category.id"), "categoryId"],
+                    [fn("SUM", col("reimbursementsGeneral.fund_sum_request")), "totalSumRequested"],
                     [col("category.fund"), "fund"],
                     [
                         literal("category.fund - SUM(reimbursementsGeneral.fund_sum_request)"),
-                        "fund_remaining"
+                        "fundRemaining"
                     ],
-                    [fn("COUNT", col("reimbursementsGeneral.fund_sum_request")), "total_count_requested"],
-                    [col("category.per_years"), "per_years"],
+                    [fn("COUNT", col("reimbursementsGeneral.fund_sum_request")), "totalCountRequested"],
+                    [col("category.per_years"), "perYears"],
                     [
                         literal("category.per_years - COUNT(reimbursementsGeneral.fund_sum_request)"),
-                        "requests_remaining"
+                        "requestsRemaining"
                     ]
                 ],
                 include: [
@@ -108,28 +108,12 @@ class Controller extends BaseController {
                 group: ["category.id"]
             });
             if (results) {
-                var bindData = {};
                 const datas = JSON.parse(JSON.stringify(results));
-                bindData.datas = {
-                    ...datas,
-                    categoryId: datas.category_id,
-                    totalSumRequested: datas.total_sum_requested,
-                    fundRemaining: datas.fund_remaining,
-                    totalCountRequested: datas.total_count_requested,
-                    perYears: datas.per_years,
-                    requestsRemaining: datas.requests_remaining,
-                };
-                delete bindData.datas.category_id;
-                delete bindData.datas.total_sum_requested;
-                delete bindData.datas.fund_remaining;
-                delete bindData.datas.total_count_requested;
-                delete bindData.datas.per_years;
-                delete bindData.datas.requests_remaining;
-                if (datas.fund_remaining === 0 || datas.requests_remaining === 0) bindData.canRequest = false;
+                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
                 logger.info('Complete', { method, data: { userId } });
                 return res.status(200).json({
-                    datas: bindData.datas,
-                    canRequest: bindData.canRequest ?? true,
+                    datas: datas,
+                    canRequest: datas.canRequest ?? true,
                 });
             };
             logger.info('Data not Found', { method, data: { userId } });
