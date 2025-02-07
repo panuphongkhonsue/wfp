@@ -1,5 +1,5 @@
 const BaseController = require('./BaseControllers');
-const { reimbursementsGeneral, categories, sequelize } = require('../models/mariadb');
+const { reimbursementsGeneral, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
 const { Op, fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
 const logger = initLogger('ReimbursementsGeneralController');
@@ -19,18 +19,18 @@ class Controller extends BaseController {
             const listData = await reimbursementsGeneral.paginate({
                 attributes: [
                     'id',
-                    'reim_number',
-                    'request_date',
-                    'updated_at',
-                    'fund_receipt',
-                    'fund_eligible_sum',
-                    'fund_sum_request',
+                    [col("reim_number"), "reimNumber"],
+                    [col("request_date"), "requestDate"],
+                    [col("updated_at"), "updatedAt"],
+                    [col("fund_receipt"), "fundReceipt"],
+                    [col("fund_eligible_sum"), "fundEligibleSum"],
+                    [col("fund_sum_request"), "fundSumRequest"],
                     'status',
                 ],
                 page: page && !isNaN(page) ? Number(page) : 1,
                 paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 0,
                 where: whereObj,
-                order: [['id', 'ASC']]
+                order: [['updated_at', 'DESC'], ['created_at', 'DESC']]
             });
 
             if (listData) {
@@ -41,26 +41,8 @@ class Controller extends BaseController {
                 }
                 bindList.datas = listData.docs.map((listObj) => {
                     const plainObj = listObj.toJSON();
-                    var reimNumber = plainObj.reim_number;
-                    var requestDate = plainObj.request_date;
-                    var updatedAt = plainObj.updated_at;
-                    var fundReceipt = plainObj.fund_receipt;
-                    var fundEligibleSum = plainObj.fund_eligible_sum;
-                    var fundSumRequest = plainObj.fund_sum_request;
-                    delete plainObj.reim_number;
-                    delete plainObj.request_date;
-                    delete plainObj.updated_at;
-                    delete plainObj.fund_receipt;
-                    delete plainObj.fund_eligible_sum;
-                    delete plainObj.fund_sum_request;
                     return {
                         ...plainObj,
-                        reimNumber: reimNumber,
-                        requestDate: requestDate,
-                        updatedAt: updatedAt,
-                        fundReceipt: fundReceipt,
-                        fundEligibleSum: fundEligibleSum,
-                        fundSumRequest: fundSumRequest,
                     }
                 });
                 logger.info('Complete', { method, data: { userId } });
@@ -120,6 +102,79 @@ class Controller extends BaseController {
             res.status(400).json({
                 message: "ไม่พบข้อมูลที่ต้องการ กรุณาลองอีกครั้ง"
             });
+        }
+        catch (error) {
+            logger.error(`Error ${error.message}`, {
+                method,
+                data: { userId },
+            });
+            next(error);
+        }
+    }
+    getById = async (req, res, next) => {
+        const method = 'GetHealthCheckupWelfarebyId';
+        const { userId } = req.user;
+        const dataId = req.params['id'];
+        try {
+            const requestData = await reimbursementsGeneral.findByPk(dataId, {
+                attributes: [
+                    [col("reimbursementsGeneral.reim_number"), "reimNumber"],
+                    [col("reimbursementsGeneral.fund_receipt"), "fundReceipt"],
+                    [col("reimbursementsGeneral.fund_eligible"), "fundEligible"],
+                    [col("reimbursementsGeneral.fund_sum_request"), "fundSumRequest"],
+                    [col("reimbursementsGeneral.fund_decree"), "fundDecree"],
+                    [col("reimbursementsGeneral.fund_university"), "fundUniversity"],
+                    [col("reimbursementsGeneral.fund_eligible_name"), "fundEligibleName"],
+                    [col("reimbursementsGeneral.fund_eligible_sum"), "fundEligibleSum"],
+                    [col("reimbursementsGeneral.request_date"), "requestDate"],
+                    [col("reimbursementsGeneral.status"), "status"],
+                    [col("created_by_user.id"), "userId"],
+                    [col("created_by_user.name"), "name"],
+                    [col("created_by_user.position.name"), "position"],
+                    [col("created_by_user.employee_type.name"), "employeeType"],
+                    [col("created_by_user.sector.name"), "sector"],
+                    [col("created_by_user.department.name"), "department"],
+                ],
+                include: [
+                    {
+                        model: users, as: 'created_by_user',
+                        attributes: [],
+                        include: [
+                            {
+                                model: positions, as: 'position',
+                                attributes: ['name']
+                            },
+                            {
+                                model: employeeTypes, as: 'employee_type',
+                                attributes: ['name']
+                            },
+                            {
+                                model: sector, as: 'sector',
+                                attributes: ['name']
+                            },
+                            {
+                                model: departments, as: 'department',
+                                attributes: ['name']
+                            },
+                        ]
+                    },
+                ],
+            });
+            if (requestData) {
+                const datas = JSON.parse(JSON.stringify(requestData));
+                logger.info('Complete', { method, data: { userId } });
+                res.status(200).json({
+                    datas: datas,
+                });
+            } else {
+                logger.info('Data not found', {
+                    method,
+                    data: { userId, dataId },
+                });
+                res.status(404).json({
+                    message: `ไม่พบข้อมูล`,
+                });
+            }
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {
