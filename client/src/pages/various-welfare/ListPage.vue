@@ -202,7 +202,9 @@ onBeforeUnmount(() => {
 watch(
   () => filter.value.dateSelected,
   (newValue) => {
-    if (filter.value.dateSelected) modelDate.value = newValue.from + " - " + newValue.to;
+    console.log(newValue);
+    if (typeof newValue === "object" && newValue !== null) modelDate.value = newValue.from + " - " + newValue.to;
+    else modelDate.value = newValue;
   }
 );
 
