@@ -125,9 +125,9 @@ const listStore = useListStore();
 const router = useRouter();
 const route = useRoute();
 let options = [
-  { statusId: "บันทึกฉบับร่าง", name: "บันทึกฉบับร่าง" },
-  { statusId: "รอตรวจสอบ", name: "รอตรวจสอบ" },
-  { statusId: "อนุมัติ", name: "อนุมัติ" },
+  { status: "บันทึกฉบับร่าง", name: "บันทึกฉบับร่าง" },
+  { status: "รอตรวจสอบ", name: "รอตรวจสอบ" },
+  { status: "อนุมัติ", name: "อนุมัติ" },
 ];
 const modelDate = ref(null);
 const filter = ref({
