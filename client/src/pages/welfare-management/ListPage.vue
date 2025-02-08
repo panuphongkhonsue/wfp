@@ -17,8 +17,8 @@
         </div>
 
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
-          <q-select :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusId"
-            :options="optionStatus" label="สถานะ" multiple dense clearable option-value="statusId" emit-value
+          <q-select :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusName"
+            :options="optionStatus" label="สถานะ" dense clearable option-value="name" emit-value
             map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
@@ -92,8 +92,8 @@
 
         <template v-slot:body-cell-statusName="props">
           <q-td :props="props" class="text-center">
-            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width" :color="statusColor(props.row.status)">
-              <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.status)">
+            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width" :color="statusColor(props.row.statusName)">
+              <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.statusName)">
                 {{ props.row.status.name }}
               </p>
             </q-badge>
@@ -140,7 +140,7 @@ const filter = ref({
   keyword: null,
   dateSelected: null,
   welfareName: null,
-  statusId: null,
+  statusName: null,
 });
 let optionStatus = [
   { statusId: 1, name: "บันทึกฉบับร่าง" },
@@ -202,12 +202,12 @@ watch(
 
 
 async function init() {
-  const { keyword, dateSelected, statusId, welfareName } = route.query;
+  const { keyword, dateSelected, statusName, welfareName } = route.query;
   if (Object.keys(route.query).length) {
     filter.value.keyword = keyword ?? null;
-    filter.value.welfareName = welfareName ?? null,
+    filter.value.welfareName = welfareName ?? null;
     filter.value.dateSelected = dateSelected ? JSON.parse(dateSelected) : null;
-    filter.value.statusId = statusId ?? null;
+    filter.value.statusName = statusName ?? null;
   }
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
@@ -258,6 +258,7 @@ async function fetchFromServer(page, rowPerPage, filters) {
     const allReimbursementWelfare = await reimbursementWelfareService.getReimbursementWelfare({
       keyword: filters.value.keyword ?? '',
       welfareName: filters.value.welfareName ?? '',
+      statusName: filter.value.statusName ?? '',
       page: page,
       itemPerPage: rowPerPage,
     });
@@ -283,7 +284,7 @@ function search() {
       keyword: filter.value.keyword,
       welfareName : filter.value.welfareName,
       dateSelected: filter.value.dateSelected ? JSON.stringify(filter.value.dateSelected) : null,
-      statusId: filter.value.statusId,
+      statusName: filter.value.statusName,
     },
   });
 }

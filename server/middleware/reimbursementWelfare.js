@@ -29,7 +29,7 @@ const authPermission = async (req, res, next) => {
 const bindFilter = async (req, res, next) => {
 	const method = 'BindFilter';
 	try {
-		const { keyword, welfareName } = req.query;
+		const { keyword, welfareName, statusName } = req.query;
 		req.query.filter = {};
 		req.query.filter[Op.and] = [];
 
@@ -43,7 +43,13 @@ const bindFilter = async (req, res, next) => {
         // Check for 'welfareName' and add to the filter only if it's not empty
         if (!isNullOrEmpty(welfareName)) {
             req.query.filter[Op.and].push({
-                '$welfare_type$': { [Op.eq]: welfareName } // Exact match for welfare_name
+                '$welfare_type$': { [Op.eq]: welfareName } 
+            });
+        }
+
+        if (!isNullOrEmpty(statusName)){
+            req.query.filter[Op.and].push({
+                '$status$': { [Op.eq]: statusName } 
             });
         }
 
