@@ -150,7 +150,7 @@ class Controller extends BaseController {
                     data: { userId, dataId },
                 });
                 res.status(404).json({
-                    message: `Data not found`,
+                    message: `ไม่พบข้อมูล`,
                 });
             }
         }
@@ -177,9 +177,11 @@ class Controller extends BaseController {
                         users_id: newItemUser.id,
                         name: childObj.name,
                         birthday: childObj.birthday,
+                        created_by: dataCreate.created_by,
+                        updated_by: dataCreate.updated_by,
                     }));
-                    const newItemChild = await children.bulkCreate(childData,{
-                        fields: ['name' , "birthday",'users_id'],
+                    const newItemChild = await children.bulkCreate(childData, {
+                        fields: ['name', "birthday", 'users_id'],
                     });
                     var itemsReturned = {
                         ...newItemUser.toJSON(),
@@ -189,7 +191,7 @@ class Controller extends BaseController {
                 if (!isNullOrEmpty(child)) return itemsReturned
                 return newItemUser;
             });
-            res.status(201).json({ newItem: result, message: "สำเร็จ" });
+            res.status(201).json({ newItem: result, message: "บันทึกข้อมูลสำเร็จ" });
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {
@@ -206,6 +208,7 @@ class Controller extends BaseController {
         delete req.body.child;
         const dataUpdate = req.body;
         const dataId = req.params['id'];
+        var itemsReturned = null;
         try {
             const result = await sequelize.transaction(async t => {
                 const [updated] = await users.update(dataUpdate, {
@@ -219,22 +222,42 @@ class Controller extends BaseController {
                         users_id: dataId,
                         name: childObj.name,
                         birthday: childObj.birthDay,
+                        created_by: dataUpdate.updated_by,
+                        updated_by: dataUpdate.updated_by,
                     }));
-                    const updateItemChild = await children.bulkCreate(childData, {
+                    // Fetch existing child data before update
+                    const existingChildren = await children.findAll({
+                        where: { users_id: dataId },
+                        attributes: ["id", "name", "birthday"],
+                        raw: true,
+                    });
+                    var updateItemChild = await children.bulkCreate(childData, {
                         updateOnDuplicate: ["name", "birthday", "users_id"]
                     });
-                    var itemsReturned = {
+                    // Fetch updated child data after bulkCreate
+                    const updatedChildren = await children.findAll({
+                        where: { users_id: dataId },
+                        attributes: ["id", "name", "birthday"],
+                        raw: true,
+                    });
+                    var hasChildUpdated = JSON.stringify(existingChildren) !== JSON.stringify(updatedChildren);
+                }
+                if (updated > 0 || hasChildUpdated) {
+                    itemsReturned = {
                         ...updated,
                         child: updateItemChild,
                     };
+                }
+                else {
+                    itemsReturned = null;
                 }
                 return itemsReturned;
             });
             if (result) {
                 logger.info('Complete', { method, data: { userId } });
-                return res.status(201).json({ newItem: result, message: "สำเร็จ" });
+                return res.status(201).json({ newItem: result, message: "บันทึกข้อมูลสำเร็จ" });
             }
-            res.status(201).json({ newItem: result, message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
+            res.status(400).json({ newItem: result, message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {
@@ -261,14 +284,14 @@ class Controller extends BaseController {
                     method,
                     data: { userId, dataId },
                 });
-                res.status(200).json({ updatedItem: updatedItem, message: "สำเร็จ" });
+                res.status(201).json({ updatedItem: updatedItem, message: "สำเร็จ" });
             } else {
                 logger.info('Data not found', {
                     method,
                     data: { userId, dataId },
                 });
                 res.status(404).json({
-                    message: `Data not found`,
+                    message: `ไม่พบข้อมูล`,
                 });
             }
         }

@@ -4,7 +4,7 @@
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
           <InputGroup more-class="font-16 font-medium" for-id="requesId" is-dense v-model="filter.keyword" label="ค้นหา"
-            placeholder="ชื่อ-นามสกุล">
+            placeholder="ชื่อ-นามสกุล" clearable>
           </InputGroup>
         </div>
         <div class="content-center q-pt-lg q-pt-md-xs col-2">
@@ -27,6 +27,9 @@
           <q-td :props="props">
             {{ props.rowIndex + 1 }}
           </q-td>
+        </template>
+        <template v-slot:loading>
+          <q-inner-loading showing color="primary" />
         </template>
         <template v-slot:no-data="{ icon }">
           <div class="full-width row flex-center text-negative q-gutter-sm">
@@ -140,7 +143,7 @@ async function deleteData(id, name) {
         Swal.showValidationMessage(`Delete Request Failed.`);
         Notify.create({
           message:
-            error?.response?.data?.errors ??
+            error?.response?.data?.message ??
             "ลบไม่สำเร็จกรุณาลองอีกครั้ง",
           position: "bottom-left",
           type: "negative",
@@ -174,7 +177,7 @@ async function fetchFromServer(page, itemPerPage, filter) {
   } catch (error) {
     Notify.create({
       message:
-        error?.response?.data?.errors ??
+        error?.response?.data?.message ??
         "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
       position: "bottom-left",
       type: "negative",
@@ -236,7 +239,7 @@ const columns = ref([
   },
   {
     name: "name",
-    label: "ชื่อนามสกุล",
+    label: "ชื่อ - นามสกุล",
     align: "left",
     field: (row) => row.name ?? "-",
     format: (val) => `${val}`,

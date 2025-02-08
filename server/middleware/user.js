@@ -1,4 +1,4 @@
-const { isNullOrEmpty } = require('../controllers/utility');
+const { isNullOrEmpty } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('UserValidator');
 const { Op } = require('sequelize')
@@ -22,7 +22,7 @@ const authPermission = async (req, res, next) => {
 	}
 	catch (error) {
 		logger.error(`Error ${error.message}`, { method });
-		res.status(401).json({ error: error.message });
+		res.status(401).json({ message: error.message });
 	}
 };
 
@@ -39,6 +39,7 @@ const bindCreate = async (req, res, next) => {
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
 		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
 		if (Object.keys(errorObj).length) res.status(400).json({ errors: errorObj });
+		const { id } = req.user;
 		const dataBinding = {
 			username: username,
 			name: name,
@@ -50,13 +51,15 @@ const bindCreate = async (req, res, next) => {
 			first_working_date: firstWorkingDate,
 			roles_id: roleId,
 			child: req.body.child,
+			created_by: id,
+			updated_by: id,
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
 		}
 		else {
 			var hasNull = false;
-			if (isNullOrEmpty(dataBinding.child)) {
+			if (!isNullOrEmpty(dataBinding.child)) {
 				hasNull = req.body.child.some(item =>
 					Object.values(item).some(value => value === null || value === "")
 				);
@@ -84,6 +87,7 @@ const bindUpdate = async (req, res, next) => {
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
 		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
 		if (Object.keys(errorObj).length) res.status(400).json({ errors: errorObj });
+		const { id } = req.user;
 		const dataBinding = {
 			username: username,
 			name: name,
@@ -95,13 +99,14 @@ const bindUpdate = async (req, res, next) => {
 			first_working_date: firstWorkingDate,
 			roles_id: roleId,
 			child: req.body.child,
+			updated_by: id,
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
 		}
 		else {
 			var hasNull = false;
-			if (isNullOrEmpty(dataBinding.child)) {
+			if (!isNullOrEmpty(dataBinding.child)) {
 				hasNull = req.body.child.some(item =>
 					Object.values(item).some(value => value.name === null || value.name === "" || value.birthday === null || value.birthday === "")
 				);
@@ -135,7 +140,7 @@ const validateDuplicate = async (req, res, next) => {
 		}
 		const isDuplicate = await users.count({ where: filter });
 
-		if (isDuplicate) return res.status(400).json({ errors: "บัญชีผู้ใช้นี้มีอยู่แล้ว" });
+		if (isDuplicate) res.status(400).json({ message: "บัญชีผู้ใช้นี้มีอยู่แล้ว" });
 		next();
 	} catch (error) {
 		logger.error(error);
@@ -168,7 +173,7 @@ const bindFilter = async (req, res, next) => {
 	}
 	catch (error) {
 		logger.error(`Error ${error.message}`, { method });
-		res.status(400).json({ error: error.message });
+		res.status(400).json({ message: error.message });
 	}
 };
 

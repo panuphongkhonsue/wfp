@@ -22,8 +22,9 @@ var _roles = require("./roles");
 var _sector = require("./sector");
 var _subCategories = require("./sub_categories");
 var _users = require("./users");
-var _welfareTypes = require("./welfare_types");
 var _viewCategoryWelfareSub = require("./view_category_welfare_sub");
+var _viewReimbursements = require("./view_reimbursements");
+var _welfareTypes = require("./welfare_types");
 
 function initModels(sequelize) {
   var categories = _categories(sequelize, DataTypes);
@@ -48,8 +49,9 @@ function initModels(sequelize) {
   var sector = _sector(sequelize, DataTypes);
   var subCategories = _subCategories(sequelize, DataTypes);
   var users = _users(sequelize, DataTypes);
-  var welfareTypes = _welfareTypes(sequelize, DataTypes);
   var viewCategoryWelfareSub = _viewCategoryWelfareSub(sequelize, DataTypes);
+  var viewReimbursements = _viewReimbursements(sequelize, DataTypes);
+  var welfareTypes = _welfareTypes(sequelize, DataTypes);
 
   categories.belongsToMany(reimbursementsEmployeeDeceased, { as: 'reimbursements_employee_deceased_id_reimbursements_employee_deceaseds', through: reimbursementsEmployeeDeceasedHasCategories, foreignKey: "categories_id", otherKey: "reimbursements_employee_deceased_id" });
   childrenInfomation.belongsToMany(reimbursementsChildrenEducation, { as: 'reimbursements_children_education_id_reimbursements_children_educations', through: reimbursementsChildrenEducationHasChildrenInfomation, foreignKey: "children_infomation_id", otherKey: "reimbursements_children_education_id" });
@@ -139,8 +141,9 @@ function initModels(sequelize) {
     sector,
     subCategories,
     users,
-    welfareTypes,
     viewCategoryWelfareSub,
+    viewReimbursements,
+    welfareTypes,
   };
 }
 module.exports = initModels;

@@ -3,8 +3,8 @@
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
-          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense v-model="filter.keyword" label="ค้นหา"
-            placeholder="ค้นหาจากเลขที่ใบเบิก">
+          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense v-model="filter.keyword"
+            label="ค้นหา" placeholder="ค้นหาจากเลขที่ใบเบิก" clearable>
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-3">
@@ -14,12 +14,12 @@
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
-          <q-select popup-content-class="font-14 font-regular" :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusId"
-            :options="options" label="สถานะ" multiple dense clearable option-value="statusId" emit-value map-options
-            option-label="name">
+          <q-select popup-content-class="font-14 font-regular" :loading="isLoading" id="selected-status" class="q-pt-sm"
+            outlined v-model="filter.status" :options="options" label="สถานะ"  dense clearable
+            option-value="status" emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
-                <q-item-section class="text-grey"> No option </q-item-section>
+                <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
               </q-item>
             </template>
           </q-select>
@@ -31,11 +31,11 @@
       </q-form>
     </template>
     <template v-slot:toolbar>
-      <div class="col-12 col-md-6 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none">สิทธิ์คงเหลือ : 1</p>
-        <p class="col q-ma-none">จำนวนเงินการเบิกคงเหลือ : 3,000 </p>
+      <div class="col-12 col-md-9 row font-bold font-16  q-col-gutter-md">
+        <p class="col-md col-12 q-ma-none">สิทธิ์คงเหลือ : 1 ครั้ง</p>
+        <p class="col-md col-12 q-ma-none">จำนวนเงินการเบิกคงเหลือ : 3,000 </p>
       </div>
-      <div class="col-12 col-md-6 flex justify-end">
+      <div class="col-12 col-md-3 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
           icon="add" :to="{ name: 'health_check_up_welfare_new' }" />
       </div>
@@ -44,11 +44,14 @@
       <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
         row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
         table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
-        @request="onRequest" @row-click="(evt, row, index) => viewData(row.requestId)">
+        @request="onRequest" @row-click="(evt, row, index) => viewData(row.id)">
         <template v-slot:body-cell-index="props">
           <q-td :props="props">
             {{ props.rowIndex + 1 }}
           </q-td>
+        </template>
+        <template v-slot:loading>
+          <q-inner-loading showing color="primary" />
         </template>
         <template v-slot:no-data="{ icon }">
           <div class="full-width row flex-center text-negative q-gutter-sm">
@@ -58,32 +61,31 @@
             </span>
           </div>
         </template>
-        <template v-slot:body-cell-statusName="props">
+        <template v-slot:body-cell-status="props">
           <q-td :props="props" class="text-center">
-            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width"
-              :color="statusColor(props.row.status)">
+            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width" :color="statusColor(props.row.status)">
               <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.status)">
-                {{ props.row.status.name }}
+                {{ props.row.status }}
               </p>
             </q-badge>
           </q-td>
         </template>
         <template v-slot:body-cell-tools="props">
           <q-td :props="props" class="">
-            <a @click.stop.prevent="viewData(props.row.requestId)" class="text-dark q-py-sm q-px-xs cursor-pointer">
+            <a @click.stop.prevent="viewData(props.row.id)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
-            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="goto(props.row.requestId)"
+            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="goto(props.row.id)"
               class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
-            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="
-              deleteData(props.row.requestId)
+            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="
+              deleteData(props.row.id)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDelete" size="xs" color="red" />
             </a>
-            <a v-show="props.row.status.statusId == 2 || props.row.status.statusId == 3" @click.stop.prevent="
-              downloadData(props.row.requestId)
+            <a v-show="props.row.status == 'รอตรวจสอบ' || props.row.status == 'อนุมัติ'" @click.stop.prevent="
+              downloadData(props.row.id)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDownload" size="xs" color="blue" />
             </a>
@@ -99,10 +101,12 @@ import ListLayout from "src/layouts/ListLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import DatePicker from "src/components/DatePicker.vue";
 
-import { formatDateThaiSlash } from "src/components/format";
+import { formatDateThaiSlash, formatDateServer } from "src/components/format";
 import { statusColor, textStatusColor } from "src/components/status";
 import { Notify } from "quasar";
 import Swal from "sweetalert2";
+
+import healthCheckUpWelfareService from "src/boot/service/healthCheckUpWelfareService";
 
 import { useListStore } from "src/stores/listStore";
 import { useRoute, useRouter } from "vue-router";
@@ -122,15 +126,15 @@ const listStore = useListStore();
 const router = useRouter();
 const route = useRoute();
 let options = [
-  { statusId: 1, name: "บันทึกฉบับร่าง" },
-  { statusId: 2, name: "รอตรวจสอบ" },
-  { statusId: 3, name: "อนุมัติ" },
+  { status: "บันทึกฉบับร่าง", name: "บันทึกฉบับร่าง" },
+  { status: "รอตรวจสอบ", name: "รอตรวจสอบ" },
+  { status: "อนุมัติ", name: "อนุมัติ" },
 ];
 const modelDate = ref(null);
 const filter = ref({
   keyword: null,
   dateSelected: null,
-  statusId: null,
+  status: null,
 });
 const pagination = ref({
   sortBy: "desc",
@@ -138,68 +142,7 @@ const pagination = ref({
   page: 1,
   rowsPerPage: 20,
 });
-const model = ref([
-  {
-    requestId: '670001',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
-    status: {
-      statusId: 2,
-      name: "รอตรวจสอบ"
-    },
-  },
-  {
-    requestId: '670002',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
-  },
-  {
-    requestId: '670003',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
-    status: {
-      statusId: 3,
-      name: "อนุมัติ"
-    },
-  },
-  {
-    requestId: '670004',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
-  },
-  {
-    requestId: '670005',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    money: "3000",
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
-  },
-]);
+const model = ref([]);
 const tableRef = ref();
 
 onMounted(async () => {
@@ -214,10 +157,18 @@ onBeforeUnmount(() => {
 watch(
   () => filter.value.dateSelected,
   (newValue) => {
-    modelDate.value = newValue.from + " - " + newValue.to;
+    if (typeof newValue === "object" && newValue !== null) modelDate.value = newValue.from + " - " + newValue.to;
+    else modelDate.value = newValue;
   }
 );
-
+watch(
+  () => modelDate.value,
+  (newValue) => {
+    if (!newValue) {
+      filter.value.dateSelected = newValue;
+    }
+  }
+);
 watch(
   () => route.query,
   async () => {
@@ -225,34 +176,35 @@ watch(
   }
 );
 
-
 async function init() {
-  const { keyword, dateSelected, statusId } = route.query;
+  const { keyword, dateSelected, status } = route.query;
   if (Object.keys(route.query).length) {
     filter.value.keyword = keyword ?? null;
     filter.value.dateSelected = dateSelected ? JSON.parse(dateSelected) : null;
-    filter.value.statusId = statusId ?? null;
+    filter.value.status = status ?? null;
   }
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
 }
 
-async function fetchFromServer() {
+async function fetchFromServer(page, itemPerPage, filter) {
   try {
-    // const result = await GspcApproveSerivce.list({
-    //   pageNo: page,
-    //   itemPerPage: count,
-    //   keyword: filter.value.keyword,
-    //   dateSelected: formatDateServer(filter.value.dateSelected),
-    //   endDate: formatDateServer(filter.value.endDate),
-    // });
-    pagination.value.rowsNumber = 5;
-    return;
+    const result = await healthCheckUpWelfareService.list({
+      pageNo: page,
+      itemPerPage: itemPerPage,
+      keyword: filter.keyword,
+      from: formatDateServer(filter.dateSelected?.from) ?? formatDateServer(filter.dateSelected),
+      to: formatDateServer(filter.dateSelected?.to) ?? null,
+      status: filter.status,
+    });
+    pagination.value.rowsNumber = result.data?.pagination?.total;
+    return result.data.datas;
   } catch (error) {
+    console.log(error);
     Notify.create({
       message:
-         error?.response?.data?.errors ??
-        "Something wrong please try again later.",
+        error?.response?.data?.errors ??
+        "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
       position: "bottom-left",
       type: "negative",
     });
@@ -260,7 +212,7 @@ async function fetchFromServer() {
 }
 
 function onRequest(props) {
-  const { page, rowsPerPage, sortBy, descending } = props.pagination;
+  const { page, rowsPerPage } = props.pagination;
   listStore.setState(rowsPerPage);
   isLoading.value = true;
   setTimeout(async () => {
@@ -268,15 +220,11 @@ function onRequest(props) {
       const returnedData = await fetchFromServer(
         page,
         rowsPerPage,
-        filter,
-        sortBy,
-        descending
+        filter.value,
       );
       if (returnedData) model.value.splice(0, model.value.length, ...returnedData);
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
-      pagination.value.sortBy = sortBy;
-      pagination.value.descending = descending;
     } catch (error) {
       Promise.reject(error)
     }
@@ -298,11 +246,10 @@ function goto(requestId) {
 }
 
 function downloadData(requestId) {
-  console.log(requestId);
-  // router.push({
-  //   name: "",
-  //   params: { id: requestId },
-  // });
+  router.push({
+    name: "",
+    params: { id: requestId },
+  });
 }
 
 async function deleteData(id) {
@@ -326,7 +273,7 @@ async function deleteData(id) {
         Swal.showValidationMessage(`Delete Request Failed.`);
         Notify.create({
           message:
-             error?.response?.data?.errors ??
+            error?.response?.data?.errors ??
             "Delete Request Failed, Something wrong please try again later.",
           position: "bottom-left",
           type: "negative",
@@ -349,12 +296,13 @@ async function deleteData(id) {
   });
 }
 function search() {
+  if (!filter.value.dateSelected) filter.value.dateSelected = '';
   router.push({
     name: router.name,
     query: {
       keyword: filter.value.keyword,
-      dateSelected: JSON.stringify(filter.value.dateSelected),
-      statusId: filter.value.statusId,
+      dateSelected: filter.value.dateSelected ? JSON.stringify(filter.value.dateSelected) : null,
+      status: filter.value.status,
     },
   });
 }
@@ -369,10 +317,10 @@ const columns = ref([
     classes: "ellipsis",
   },
   {
-    name: "requestId",
+    name: "reimNumber",
     label: "เลขที่ใบเบิก",
     align: "left",
-    field: (row) => row.requestId ?? "-",
+    field: (row) => row.reimNumber ?? "-",
     format: (val) => `${val}`,
     classes: "ellipsis",
   },
@@ -385,18 +333,18 @@ const columns = ref([
     classes: "ellipsis",
   },
   {
-    name: "updateDate",
+    name: "updatedAt",
     label: "วันที่แก้ไขล่าสุด",
     align: "left",
-    field: (row) => row.updateDate ?? "-",
+    field: (row) => row.updatedAt ?? "-",
     format: (val) => formatDateThaiSlash(val),
     classes: "ellipsis",
   },
   {
-    name: "money",
+    name: "fundReceipt",
     label: "จำนวนเงินที่เบิกตามใบเสร็จ",
     align: "right",
-    field: (row) => row.money ?? "-",
+    field: (row) => row.fundReceipt ?? "-",
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
@@ -407,10 +355,10 @@ const columns = ref([
     classes: "ellipsis",
   },
   {
-    name: "otherWelfare",
+    name: "fundEligibleSum",
     label: "จำนวนเงินที่เบิกจากสิทธิ์อื่น ๆ",
     align: "right",
-    field: (row) => row.otherWelfare ?? "-",
+    field: (row) => row.fundEligibleSum ?? "-",
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
@@ -421,10 +369,10 @@ const columns = ref([
     classes: "ellipsis",
   },
   {
-    name: "moneyCanGet",
+    name: "fundSumRequest",
     label: "จำนวนเงินที่เบิกได้",
     align: "right",
-    field: (row) => row.moneyCanGet ?? "-",
+    field: (row) => row.fundSumRequest ?? "-",
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
@@ -435,10 +383,10 @@ const columns = ref([
     classes: "ellipsis",
   },
   {
-    name: "statusName",
+    name: "status",
     label: "สถานะ",
     align: "center",
-    field: (row) => row.status?.name ?? "-",
+    field: (row) => row.status ?? "-",
     classes: "ellipsis",
   },
   {
