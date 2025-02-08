@@ -73,20 +73,20 @@
         </template>
         <template v-slot:body-cell-tools="props">
           <q-td :props="props" class="">
-            <a @click.stop.prevent="viewData(props.row.requestId)" class="text-dark q-py-sm q-px-xs cursor-pointer">
+            <a @click.stop.prevent="viewData(props.row.id)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
-            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="goto(props.row.requestId)"
+            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="goto(props.row.id)"
               class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
             <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="
-              deleteData(props.row.requestId)
+              deleteData(props.row.id)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDelete" size="xs" color="red" />
             </a>
             <a v-show="props.row.status == 'รอตรวจสอบ'|| props.row.status == 'อนุมัติ'" @click.stop.prevent="
-              downloadData(props.row.requestId)
+              downloadData(props.row.id)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDownload" size="xs" color="blue" />
             </a>
@@ -323,7 +323,7 @@ const columns = ref([
     classes: "ellipsis",
   },
   {
-    name: "requestId",
+    name: "reimNumber",
     label: "เลขที่ใบเบิก",
     align: "left",
     field: (row) => row.reimNumber ?? "-",
