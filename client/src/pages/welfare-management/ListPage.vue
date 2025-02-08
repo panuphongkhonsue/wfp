@@ -73,7 +73,7 @@
             <a @click.stop.prevent="viewData(props.row.requestId)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
-            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="goto(props.row.requestId)"
+            <a v-show="props.row.status.statusId == 2" @click.stop.prevent="goto(props.row.requestId)"
               class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
@@ -246,8 +246,10 @@ function onRequest(props) {
             : item.status === "รอตรวจสอบ"
               ? 2
               : 3
-        }
+        },
+        id: item.id,
       }));
+      console.log("prop:", props.row)
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
     } catch (error) {

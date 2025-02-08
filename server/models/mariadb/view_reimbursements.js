@@ -64,9 +64,6 @@ module.exports = function (sequelize, DataTypes) {
     }
   );
 
-  // Remove Sequelize's default `id` primary key requirement
-  model.removeAttribute('id');
-
   // Add pagination support
   sequelizePaginate.paginate(model);
 
