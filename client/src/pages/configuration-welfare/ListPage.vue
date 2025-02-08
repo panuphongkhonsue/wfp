@@ -458,7 +458,7 @@ async function updateConfigWelfare(propsRowData) {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        if (validateText == null) {
+        if (validateText !== null) {
           Swal.fire({
             html: `ข้อมูลสวัสดิการถูกแก้ไข`,
             icon: "success",

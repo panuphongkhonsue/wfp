@@ -142,19 +142,19 @@ class Controller extends BaseController {
                         include: [
                             {
                                 model: positions, as: 'position',
-                                attributes: ['name']
+                                attributes: []
                             },
                             {
                                 model: employeeTypes, as: 'employee_type',
-                                attributes: ['name']
+                                attributes: []
                             },
                             {
                                 model: sector, as: 'sector',
-                                attributes: ['name']
+                                attributes: []
                             },
                             {
                                 model: departments, as: 'department',
-                                attributes: ['name']
+                                attributes: []
                             },
                         ]
                     },
