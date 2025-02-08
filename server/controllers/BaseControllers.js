@@ -125,7 +125,7 @@ class BaseController {
                 });
                 res.status(200).json({ updatedItem: updatedItem, message: "สำเร็จ" });
             } else {
-                logger.info('ไม่มีข้อมูลที่ถูกแก้ไข', {
+                logger.info('No Modify', {
                     method,
                     data: { userId, dataId, model: this.modelName },
                 });

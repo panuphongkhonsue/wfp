@@ -32,5 +32,12 @@ const getFiscalYear = () => {
     ]
   }
 }
+const getYear2Digits = () => {
+  const getThaiYear = (year) => (year + 543).toString().slice(-2);
 
-module.exports = { isNullOrEmpty, checkRequire, getFiscalYear };
+  const thisYear = new Date().getFullYear(); // 2025
+  const thaiYearShort = getThaiYear(thisYear); // "68"
+  return thaiYearShort;
+}
+const formatNumber = (num) => num.toString().padStart(2, "0");
+module.exports = { isNullOrEmpty, checkRequire, getFiscalYear, getYear2Digits, formatNumber };
