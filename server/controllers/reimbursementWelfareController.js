@@ -18,6 +18,7 @@ class Controller extends BaseController {
                 page: page && !isNaN(page) ? Number(page) : 1,
                 paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 10,
                 where: whereObj,
+                order: [['updated_at', 'DESC'], ['request_date', 'DESC']]
             });
             logger.info('Complete', { method, data: { userId } });
             res.status(200).json(reimbursementsList);

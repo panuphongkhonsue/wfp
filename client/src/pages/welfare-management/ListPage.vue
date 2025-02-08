@@ -63,7 +63,7 @@
           <div class="full-width row flex-center text-negative q-gutter-sm">
             <q-icon size="2em" :name="icon" />
             <span class="font-remark font-regular ">
-              Sorry, There isn't data from server.
+              ไม่พบข้อมูล
             </span>
           </div>
         </template>
@@ -118,7 +118,7 @@ import { useListStore } from "src/stores/listStore";
 import { statusColor, textStatusColor } from "src/components/status";
 import { Notify } from "quasar";
 import Swal from "sweetalert2";
-import {formatDateThaiSlash} from "src/components/format"
+import {formatDateThaiSlash, formatDateServer} from "src/components/format"
 
 import {
   outlinedEdit,
@@ -176,7 +176,22 @@ const model = ref([
 watch(
   () => filter.value.dateSelected,
   (newValue) => {
-    modelDate.value = newValue.from + " - " + newValue.to;
+    if (typeof newValue === "object" && newValue !== null) modelDate.value = newValue.from + " - " + newValue.to;
+    else modelDate.value = newValue;
+  }
+);
+watch(
+  () => modelDate.value,
+  (newValue) => {
+    if (!newValue) {
+      filter.value.dateSelected = newValue;
+    }
+  }
+);
+watch(
+  () => route.query,
+  async () => {
+    await init();
   }
 );
 
@@ -188,17 +203,6 @@ onBeforeUnmount(() => {
 onMounted(async () => {
   await init();
 });
-
-watch(
-  () => route.query,
-  async () => {
-    await init();
-  },
-  () => filter.value.dateSelected,
-  (newValue) => {
-    if (filter.value.dateSelected) modelDate.value = newValue.from + " - " + newValue.to;
-  }
-);
 
 
 async function init() {
@@ -258,7 +262,9 @@ async function fetchFromServer(page, rowPerPage, filters) {
     const allReimbursementWelfare = await reimbursementWelfareService.getReimbursementWelfare({
       keyword: filters.value.keyword ?? '',
       welfareName: filters.value.welfareName ?? '',
-      statusName: filter.value.statusName ?? '',
+      statusName: filters.value.statusName ?? '',
+      from: formatDateServer(filters.value.dateSelected?.from) ?? formatDateServer(filters.value.dateSelected),
+      to: formatDateServer(filters.value.dateSelected?.to) ?? null,
       page: page,
       itemPerPage: rowPerPage,
     });
@@ -300,14 +306,6 @@ function goto(requestId) {
     name: "health_check_up_welfare_edit",
     params: { id: requestId },
   });
-}
-
-function downloadData(requestId) {
-  console.log(requestId);
-  // router.push({
-  //   name: "",
-  //   params: { id: requestId },
-  // });
 }
 
 async function deleteData(id) {

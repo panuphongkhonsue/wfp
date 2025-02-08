@@ -29,9 +29,20 @@ const authPermission = async (req, res, next) => {
 const bindFilter = async (req, res, next) => {
 	const method = 'BindFilter';
 	try {
-		const { keyword, welfareName, statusName } = req.query;
+		const { keyword, welfareName, statusName, from, to } = req.query;
 		req.query.filter = {};
 		req.query.filter[Op.and] = [];
+        
+        if (!isNullOrEmpty(from) && !isNullOrEmpty(to)) {
+            req.query.filter[Op.and].push({
+                '$request_date$': { [Op.between]: [from, to] },
+            });
+        }
+        if (!isNullOrEmpty(from) && isNullOrEmpty(to)) {
+            req.query.filter[Op.and].push({
+                '$request_date$': { [Op.eq]: from },
+            });
+        }
 
         // Check for 'keyword' and add to the filter if it's not empty
         if (!isNullOrEmpty(keyword)) {
