@@ -330,7 +330,7 @@ async function submit() {
         Notify.create({
           message:
             error?.response?.data?.message ??
-            "[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
+            "บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
           position: "bottom-left",
           type: "negative",
         });
