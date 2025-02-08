@@ -40,4 +40,5 @@ const getYear2Digits = () => {
   return thaiYearShort;
 }
 const formatNumber = (num) => num.toString().padStart(2, "0");
-module.exports = { isNullOrEmpty, checkRequire, getFiscalYear, getYear2Digits, formatNumber };
+const isInvalidNumber = (value) => isNaN(value) || value === "" || value === null;
+module.exports = { isNullOrEmpty, checkRequire, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber };

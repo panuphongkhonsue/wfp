@@ -1,6 +1,6 @@
 const sequelizePaginate = require('sequelize-paginate');
 const Sequelize = require('sequelize');
-module.exports = function (sequelize, DataTypes) {
+module.exports = function(sequelize, DataTypes) {
   const model = sequelize.define('children', {
     id: {
       autoIncrement: true,
@@ -26,14 +26,6 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: false,
       defaultValue: Sequelize.Sequelize.fn('current_timestamp')
     },
-    created_by: {
-      type: DataTypes.BIGINT,
-      allowNull: false
-    },
-    updated_by: {
-      type: DataTypes.BIGINT,
-      allowNull: false
-    },
     users_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -42,6 +34,14 @@ module.exports = function (sequelize, DataTypes) {
         model: 'users',
         key: 'id'
       }
+    },
+    created_by: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    updated_by: {
+      type: DataTypes.BIGINT,
+      allowNull: false
     }
   }, {
     sequelize,

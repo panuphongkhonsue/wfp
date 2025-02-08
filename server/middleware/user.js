@@ -38,7 +38,7 @@ const bindCreate = async (req, res, next) => {
 		if (isNullOrEmpty(sectorId)) errorObj['sectorId'] = 'กรุณากรอกภาควิชา';
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
 		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
-		if (Object.keys(errorObj).length) res.status(400).json({ errors: errorObj });
+		if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
 		const { id } = req.user;
 		const dataBinding = {
 			username: username,
@@ -86,7 +86,7 @@ const bindUpdate = async (req, res, next) => {
 		if (isNullOrEmpty(sectorId)) errorObj['sectorId'] = 'กรุณากรอกภาควิชา';
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
 		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
-		if (Object.keys(errorObj).length) res.status(400).json({ errors: errorObj });
+		if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
 		const { id } = req.user;
 		const dataBinding = {
 			username: username,

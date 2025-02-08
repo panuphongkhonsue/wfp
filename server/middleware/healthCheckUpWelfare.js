@@ -1,4 +1,4 @@
-const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber } = require('../middleware/utility');
+const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('UserValidator');
 const { Op, literal } = require('sequelize')
@@ -65,14 +65,35 @@ const bindCreate = async (req, res, next) => {
     try {
         const { fundReceipt, fundDecree, fundUniversity, fundEligible, fundEligibleName, createFor, actionId } = req.body;
         const errorObj = {};
-        if (fundReceipt < 0) errorObj['fundReceipt'] = 'จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้';
-        if (fundDecree < 0) errorObj['fundDecree'] = 'ข้อมูลเงินจากสิทธิที่เบิกได้ตามพระราชกฤษฎีกาเงินสวัสดิการเกี่ยวกับการรักษาพยาบาลน้อยกว่า 0 ไม่ได้';
-        if (fundUniversity < 0) errorObj['fundUniversity'] = 'เงินที่เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพาน้อยกว่า 0 ไม่ได้';
-        if (fundEligible < 0) errorObj['fundEligible'] = 'ค่าสิทธิอื่น ๆ น้อยกว่า 0 ไม่ได้';
+        if (isNullOrEmpty(fundReceipt)) {
+            errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
+        } else if (isInvalidNumber(fundReceipt)) {
+            errorObj["fundReceipt"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (fundReceipt < 0) {
+            errorObj["fundReceipt"] = "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้";
+        }
+
+        if (isInvalidNumber(fundDecree) && fundDecree) {
+            errorObj["fundDecree"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (fundDecree < 0) {
+            errorObj["fundDecree"] = "ข้อมูลเงินจากสิทธิที่เบิกได้ตามพระราชกฤษฎีกาเงินสวัสดิการเกี่ยวกับการรักษาพยาบาลน้อยกว่า 0 ไม่ได้";
+        }
+
+        if (isInvalidNumber(fundUniversity) && fundUniversity) {
+            errorObj["fundUniversity"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (fundUniversity < 0) {
+            errorObj["fundUniversity"] = "เงินที่เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพาน้อยกว่า 0 ไม่ได้";
+        }
+
+        if (isInvalidNumber(fundEligible) && fundEligible) {
+            errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (fundEligible < 0) {
+            errorObj["fundEligible"] = "ค่าสิทธิอื่น ๆ น้อยกว่า 0 ไม่ได้";
+        }
         const fundEligibleSum = fundDecree + fundUniversity + fundEligible;
         const fundSumRequest = fundReceipt - fundEligibleSum;
         if (fundSumRequest < 0) errorObj['fundSumRequest'] = 'จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ได้รับจากสิทธิอื่น ๆ';
-        if (Object.keys(errorObj).length) res.status(400).json({ errors: errorObj });
+        if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
         const { id } = req.user;
         const results = await reimbursementsGeneral.findOne({
             attributes: ["id"],
@@ -110,14 +131,35 @@ const bindUpdate = async (req, res, next) => {
     try {
         const { fundReceipt, fundDecree, fundUniversity, fundEligible, fundEligibleName, createFor, actionId } = req.body;
         const errorObj = {};
-        if (fundReceipt < 0) errorObj['fundReceipt'] = 'จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้';
-        if (fundDecree < 0) errorObj['fundDecree'] = 'ข้อมูลเงินจากสิทธิที่เบิกได้ตามพระราชกฤษฎีกาเงินสวัสดิการเกี่ยวกับการรักษาพยาบาลน้อยกว่า 0 ไม่ได้';
-        if (fundUniversity < 0) errorObj['fundUniversity'] = 'เงินที่เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพาน้อยกว่า 0 ไม่ได้';
-        if (fundEligible < 0) errorObj['fundEligible'] = 'ค่าสิทธิอื่น ๆ น้อยกว่า 0 ไม่ได้';
+        if (isNullOrEmpty(fundReceipt)) {
+            errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
+        } else if (isInvalidNumber(fundReceipt)) {
+            errorObj["fundReceipt"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (fundReceipt < 0) {
+            errorObj["fundReceipt"] = "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้";
+        }
+
+        if (isInvalidNumber(fundDecree) && fundDecree) {
+            errorObj["fundDecree"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (fundDecree < 0) {
+            errorObj["fundDecree"] = "ข้อมูลเงินจากสิทธิที่เบิกได้ตามพระราชกฤษฎีกาเงินสวัสดิการเกี่ยวกับการรักษาพยาบาลน้อยกว่า 0 ไม่ได้";
+        }
+
+        if (isInvalidNumber(fundUniversity) && fundUniversity) {
+            errorObj["fundUniversity"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (fundUniversity < 0) {
+            errorObj["fundUniversity"] = "เงินที่เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพาน้อยกว่า 0 ไม่ได้";
+        }
+
+        if (isInvalidNumber(fundEligible) && fundEligible) {
+            errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (fundEligible < 0) {
+            errorObj["fundEligible"] = "ค่าสิทธิอื่น ๆ น้อยกว่า 0 ไม่ได้";
+        }
         const fundEligibleSum = fundDecree + fundUniversity + fundEligible;
         const fundSumRequest = fundReceipt - fundEligibleSum;
         if (fundSumRequest < 0) errorObj['fundSumRequest'] = 'จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ได้รับจากสิทธิอื่น ๆ';
-        if (Object.keys(errorObj).length) res.status(400).json({ errors: errorObj });
+        if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
         const { id } = req.user;
         const dataId = req.params['id'];
         const results = await reimbursementsGeneral.findOne({
