@@ -97,6 +97,8 @@ function initModels(sequelize) {
   roles.hasMany(users, { as: "users", foreignKey: "roles_id"});
   users.belongsTo(sector, { as: "sector", foreignKey: "sector_id"});
   sector.hasMany(users, { as: "users", foreignKey: "sector_id"});
+  childrenInfomation.belongsTo(subCategories, { as: "sub_category", foreignKey: "sub_categories_id"});
+  subCategories.hasMany(childrenInfomation, { as: "children_infomations", foreignKey: "sub_categories_id"});
   logSubCategory.belongsTo(subCategories, { as: "sub_category", foreignKey: "sub_categories_id"});
   subCategories.hasMany(logSubCategory, { as: "log_sub_categories", foreignKey: "sub_categories_id"});
   reimbursementsAssistHasSubCategories.belongsTo(subCategories, { as: "sub_category", foreignKey: "sub_categories_id"});

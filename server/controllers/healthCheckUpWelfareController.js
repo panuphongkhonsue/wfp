@@ -1,9 +1,8 @@
 const BaseController = require('./BaseControllers');
 const { reimbursementsGeneral, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
-const { Op, fn, col, literal } = require("sequelize");
+const { fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
 const logger = initLogger('ReimbursementsGeneralController');
-const { isNullOrEmpty } = require('./utility');
 
 class Controller extends BaseController {
     constructor() {
@@ -118,6 +117,7 @@ class Controller extends BaseController {
         try {
             const requestData = await reimbursementsGeneral.findByPk(dataId, {
                 attributes: [
+                    'id',
                     [col("reim_number"), "reimNumber"],
                     [col("fund_receipt"), "fundReceipt"],
                     [col("fund_eligible"), "fundEligible"],
