@@ -1,5 +1,5 @@
 <template>
-  <ListLayout title="สวัสดิการทั่วไป (ค่าตรวจสุขภาพ)">
+  <ListLayout title="สวัสดิการค่าสงเคราะห์การเสียชีวิตครอบครัว">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">

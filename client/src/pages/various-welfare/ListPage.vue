@@ -1,10 +1,10 @@
 <template>
-  <ListLayout title="สวัสดิการทั่วไป (ค่าตรวจสุขภาพ)">
+  <ListLayout title="สวัสดิการค่าสงเคราะห์ต่าง ๆ">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
-          <InputGroup more-class="font-16 font-medium" for-id="requesId" is-dense v-model="filter.keyword" label="ค้นหา"
-            placeholder="ค้นหาจากเลขที่ใบเบิก">
+          <InputGroup more-class="font-16 font-medium" for-id="requesId" is-dense clearable v-model="filter.keyword" label="ค้นหา"
+            placeholder="ค้นหาจากเลขที่ใบเบิก" >
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-3">
@@ -15,11 +15,11 @@
         </div>
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
           <q-select :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusId"
-            :options="options" label="สถานะ" multiple dense clearable option-value="statusId" emit-value map-options
+            :options="options" label="สถานะ"  dense clearable option-value="statusId" emit-value map-options
             option-label="name">
             <template v-slot:no-option>
               <q-item>
-                <q-item-section class="text-grey"> No option </q-item-section>
+                <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
               </q-item>
             </template>
           </q-select>
@@ -46,7 +46,7 @@
       <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
         row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
         table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
-        @request="onRequest" @row-click="(evt, row, index) => viewData(row.requestId)">
+        @request="onRequest" @row-click="(evt, row, index) => viewData(row.id)">
         <q-inner-loading showing color="primary" />
         <template v-slot:body-cell-index="props">
           <q-td :props="props" >
@@ -57,7 +57,7 @@
           <div class="full-width row flex-center text-negative q-gutter-sm">
             <q-icon size="2em" :name="icon" />
             <span class="font-remark font-regular ">
-              Sorry, There isn't data from server.
+              ไม่พบข้อมูล
             </span>
           </div>
         </template>
@@ -102,10 +102,12 @@ import ListLayout from "src/layouts/ListLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import DatePicker from "src/components/DatePicker.vue";
 
-import { formatDateThaiSlash } from "src/components/format";
+import { formatDateThaiSlash, formatDateServer } from "src/components/format";
 import { statusColor, textStatusColor } from "src/components/status";
 import { Notify } from "quasar";
 import Swal from "sweetalert2";
+
+import variousWelfareService from "src/boot/service/variousWelfareService";
 
 import { useListStore } from "src/stores/listStore";
 import { useRoute, useRouter } from "vue-router";
@@ -141,53 +143,7 @@ const pagination = ref({
   page: 1,
   rowsPerPage: 20,
 });
-const model = ref([
-  {
-    requestId: '670001',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
-    status: "รอตรวจสอบ"
-  },
-  {
-    requestId: '670002',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
-    status: "บันทึกฉบับร่าง"
-  },
-  {
-    requestId: '670003',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
-    status: "อนุมัติ"
-  },
-  {
-    requestId: '670004',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    money: 3000,
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
-    status: "บันทึกฉบับร่าง"
-  },
-  {
-    requestId: '670005',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    money: "3000",
-    otherWelfare: 3000,
-    moneyCanGet: 3000,
-    status: "บันทึกฉบับร่าง"
-  },
-]);
+const model = ref([]);
 const tableRef = ref();
 
 onMounted(async () => {
@@ -236,22 +192,24 @@ async function init() {
   await tableRef.value.requestServerInteraction();
 }
 
-async function fetchFromServer() {
+async function fetchFromServer(page, itemPerPage, filter) {
   try {
-    // const result = await GspcApproveSerivce.list({
-    //   pageNo: page,
-    //   itemPerPage: count,
-    //   keyword: filter.value.keyword,
-    //   dateSelected: formatDateServer(filter.value.dateSelected),
-    //   endDate: formatDateServer(filter.value.endDate),
-    // });
-    pagination.value.rowsNumber = 5;
-    return;
+    const result = await variousWelfareService.list({
+      pageNo: page,
+      itemPerPage: itemPerPage,
+      keyword: filter.keyword,
+      from: formatDateServer(filter.dateSelected?.from) ?? formatDateServer(filter.dateSelected),
+      to: formatDateServer(filter.dateSelected?.to) ?? null,
+      status: filter.status,
+    });
+    pagination.value.rowsNumber = result.data?.pagination?.total;
+    return result.data.datas;
   } catch (error) {
+    console.log(error);
     Notify.create({
       message:
-        error?.response?.data?.message ??
-        "Something wrong please try again later.",
+        error?.response?.data?.errors ??
+        "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
       position: "bottom-left",
       type: "negative",
     });
@@ -259,7 +217,7 @@ async function fetchFromServer() {
 }
 
 function onRequest(props) {
-  const { page, rowsPerPage, sortBy, descending } = props.pagination;
+  const { page, rowsPerPage,} = props.pagination;
   listStore.setState(rowsPerPage);
   isLoading.value = true;
   setTimeout(async () => {
@@ -267,15 +225,11 @@ function onRequest(props) {
       const returnedData = await fetchFromServer(
         page,
         rowsPerPage,
-        filter,
-        sortBy,
-        descending
+        filter.value,
       );
       if (returnedData) model.value.splice(0, model.value.length, ...returnedData);
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
-      pagination.value.sortBy = sortBy;
-      pagination.value.descending = descending;
     } catch (error) {
       Promise.reject(error)
     }
@@ -297,11 +251,10 @@ function goto(requestId) {
 }
 
 function downloadData(requestId) {
-  console.log(requestId);
-  // router.push({
-  //   name: "",
-  //   params: { id: requestId },
-  // });
+  router.push({
+    name: "",
+    params: { id: requestId },
+  });
 }
 
 async function deleteData(id) {
@@ -355,7 +308,7 @@ function search() {
     query: {
       keyword: filter.value.keyword,
       dateSelected: filter.value.dateSelected ? JSON.stringify(filter.value.dateSelected) : null,
-      statusId: filter.value.statusId,
+      status: filter.value.statusId,
     },
   });
 }
@@ -373,7 +326,7 @@ const columns = ref([
     name: "requestId",
     label: "เลขที่ใบเบิก",
     align: "left",
-    field: (row) => row.requestId ?? "-",
+    field: (row) => row.reimNumber ?? "-",
     format: (val) => `${val}`,
     classes: "ellipsis",
   },
@@ -386,10 +339,10 @@ const columns = ref([
     classes: "ellipsis",
   },
   {
-    name: "updateDate",
+    name: "updatedAt",
     label: "วันที่แก้ไขล่าสุด",
     align: "left",
-    field: (row) => row.updateDate ?? "-",
+    field: (row) => row.updatedAt ?? "-",
     format: (val) => formatDateThaiSlash(val),
     classes: "ellipsis",
   },
@@ -397,7 +350,7 @@ const columns = ref([
     name: "money",
     label: "จำนวนเงินตามใบเสร็จ / ใบสำคัญรับเงิน",
     align: "right",
-    field: (row) => row.money ?? "-",
+    field: (row) => row.fundReceipt ?? "-",
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
@@ -407,25 +360,25 @@ const columns = ref([
     },
     classes: "ellipsis",
   },
-  {
-    name: "otherWelfare",
-    label: "จำนวนเงินที่เบิกได้ตามสิทธิ์",
-    align: "right",
-    field: (row) => row.otherWelfare ?? "-",
-    format: (val) => {
-      const number = Number(val); // Convert to number
-      if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
-      }
-      return `${val}`; // If conversion fails, return a fallback value
-    },
-    classes: "ellipsis",
-  },
+  // {
+  //   name: "otherWelfare",
+  //   label: "จำนวนเงินที่เบิกได้ตามสิทธิ์",
+  //   align: "right",
+  //   field: (row) => row.otherWelfare ?? "-",
+  //   format: (val) => {
+  //     const number = Number(val); // Convert to number
+  //     if (!isNaN(number)) {
+  //       return number.toLocaleString("en-US"); // Format as '3,000'
+  //     }
+  //     return `${val}`; // If conversion fails, return a fallback value
+  //   },
+  //   classes: "ellipsis",
+  // },
   {
     name: "moneyCanGet",
     label: "จำนวนเงินที่ขอเบิกทั้งหมด",
-    align: "right",
-    field: (row) => row.moneyCanGet ?? "-",
+       align: "right",
+    field: (row) => row.fundSumRequest ?? "-",
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
