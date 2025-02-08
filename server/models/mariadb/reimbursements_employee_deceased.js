@@ -37,7 +37,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     status: {
-      type: DataTypes.ENUM('DRAFT','WAIT_VERIFY','APPROVED'),
+      type: DataTypes.ENUM('บันทึกฉบับร่าง','รอตรวจสอบ','อนุมัติ'),
       allowNull: false
     },
     organizer: {

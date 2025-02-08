@@ -170,7 +170,7 @@ class Controller extends BaseController {
         const dataCreate = req.body;
         try {
             const result = await sequelize.transaction(async t => {
-                const newItemUser = await users.create(dataCreate);
+                const newItemUser = await users.create(dataCreate, { transaction: t, });
 
                 if (!isNullOrEmpty(child)) {
                     var childData = child.map((childObj) => ({
@@ -182,6 +182,7 @@ class Controller extends BaseController {
                     }));
                     const newItemChild = await children.bulkCreate(childData, {
                         fields: ['name', "birthday", 'users_id'],
+                        transaction: t,
                     });
                     var itemsReturned = {
                         ...newItemUser.toJSON(),
@@ -215,6 +216,7 @@ class Controller extends BaseController {
                     where: {
                         id: dataId,
                     },
+                    transaction: t,
                 });
                 if (!isNullOrEmpty(child)) {
                     var childData = child.map((childObj) => ({
@@ -230,15 +232,18 @@ class Controller extends BaseController {
                         where: { users_id: dataId },
                         attributes: ["id", "name", "birthday"],
                         raw: true,
+                        transaction: t,
                     });
                     var updateItemChild = await children.bulkCreate(childData, {
-                        updateOnDuplicate: ["name", "birthday", "users_id"]
+                        updateOnDuplicate: ["name", "birthday", "users_id"],
+                        transaction: t,
                     });
                     // Fetch updated child data after bulkCreate
                     const updatedChildren = await children.findAll({
                         where: { users_id: dataId },
                         attributes: ["id", "name", "birthday"],
                         raw: true,
+                        transaction: t,
                     });
                     var hasChildUpdated = JSON.stringify(existingChildren) !== JSON.stringify(updatedChildren);
                 }

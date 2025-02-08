@@ -200,7 +200,6 @@ async function fetchFromServer(page, itemPerPage, filter) {
     pagination.value.rowsNumber = result.data?.pagination?.total;
     return result.data.datas;
   } catch (error) {
-    console.log(error);
     Notify.create({
       message:
         error?.response?.data?.errors ??

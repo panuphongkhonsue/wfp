@@ -59,6 +59,14 @@ module.exports = function(sequelize, DataTypes) {
     province: {
       type: DataTypes.STRING(255),
       allowNull: false
+    },
+    sub_categories_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: 'sub_categories',
+        key: 'id'
+      }
     }
   }, {
     sequelize,
@@ -71,6 +79,13 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "id" },
+        ]
+      },
+      {
+        name: "fk_children_infomation_sub_categories1_idx",
+        using: "BTREE",
+        fields: [
+          { name: "sub_categories_id" },
         ]
       },
     ]
