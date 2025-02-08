@@ -19,7 +19,7 @@
             option-value="statusId" emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
-                <q-item-section class="text-grey"> No option </q-item-section>
+                <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
               </q-item>
             </template>
           </q-select>

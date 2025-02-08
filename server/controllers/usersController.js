@@ -284,7 +284,7 @@ class Controller extends BaseController {
                     method,
                     data: { userId, dataId },
                 });
-                res.status(200).json({ updatedItem: updatedItem, message: "สำเร็จ" });
+                res.status(201).json({ updatedItem: updatedItem, message: "สำเร็จ" });
             } else {
                 logger.info('Data not found', {
                     method,

@@ -10,23 +10,19 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold">
-              <div class="col-12 row wrap q-col-gutter-y-md">
-                <p class="col-lg-3 col-12 q-mb-none">
-                  ชื่อ : <span class="font-medium font-16 text-grey-7">สุทะพัด บุญทัน</span>
-                </p>
-                <p class="col-lg-3 col-12 q-mb-none">
-                  ตำแหน่ง : <span class="font-medium font-16 text-grey-7">รองศาสตราจารย์</span>
-                </p>
-                <p class="col-lg col-12 q-mb-none">
-                  ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">พนักงานมหาวิทยาลัย</span>
-                </p>
-              </div>
-              <div class="col-12 row wrap q-col-gutter-y-md">
-                <p class="col-lg-3 col-12 q-mb-none">ส่วนงาน : <span
-                    class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span></p>
-                <p class="col-lg col-12 q-mb-none">ภาควิชา : <span
-                    class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span></p>
-              </div>
+              <p class="col-lg-4 col-12 q-mb-none">
+                ชื่อ : <span class="font-medium font-16 text-grey-7">สุทะพัด บุญทัน</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">
+                ตำแหน่ง : <span class="font-medium font-16 text-grey-7">รองศาสตราจารย์</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">
+                ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">พนักงานมหาวิทยาลัย</span>
+              </p>
+              <p class="col-lg-4 col-12 q-mb-none">ส่วนงาน : <span
+                  class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span></p>
+              <p class="col-lg-4 col-12 q-mb-none">ภาควิชา : <span
+                  class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span></p>
             </q-card-section>
           </q-card>
         </div>
@@ -47,11 +43,21 @@
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
         <div class="col-md-9 col-12">
           <q-card flat bordered class="full-height">
-            <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
+            <q-card-section class="flex justify-between q-px-md q-pt-md q-pb-md font-18 font-bold">
               <p class="q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
+              <p class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
+                v-if="isView && (model.status == 'รอตรวจสอบ' || model.status == 'อนุมัติ')"><q-icon
+                  :name="outlinedDownload" />
+                <span> Export</span>
+              </p>
+            </q-card-section>
+            <q-card-section v-show="isView" class="row wrap font-medium q-pb-xs font-16 text-grey-9">
+              <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ model.requestDate ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
-              <InputGroup for-id="fund" is-dense v-model="model.claimFund" :data="model.claimFund ?? '-'" is-require
+              <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'" is-require
                 label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" compclass="col-xs-12 col-lg-3 col-xl-2"
                 :is-view="isView">
               </InputGroup>
@@ -60,25 +66,28 @@
               <q-table flat bordered :rows="row ?? []" :columns="columns" row-key="id" :wrap-cells="$q.screen.gt.lg"
                 table-header-class="font-bold bg-blue-10 text-white" separator="cell" hide-bottom ref="tableRef"
                 :loading="isLoading" @request="onRequest">
-                <template v-slot:body-cell-claimName="props">
-                  <q-td v-if="props.row.claimName" :props="props" class="text-center text-grey-9">
-                    {{ props.row.claimName }}
+                <template v-slot:loading>
+                  <q-inner-loading showing color="primary" />
+                </template>
+                <template v-slot:body-cell-fundEligibleName="props">
+                  <q-td v-if="props.row.fundEligibleName" :props="props" class="text-center text-grey-9">
+                    {{ props.row.fundEligibleName }}
                   </q-td>
                   <q-td v-else :props="props" class="text-grey-9">
-                    <q-input class="font-14 font-regular" dense v-model="model.claimByFund[props.row.id].claimName"
-                      outlined autocomplete="off" color="dark" type="text" :for="'input-claimName' + props.row.id"
-                      placeholder="">
+                    <q-input class="font-14 font-regular" dense
+                      v-model="model.claimByEligible[props.row.id - 1].fundEligibleName" outlined autocomplete="off"
+                      color="dark" type="text" :for="'input-fundEligibleName' + props.row.id" placeholder="">
                     </q-input>
                   </q-td>
                 </template>
-                <template v-slot:body-cell-claimFund="props">
-                  <q-td v-if="props.row.claimFund" :props="props" class="text-center text-grey-9">
-                    {{ props.row.claimFund }}
+                <template v-slot:body-cell-fundEligible="props">
+                  <q-td v-if="props.row.fundEligible" :props="props" class="text-center text-grey-9">
+                    {{ props.row.fundEligible }}
                   </q-td>
                   <q-td v-else :props="props" class="text-grey-9">
-                    <q-input class="font-14 font-regular" dense v-model="model.claimByFund[props.row.id].claimFund"
-                      outlined autocomplete="off" color="dark" type="number" :forId="'input-claimFund' + props.row.id"
-                      placeholder="0">
+                    <q-input class="font-14 font-regular" dense
+                      v-model="model.claimByEligible[props.row.id - 1].fundEligible" outlined autocomplete="off"
+                      color="dark" type="number" :forId="'input-fundEligible' + props.row.id" placeholder="0">
                     </q-input>
                   </q-td>
                 </template>
@@ -135,22 +144,21 @@ defineOptions({
 const router = useRouter();
 const route = useRoute();
 const model = ref({
-  claimFund: null,
-  claimName: null,
-  claimByFund: {
-    1: {
-      claimName: null,
-      claimFund: null,
+  fundReceipt: null,
+  claimByEligible: [
+    {
+      fundEligible: null,
+      fundEligibleName: null,
     },
-    2: {
-      claimName: null,
-      claimFund: null,
+    {
+      fundEligible: null,
+      fundEligibleName: null,
     },
-    3: {
-      claimName: null,
-      claimFund: null,
-    },
-  },
+    {
+      fundEligible: null,
+      fundEligibleName: null,
+    }
+  ],
 });
 const tableRef = ref();
 const isLoading = ref(false);
@@ -292,34 +300,34 @@ async function submit() {
 const row = ref([
   {
     id: 1,
-    claimName: 'ได้รับเงินจากสิทธิที่เบิกได้ตามพระราชกฤษฎีกาเงินสวัสดิการเกี่ยวกับการรักษาพยาบาล',
-    claimFund: null,
+    fundEligibleName: 'ได้รับเงินจากสิทธิที่เบิกได้ตามพระราชกฤษฎีกาเงินสวัสดิการเกี่ยวกับการรักษาพยาบาล',
+    fundEligible: null,
   },
   {
     id: 2,
-    claimName: 'เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา',
-    claimFund: null,
+    fundEligibleName: 'เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา',
+    fundEligible: null,
   },
   {
     id: 3,
-    claimName: null,
-    claimFund: null,
+    fundEligibleName: null,
+    fundEligible: null,
   },
 ]);
 const columns = ref([
   {
-    name: "claimName",
+    name: "fundEligibleName",
     label: "ชื่อสิทธิ",
     align: "left",
-    field: (row) => row.claimName ?? "-",
+    field: (row) => row.fundEligibleName ?? "-",
     format: (val) => `${val}`,
     classes: "ellipsis",
   },
   {
-    name: "claimFund",
+    name: "fundEligible",
     label: "จำนวนเงิน (บาท)",
     align: "right",
-    field: (row) => row.claimFund ?? "-",
+    field: (row) => row.fundEligible ?? "-",
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
