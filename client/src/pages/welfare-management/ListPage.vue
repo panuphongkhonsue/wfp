@@ -17,9 +17,9 @@
         </div>
 
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
-          <q-select :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusId"
-            :options="optionStatus" label="สถานะ" multiple dense clearable option-value="statusId" emit-value map-options
-            option-label="name">
+          <q-select :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusName"
+            :options="optionStatus" label="สถานะ" dense clearable option-value="name" emit-value
+            map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey"> No option </q-item-section>
@@ -29,9 +29,9 @@
         </div>
 
         <div class="col-12 col-md q-pt-lg">
-          <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm" outlined v-model="filter.welfareId"
-            :options="optionWelfareType" label="ประเภทสวัสดิการ" multiple dense clearable option-value="welfareId" emit-value
-            map-options option-label="name">
+          <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm" outlined v-model="filter.welfareName"
+            :options="optionWelfareType" label="ประเภทสวัสดิการ" dense clearable option-value="name"
+            emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">No option</q-item-section>
@@ -63,7 +63,7 @@
           <div class="full-width row flex-center text-negative q-gutter-sm">
             <q-icon size="2em" :name="icon" />
             <span class="font-remark font-regular ">
-              Sorry, There isn't data from server.
+              ไม่พบข้อมูล
             </span>
           </div>
         </template>
@@ -73,7 +73,7 @@
             <a @click.stop.prevent="viewData(props.row.requestId)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
-            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="goto(props.row.requestId)"
+            <a v-show="props.row.status.statusId == 2" @click.stop.prevent="goto(props.row.requestId)"
               class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
@@ -92,9 +92,8 @@
 
         <template v-slot:body-cell-statusName="props">
           <q-td :props="props" class="text-center">
-            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width"
-              :color="statusColor(props.row.status)">
-              <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.status)">
+            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width" :color="statusColor(props.row.statusName)">
+              <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.statusName)">
                 {{ props.row.status.name }}
               </p>
             </q-badge>
@@ -113,13 +112,13 @@
 import InputGroup from "src/components/InputGroup.vue";
 import ListLayout from "src/layouts/ListLayout.vue";
 import DatePicker from "src/components/DatePicker.vue";
-import { ref ,watch ,onMounted ,onBeforeUnmount} from "vue";
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useListStore } from "src/stores/listStore";
 import { statusColor, textStatusColor } from "src/components/status";
 import { Notify } from "quasar";
 import Swal from "sweetalert2";
-
+import {formatDateThaiSlash, formatDateServer} from "src/components/format"
 
 import {
   outlinedEdit,
@@ -127,6 +126,7 @@ import {
   outlinedDelete,
   outlinedDownload,
 } from "@quasar/extras/material-icons-outlined";
+import reimbursementWelfareService from "src/boot/service/reimbursementWelfareService";
 
 const router = useRouter();
 const route = useRoute();
@@ -139,8 +139,8 @@ const isLoading = ref(false);
 const filter = ref({
   keyword: null,
   dateSelected: null,
-  welfareId: null,
-  statusId: null,
+  welfareName: null,
+  statusName: null,
 });
 let optionStatus = [
   { statusId: 1, name: "บันทึกฉบับร่าง" },
@@ -149,56 +149,49 @@ let optionStatus = [
 ];
 let optionWelfareType = [
   { welfareId: 1, name: "สวัสดิการทั่วไป" },
-  { welfareId: 2, name: "สวัสดิการค่าสงเคราะห์ต่างๆ" },
-  { welfareId: 3, name: "สวัสดิการค่าเทอมบุตร" },
+  { welfareId: 2, name: "สวัสดิการค่าสงเคราะห์ต่าง ๆ" },
+  { welfareId: 3, name: "สวัสดิการเกี่ยวกับการศึกษาของบุตร" },
+  { welfareId: 4, name: "สวัสดิการค่าสงเคราะห์การเสียชีวิต"},
 ];
 
 const columns = [
   { name: "index", label: "ลำดับ", align: "left", field: "index" },
   { name: "reimNumber", label: "เลขที่ใบเบิก", align: "left", field: (row) => row.reimNumber ?? "-" },
-  { name: "createdBy", label: "ผู้ร้องขอ", align: "left", field: (row) => row.createdBy ?? "-" },
-  { name: "sendDate", label: "วันที่ร้องขอ", align: "left", field: (row) => row.sendDate ?? "-" },
+  { name: "createdBy", label: "ผู้ร้องขอ", align: "left", field: (row) => row.createdByName ?? "-" },
+  { name: "sendDate", label: "วันที่ร้องขอ", align: "left", field: (row) => row.requestDate ?? "-" },
   { name: "updatedAt", label: "วันที่แก้ไขล่าสุด", align: "left", field: (row) => row.updatedAt ?? "-" },
   { name: "welfareType", label: "ประเภท", align: "left", field: (row) => row.welfareType ?? "-" },
-  { name: "subCategory", label: "ประเภทย่อย", align: "left", field: (row) => row.subCategory ?? "-" },
+  { name: "subCategory", label: "ประเภทย่อย", align: "left", field: (row) => row.categoryName 
+    ? row.categoryName 
+    : (row.subCategoryName ? row.subCategoryName : "-")},
   { name: "statusName", label: "สถานะ", align: "center", field: (row) => row.status?.name ?? "-" },
   { name: "tools", label: "จัดการ", align: "left", field: "tools" },
 ];
 
 const model = ref([
-  {
-    id: 1,
-    reimNumber: 6706462,
-    createdBy: 'ศรัณต์ เรืองไทย',
-    sendDate: '15/ก.พ./2567',
-    updatedAt: '15/ก.พ./2567',
-    welfareType: 'สวัสดิการทั่วไป',
-    subCategory: 'ค่าตรวจสุขภาพ',
-    status: {
-      statusId: 2,
-      name: "รอตรวจสอบ"
-    },
-  },
-  {
-    id: 2,
-    reimNumber: 6706462,
-    createdBy: 'ภานุพงค์ คนซื่อ',
-    sendDate: '17/ม.ค./2567',
-    updatedAt: '19/ก.พ./2567',
-    welfareType: 'สวัสดิการทั่วไป',
-    subCategory: 'ค่าทำฟัน',
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
-  },
+
 ]);
 
 
 watch(
   () => filter.value.dateSelected,
   (newValue) => {
-    modelDate.value = newValue.from + " - " + newValue.to;
+    if (typeof newValue === "object" && newValue !== null) modelDate.value = newValue.from + " - " + newValue.to;
+    else modelDate.value = newValue;
+  }
+);
+watch(
+  () => modelDate.value,
+  (newValue) => {
+    if (!newValue) {
+      filter.value.dateSelected = newValue;
+    }
+  }
+);
+watch(
+  () => route.query,
+  async () => {
+    await init();
   }
 );
 
@@ -211,19 +204,14 @@ onMounted(async () => {
   await init();
 });
 
-watch(
-  () => route.query,
-  async () => {
-    await init();
-  }
-);
 
 async function init() {
-  const { keyword, dateSelected, statusId } = route.query;
+  const { keyword, dateSelected, statusName, welfareName } = route.query;
   if (Object.keys(route.query).length) {
     filter.value.keyword = keyword ?? null;
+    filter.value.welfareName = welfareName ?? null;
     filter.value.dateSelected = dateSelected ? JSON.parse(dateSelected) : null;
-    filter.value.statusId = statusId ?? null;
+    filter.value.statusName = statusName ?? null;
   }
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
@@ -242,11 +230,28 @@ function onRequest(props) {
         sortBy,
         descending
       );
-      if (returnedData) model.value.splice(0, model.value.length, ...returnedData);
+      model.value = returnedData.map(item => ({
+        reimNumber: item.reim_number,
+        createdByName: item.created_by_user_name,
+        requestDate: formatDateThaiSlash(item.request_date),
+        updatedAt: formatDateThaiSlash(item.updated_at),
+        welfareType: item.welfare_type ?? "-",
+        categoryName: item.category_name,
+        subCategoryName: item.sub_category_name,
+        statusName: item.status,
+        status: {
+          name: item.status,
+          statusId: item.status === "บันทึกฉบับร่าง"
+            ? 1
+            : item.status === "รอตรวจสอบ"
+              ? 2
+              : 3
+        },
+        id: item.id,
+      }));
+      console.log("prop:", props.row)
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
-      pagination.value.sortBy = sortBy;
-      pagination.value.descending = descending;
     } catch (error) {
       Promise.reject(error)
     }
@@ -254,17 +259,20 @@ function onRequest(props) {
   }, 100);
 }
 
-async function fetchFromServer() {
+async function fetchFromServer(page, rowPerPage, filters) {
   try {
-    // const result = await GspcApproveSerivce.list({
-    //   pageNo: page,
-    //   itemPerPage: count,
-    //   keyword: filter.value.keyword,
-    //   dateSelected: formatDateServer(filter.value.dateSelected),
-    //   endDate: formatDateServer(filter.value.endDate),
-    // });
-    pagination.value.rowsNumber = 5;
-    return;
+    const allReimbursementWelfare = await reimbursementWelfareService.getReimbursementWelfare({
+      keyword: filters.value.keyword ?? '',
+      welfareName: filters.value.welfareName ?? '',
+      statusName: filters.value.statusName ?? '',
+      from: formatDateServer(filters.value.dateSelected?.from) ?? formatDateServer(filters.value.dateSelected),
+      to: formatDateServer(filters.value.dateSelected?.to) ?? null,
+      page: page,
+      itemPerPage: rowPerPage,
+    });
+    pagination.value.rowsNumber = allReimbursementWelfare.data.total;
+    console.log("allReimbursementWelfare : ", allReimbursementWelfare);
+    return allReimbursementWelfare.data.docs;
   } catch (error) {
     Notify.create({
       message:
@@ -277,12 +285,14 @@ async function fetchFromServer() {
 }
 
 function search() {
+  if (!filter.value.dateSelected) filter.value.dateSelected = '';
   router.push({
     name: router.name,
     query: {
       keyword: filter.value.keyword,
-      dateSelected: JSON.stringify(filter.value.dateSelected),
-      statusId: filter.value.statusId,
+      welfareName : filter.value.welfareName,
+      dateSelected: filter.value.dateSelected ? JSON.stringify(filter.value.dateSelected) : null,
+      statusName: filter.value.statusName,
     },
   });
 }
@@ -298,14 +308,6 @@ function goto(requestId) {
     name: "health_check_up_welfare_edit",
     params: { id: requestId },
   });
-}
-
-function downloadData(requestId) {
-  console.log(requestId);
-  // router.push({
-  //   name: "",
-  //   params: { id: requestId },
-  // });
 }
 
 async function deleteData(id) {
