@@ -4,5 +4,5 @@ const childrenEducationController = require('../controllers/childrenEducationCon
 const { authPermission, bindFilter, getRemaining } = require('../middleware/childrenEducation')
 
 router.get('/', authPermission, bindFilter, childrenEducationController.list);
-router.get('/remaining', authPermission, childrenEducationController.getRemainingChildFund);
+router.get('/remaining', authPermission, getRemaining, childrenEducationController.getRemainingChildFund);
 module.exports = router;

@@ -64,8 +64,7 @@ const getRemaining = async (req, res, next) => {
         req.query.filter[Op.and] = [];
         const getFiscalYearWhere = getFiscalYear();
         req.query.filter[Op.and].push(
-            { '$reimbursements_children_education.request_date$': getFiscalYearWhere, },
-            { '$welfare_type.id$': 4 }
+            { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.request_date$': getFiscalYearWhere, },
         );
         next();
     }

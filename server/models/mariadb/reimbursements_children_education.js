@@ -86,14 +86,6 @@ module.exports = function(sequelize, DataTypes) {
         key: 'id'
       }
     },
-    sub_categories_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'sub_categories',
-        key: 'id'
-      }
-    }
   }, {
     sequelize,
     tableName: 'reimbursements_children_education',
