@@ -1,7 +1,7 @@
 const BaseController = require('./BaseControllers');
-const {reimbursementsChildrenEducation, childrenInfomation, subCategories } = require('../models/mariadb');
+const {reimbursementsChildrenEducation, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation } = require('../models/mariadb');
 const { initLogger } = require('../logger');
-const { where } = require('sequelize');
+const { fn, col, literal } = require("sequelize");
 const logger = initLogger('UserController');
 
 class Controller extends BaseController{
@@ -92,6 +92,88 @@ class Controller extends BaseController{
             next(error);
         }
     };
+
+
+    getRemainingChildFund = async (req, res, next) => {
+        const method = 'getChildFundSummary';
+        const userId = req.user?.id;
+    
+        try {
+            const { filter } = req.query;
+            var whereObj = { ...filter };
+    
+            const results = await childrenInfomation.findAll({
+                attributes: [
+                    [col("sub_category.id"), "subCategoryId"],
+                    [col("childrenInfomation.child_name"), "childName"],
+                    [col("sub_category.fund"), "fund"], 
+                    [fn("SUM", col("childrenInfomation.fund_sum_request")), "totalSumRequested"],
+                    [
+                        literal("sub_category.fund - SUM(childrenInfomation.fund_sum_request)"),
+                        "fundRemaining"
+                    ],
+                    [fn("COUNT", col("childrenInfomation.fund_sum_request")), "totalCountRequested"],
+                    [col("sub_category.per_years"), "perYears"],
+                    [
+                        literal("sub_category.per_years - COUNT(childrenInfomation.fund_sum_request)"),
+                        "requestsRemaining"
+                    ]
+
+                ],
+                include: [
+                    {
+                        model: subCategories, 
+                        as: "sub_category",
+                        attributes: []
+                    },
+                    {
+                        model: reimbursementsChildrenEducationHasChildrenInfomation,
+                        as: "reimbursements_children_education_has_children_infomations",
+                        required: true,
+                        attributes: [],
+                        include: [
+                            {
+                                model: reimbursementsChildrenEducation,
+                                as: "reimbursements_children_education",
+                                required: true,
+                                attributes: [],
+                                where: { created_by: userId }
+                            }
+                        ]
+                    }
+                ],
+                where: whereObj,
+                group: [
+                    "childrenInfomation.child_name", 
+                    "sub_category.id"
+                ]
+            });
+    
+            if (results) {
+                const datas = JSON.parse(JSON.stringify(results));
+                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
+                logger.info('Complete', { method, data: { userId } });
+                return res.status(200).json({
+                    datas: datas,
+                    canRequest: datas.canRequest ?? true,
+                });
+            };
+            logger.info('Data not Found', { method, data: { userId } });
+            res.status(400).json({
+                message: "ไม่พบข้อมูลที่ต้องการ กรุณาลองอีกครั้ง"
+            });
+        }
+        catch (error) {
+            logger.error(`Error ${error.message}`, {
+                method,
+                data: { userId },
+            });
+            next(error);
+        }
+    };
+    
+    
+
     
 
     
