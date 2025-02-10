@@ -232,6 +232,18 @@ const routes = [
         meta: { breadcrumbs: [{ name: 'รายงาน' }] },
         component: () => import('pages/IndexPage.vue'),
       },
+      {
+        path: 'financial-health-check-up-welfare-edit/:id',
+        name: 'financial_health_check_up_welfare_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าตรวจสุขภาพ' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/welfare-management/EditHealthCheckUpPage.vue'),
+      },
+      {
+        path: 'financial-health-check-up-welfare-view/:id',
+        name: 'financial_health_check_up_welfare_view',
+        meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าตรวจสุขภาพ' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/welfare-management/EditHealthCheckUpPage.vue'),
+      },
 
     ],
   },
