@@ -70,7 +70,7 @@
 
         <template v-slot:body-cell-tools="props">
           <q-td :props="props" class="">
-            <a @click.stop.prevent="viewData(props.row.id)" class="text-dark q-py-sm q-px-xs cursor-pointer">
+            <a @click.stop.prevent="viewData(props.row.id, props.row.categoryName)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
             <a v-show="props.row.status.statusId == 2" @click.stop.prevent="goto(props.row.id, props.row.categoryName)"
@@ -299,11 +299,14 @@ function search() {
   });
 }
 
-function viewData(requestId) {
-  router.push({
+function viewData(requestId, categoryName) {
+  if (categoryName == "ตรวจสุขภาพ") {
+    router.push({
     name: "financial_health_check_up_welfare_view",
     params: { id: requestId },
   });
+  }
+  
 }
 
 function goto(requestId, categoryName) {
