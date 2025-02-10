@@ -222,7 +222,7 @@ watch(
 watch(
   () => model.value.createFor,
   (newValue) => {
-    if (newValue !== null) {
+    if (newValue !== null && !isView.value) {
       try {
         fetchRemaining();
       }
