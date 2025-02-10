@@ -87,7 +87,7 @@
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDelete" size="xs" color="red" />
             </a>
-            <a v-show="props.row?.status == 'รอตรวจสอบ' || props.row.status == 'อนุมัติ'" @click.stop.prevent="
+            <a v-show="props.row?.status == 'รอตรวจสอบ'" @click.stop.prevent="
               downloadData(props.row.id)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDownload" size="xs" color="blue" />
@@ -189,18 +189,23 @@ async function init() {
   }
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
-  const fetchRemaining = await healthCheckUpWelfareService.getRemaining();
-  if (fetchRemaining.data?.datas?.requestsRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.requestsRemaining))) {
-    remaining.value.requestsRemaining = Number(fetchRemaining.data?.datas?.requestsRemaining).toLocaleString();
+  try {
+    const fetchRemaining = await healthCheckUpWelfareService.getRemaining();
+    if (fetchRemaining.data?.datas?.requestsRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.requestsRemaining))) {
+      remaining.value.requestsRemaining = Number(fetchRemaining.data?.datas?.requestsRemaining).toLocaleString();
+    }
+    else {
+      remaining.value.requestsRemaining = null;
+    }
+    if (fetchRemaining.data?.datas?.fundRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.fundRemaining))) {
+      remaining.value.fundRemaining = Number(fetchRemaining.data?.datas?.fundRemaining).toLocaleString();
+    }
+    else {
+      remaining.value.fundRemaining = null;
+    }
   }
-  else {
-    remaining.value.requestsRemaining = null;
-  }
-  if (fetchRemaining.data?.datas?.fundRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.fundRemaining))) {
-    remaining.value.fundRemaining = Number(fetchRemaining.data?.datas?.fundRemaining).toLocaleString();
-  }
-  else {
-    remaining.value.fundRemaining = null;
+  catch (error) {
+    Promise.reject(error);
   }
 }
 
@@ -301,7 +306,7 @@ async function deleteData(id, reimNumber) {
       Swal.fire({
         html: `ข้อมูลใบเบิก <b>${reimNumber}</b> ถูกลบ`,
         icon: "success",
-        confirmButtonText: "OK",
+        confirmButtonText: "ตกลง",
         customClass: {
           confirmButton: "save-button",
         },

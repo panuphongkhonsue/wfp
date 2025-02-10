@@ -247,7 +247,7 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if (req.access && datas.status == statusText.draft) {
+            if (req.access && (datas.status == statusText.draft || datas.status == statusText.approve)) {
                 return res.status(400).json({
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
@@ -319,7 +319,7 @@ const getRemaining = async (req, res, next) => {
         }
         req.query.filter[Op.and].push(
             { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
-            { '$category.id$': 1 }
+            { '$category.id$': category.healthCheckup }
         );
         next();
     }
@@ -397,7 +397,7 @@ const checkFullPerTimes = async (req, res, next) => {
                 [col("fund"), "fundRemaining"],
                 [col("per_times"), "perTimes"],
             ],
-            where: { id: 1 }
+            where: { id: category.healthCheckup }
         })
         if (getFund) {
             const datas = JSON.parse(JSON.stringify(getFund));
