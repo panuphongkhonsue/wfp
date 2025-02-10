@@ -11,6 +11,11 @@ export default {
   dataById(id) {
     return api.get(`${path}/${id}`);
   },
+  getUserInitialData(options) {
+    return api.get(`${path}/userInitialData`, {
+      params: options,
+    });
+  },
   create(payload) {
     try {
       return api.post(`${path}/`, payload);
