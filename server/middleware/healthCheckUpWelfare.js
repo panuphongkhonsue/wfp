@@ -493,7 +493,7 @@ const deletedMiddleware = async (req, res, next) => {
             };
             return next();
         };
-        res.status(400).json({
+        res.status(404).json({
             message: "ไม่พบข้อมูลที่ต้องการลบ กรุณาลองอีกครั้ง"
         });
     }
