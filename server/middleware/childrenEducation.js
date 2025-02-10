@@ -1,4 +1,4 @@
-const { permissionsHasRoles} = require('../models/mariadb')
+const { permissionsHasRoles, childrenInfomation, subCategories} = require('../models/mariadb')
 const { isNullOrEmpty, getFiscalYear} = require('../middleware/utility');
 const permissionType = require('../enum/permission')
 const { Op } = require('sequelize')
@@ -74,6 +74,63 @@ const getRemaining = async (req, res, next) => {
     }
 };
 
+const checkRemaining = async (req, res, next) => {
+    const method = 'CheckRemainingMiddleware';
+    try {
+        const { status } = req.body;
+        const { filter } = req.query;
+        var whereObj = { ...filter }
+        const { fundSumRequest } = req.body;
+        const results = await childrenInfomation.findOne({
+            attributes: [
+				[
+					literal("sub_category.fund - SUM(childrenInfomation.fund_sum_request)"),
+					"fundRemaining"
+				],
+				[
+					literal("sub_category.per_years - COUNT(childrenInfomation.fund_sum_request)"),
+					"requestsRemaining"
+				]
+            ],
+            include: [
+                {
+                    model: subCategories,
+                    as: "sub_category",
+                    attributes: []
+                }
+            ],
+            where: whereObj,
+            group: ["sub_category.id"]
+        });
+        if (results) {
+            const datas = JSON.parse(JSON.stringify(results));
+            if (status === 1) {
+                return next();
+            }
+            if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+                logger.info('No Remaining', { method });
+                return res.status(400).json({
+                    message: "คุณไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
+                });
+            };
+            if (fundSumRequest > datas.fundRemaining) {
+                logger.info('Request Over', { method });
+                return res.status(400).json({
+                    message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
+                });
+            }
+            return next();
+        };
+        res.status(400).json({
+            message: "ไม่พบข้อมูลสิทธ์คงเหลือ กรุณาลองอีกครั้ง"
+        });
+    }
+    catch (error) {
+        logger.error(`Error ${error.message}`, { method });
+        next(error);
+    }
+};
 
 
-module.exports = { authPermission, bindFilter, getRemaining };
+
+module.exports = { authPermission, bindFilter, getRemaining, checkRemaining };
