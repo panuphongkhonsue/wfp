@@ -1,6 +1,6 @@
 const BaseController = require('./BaseControllers');
 const { users, positions, sector, employeeTypes, roles, departments, children, sequelize } = require('../models/mariadb');
-const { Op } = require('sequelize')
+const { Op, col, literal } = require('sequelize')
 const { initLogger } = require('../logger');
 const logger = initLogger('UserController');
 const { isNullOrEmpty } = require('../controllers/utility');
@@ -144,6 +144,75 @@ class Controller extends BaseController {
                 delete user.datas.first_working_date;
                 logger.info('Complete', { method, data: { userId } });
                 res.status(200).json(user);
+            } else {
+                logger.info('Data not found', {
+                    method,
+                    data: { userId, dataId },
+                });
+                res.status(404).json({
+                    message: `ไม่พบข้อมูล`,
+                });
+            }
+        }
+        catch (error) {
+            logger.error(`Error ${error.message}`, {
+                method,
+                data: { userId },
+            });
+            next(error);
+        }
+    }
+    getUserInitialData = async (req, res, next) => {
+        const method = 'GetUserInitialData';
+        const { userId } = req.user;
+        try {
+            const { filter } = req.query;
+            var whereObj = { ...filter }
+            const userDataList = await users.findAll({
+                where: whereObj,
+                attributes: [
+                    'id',
+                    'name',
+                ],
+                include: [
+                    {
+                        model: positions, as: 'position',
+                        attributes: ['id', 'name'], required: false
+                    },
+                    {
+                        model: employeeTypes, as: 'employee_type',
+                        attributes: ['id', 'name'], required: false
+                    },
+                    {
+                        model: roles, as: 'role',
+                        attributes: ['id', 'name'], required: false
+                    },
+                    {
+                        model: departments, as: 'department',
+                        attributes: ['id', 'name'], required: false
+                    },
+                    {
+                        model: sector, as: 'sector',
+                        attributes: ['id', 'name'], required: false
+                    },
+                ],
+            });
+            if (userDataList) {
+                var userList = {};
+                userList.datas = userDataList.map((listObj) => {
+                    const plainObj = listObj.toJSON();
+                    return {
+                        id: plainObj.id,
+                        name: plainObj.name,
+                        position: plainObj.position.name,
+                        employeeType: plainObj.employee_type.name,
+                        role: plainObj.role.name,
+                        department: plainObj.department.name,
+                        sector: plainObj.sector.name,
+                    }
+                });
+                logger.info('Complete', { method, data: { userId } });
+                res.status(200).json(userList);
             } else {
                 logger.info('Data not found', {
                     method,

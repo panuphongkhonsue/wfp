@@ -2,6 +2,7 @@ const BaseController = require('./BaseControllers');
 const { reimbursementsGeneral, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
 const { fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
+const roleType = require('../enum/role')
 const logger = initLogger('ReimbursementsGeneralController');
 
 class Controller extends BaseController {
@@ -62,6 +63,8 @@ class Controller extends BaseController {
         try {
             const { filter } = req.query;
             var whereObj = { ...filter }
+            const { id, roleId } = req.user;
+            const { created_by, createByData } = req.body;
             const results = await reimbursementsGeneral.findOne({
                 attributes: [
                     [col("category.id"), "categoryId"],
@@ -97,9 +100,24 @@ class Controller extends BaseController {
                     canRequest: datas.canRequest ?? true,
                 });
             };
+            const getFund = await categories.findOne({
+                attributes: [
+                    [col("fund"), "fundRemaining"],
+                    [col("per_years"), "requestsRemaining"],
+                ],
+                where: { id: 1 }
+            })
+            if (getFund) {
+                const datas = JSON.parse(JSON.stringify(getFund));
+                logger.info('Complete', { method, data: { userId } });
+                return res.status(200).json({
+                    datas: datas,
+                    canRequest: datas.canRequest ?? true,
+                });
+            }
             logger.info('Data not Found', { method, data: { userId } });
-            res.status(400).json({
-                message: "ไม่พบข้อมูลที่ต้องการ กรุณาลองอีกครั้ง"
+            res.status(200).json({
+                message: "มีสิทธ์คงเหลือเท่ากับเพดานเงิน"
             });
         }
         catch (error) {
@@ -115,7 +133,9 @@ class Controller extends BaseController {
         const { userId } = req.user;
         const dataId = req.params['id'];
         try {
-            const requestData = await reimbursementsGeneral.findByPk(dataId, {
+            const { filter } = req.query;
+            var whereObj = { ...filter }
+            const requestData = await reimbursementsGeneral.findOne({
                 attributes: [
                     'id',
                     [col("reim_number"), "reimNumber"],
@@ -142,29 +162,47 @@ class Controller extends BaseController {
                         include: [
                             {
                                 model: positions, as: 'position',
-                                attributes: ['name']
+                                attributes: []
                             },
                             {
                                 model: employeeTypes, as: 'employee_type',
-                                attributes: ['name']
+                                attributes: []
                             },
                             {
                                 model: sector, as: 'sector',
-                                attributes: ['name']
+                                attributes: []
                             },
                             {
                                 model: departments, as: 'department',
-                                attributes: ['name']
+                                attributes: []
                             },
                         ]
                     },
                 ],
+                where: whereObj,
             });
             if (requestData) {
                 const datas = JSON.parse(JSON.stringify(requestData));
+                var welfareData = {
+                    ...datas,
+                    user: {
+                        userId: datas.userId,
+                        name: datas.name,
+                        position: datas.position,
+                        employeeType: datas.employeeType,
+                        sector: datas.sector,
+                        department: datas.department,
+                    }
+                }
+                delete welfareData.userId;
+                delete welfareData.name;
+                delete welfareData.position;
+                delete welfareData.employeeType;
+                delete welfareData.sector;
+                delete welfareData.department;
                 logger.info('Complete', { method, data: { userId } });
                 res.status(200).json({
-                    datas: datas,
+                    datas: welfareData,
                 });
             } else {
                 logger.info('Data not found', {
