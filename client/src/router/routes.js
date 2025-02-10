@@ -232,6 +232,12 @@ const routes = [
         meta: { breadcrumbs: [{ name: 'รายงาน' }] },
         component: () => import('pages/IndexPage.vue'),
       },
+      {
+        path: 'reportCompareExpenses',
+        name: 'reportCompareExpenses',
+        meta: { breadcrumbs: [{ name: 'รายงาน' },{ name: 'รายงานเปรียบเทียบการเบิกจ่ายสวัสดิการรายปีงบประมาณ' }] },
+        component: () => import('pages/report/ReportCompareExpenses.vue'),
+      },
 
     ],
   },
