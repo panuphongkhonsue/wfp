@@ -177,4 +177,5 @@ const bindFilter = async (req, res, next) => {
 	}
 };
 
+
 module.exports = { authPermission, bindCreate, bindUpdate, validateDuplicate, bindFilter };

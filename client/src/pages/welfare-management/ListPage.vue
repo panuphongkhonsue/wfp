@@ -161,8 +161,8 @@ const columns = [
   { name: "sendDate", label: "วันที่ร้องขอ", align: "left", field: (row) => row.requestDate ?? "-" },
   { name: "updatedAt", label: "วันที่แก้ไขล่าสุด", align: "left", field: (row) => row.updatedAt ?? "-" },
   { name: "welfareType", label: "ประเภท", align: "left", field: (row) => row.welfareType ?? "-" },
-  { name: "subCategory", label: "ประเภทย่อย", align: "left", field: (row) => row.categoryName 
-    ? row.categoryName 
+  { name: "subCategory", label: "ประเภทย่อย", align: "left", field: (row) => row.categoryName
+    ? row.categoryName
     : (row.subCategoryName ? row.subCategoryName : "-")},
   { name: "statusName", label: "สถานะ", align: "center", field: (row) => row.status?.name ?? "-" },
   { name: "tools", label: "จัดการ", align: "left", field: "tools" },

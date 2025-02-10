@@ -84,7 +84,7 @@
               <q-option-group v-if="!isView && !isLoading" v-model="model.roleId" :options="optionRole"
                 option-value="id" option-label="name" :color="isError.roleId ? 'red' : 'primary'"
                 :keep-color="isError.roleId ?? false" id="role" />
-              <p v-else> {{ model.roleName }} </p>
+              <p v-else class="font-regular"> {{ model.roleName }} </p>
             </q-card-section>
           </q-card>
         </div>
@@ -202,23 +202,9 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  clearData(model);
+  model.value = null;
 });
 
-const resetObject = (obj) => {
-  for (const key in obj) {
-    if (obj[key] && typeof obj[key] === "object") {
-      // Recursively reset nested objects
-      resetObject(obj[key]);
-    } else {
-      // Set primitive values to null
-      obj[key] = null;
-    }
-  }
-};
-function clearData(model) {
-  resetObject(model.value);
-}
 function addChildForm() {
   model.value.child.push({
     name: null,
@@ -338,7 +324,6 @@ async function submit() {
     },
   }).then((result) => {
     if (isValid && result.isConfirmed) {
-      console.log(fetch);
       Swal.fire({
         html: fetch.data?.message ?? `บันทึกข้อมูลสำเร็จ`,
         icon: "success",
@@ -413,7 +398,6 @@ async function init() {
 
       isLoading.value = false;
     } catch (error) {
-      console.log(error);
       Notify.create({
         message:
           error.response?.data?.message ??
