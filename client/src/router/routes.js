@@ -233,7 +233,7 @@ const routes = [
         component: () => import('pages/IndexPage.vue'),
       },
       {
-        path: 'report-compare-expenses',
+        path: '/report/report-compare-expenses',
         name: 'report_compare-expenses',
         meta: { breadcrumbs: [{ name: 'รายงาน' },{ name: 'รายงานเปรียบเทียบการเบิกจ่ายสวัสดิการรายปีงบประมาณ' }] },
         component: () => import('pages/report/ReportCompareExpenses.vue'),
