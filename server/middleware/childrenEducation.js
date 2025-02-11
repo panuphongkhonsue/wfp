@@ -1,9 +1,15 @@
 const { permissionsHasRoles, childrenInfomation, subCategories,reimbursementsChildrenEducationHasChildrenInfomation,reimbursementsChildrenEducation} = require('../models/mariadb')
 const { isNullOrEmpty, getFiscalYear} = require('../middleware/utility');
 const permissionType = require('../enum/permission')
-const { Op, fn, col, literal } = require("sequelize");
+const { Op, literal } = require("sequelize");
 const { initLogger } = require('../logger');
 const logger = initLogger('ChildrenEducationValidator');
+const roleType = require('../enum/role')
+const status = require('../enum/status')
+const welfareType = require('../enum/welfareType');
+const category = require('../enum/category');
+
+
 const authPermission = async (req, res, next) => {
 	const method = 'AuthPermission';
 	const { roleId } = req.user;
@@ -159,12 +165,69 @@ const checkRemaining = async (req, res, next) => {
 };
 
 
-const bindCreate = async(req,res,next) =>{
+const bindCreate = async(req, res, next) =>{
     try {
-        const { spouseName, marryRegis, role, position, department, welfareType, } = req.body
+        const { spouseName,
+                marryRegis,
+                role,
+                position,
+                department,
+                fundReceipt,
+                fundSumRequest,
+                fundEligible,
+                fundUniversity,
+                createFor,
+                fundOther,
+                welfareRight,
+                actionId
+             } = req.body
+        const { id, roleId } = req.user;
+        if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
+             return res.status(400).json({
+                message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
+             });
+        }
+         if (!isNullOrEmpty(createFor) && actionId == status.draft) {
+            return res.status(400).json({
+                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
+            });
+        }
+        const results = await reimbursementsChildrenEducation.findOne({
+            attributes: ["id"],
+            order: [["id", "DESC"]] // Order by id in descending order
+        });
+        var reimNumber;
+        if (results) {
+            const datas = JSON.parse(JSON.stringify(results));
+            reimNumber = getYear2Digits() + formatNumber(welfareType.childrenEducation)  + formatNumber(datas.id + 1);
+        }
+         const dataBinding = {
+                    reim_number: reimNumber,
+                    fund_receipt: fundReceipt,
+                    fund_eligible: fundEligible,
+                    fund_sum_request: fundSumRequest,
+                    fund_university: fundUniversity,
+                    fund_other:fundOther,
+                    status: actionId,
+                    spouse: spouseName,
+                    marry_regis: marryRegis,
+                    role: role,
+                    position: position,
+                    department: department,
+                    welfare_right: welfareRight,
+                    request_date: actionId === status.waitApprove ? new Date() : null,
+                    created_by: createFor ?? id,
+                    updated_by: id,
+
+                }
+                req.body = dataBinding;
+                next();
 
     }
     catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+        });
     }
 }
 
@@ -172,4 +235,4 @@ const bindCreate = async(req,res,next) =>{
 
 
 
-module.exports = { authPermission, bindFilter, getRemaining, checkRemaining };
+module.exports = { authPermission, bindFilter, getRemaining, checkRemaining, bindCreate };

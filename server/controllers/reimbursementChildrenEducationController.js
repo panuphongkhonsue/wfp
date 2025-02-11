@@ -2,7 +2,7 @@ const BaseController = require('./BaseControllers');
 const {reimbursementsChildrenEducation, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation } = require('../models/mariadb');
 const { initLogger } = require('../logger');
 const { Op, fn, col, literal } = require("sequelize");
-const logger = initLogger('UserController');
+const logger = initLogger('reimbursementChildrenEducationController');
 
 class Controller extends BaseController{
     constructor() {
