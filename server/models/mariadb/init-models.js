@@ -25,6 +25,7 @@ var _users = require("./users");
 var _viewCategoryWelfareSub = require("./view_category_welfare_sub");
 var _viewReimbursements = require("./view_reimbursements");
 var _welfareTypes = require("./welfare_types");
+var _viewDashboard = require("./view_dashboard");
 
 function initModels(sequelize) {
   var categories = _categories(sequelize, DataTypes);
@@ -52,6 +53,7 @@ function initModels(sequelize) {
   var viewCategoryWelfareSub = _viewCategoryWelfareSub(sequelize, DataTypes);
   var viewReimbursements = _viewReimbursements(sequelize, DataTypes);
   var welfareTypes = _welfareTypes(sequelize, DataTypes);
+  var viewDashboard = _viewDashboard(sequelize, DataTypes);
 
   categories.belongsToMany(reimbursementsEmployeeDeceased, { as: 'reimbursements_employee_deceased_id_reimbursements_employee_deceaseds', through: reimbursementsEmployeeDeceasedHasCategories, foreignKey: "categories_id", otherKey: "reimbursements_employee_deceased_id" });
   childrenInfomation.belongsToMany(reimbursementsChildrenEducation, { as: 'reimbursements_children_education_id_reimbursements_children_educations', through: reimbursementsChildrenEducationHasChildrenInfomation, foreignKey: "children_infomation_id", otherKey: "reimbursements_children_education_id" });
@@ -146,6 +148,7 @@ function initModels(sequelize) {
     viewCategoryWelfareSub,
     viewReimbursements,
     welfareTypes,
+    viewDashboard,
   };
 }
 module.exports = initModels;
