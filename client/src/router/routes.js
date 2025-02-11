@@ -238,6 +238,13 @@ const routes = [
         meta: { breadcrumbs: [{ name: 'รายงาน' },{ name: 'รายงานเปรียบเทียบการเบิกจ่ายสวัสดิการรายปีงบประมาณ' }] },
         component: () => import('pages/report/ReportCompareExpenses.vue'),
       },
+      {
+        path: 'report-personal',
+        name: 'report_personal',
+        meta: { breadcrumbs: [{ name: 'รายงาน' },{ name: 'รายงานค่าใช้จ่ายสวัสดิการประจำปีงบประมาณ' }] },
+        component: () => import('pages/report/ReportPersonal.vue'),
+      },
+
 
     ],
   },
