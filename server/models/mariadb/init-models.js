@@ -23,6 +23,7 @@ var _sector = require("./sector");
 var _subCategories = require("./sub_categories");
 var _users = require("./users");
 var _viewCategoryWelfareSub = require("./view_category_welfare_sub");
+var _viewDashboard = require("./view_dashboard");
 var _viewReimbursements = require("./view_reimbursements");
 var _welfareTypes = require("./welfare_types");
 
@@ -50,6 +51,7 @@ function initModels(sequelize) {
   var subCategories = _subCategories(sequelize, DataTypes);
   var users = _users(sequelize, DataTypes);
   var viewCategoryWelfareSub = _viewCategoryWelfareSub(sequelize, DataTypes);
+  var viewDashboard = _viewDashboard(sequelize, DataTypes);
   var viewReimbursements = _viewReimbursements(sequelize, DataTypes);
   var welfareTypes = _welfareTypes(sequelize, DataTypes);
 
@@ -67,6 +69,8 @@ function initModels(sequelize) {
   categories.hasMany(logCategory, { as: "log_categories", foreignKey: "categories_id"});
   reimbursementsAssist.belongsTo(categories, { as: "category", foreignKey: "categories_id"});
   categories.hasMany(reimbursementsAssist, { as: "reimbursements_assists", foreignKey: "categories_id"});
+  reimbursementsChildrenEducation.belongsTo(categories, { as: "category", foreignKey: "categories_id"});
+  categories.hasMany(reimbursementsChildrenEducation, { as: "reimbursements_children_educations", foreignKey: "categories_id"});
   reimbursementsEmployeeDeceasedHasCategories.belongsTo(categories, { as: "category", foreignKey: "categories_id"});
   categories.hasMany(reimbursementsEmployeeDeceasedHasCategories, { as: "reimbursements_employee_deceased_has_categories", foreignKey: "categories_id"});
   reimbursementsGeneral.belongsTo(categories, { as: "category", foreignKey: "categories_id"});
@@ -103,8 +107,6 @@ function initModels(sequelize) {
   subCategories.hasMany(logSubCategory, { as: "log_sub_categories", foreignKey: "sub_categories_id"});
   reimbursementsAssistHasSubCategories.belongsTo(subCategories, { as: "sub_category", foreignKey: "sub_categories_id"});
   subCategories.hasMany(reimbursementsAssistHasSubCategories, { as: "reimbursements_assist_has_sub_categories", foreignKey: "sub_categories_id"});
-  reimbursementsChildrenEducation.belongsTo(subCategories, { as: "sub_category", foreignKey: "sub_categories_id"});
-  subCategories.hasMany(reimbursementsChildrenEducation, { as: "reimbursements_children_educations", foreignKey: "sub_categories_id"});
   reimbursementsGeneralHasSubCategories.belongsTo(subCategories, { as: "sub_category", foreignKey: "sub_categories_id"});
   subCategories.hasMany(reimbursementsGeneralHasSubCategories, { as: "reimbursements_general_has_sub_categories", foreignKey: "sub_categories_id"});
   children.belongsTo(users, { as: "user", foreignKey: "users_id"});
@@ -144,6 +146,7 @@ function initModels(sequelize) {
     subCategories,
     users,
     viewCategoryWelfareSub,
+    viewDashboard,
     viewReimbursements,
     welfareTypes,
   };
