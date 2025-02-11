@@ -4,13 +4,13 @@ const { permissionsHasRoles } = require('../models/mariadb');
 const permissionType = require('../enum/permission');
 const { Op } = require('sequelize')
 
-authPermission = async (req, res, next) => {
+const authPermission = async (req, res, next) => {
 	const method = 'AuthPermission';
 	const { roleId } = req.user;
 	try {
 		const isAccess = await permissionsHasRoles.count({
 			where: {
-				[Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.report }],
+				[Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.report}],
 			},
 		});
 		if (!isAccess) {

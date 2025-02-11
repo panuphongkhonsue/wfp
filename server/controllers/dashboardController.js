@@ -16,13 +16,13 @@ class Controller extends BaseController {
         try {
             const { filter, page, itemPerPage } = req.query;
             var whereObj = { ...filter }
-            const configWelfareList = await viewDashboard.paginate({
+            const dashboardDataList = await viewDashboard.paginate({
                 page: page && !isNaN(page) ? Number(page) : 1,
                 paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 10,
                 where: whereObj
             });
             logger.info('Complete', { method, data: { userId } });
-            res.status(200).json(configWelfareList);
+            res.status(200).json(dashboardDataList);
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {
