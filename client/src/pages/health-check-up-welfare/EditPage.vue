@@ -80,8 +80,11 @@
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'" is-require
-                label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" compclass="col-xs-12 col-lg-3 col-xl-2"
+                label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" compclass="col-xs-12 col-lg-4 col-xl-2"
                 :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
+              </InputGroup>
+              <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require label="จำนวนที่ต้องการเบิก"
+                type="number" compclass="col-xs-12 col-lg-3 col-xl-2" :is-view="isView" v-if="isView">
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-sm font-medium font-16">
@@ -155,7 +158,7 @@ import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
 import { getRoleCanCreateFor } from "src/components/role"
-import { formatDateThaiSlash } from "src/components/format";
+import { formatDateThaiSlash, formatNumber } from "src/components/format";
 import healthCheckUpWelfareService from "src/boot/service/healthCheckUpWelfareService";
 import userManagementService from "src/boot/service/userManagementService";
 import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
@@ -222,19 +225,31 @@ watch(
 watch(
   () => model.value.createFor,
   (newValue) => {
-    if (newValue !== null) {
-      try {
-        fetchRemaining();
+    try {
+      if (canCreateFor.value) {
+        if ((newValue !== null && newValue !== undefined) && !isView.value) {
+          fetchRemaining();
+          fetchUserData(newValue);
+        }
+        else if (!isView.value) {
+          remaining.value = {};
+          userData.value = {
+            position: null,
+            employeeType: null,
+            sector: null,
+            department: null
+          };
+        }
       }
-      catch (error) {
-        Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "ไม่พบข้อมูลสิทธิ์คงเหลือของผู้ใช้งาน",
-          position: "bottom-left",
-          type: "negative",
-        });
-      }
+    }
+    catch (error) {
+      Notify.create({
+        message:
+          error?.response?.data?.message ??
+          "ไม่พบข้อมูลสิทธิ์คงเหลือของผู้ใช้งาน",
+        position: "bottom-left",
+        type: "negative",
+      });
     }
   }
 );
@@ -251,6 +266,7 @@ async function fetchDataEdit() {
           requestDate: returnedData?.requestDate,
           status: returnedData?.status,
           fundReceipt: returnedData?.fundReceipt,
+          fundSumRequest: returnedData?.fundSumRequest,
           claimByEligible: [
             {
               fundEligible: returnedData?.fundDecree,
@@ -289,9 +305,9 @@ async function fetchDataEdit() {
     isLoading.value = false;
   }, 100);
 }
-async function fetchUserData() {
+async function fetchUserData(id) {
   try {
-    const result = await userManagementService.dataById(authStore.id);
+    const result = await userManagementService.dataById(id);
     var returnedData = result.data.datas;
     if (returnedData) {
       userData.value = {
@@ -311,13 +327,13 @@ async function fetchRemaining() {
   try {
     const fetchRemaining = await healthCheckUpWelfareService.getRemaining({ createFor: model.value.createFor });
     if (fetchRemaining.data?.datas?.requestsRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.requestsRemaining))) {
-      remaining.value.requestsRemaining = Number(fetchRemaining.data?.datas?.requestsRemaining).toLocaleString();
+      remaining.value.requestsRemaining = formatNumber(fetchRemaining.data?.datas?.requestsRemaining);
     }
     else {
       remaining.value.requestsRemaining = null;
     }
     if (fetchRemaining.data?.datas?.fundRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.fundRemaining))) {
-      remaining.value.fundRemaining = Number(fetchRemaining.data?.datas?.fundRemaining).toLocaleString();
+      remaining.value.fundRemaining = formatNumber(fetchRemaining.data?.datas?.fundRemaining);
     }
     else {
       remaining.value.fundRemaining = null;
@@ -339,18 +355,6 @@ async function filterFn(val, update) {
       });
     }, 650);
 
-  }
-  catch (error) {
-    Promise.reject(error);
-  }
-}
-async function fetchCreateForData(keyword) {
-  try {
-    const result = await userManagementService.getUserInitialData({ keyword: keyword });
-    var returnedData = result.data.datas;
-    if (returnedData) {
-      options.value = returnedData;
-    }
   }
   catch (error) {
     Promise.reject(error);
@@ -454,19 +458,17 @@ async function init() {
     if (isView.value) {
       fetchDataEdit();
     }
-    else if (isEdit.value && !isView.value) {
-      if (canCreateFor.value) {
-        fetchCreateForData({ keyword: null });
+    else if (isEdit.value) {
+      if (!canCreateFor.value) {
+        fetchRemaining();
       }
       fetchDataEdit();
-      fetchRemaining();
     }
     else {
-      if (canCreateFor.value) {
-        fetchCreateForData({ keyword: null });
+      if (!canCreateFor.value) {
+        fetchRemaining();
+        fetchUserData(authStore.id);
       }
-      fetchUserData();
-      fetchRemaining();
     }
   }
   catch (error) {

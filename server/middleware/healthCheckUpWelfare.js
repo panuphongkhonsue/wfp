@@ -120,34 +120,46 @@ const checkNullValue = async (req, res, next) => {
         } else if (isInvalidNumber(fundReceipt)) {
             errorObj["fundReceipt"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundReceipt < 0) {
-            errorObj["fundReceipt"] = "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้";
+            return res.status(400).json({
+                message: "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้",
+            });
         }
 
         if (isInvalidNumber(fundDecree) && fundDecree) {
             errorObj["fundDecree"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundDecree < 0) {
-            errorObj["fundDecree"] = "ข้อมูลเงินจากสิทธิที่เบิกได้ตามพระราชกฤษฎีกาเงินสวัสดิการเกี่ยวกับการรักษาพยาบาลน้อยกว่า 0 ไม่ได้";
+            return res.status(400).json({
+                message: "ข้อมูลเงินจากสิทธิที่เบิกได้ตามพระราชกฤษฎีกาเงินสวัสดิการเกี่ยวกับการรักษาพยาบาลน้อยกว่า 0 ไม่ได้",
+            });
         }
 
         if (isInvalidNumber(fundUniversity) && fundUniversity) {
             errorObj["fundUniversity"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundUniversity < 0) {
-            errorObj["fundUniversity"] = "เงินที่เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพาน้อยกว่า 0 ไม่ได้";
+            return res.status(400).json({
+                message: "เงินที่เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพาน้อยกว่า 0 ไม่ได้",
+            });
         }
-        if (!isNullOrEmpty(fundEligible) && isNullOrEmpty(fundEligibleName)) {
-            errorObj["fundEligibleName"] = "กรุณากรอกชื่อสิทธิอื่น ๆ";
-        }
-        else if (isNullOrEmpty(fundEligible) && !isNullOrEmpty(fundEligibleName)) {
-            errorObj["fundEligible"] = "กรุณาจำนวนเงินที่เบิกได้จากสิทธิอื่น ๆ";
-        }
-
         if (isInvalidNumber(fundEligible) && fundEligible) {
             errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundEligible < 0) {
             errorObj["fundEligible"] = "ค่าสิทธิอื่น ๆ น้อยกว่า 0 ไม่ได้";
+            return res.status(400).json({
+                message: "ค่าสิทธิอื่น ๆ น้อยกว่า 0 ไม่ได้",
+            });
         }
-        const fundEligibleSum = fundDecree + fundUniversity + fundEligible;
-        const fundSumRequest = fundReceipt - fundEligibleSum;
+        if (!isNullOrEmpty(fundEligible) && isNullOrEmpty(fundEligibleName)) {
+            return res.status(400).json({
+                message: "กรุณากรอกชื่อสิทธิอื่น ๆ",
+            });
+        }
+        else if (isNullOrEmpty(fundEligible) && !isNullOrEmpty(fundEligibleName)) {
+            return res.status(400).json({
+                message: "กรุณากรอกจำนวนเงินที่เบิกได้จากสิทธิอื่น ๆ",
+            });
+        }
+        const fundEligibleSum = Number(fundDecree) + Number(fundUniversity) + Number(fundEligible);
+        const fundSumRequest = Number(fundReceipt) - Number(fundEligibleSum);
         if (fundSumRequest <= 0) {
             return res.status(400).json({
                 message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ได้รับจากสิทธิอื่น ๆ",
@@ -194,7 +206,7 @@ const bindCreate = async (req, res, next) => {
         var reimNumber;
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
-            reimNumber = getYear2Digits() + formatNumber(welfareType.general) + formatNumber(category.healthCheckup) + formatNumber(datas.id + 1);
+            reimNumber = getYear2Digits() + formatNumber(welfareType.general) + formatNumber(category.healthCheckup) + formatNumber(Number(datas.id) + 1);
         }
         const dataBinding = {
             reim_number: reimNumber,
