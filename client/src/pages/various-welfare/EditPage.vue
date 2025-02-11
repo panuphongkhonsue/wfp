@@ -83,7 +83,7 @@
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
               <p class="col-12 q-mb-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
               <div class="col-lg-6 col-12 q-mb-none">
-                <q-option-group class="q-gutter-y-sm" v-model="categoryId" type="radio" :options="options" />
+                <q-option-group class="q-gutter-y-sm" v-model="model.categoryId" type="radio" :options="options" />
               </div>
               <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
                 <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p>
@@ -155,9 +155,9 @@
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'various_welfare_list' }" />
         <q-btn id="button-reject" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
+          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
         <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
-          style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(3)"
+          style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
           v-if="!isView && !isLoading" />
       </div>
     </template>
@@ -378,6 +378,16 @@ async function submit(actionId) {
     navigate.scrollIntoView(false);
     validate = true;
   }
+  if (!model.value.categoryId) {
+    isError.value.categoryId = "กรุณาเลือกประเภทการเบิกสวัสดิการ";
+    Notify.create({
+      message: "กรุณาเลือกประเภทการเบิกสวัสดิการ",
+      position: "bottom-left",
+      type: "negative",
+    });
+    return;
+  }
+
   if (validate === true) {
     Notify.create({
       message: "กรุณากรอกข้อมูลให้ครบถ้วน",

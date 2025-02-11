@@ -1,11 +1,10 @@
 const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('UserValidator');
-const { Op, literal } = require('sequelize')
+const { Op, literal, col } = require('sequelize')
 const permissionType = require('../enum/permission')
 const statusText = require('../enum/statusText')
 const status = require('../enum/status')
-const category = require('../enum/category');
 const welfareType = require('../enum/welfareType');
 const roleType = require('../enum/role')
 const { permissionsHasRoles, reimbursementsAssist, categories, sequelize } = require('../models/mariadb')
@@ -113,44 +112,56 @@ const byIdMiddleWare = async (req, res, next) => {
 };
 const checkNullValue = async (req, res, next) => {
     try {
-        const { fundReceipt, fundEligible, actionId } = req.body;
+        const { fundReceipt, fundEligible, actionId, categoryId } = req.body;
         const errorObj = {};
         if (isNullOrEmpty(fundReceipt)) {
             errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
         } else if (isInvalidNumber(fundReceipt)) {
             errorObj["fundReceipt"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundReceipt < 0) {
-            errorObj["fundReceipt"] = "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้";
+            return res.status(400).json({
+                message: "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้",
+            });
         }
+
         if (isInvalidNumber(fundEligible) && fundEligible) {
             errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundEligible < 0) {
-            errorObj["fundEligible"] = "ค่าสิทธิอื่น ๆ น้อยกว่า 0 ไม่ได้";
+            errorObj["fundEligible"] = "จำนวนเงินที่ต้องการเบิก น้อยกว่า 0 ไม่ได้";
+            return res.status(400).json({
+                message: "จำนวนเงินที่ต้องการเบิก น้อยกว่า 0 ไม่ได้",
+            });
         }
-        const fundSumRequest = fundReceipt - fundEligible;
+
+        const fundSumRequest = Number(fundReceipt) - Number(fundEligible);
+
         if (fundSumRequest <= 0) {
             return res.status(400).json({
                 message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ได้รับจากสิทธิอื่น ๆ",
             });
         }
+
         if ((isNullOrEmpty(actionId) || (actionId != status.draft && actionId != status.waitApprove)) && !req.access) {
             return res.status(400).json({
                 message: "ไม่มีการกระทำที่ต้องการ",
             });
         }
         if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
+
         req.body = {
             ...req.body,
             fundSumRequest: fundSumRequest,
-        }
+        };
         next();
     }
     catch (error) {
         res.status(500).json({
             message: 'Internal Server Error',
+            error: error.message
         });
     }
-}
+};
+
 const bindCreate = async (req, res, next) => {
     try {
         const { fundReceipt, fundEligible, fundSumRequest, createFor, actionId, categoryId } = req.body;
@@ -165,7 +176,7 @@ const bindCreate = async (req, res, next) => {
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
         }
-        const results = await reimbursementsGeneral.findOne({
+        const results = await reimbursementsAssist.findOne({
             attributes: ["id"],
             order: [["id", "DESC"]] // Order by id in descending order
         });
@@ -186,6 +197,7 @@ const bindCreate = async (req, res, next) => {
             categories_id: categoryId,
         }
         req.body = dataBinding;
+
         next();
     } catch (error) {
         res.status(500).json({
@@ -204,7 +216,7 @@ const bindUpdate = async (req, res, next) => {
         }
         const dataId = req.params['id'];
         const results = await reimbursementsAssist.findOne({
-            attributes: ["status", "created_by","id"],
+            attributes: ["status", "created_by", "id"],
             where: { id: dataId },
         });
         var createByData;
@@ -229,7 +241,7 @@ const bindUpdate = async (req, res, next) => {
             var reimNumber;
             reimNumber = getYear2Digits() + formatNumber(welfareType.Assist) + formatNumber(categoryId) + formatNumber(datas.id);
         }
-        
+
         const dataBinding = {
             fund_receipt: fundReceipt,
             fund_eligible: fundEligible,
@@ -252,7 +264,7 @@ const bindUpdate = async (req, res, next) => {
         }
         if (!isNullOrEmpty(createByData) && req.access) {
             dataBinding.createByData = createByData;
-        }if (!isNullOrEmpty(reimNumber) && !req.access) {
+        } if (!isNullOrEmpty(reimNumber) && !req.access) {
             dataBinding.reimNumber = reimNumber;
         }
         req.body = dataBinding;
@@ -367,13 +379,15 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { fund_sum_request, categoryId } = req.body;
+        console.log("🛠️ Debug Middleware (checkFullPerTimes) - req.body:", req.body);
+        const { fund_sum_request, categories_id  } = req.body;
+        const categoryId = categories_id;
         const getFund = await categories.findOne({
             attributes: [
                 [col("fund"), "fundRemaining"],
                 [col("per_times"), "perTimes"],
             ],
-            where: { id: categoryId}
+            where: { id: categoryId }
         })
         if (getFund) {
             const datas = JSON.parse(JSON.stringify(getFund));
@@ -382,7 +396,7 @@ const checkFullPerTimes = async (req, res, next) => {
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request > datas.fundRemaining) {
+            if (fund_sum_request > datas.fundRemaining || datas.perTimes === null) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
@@ -399,9 +413,19 @@ const checkFullPerTimes = async (req, res, next) => {
 const checkRemaining = async (req, res, next) => {
     const method = 'CheckRemainingMiddleware';
     try {
-        const { status } = req.body;
+        const { status, categories_id } = req.body;
+        const categoryId = categories_id;
         const { filter } = req.query;
+        if (!categoryId) {
+            return res.status(400).json({ message: "categoryId ไม่ถูกต้องหรือไม่มีค่า" });
+        }
+        if (filter && filter[Symbol.for('and')]) {
+            filter[Symbol.for('and')] = filter[Symbol.for('and')].filter(
+                condition => condition["$category.id$"] !== undefined
+            );
+        }
         var whereObj = { ...filter }
+        whereObj["$category.id$"] = categoryId;
         const { fund_sum_request } = req.body;
         const results = await reimbursementsAssist.findOne({
             attributes: [
@@ -483,7 +507,7 @@ const deletedMiddleware = async (req, res, next) => {
         next(error);
     }
 }
-module.exports = {     
+module.exports = {
     authPermission,
     bindFilter,
     getRemaining,
@@ -496,4 +520,4 @@ module.exports = {
     checkNullValue,
     checkUpdateRemaining,
     checkFullPerTimes
- };
+};

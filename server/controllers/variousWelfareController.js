@@ -11,7 +11,7 @@ class Controller extends BaseController {
 
     list = async (req, res, next) => {
         const method = 'GetListUser';
-        const { userId } = req.user;
+        const { id } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
             var whereObj = { ...filter }
@@ -44,21 +44,21 @@ class Controller extends BaseController {
                         ...plainObj,
                     }
                 });
-                logger.info('Complete', { method, data: { userId } });
+                logger.info('Complete', { method, data: { id } });
                 res.status(200).json(bindList);
             }
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
     }
     getRemaining = async (req, res, next) => {
         const method = 'GetRemaining';
-        const { userId } = req.user;
+        const { id } = req.user;
         try {
             const { filter } = req.query;
             var whereObj = { ...filter }
@@ -91,13 +91,13 @@ class Controller extends BaseController {
             if (results) {
                 const datas = JSON.parse(JSON.stringify(results));
                 if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
-                logger.info('Complete', { method, data: { userId } });
+                logger.info('Complete', { method, data: { id } });
                 return res.status(200).json({
                     datas: datas,
                     canRequest: datas.canRequest ?? true,
                 });
             };
-            logger.info('Data not Found', { method, data: { userId } });
+            logger.info('Data not Found', { method, data: { id } });
             res.status(400).json({
                 message: "ไม่พบข้อมูลที่ต้องการ กรุณาลองอีกครั้ง"
             });
@@ -105,14 +105,14 @@ class Controller extends BaseController {
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
     }
     getById = async (req, res, next) => {
         const method = 'GetVariousWelfarebyId';
-        const { userId } = req.user;
+        const { id } = req.user;
         const dataId = req.params['id'];
         try {
             const requestData = await reimbursementsAssist.findByPk(dataId, {
@@ -160,7 +160,7 @@ class Controller extends BaseController {
                 var welfareData = {
                     ...datas,
                     user: {
-                        userId: datas.userId,
+                        id: datas.id,
                         name: datas.name,
                         position: datas.position,
                         employeeType: datas.employeeType,
@@ -168,20 +168,20 @@ class Controller extends BaseController {
                         department: datas.department,
                     }
                 }
-                delete welfareData.userId;
+                delete welfareData.id;
                 delete welfareData.name;
                 delete welfareData.position;
                 delete welfareData.employeeType;
                 delete welfareData.sector;
                 delete welfareData.department;
-                logger.info('Complete', { method, data: { userId } });
+                logger.info('Complete', { method, data: { id } });
                 res.status(200).json({
                     datas: welfareData,
                 });
             } else {
                 logger.info('Data not found', {
                     method,
-                    data: { userId, dataId },
+                    data: { id, dataId },
                 });
                 res.status(404).json({
                     message: `ไม่พบข้อมูล`,
@@ -191,7 +191,7 @@ class Controller extends BaseController {
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
