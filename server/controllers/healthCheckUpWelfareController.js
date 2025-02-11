@@ -2,6 +2,7 @@ const BaseController = require('./BaseControllers');
 const { reimbursementsGeneral, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
 const { fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
+const roleType = require('../enum/role')
 const logger = initLogger('ReimbursementsGeneralController');
 
 class Controller extends BaseController {
@@ -11,7 +12,7 @@ class Controller extends BaseController {
 
     list = async (req, res, next) => {
         const method = 'GetListUser';
-        const { userId } = req.user;
+        const { id } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
             var whereObj = { ...filter }
@@ -44,21 +45,21 @@ class Controller extends BaseController {
                         ...plainObj,
                     }
                 });
-                logger.info('Complete', { method, data: { userId } });
+                logger.info('Complete', { method, data: { id } });
                 res.status(200).json(bindList);
             }
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
     }
     getRemaining = async (req, res, next) => {
         const method = 'GetRemaining';
-        const { userId } = req.user;
+        const { id } = req.user;
         try {
             const { filter } = req.query;
             var whereObj = { ...filter }
@@ -91,31 +92,48 @@ class Controller extends BaseController {
             if (results) {
                 const datas = JSON.parse(JSON.stringify(results));
                 if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
-                logger.info('Complete', { method, data: { userId } });
+                logger.info('Complete', { method, data: { id } });
                 return res.status(200).json({
                     datas: datas,
                     canRequest: datas.canRequest ?? true,
                 });
             };
-            logger.info('Data not Found', { method, data: { userId } });
-            res.status(400).json({
-                message: "ไม่พบข้อมูลที่ต้องการ กรุณาลองอีกครั้ง"
+            const getFund = await categories.findOne({
+                attributes: [
+                    [col("fund"), "fundRemaining"],
+                    [col("per_years"), "requestsRemaining"],
+                ],
+                where: { id: 1 }
+            })
+            if (getFund) {
+                const datas = JSON.parse(JSON.stringify(getFund));
+                logger.info('Complete', { method, data: { id } });
+                return res.status(200).json({
+                    datas: datas,
+                    canRequest: datas.canRequest ?? true,
+                });
+            }
+            logger.info('Data not Found', { method, data: { id } });
+            res.status(200).json({
+                message: "มีสิทธ์คงเหลือเท่ากับเพดานเงิน"
             });
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
     }
     getById = async (req, res, next) => {
         const method = 'GetHealthCheckupWelfarebyId';
-        const { userId } = req.user;
+        const { id } = req.user;
         const dataId = req.params['id'];
         try {
-            const requestData = await reimbursementsGeneral.findByPk(dataId, {
+            const { filter } = req.query;
+            var whereObj = { ...filter }
+            const requestData = await reimbursementsGeneral.findOne({
                 attributes: [
                     'id',
                     [col("reim_number"), "reimNumber"],
@@ -142,34 +160,52 @@ class Controller extends BaseController {
                         include: [
                             {
                                 model: positions, as: 'position',
-                                attributes: ['name']
+                                attributes: []
                             },
                             {
                                 model: employeeTypes, as: 'employee_type',
-                                attributes: ['name']
+                                attributes: []
                             },
                             {
                                 model: sector, as: 'sector',
-                                attributes: ['name']
+                                attributes: []
                             },
                             {
                                 model: departments, as: 'department',
-                                attributes: ['name']
+                                attributes: []
                             },
                         ]
                     },
                 ],
+                where: whereObj,
             });
             if (requestData) {
                 const datas = JSON.parse(JSON.stringify(requestData));
-                logger.info('Complete', { method, data: { userId } });
+                var welfareData = {
+                    ...datas,
+                    user: {
+                        userId: datas.userId,
+                        name: datas.name,
+                        position: datas.position,
+                        employeeType: datas.employeeType,
+                        sector: datas.sector,
+                        department: datas.department,
+                    }
+                }
+                delete welfareData.userId;
+                delete welfareData.name;
+                delete welfareData.position;
+                delete welfareData.employeeType;
+                delete welfareData.sector;
+                delete welfareData.department;
+                logger.info('Complete', { method, data: { id } });
                 res.status(200).json({
-                    datas: datas,
+                    datas: welfareData,
                 });
             } else {
                 logger.info('Data not found', {
                     method,
-                    data: { userId, dataId },
+                    data: { id, dataId },
                 });
                 res.status(404).json({
                     message: `ไม่พบข้อมูล`,
@@ -179,7 +215,7 @@ class Controller extends BaseController {
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }

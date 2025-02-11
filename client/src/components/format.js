@@ -7,7 +7,7 @@ export function formatDate(d) {
 }
 
 export function formatDateSlash(d) {
-  if (d) return format(d, "yyyy/MM/dd");
+  if (d) return format(d, "dd/MMM/yyyy");
   return "-";
 }
 
@@ -40,7 +40,7 @@ export function formatCurrency(n) {
   return n ? new Intl.NumberFormat().format(n) : "-";
 }
 export function formatDateThaiSlash(d) {
-  if (!d) return "-"; 
+  if (!d) return "-";
 
   const dateObj = new Date(d);
 

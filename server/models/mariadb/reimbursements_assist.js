@@ -20,15 +20,31 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
+    fund_sum_receipt: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: false
+    },
     fund_eligible: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
+    },
+    fund_decease: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
+    fund_wreath_university: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
     },
     fund_wreath_arrange: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },
-    fund_wreath_university: {
+    fund_receipt_wreath: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
+    fund_receipt_vechicle: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },

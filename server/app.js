@@ -26,6 +26,9 @@ const sectorRouter = require('./routes/sector');
 const roleRouter = require('./routes/role');
 const healthCheckUpWelfare = require('./routes/healthCheckUpWelfare');
 const dashboardRouter = require('./routes/dashboard');
+const reimbursementWelfareRouter = require('./routes/reimburesmentWelfare');
+const healthCheckUpWelfare = require('./routes/healthCheckUpWelfare')
+
 
 var app = express();
 app.set('trust proxy', true);
@@ -74,8 +77,10 @@ app.use('/employee-type', auth, employeeTypeRouter);
 app.use('/position', auth, postitionRouter);
 app.use('/sector', auth, sectorRouter);
 app.use('/role', auth, roleRouter);
+app.use('/reimbursement-welfare', auth, reimbursementWelfareRouter);
 app.use('/health-check-up-welfare', auth, healthCheckUpWelfare);
 app.use('/dashboard', auth, dashboardRouter);
+
 // error handling
 app.use((error, req, res, next) => {
     logger.error(`Internal Server Error: ${error.message}`);

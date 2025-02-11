@@ -58,13 +58,14 @@ const bindCreate = async (req, res, next) => {
 			delete dataBinding.child;
 		}
 		else {
-			var hasNull = false;
 			if (!isNullOrEmpty(dataBinding.child)) {
-				hasNull = req.body.child.some(item =>
-					Object.values(item).some(value => value === null || value === "")
+				dataBinding.child = dataBinding.child.filter(item =>
+					!Object.values(item).some(value => value === null || value === "")
 				);
+				if (dataBinding.child.length === 0) {
+					delete dataBinding.child;
+				}
 			}
-			if (hasNull) delete dataBinding.child;
 		}
 		req.body = dataBinding;
 		next();
@@ -176,5 +177,6 @@ const bindFilter = async (req, res, next) => {
 		res.status(400).json({ message: error.message });
 	}
 };
+
 
 module.exports = { authPermission, bindCreate, bindUpdate, validateDuplicate, bindFilter };

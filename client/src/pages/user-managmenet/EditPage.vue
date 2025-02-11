@@ -84,7 +84,7 @@
               <q-option-group v-if="!isView && !isLoading" v-model="model.roleId" :options="optionRole"
                 option-value="id" option-label="name" :color="isError.roleId ? 'red' : 'primary'"
                 :keep-color="isError.roleId ?? false" id="role" />
-              <p v-else> {{ model.roleName }} </p>
+              <p v-else class="font-regular"> {{ model.roleName }} </p>
             </q-card-section>
           </q-card>
         </div>
@@ -105,13 +105,14 @@
               <InputGroup v-else for-id="child-name" is-dense v-model="item.name" :data="item.name ?? '-'"
                 label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView">
               </InputGroup>
-              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable :data="item.birthday ?? '-'">
+              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable
+                :data="formatDateThaiSlash(item.birthday) ?? '-'">
                 <DatePicker is-dense v-model:model="item.birthday" v-model:dateShow="item.birthday" for-id="birthday"
                   :no-time="true" />
               </InputGroup>
               <div>
-                <q-btn v-if="index > 0 && !isView && !isLoading" color="red" @click="removeChildForm(index)"
-                  class="q-mt-sm">ลบ</q-btn>
+                <q-btn v-if="(index > 0 && !isView && !isLoading) || (isEdit && !isView && item?.id && !isLoading)"
+                  color="red" @click="removeChildForm(index)" class="q-mt-sm">ลบ</q-btn>
               </div>
             </q-card-section>
             <div v-if="!isView && !isLoading">
@@ -148,7 +149,7 @@ import DatePicker from "src/components/DatePicker.vue";
 
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash } from "src/components/format";
+import { formatDateThaiSlash, formatDateSlash } from "src/components/format";
 
 import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -186,8 +187,6 @@ const model = ref({
     },
   ],
 });
-
-
 const isLoading = ref();
 const isError = ref({});
 const isView = ref(false);
@@ -202,23 +201,9 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  clearData(model);
+  model.value = null;
 });
 
-const resetObject = (obj) => {
-  for (const key in obj) {
-    if (obj[key] && typeof obj[key] === "object") {
-      // Recursively reset nested objects
-      resetObject(obj[key]);
-    } else {
-      // Set primitive values to null
-      obj[key] = null;
-    }
-  }
-};
-function clearData(model) {
-  resetObject(model.value);
-}
 function addChildForm() {
   model.value.child.push({
     name: null,
@@ -226,7 +211,53 @@ function addChildForm() {
   });
 }
 function removeChildForm(index) {
-  model.value.child.splice(index, 1);
+  if (isEdit.value && model.value.child[index]?.id) {
+    const childName = model.value.child[index]?.name;
+    Swal.fire({
+      title: "ยืนยันการลบข้อมูลหรือไม่ ???",
+      html: `โปรดตรวจสอบข้อมูลให้แน่ใจก่อนยืนยัน`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
+      showLoaderOnConfirm: true,
+      reverseButtons: true,
+      customClass: {
+        confirmButton: "save-button",
+        cancelButton: "cancel-button",
+      },
+      preConfirm: async () => {
+        try {
+          await userManagementService.deleteChild(model.value.child[index]?.id);
+        } catch (error) {
+          Swal.showValidationMessage(error?.response?.data?.message ?? `ไม่สามารถลบข้อมูลได้ กรุณาลองอีกครั้ง`);
+          Notify.create({
+            message:
+              error?.response?.data?.message ??
+              "ลบไม่สำเร็จกรุณาลองอีกครั้ง",
+            position: "bottom-left",
+            type: "negative",
+          });
+        }
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          html: `บุตร <b>${childName}</b> ถูกลบ`,
+          icon: "success",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
+        }).then(() => {
+          location.reload();
+        });
+      }
+    });
+  }
+  else {
+    model.value.child.splice(index, 1);
+  }
 };
 
 
@@ -287,10 +318,10 @@ async function submit() {
     });
     return;
   }
-  const hasNull = model.value.child.some(item =>
-    Object.values(item).some(value => value === null || value === "")
+  model.value.child = model.value.child.filter(item =>
+    !Object.values(item).some(value => value === null || value === "")
   );
-  if (hasNull) {
+  if (model.value.child.length === 0) {
     delete model.value.child;
   }
   let isValid = false;
@@ -338,7 +369,6 @@ async function submit() {
     },
   }).then((result) => {
     if (isValid && result.isConfirmed) {
-      console.log(fetch);
       Swal.fire({
         html: fetch.data?.message ?? `บันทึกข้อมูลสำเร็จ`,
         icon: "success",
@@ -349,10 +379,6 @@ async function submit() {
       }).then(() => {
         router.replace({ name: "user_management_list" });
       });
-    }
-    else {
-      model.value.child = [];
-      addChildForm()
     }
   });
 }
@@ -388,7 +414,7 @@ async function init() {
     try {
       let res = await userManagementService.dataById(route.params.id);
       const dataBinding = res.data.datas;
-      const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : dataBinding.firstWorkingDate;
+      const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : formatDateSlash(dataBinding.firstWorkingDate);
       const childData = [{
         name: null,
         birthday: null,
@@ -408,12 +434,22 @@ async function init() {
         sectorName: dataBinding.sector.name,
         roleId: dataBinding.role.id,
         roleName: dataBinding.role.name,
-        child: Array.isArray(dataBinding.children) && dataBinding.children.length > 0 ? dataBinding.children : childData,
       };
+      if (Array.isArray(dataBinding.children) && dataBinding.children.length > 0) {
+        const newChild = dataBinding.children.map((child) => ({
+          id: child?.id,
+          name: child?.name,
+          birthday: formatDateSlash(child?.birthday),
+        }));
 
+        model.value.child = newChild;
+      }
+      else {
+        model.value.child = childData;
+      }
+      model.value.child
       isLoading.value = false;
     } catch (error) {
-      console.log(error);
       Notify.create({
         message:
           error.response?.data?.message ??

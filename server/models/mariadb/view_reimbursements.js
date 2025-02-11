@@ -1,6 +1,6 @@
 const sequelizePaginate = require('sequelize-paginate');
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const model = sequelize.define('viewReimbursements', {
     welfare_type: {
       type: DataTypes.STRING(33),
@@ -56,6 +56,7 @@ module.exports = function(sequelize, DataTypes) {
     tableName: 'view_reimbursements',
     timestamps: false
   });
+
   sequelizePaginate.paginate(model);
   return model;
 };
