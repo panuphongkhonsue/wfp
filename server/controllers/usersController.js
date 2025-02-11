@@ -12,7 +12,7 @@ class Controller extends BaseController {
 
     list = async (req, res, next) => {
         const method = 'GetListUser';
-        const { userId } = req.user;
+        const { id } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
             var whereObj = { ...filter }
@@ -66,21 +66,21 @@ class Controller extends BaseController {
                         department: department,
                     }
                 });
-                logger.info('Complete', { method, data: { userId } });
+                logger.info('Complete', { method, data: { id } });
                 res.status(200).json(userList);
             }
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
     }
     getById = async (req, res, next) => {
         const method = 'GetUserbyId';
-        const { userId } = req.user;
+        const { id } = req.user;
         const dataId = req.params['id'];
         try {
             const userData = await users.findOne({
@@ -142,12 +142,12 @@ class Controller extends BaseController {
                 };
                 delete user.datas.employee_type;
                 delete user.datas.first_working_date;
-                logger.info('Complete', { method, data: { userId } });
+                logger.info('Complete', { method, data: { id } });
                 res.status(200).json(user);
             } else {
                 logger.info('Data not found', {
                     method,
-                    data: { userId, dataId },
+                    data: { id, dataId },
                 });
                 res.status(404).json({
                     message: `ไม่พบข้อมูล`,
@@ -157,14 +157,14 @@ class Controller extends BaseController {
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
     }
     getUserInitialData = async (req, res, next) => {
         const method = 'GetUserInitialData';
-        const { userId } = req.user;
+        const { id } = req.user;
         try {
             const { filter } = req.query;
             var whereObj = { ...filter }
@@ -211,12 +211,12 @@ class Controller extends BaseController {
                         sector: plainObj.sector.name,
                     }
                 });
-                logger.info('Complete', { method, data: { userId } });
+                logger.info('Complete', { method, data: { id } });
                 res.status(200).json(userList);
             } else {
                 logger.info('Data not found', {
                     method,
-                    data: { userId, dataId },
+                    data: { id, dataId },
                 });
                 res.status(404).json({
                     message: `ไม่พบข้อมูล`,
@@ -226,14 +226,14 @@ class Controller extends BaseController {
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
     }
     create = async (req, res, next) => {
         const method = 'CreateUser';
-        const { userId } = req.user;
+        const { id } = req.user;
         const child = req.body.child ?? null;
         delete req.body.child;
         const dataCreate = req.body;
@@ -246,11 +246,11 @@ class Controller extends BaseController {
                         users_id: newItemUser.id,
                         name: childObj.name,
                         birthday: childObj.birthday,
-                        created_by: dataCreate.created_by,
-                        updated_by: dataCreate.updated_by,
+                        created_by: id,
+                        updated_by: id,
                     }));
                     const newItemChild = await children.bulkCreate(childData, {
-                        fields: ['name', "birthday", 'users_id'],
+                        fields: ['name', "birthday", 'users_id', 'created_by', 'updated_by'],
                         transaction: t,
                     });
                     var itemsReturned = {
@@ -266,14 +266,14 @@ class Controller extends BaseController {
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
     }
     update = async (req, res, next) => {
         const method = 'UpdateUser';
-        const { userId } = req.user;
+        const { id } = req.user;
         const child = req.body.child ?? null;
         delete req.body.child;
         const dataUpdate = req.body;
@@ -292,9 +292,9 @@ class Controller extends BaseController {
                         id: childObj.id,
                         users_id: dataId,
                         name: childObj.name,
-                        birthday: childObj.birthDay,
-                        created_by: dataUpdate.updated_by,
-                        updated_by: dataUpdate.updated_by,
+                        birthday: childObj.birthday,
+                        created_by: id,
+                        updated_by: id,
                     }));
                     // Fetch existing child data before update
                     const existingChildren = await children.findAll({
@@ -304,7 +304,7 @@ class Controller extends BaseController {
                         transaction: t,
                     });
                     var updateItemChild = await children.bulkCreate(childData, {
-                        updateOnDuplicate: ["name", "birthday", "users_id"],
+                        updateOnDuplicate: ['name', 'birthday', "users_id", 'updated_by'],
                         transaction: t,
                     });
                     // Fetch updated child data after bulkCreate
@@ -328,7 +328,7 @@ class Controller extends BaseController {
                 return itemsReturned;
             });
             if (result) {
-                logger.info('Complete', { method, data: { userId } });
+                logger.info('Complete', { method, data: { id } });
                 return res.status(201).json({ newItem: result, message: "บันทึกข้อมูลสำเร็จ" });
             }
             res.status(400).json({ newItem: result, message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
@@ -336,14 +336,14 @@ class Controller extends BaseController {
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
     }
     delete = async (req, res, next) => {
         const method = 'DeletedUser';
-        const { userId } = req.user;
+        const { id } = req.user;
         const dataId = req.params['id'];
         const dataUpdate = new Date();
         try {
@@ -356,13 +356,13 @@ class Controller extends BaseController {
                 const updatedItem = await users.findByPk(dataId);
                 logger.info('Completed', {
                     method,
-                    data: { userId, dataId },
+                    data: { id, dataId },
                 });
                 res.status(201).json({ updatedItem: updatedItem, message: "สำเร็จ" });
             } else {
                 logger.info('Data not found', {
                     method,
-                    data: { userId, dataId },
+                    data: { id, dataId },
                 });
                 res.status(404).json({
                     message: `ไม่พบข้อมูล`,
@@ -372,7 +372,7 @@ class Controller extends BaseController {
         catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
