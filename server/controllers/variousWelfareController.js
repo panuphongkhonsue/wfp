@@ -1,9 +1,8 @@
 const BaseController = require('./BaseControllers');
 const { reimbursementsAssist, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
-const { Op, fn, col, literal } = require("sequelize");
+const { fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
 const logger = initLogger('ReimbursementsAssistController');
-const { isNullOrEmpty } = require('./utility');
 
 class Controller extends BaseController {
     constructor() {
@@ -23,6 +22,7 @@ class Controller extends BaseController {
                     [col("request_date"), "requestDate"],
                     [col("updated_at"), "updatedAt"],
                     [col("fund_receipt"), "fundReceipt"],
+                    [col("fund_eligible"), "fundEligible"],
                     [col("fund_sum_request"), "fundSumRequest"],
                     'status',
                 ],
@@ -121,9 +121,6 @@ class Controller extends BaseController {
                     [col("fund_receipt"), "fundReceipt"],
                     [col("fund_sum_request"), "fundSumRequest"],
                     [col("fund_eligible"), "fundEligible"],
-                    [col("fund_wreath_arrange"), "fundWreathArrange"],
-                    [col("fund_wreath_university"), "fundWreathUniversity"],
-                    [col("fund_vechicle"), "fundVechicle"],
                     [col("request_date"), "requestDate"],
                     [col("status"), "status"],
                     [col("created_by_user.id"), "userId"],
@@ -160,9 +157,26 @@ class Controller extends BaseController {
             });
             if (requestData) {
                 const datas = JSON.parse(JSON.stringify(requestData));
+                var welfareData = {
+                    ...datas,
+                    user: {
+                        userId: datas.userId,
+                        name: datas.name,
+                        position: datas.position,
+                        employeeType: datas.employeeType,
+                        sector: datas.sector,
+                        department: datas.department,
+                    }
+                }
+                delete welfareData.userId;
+                delete welfareData.name;
+                delete welfareData.position;
+                delete welfareData.employeeType;
+                delete welfareData.sector;
+                delete welfareData.department;
                 logger.info('Complete', { method, data: { userId } });
                 res.status(200).json({
-                    datas: datas,
+                    datas: welfareData,
                 });
             } else {
                 logger.info('Data not found', {

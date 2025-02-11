@@ -9,20 +9,42 @@
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
             </q-card-section>
             <q-separator />
-            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold">
-              <p class="col-lg-4 col-12 q-mb-none">
-                ชื่อ : <span class="font-medium font-16 text-grey-7">สุทธพัฒน์ บุญทัน</span>
+            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold"
+              :class="canCreateFor && !isView ? 'items-center' : ''">
+              <div class="col-lg-5 col-xl-4 col-12 row q-gutter-y-md q-pr-sm"
+                :class="canCreateFor && !isView ? 'items-center' : ''">
+                <p class="col-auto q-mb-none">
+                  ชื่อ-นามสกุล : <span v-show="!canCreateFor || isView" class="font-medium font-16 text-grey-7">{{
+                    userData?.name ?? "-" }}</span>
+                </p>
+                <q-select v-if="canCreateFor && !isView" popup-content-class="font-14 font-regular" :loading="isLoading"
+                  id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
+                  v-model="model.createFor" :options="options" dense clearable option-value="id" emit-value map-options
+                  option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
+                  :error="!!isError?.createFor">
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </div>
+              <p class="col-lg-3 col-xl-4 col-12 q-mb-none q-pr-sm text-no-wrap ellipsis"
+                :title="userData?.position ?? '-'">
+                ตำแหน่ง : <span class="font-medium font-16 text-grey-7">{{
+                  userData?.position ?? "-" }}</span>
               </p>
-              <p class="col-lg-4 col-12 q-mb-none">
-                ตำแหน่ง : <span class="font-medium font-16 text-grey-7">รองศาสตราจารย์</span>
+              <p class="col-lg col-xl-4 col-12 q-mb-none text-no-wrap ellipsis" :title="userData?.employeeType ?? '-'">
+                ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">{{
+                  userData?.employeeType ?? "-" }}</span>
               </p>
-              <p class="col-lg-4 col-12 q-mb-none">
-                ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">พนักงานมหาวิทยาลัย</span>
+              <p class="col-lg-5 col-xl-4 col-12 q-mb-none q-pr-sm">ส่วนงาน : <span
+                  class="font-medium font-16 text-grey-7">{{
+                    userData?.department ?? "-" }}</span></p>
+              <p class="col-lg col-xl-4 col-12 q-mb-none q-pr-sm">ภาควิชา : <span
+                  class="font-medium font-16 text-grey-7">{{
+                    userData?.sector ?? "-" }}</span>
               </p>
-              <p class="col-lg-4 col-12 q-mb-none">ส่วนงาน : <span
-                  class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span></p>
-              <p class="col-lg-4 col-12 q-mb-none">ภาควิชา : <span
-                  class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span></p>
             </q-card-section>
           </q-card>
         </div>
@@ -45,13 +67,23 @@
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
         <div class="col-md-9 col-12">
           <q-card flat bordered class="full-height">
-            <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
+            <q-card-section class="flex justify-between q-px-md q-pt-md q-pb-md font-18 font-bold">
               <p class="q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
+              <p class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
+                v-if="isView && (model.status == 'รอตรวจสอบ')"><q-icon :name="outlinedDownload" />
+                <span> Export</span>
+              </p>
+            </q-card-section>
+            <q-card-section v-show="isView || isEdit" class="row wrap font-medium q-pb-xs font-16 text-grey-9">
+              <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
+              </p>
+              <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
               <p class="col-12 q-mb-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
               <div class="col-lg-6 col-12 q-mb-none">
-                <q-option-group class="q-gutter-y-sm" v-model="selection" type="radio" :options="options" />
+                <q-option-group class="q-gutter-y-sm" v-model="categoryId" type="radio" :options="options" />
               </div>
               <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
                 <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p>
@@ -62,14 +94,14 @@
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
               <div class="col-lg-4 col-12 ">
-                <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" is-require
-                  label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
+                <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'"
+                  is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
               <div class="col-lg-2"></div>
               <div class="col-lg-4 col-12 ">
-                <InputGroup for-id="fund" is-dense v-model="model.fund2" :data="model.fund ?? '-'" is-require
-                  label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView">
+                <InputGroup for-id="fund" is-dense v-model="model.fundEligible" :data="model.fundEligible ?? '-'"
+                  is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
             </q-card-section>
@@ -136,99 +168,240 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { getRoleCanCreateFor } from "src/components/role"
+import { formatDateThaiSlash } from "src/components/format";
+import userManagementService from "src/boot/service/userManagementService";
+import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
+import { useAuthStore } from "src/stores/authStore";
+import variousWelfareService from "src/boot/service/variousWelfareService";
 defineOptions({
   name: "various_welfare_edit",
 });
+const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
+const roleType = getRoleCanCreateFor();
 const model = ref({
-  fund1: null,
-  fund2: null,
+  fundReceipt: null,
+  fundEligible: null,
+  categoryId: null,
+  createFor: null,
 });
 
-const options = [
-  {
-    label: 'การเบิกค่าสมรสโดยนิตินัย',
-    value: 'การเบิกค่าสมรสโดยนิตินัย'
-  },
-  {
-    label: 'การเบิกค่าอุปสมหรือการไปประกอบพิธีฮัจญ์',
-    value: 'การเบิกค่าอุปสมหรือการไปประกอบพิธีฮัจญ์'
-  },
-  {
-    label: 'การเบิกค่ารับขวัญบุตรแรกเกิด',
-    value: 'การเบิกค่ารับขวัญบุตรแรกเกิด'
-  },
-  {
-    label: 'การเบิกสวัสดิการค่าสงเคราะห์ กรณีประสบภัยพิบัติ',
-    value: 'การเบิกสวัสดิการค่าสงเคราะห์ กรณีประสบภัยพิบัติ'
-  }
-]
-const selection = ref(null)
+const options =
+  [
+    {
+      label: 'การเบิกค่าสมรสโดยนิตินัย',
+      value: 4
+    },
+    {
+      label: 'การเบิกค่าอุปสมหรือการไปประกอบพิธีฮัจญ์',
+      value: 5
+    },
+    {
+      label: 'การเบิกค่ารับขวัญบุตรแรกเกิด',
+      value: 6
+    },
+    {
+      label: 'การเบิกสวัสดิการค่าสงเคราะห์ กรณีประสบภัยพิบัติ',
+      value: 7
+    }
+  ]
 
+const userData = ref({});
+const remaining = ref({});
+const isLoading = ref(false);
 const isError = ref({});
 
 const isView = ref(false);
-const isLoading = ref(false);
 
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
+});
+const canCreateFor = computed(() => {
+  return authStore.roleId === roleType;
 });
 
 onMounted(async () => {
   await init();
   isLoading.value = false;
-  isEdit.value = false;
 });
 
 onBeforeUnmount(() => {
-  clearData(model);
+  model.value = null;
 });
-
-const resetObject = (obj) => {
-  for (const key in obj) {
-    if (obj[key] && typeof obj[key] === "object") {
-      // Recursively reset nested objects
-      resetObject(obj[key]);
-    } else {
-      // Set primitive values to null
-      obj[key] = null;
+watch(
+  () => model.value.fundReceipt,
+  (newValue) => {
+    if (newValue !== null) {
+      delete isError.value.fundReceipt;
     }
   }
-};
-function clearData(model) {
-  resetObject(model.value);
-}
+);
+watch(
+  () => model.value.createFor,
+  (newValue) => {
+    if (newValue !== null) {
+      try {
+        fetchRemaining();
+      }
+      catch (error) {
+        Notify.create({
+          message:
+            error?.response?.data?.message ??
+            "ไม่พบข้อมูลสิทธิ์คงเหลือของผู้ใช้งาน",
+          position: "bottom-left",
+          type: "negative",
+        });
+      }
+    }
+  }
+);
 
-async function submit() {
+async function fetchDataEdit() {
+  setTimeout(async () => {
+    try {
+      const result = await variousWelfareService.dataById(route.params.id);
+      var returnedData = result.data.datas;
+      if (returnedData) {
+        model.value = {
+          ...model,
+          createFor: returnedData?.userId,
+          reimNumber: returnedData?.reimNumber,
+          requestDate: returnedData?.requestDate,
+          status: returnedData?.status,
+          fundReceipt: returnedData?.fundReceipt,
+          fundEligible: returnedData?.fundEligible,
+        };
+        userData.value = {
+          name: returnedData?.user.name,
+          position: returnedData?.user.position,
+          employeeType: returnedData?.user.employeeType,
+          sector: returnedData?.user.sector,
+          department: returnedData?.user.department,
+        };
+      }
+    } catch (error) {
+      router.replace({ name: "various_welfare_list" });
+      Notify.create({
+        message:
+          error?.response?.data?.message ??
+          "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
+        position: "bottom-left",
+        type: "negative",
+      });
+    }
+    isLoading.value = false;
+  }, 100);
+}
+async function fetchUserData() {
+  try {
+    const result = await userManagementService.dataById(authStore.id);
+    var returnedData = result.data.datas;
+    if (returnedData) {
+      userData.value = {
+        name: returnedData?.name,
+        position: returnedData?.position.name,
+        employeeType: returnedData?.employeeType.name,
+        sector: returnedData?.sector.name,
+        department: returnedData?.department.name,
+      };
+    }
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+}
+async function fetchRemaining() {
+  try {
+    const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
+    if (fetchRemaining.data?.datas?.requestsRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.requestsRemaining))) {
+      remaining.value.requestsRemaining = Number(fetchRemaining.data?.datas?.requestsRemaining).toLocaleString();
+    }
+    else {
+      remaining.value.requestsRemaining = null;
+    }
+    if (fetchRemaining.data?.datas?.fundRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.fundRemaining))) {
+      remaining.value.fundRemaining = Number(fetchRemaining.data?.datas?.fundRemaining).toLocaleString();
+    }
+    else {
+      remaining.value.fundRemaining = null;
+    }
+  } catch (error) {
+    Promise.reject(error);
+  }
+}
+async function filterFn(val, update) {
+  try {
+    setTimeout(async () => {
+      const result = await userManagementService.getUserInitialData({ keyword: val });
+      var returnedData = result.data.datas;
+
+      update(() => {
+        if (returnedData) {
+          options.value = returnedData;
+        }
+      });
+    }, 650);
+
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+}
+async function fetchCreateForData(keyword) {
+  try {
+    const result = await userManagementService.getUserInitialData({ keyword: keyword });
+    var returnedData = result.data.datas;
+    if (returnedData) {
+      options.value = returnedData;
+    }
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+}
+async function submit(actionId) {
   let validate = false;
-  // if (!model.value.gspc?.equipment?.equipmentId) {
-  //   isError.value.equipmentId.messageError = "IT Asset No. Is Required";
-  //   let navigate = document.getElementById("selected-it-asset");
-  //   window.location.hash = "selected-it-asset";
-  //   navigate.scrollIntoView(false);
-  //   validate = true;
-  // }
+  if (!model.value.fundReceipt) {
+    isError.value.fundReceipt = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
+    let navigate = document.getElementById("fund");
+    window.location.hash = "fund";
+    navigate.scrollIntoView(false);
+    validate = true;
+  } if (!model.value.createFor && canCreateFor.value) {
+    isError.value.createFor = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
+    let navigate = document.getElementById("selected-user");
+    window.location.hash = "selected-user";
+    navigate.scrollIntoView(false);
+    validate = true;
+  }
   if (validate === true) {
     Notify.create({
-      message: "Please Correct Input",
+      message: "กรุณากรอกข้อมูลให้ครบถ้วน",
       position: "bottom-left",
       type: "negative",
     });
     return;
   }
   let isValid = false;
+  let payload = {
+    fundReceipt: model.value.fundReceipt,
+    fundEligible: model.value.fundEligible,
+    createFor: model.value.createFor,
+    categoryId: model.value.categoryId,
+    actionId: actionId,
+  }
+  var fetch;
   Swal.fire({
-    title: "Do you want to save the changes??",
-    html: `You won't be able to revert this!`,
+    title: "ยืนยันการทำรายการหรือไม่ ???",
+    html: `โปรดตรวจสอบข้อมูลให้แน่ใจก่อนยืนยัน`,
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: "Yes",
-    cancelButtonText: "Cancel",
+    confirmButtonText: "ยืนยัน",
+    cancelButtonText: "ยกเลิก",
     showLoaderOnConfirm: true,
     reverseButtons: true,
     customClass: {
@@ -237,7 +410,12 @@ async function submit() {
     },
     preConfirm: async () => {
       try {
-        // code
+        if (isEdit.value) {
+          fetch = await variousWelfareService.update(route.params.id, payload);
+        }
+        else {
+          fetch = await variousWelfareService.create(payload);
+        }
         isValid = true;
       } catch (error) {
         if (error?.response?.status == 400) {
@@ -248,15 +426,11 @@ async function submit() {
             };
           }
         }
-        Swal.showValidationMessage(
-          `Save Data Failed. ${error.response?.data?.message ??
-          "Something wrong please try again later."
-          }`
-        );
+        Swal.showValidationMessage(error?.response?.data?.message ?? `เกิดข้อผิดพลาด กรุณาลองอีกครั้ง`);
         Notify.create({
           message:
             error?.response?.data?.message ??
-            "Something wrong please try again later.",
+            "บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
           position: "bottom-left",
           type: "negative",
         });
@@ -265,9 +439,9 @@ async function submit() {
   }).then((result) => {
     if (isValid && result.isConfirmed) {
       Swal.fire({
-        html: `Request Save.`,
+        html: fetch.data?.message ?? `สำเร็จ`,
         icon: "success",
-        confirmButtonText: "OK",
+        confirmButtonText: "ตกลง",
         customClass: {
           confirmButton: "save-button",
         },
@@ -278,14 +452,33 @@ async function submit() {
   });
 }
 
+
 async function init() {
   isView.value = route.meta.isView;
   isLoading.value = true;
+  try {
+    if (isView.value) {
+      fetchDataEdit();
+    }
+    else if (isEdit.value && !isView.value) {
+      if (canCreateFor.value) {
+        fetchCreateForData({ keyword: null });
+      }
+      fetchDataEdit();
+      fetchRemaining();
+    }
+    else {
+      if (canCreateFor.value) {
+        fetchCreateForData({ keyword: null });
+      }
+      fetchUserData();
+      fetchRemaining();
+    }
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+  isLoading.value = false;
 }
 
-// const options = [
-//         { label: 'Battery too low', value: 'bat'},
-//         { label: 'Friend request', value: 'friend'},
-//         { label: 'Picture uploaded', value: 'upload'}
-//       ]
 </script>
