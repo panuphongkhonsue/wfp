@@ -21,7 +21,7 @@
                   id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
                   v-model="model.createFor" :options="options" dense clearable option-value="id" emit-value map-options
                   option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
-                  :error="!!isError?.createFor" popup-content-style="height :300px">
+                  :error="!!isError?.createFor">
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
@@ -68,8 +68,7 @@
             <q-card-section class="flex justify-between q-px-md q-pt-md q-pb-md font-18 font-bold">
               <p class="q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
               <p class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
-                v-if="isView && (model.status == 'รอตรวจสอบ' || model.status == 'อนุมัติ')"><q-icon
-                  :name="outlinedDownload" />
+                v-if="isView && (model.status == 'รอตรวจสอบ')"><q-icon :name="outlinedDownload" />
                 <span> Export</span>
               </p>
             </q-card-section>
@@ -223,7 +222,7 @@ watch(
 watch(
   () => model.value.createFor,
   (newValue) => {
-    if (newValue !== null) {
+    if (newValue !== null && !isView.value) {
       try {
         fetchRemaining();
       }
@@ -329,12 +328,6 @@ async function fetchRemaining() {
 }
 async function filterFn(val, update) {
   try {
-    if (val === '') {
-      update(() => {
-
-      })
-      return
-    }
     setTimeout(async () => {
       const result = await userManagementService.getUserInitialData({ keyword: val });
       var returnedData = result.data.datas;

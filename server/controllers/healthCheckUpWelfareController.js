@@ -63,8 +63,6 @@ class Controller extends BaseController {
         try {
             const { filter } = req.query;
             var whereObj = { ...filter }
-            const { id, roleId } = req.user;
-            const { created_by, createByData } = req.body;
             const results = await reimbursementsGeneral.findOne({
                 attributes: [
                     [col("category.id"), "categoryId"],

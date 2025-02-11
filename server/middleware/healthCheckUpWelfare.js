@@ -153,7 +153,7 @@ const checkNullValue = async (req, res, next) => {
                 message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ได้รับจากสิทธิอื่น ๆ",
             });
         }
-        if ((isNullOrEmpty(actionId) || (actionId != 1 && actionId != 2)) && !req.access) {
+        if ((isNullOrEmpty(actionId) || (actionId != status.draft && actionId != status.waitApprove)) && !req.access) {
             return res.status(400).json({
                 message: "ไม่มีการกระทำที่ต้องการ",
             });
@@ -182,7 +182,7 @@ const bindCreate = async (req, res, next) => {
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
         }
-        if (!isNullOrEmpty(createFor) && actionId == 1) {
+        if (!isNullOrEmpty(createFor) && actionId == status.draft) {
             return res.status(400).json({
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
@@ -247,7 +247,7 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if (req.access && datas.status == statusText.draft) {
+            if (req.access && (datas.status == statusText.draft || datas.status == statusText.approve)) {
                 return res.status(400).json({
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
@@ -263,7 +263,12 @@ const bindUpdate = async (req, res, next) => {
             fund_sum_request: fundSumRequest,
             updated_by: id,
         }
-        if (actionId && !req.access) {
+        if (!isNullOrEmpty(actionId)) {
+            if (req.access && actionId != status.approve) {
+                return res.status(400).json({
+                    message: "ไม่มีการกระทำที่ต้องการ",
+                });
+            }
             dataBinding.status = actionId;
             if (actionId === status.waitApprove) {
                 dataBinding.request_date = new Date();
@@ -314,7 +319,7 @@ const getRemaining = async (req, res, next) => {
         }
         req.query.filter[Op.and].push(
             { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
-            { '$category.id$': 1 }
+            { '$category.id$': category.healthCheckup }
         );
         next();
     }
@@ -392,7 +397,7 @@ const checkFullPerTimes = async (req, res, next) => {
                 [col("fund"), "fundRemaining"],
                 [col("per_times"), "perTimes"],
             ],
-            where: { id: 1 }
+            where: { id: category.healthCheckup }
         })
         if (getFund) {
             const datas = JSON.parse(JSON.stringify(getFund));
@@ -493,7 +498,7 @@ const deletedMiddleware = async (req, res, next) => {
             };
             return next();
         };
-        res.status(400).json({
+        res.status(404).json({
             message: "ไม่พบข้อมูลที่ต้องการลบ กรุณาลองอีกครั้ง"
         });
     }
