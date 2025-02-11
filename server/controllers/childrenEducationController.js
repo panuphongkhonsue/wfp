@@ -1,7 +1,7 @@
 const BaseController = require('./BaseControllers');
 const {reimbursementsChildrenEducation, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation } = require('../models/mariadb');
 const { initLogger } = require('../logger');
-const { fn, col, literal } = require("sequelize");
+const { Op, fn, col, literal } = require("sequelize");
 const logger = initLogger('UserController');
 
 class Controller extends BaseController{
@@ -151,13 +151,23 @@ class Controller extends BaseController{
     
             if (results) {
                 const datas = JSON.parse(JSON.stringify(results));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
+                
+                // Loop ผ่าน array datas
+                datas.forEach(data => {
+                    if (data.fundRemaining === 0 || data.requestsRemaining === 0) {
+                        data.canRequest = false;
+                    } else {
+                        data.canRequest = true;
+                    }
+                });
+            
                 logger.info('Complete', { method, data: { userId } });
                 return res.status(200).json({
                     datas: datas,
-                    canRequest: datas.canRequest ?? true,
+                    canRequest: datas.some(data => data.canRequest) // ถ้ามีอย่างน้อย 1 อันที่ true ให้ return true
                 });
             };
+            
             logger.info('Data not Found', { method, data: { userId } });
             res.status(400).json({
                 message: "ไม่พบข้อมูลที่ต้องการ กรุณาลองอีกครั้ง"

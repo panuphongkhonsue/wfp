@@ -1,7 +1,7 @@
-const { permissionsHasRoles, childrenInfomation, subCategories} = require('../models/mariadb')
+const { permissionsHasRoles, childrenInfomation, subCategories,reimbursementsChildrenEducationHasChildrenInfomation,reimbursementsChildrenEducation} = require('../models/mariadb')
 const { isNullOrEmpty, getFiscalYear} = require('../middleware/utility');
 const permissionType = require('../enum/permission')
-const { Op } = require('sequelize')
+const { Op, fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
 const logger = initLogger('ChildrenEducationValidator');
 const authPermission = async (req, res, next) => {
@@ -77,50 +77,77 @@ const getRemaining = async (req, res, next) => {
 const checkRemaining = async (req, res, next) => {
     const method = 'CheckRemainingMiddleware';
     try {
-        const { status } = req.body;
+        const { status, fundSumRequest } = req.body;
+        const userId = req.user?.id;
         const { filter } = req.query;
-        var whereObj = { ...filter }
-        const { fundSumRequest } = req.body;
-        const results = await childrenInfomation.findOne({
+        var whereObj = { ...filter };
+
+        const results = await childrenInfomation.findAll({
             attributes: [
-				[
-					literal("sub_category.fund - SUM(childrenInfomation.fund_sum_request)"),
-					"fundRemaining"
-				],
-				[
-					literal("sub_category.per_years - COUNT(childrenInfomation.fund_sum_request)"),
-					"requestsRemaining"
-				]
+                [
+                    literal("sub_category.fund - COALESCE(SUM(childrenInfomation.fund_sum_request), 0)"),
+                    "fundRemaining"
+                ],
+                [
+                    literal("sub_category.per_years - COALESCE(COUNT(childrenInfomation.fund_sum_request), 0)"),
+                    "requestsRemaining"
+                ]
             ],
             include: [
                 {
-                    model: subCategories,
+                    model: subCategories, 
                     as: "sub_category",
                     attributes: []
+                },
+                {
+                    model: reimbursementsChildrenEducationHasChildrenInfomation,
+                    as: "reimbursements_children_education_has_children_infomations",
+                    required: true,
+                    attributes: [],
+                    include: [
+                        {
+                            model: reimbursementsChildrenEducation,
+                            as: "reimbursements_children_education",
+                            required: true,
+                            attributes: [],
+                            where: { created_by: userId }
+                        }
+                    ]
                 }
             ],
             where: whereObj,
-            group: ["sub_category.id"]
+            group: ["childrenInfomation.child_name", 
+                    "sub_category.id"]
         });
-        if (results) {
+
+        if (results.length > 0) {
             const datas = JSON.parse(JSON.stringify(results));
-            if (status === 1) {
-                return next();
-            }
-            if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+            console.log("🚀 ~ datas:", datas); // ตรวจสอบค่าที่ได้
+
+            const noRemaining = datas.some(data => 
+                (data.fundRemaining == null || data.fundRemaining <= 0) && 
+                (data.requestsRemaining == null || data.requestsRemaining <= 0)
+            );
+
+            if (noRemaining) {
                 logger.info('No Remaining', { method });
                 return res.status(400).json({
                     message: "คุณไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
                 });
-            };
-            if (fundSumRequest > datas.fundRemaining) {
+            }
+
+            const overLimit = datas.some(data => fundSumRequest > data.fundRemaining);
+
+            if (overLimit) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
                 });
             }
+
             return next();
-        };
+        }
+
         res.status(400).json({
             message: "ไม่พบข้อมูลสิทธ์คงเหลือ กรุณาลองอีกครั้ง"
         });
@@ -130,6 +157,18 @@ const checkRemaining = async (req, res, next) => {
         next(error);
     }
 };
+
+
+const bindCreate = async(req,res,next) =>{
+    try {
+        const { spouseName, marryRegis, role, position, department, welfareType, } = req.body
+
+    }
+    catch (error) {
+    }
+}
+
+
 
 
 
