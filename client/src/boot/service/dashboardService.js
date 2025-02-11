@@ -8,4 +8,9 @@ export default {
       params: options,
     });
   },
+  getDashboardDataPersonal(options) {
+    return api.get(`${path}/report/report-personal`, {
+      params: options,
+    });
+  },
 };

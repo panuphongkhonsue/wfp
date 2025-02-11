@@ -123,7 +123,6 @@ const isLoading = ref(false);
 const listStore = useListStore();
 const tableRef = ref();
 let validateText = null;
-let payloadCurrentFund = null;
 const payload = ref(
   {
     fund: null,
@@ -354,8 +353,6 @@ async function updateConfigWelfare(propsRowData) {
               if (payload.value.fund <= 0) {
                 validateMessage = "ข้อมูลเพดานเงินไม่ถูกต้อง";
               }
-              payloadCurrentFund = payload.value.fund;
-              
             }
             else {
               if (propsRowData.categoryFund) {
@@ -389,9 +386,7 @@ async function updateConfigWelfare(propsRowData) {
               else if (payload.value.perTimes == 0) {
                 payload.value.perTimes = null;
               }
-              else if (payload.value.perTimes > payloadCurrentFund) {
-                console.log("pT : ", payload.value.perTimes);
-                console.log("pCF : ", payloadCurrentFund);
+              else if (payload.value.perTimes > payload.value.fund) {
                 validateMessage = "ข้อมูลครั้งละไม่เกินสูงกว่าเพดานเงิน";
               }
             }
@@ -463,7 +458,7 @@ async function updateConfigWelfare(propsRowData) {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        if (validateText !== null) {
+        if (validateText == null) {
           Swal.fire({
             html: `ข้อมูลสวัสดิการถูกแก้ไข`,
             icon: "success",

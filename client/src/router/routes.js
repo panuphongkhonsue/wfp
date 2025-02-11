@@ -239,7 +239,7 @@ const routes = [
         component: () => import('pages/report/ReportCompareExpenses.vue'),
       },
       {
-        path: 'report-personal',
+        path: '/report/report-personal',
         name: 'report_personal',
         meta: { breadcrumbs: [{ name: 'รายงาน' },{ name: 'รายงานค่าใช้จ่ายสวัสดิการประจำปีงบประมาณ' }] },
         component: () => import('pages/report/ReportPersonal.vue'),
