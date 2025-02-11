@@ -111,8 +111,8 @@
                   :no-time="true" />
               </InputGroup>
               <div>
-                <q-btn v-if="index > 0 && !isView && !isLoading" color="red" @click="removeChildForm(index)"
-                  class="q-mt-sm">ลบ</q-btn>
+                <q-btn v-if="(index > 0 && !isView && !isLoading) || (isEdit && !isView && item?.id && !isLoading)"
+                  color="red" @click="removeChildForm(index)" class="q-mt-sm">ลบ</q-btn>
               </div>
             </q-card-section>
             <div v-if="!isView && !isLoading">
@@ -211,7 +211,53 @@ function addChildForm() {
   });
 }
 function removeChildForm(index) {
-  model.value.child.splice(index, 1);
+  if (isEdit.value && model.value.child[index]?.id) {
+    const childName = model.value.child[index]?.name;
+    Swal.fire({
+      title: "ยืนยันการลบข้อมูลหรือไม่ ???",
+      html: `โปรดตรวจสอบข้อมูลให้แน่ใจก่อนยืนยัน`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ยืนยัน",
+      cancelButtonText: "ยกเลิก",
+      showLoaderOnConfirm: true,
+      reverseButtons: true,
+      customClass: {
+        confirmButton: "save-button",
+        cancelButton: "cancel-button",
+      },
+      preConfirm: async () => {
+        try {
+          await userManagementService.deleteChild(model.value.child[index]?.id);
+        } catch (error) {
+          Swal.showValidationMessage(error?.response?.data?.message ?? `ไม่สามารถลบข้อมูลได้ กรุณาลองอีกครั้ง`);
+          Notify.create({
+            message:
+              error?.response?.data?.message ??
+              "ลบไม่สำเร็จกรุณาลองอีกครั้ง",
+            position: "bottom-left",
+            type: "negative",
+          });
+        }
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          html: `บุตร <b>${childName}</b> ถูกลบ`,
+          icon: "success",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
+        }).then(() => {
+          location.reload();
+        });
+      }
+    });
+  }
+  else {
+    model.value.child.splice(index, 1);
+  }
 };
 
 

@@ -40,4 +40,12 @@ export default {
       Promise.reject(error);
     }
   },
+  deleteChild(id) {
+    try {
+      return api.delete(`${path}/delete-child/${id}`);
+    }
+    catch (error) {
+      Promise.reject(error);
+    }
+  },
 };
