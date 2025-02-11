@@ -1,8 +1,10 @@
 const { initLogger } = require('../logger');
 const logger = initLogger('DashboardValidator');
-const { permissionsHasRoles } = require('../models/mariadb');
-const permissionType = require('../enum/permission');
 const { Op } = require('sequelize')
+const permissionType = require('../enum/permission');
+const { permissionsHasRoles } = require('../models/mariadb');
+const role = require('../enum/role');
+
 
 const authPermission = async (req, res, next) => {
 	const method = 'AuthPermission';
@@ -23,7 +25,5 @@ const authPermission = async (req, res, next) => {
 		res.status(401).json({ message: error.message });
 	}
 };
-
-
 
 module.exports = { authPermission };
