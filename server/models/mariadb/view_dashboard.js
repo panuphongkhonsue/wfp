@@ -1,3 +1,4 @@
+const sequelizePaginate = require('sequelize-paginate');
 const Sequelize = require('sequelize');
 module.exports = function (sequelize, DataTypes) {
     const model = sequelize.define(
@@ -74,6 +75,6 @@ module.exports = function (sequelize, DataTypes) {
       }
     );
   
-    return model;
-  };
-  
+    sequelizePaginate.paginate(model);
+  return model;
+};

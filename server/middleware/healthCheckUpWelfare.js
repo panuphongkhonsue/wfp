@@ -195,6 +195,7 @@ const bindUpdate = async (req, res, next) => {
         });
     }
 };
+
 const getRemaining = async (req, res, next) => {
     const method = 'RemainingMiddleware';
     try {

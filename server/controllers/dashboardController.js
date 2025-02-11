@@ -1,6 +1,5 @@
 const BaseController = require('./BaseControllers');
 const { viewDashboard } = require('../models/mariadb');
-const { isNullOrEmpty } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('viewDashboardController');
 

@@ -32,13 +32,24 @@ const getFiscalYear = () => {
     ]
   }
 }
-const getYear2Digits = () => {
-  const getThaiYear = (year) => (year + 543).toString().slice(-2);
 
-  const thisYear = new Date().getFullYear(); // 2025
-  const thaiYearShort = getThaiYear(thisYear); // "68"
+const betweenFiscalByYear = (startYear, endYear) => {
+  return {
+    [Op.between]: [
+      literal(`STR_TO_DATE('${startYear}-10-01', '%Y-%m-%d')`),
+      literal(`STR_TO_DATE('${endYear}-09-30', '%Y-%m-%d')`)
+    ]
+  };
+};
+
+
+const getYear2Digits = () => {
+const getThaiYear = (year) => (year + 543).toString().slice(-2);
+
+const thisYear = new Date().getFullYear(); // 2025
+const thaiYearShort = getThaiYear(thisYear); // "68"
   return thaiYearShort;
 }
 const formatNumber = (num) => num.toString().padStart(2, "0");
 const isInvalidNumber = (value) => isNaN(value) || value === "" || value === null;
-module.exports = { isNullOrEmpty, checkRequire, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber };
+module.exports = { isNullOrEmpty, checkRequire, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber, betweenFiscalByYear };
