@@ -272,10 +272,10 @@ async function submit() {
     });
     return;
   }
-  const hasNull = model.value.child.some(item =>
-    Object.values(item).some(value => value === null || value === "")
+  model.value.child = model.value.child.filter(item =>
+    !Object.values(item).some(value => value === null || value === "")
   );
-  if (hasNull) {
+  if (model.value.child.length === 0) {
     delete model.value.child;
   }
   let isValid = false;

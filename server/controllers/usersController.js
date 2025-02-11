@@ -1,6 +1,6 @@
 const BaseController = require('./BaseControllers');
 const { users, positions, sector, employeeTypes, roles, departments, children, sequelize } = require('../models/mariadb');
-const { Op, col, literal } = require('sequelize')
+const { Op } = require('sequelize')
 const { initLogger } = require('../logger');
 const logger = initLogger('UserController');
 const { isNullOrEmpty } = require('../controllers/utility');
@@ -125,6 +125,7 @@ class Controller extends BaseController {
                 ],
                 where: {
                     users_id: dataId,
+                    deleted_at: { [Op.is]: null }
                 }
             })
             if (userData) {
@@ -354,6 +355,42 @@ class Controller extends BaseController {
             });
             if (updated) {
                 const updatedItem = await users.findByPk(dataId);
+                logger.info('Completed', {
+                    method,
+                    data: { id, dataId },
+                });
+                res.status(201).json({ updatedItem: updatedItem, message: "สำเร็จ" });
+            } else {
+                logger.info('Data not found', {
+                    method,
+                    data: { id, dataId },
+                });
+                res.status(404).json({
+                    message: `ไม่พบข้อมูล`,
+                });
+            }
+        }
+        catch (error) {
+            logger.error(`Error ${error.message}`, {
+                method,
+                data: { id },
+            });
+            next(error);
+        }
+    }
+    deletChild = async (req, res, next) => {
+        const method = 'DeletedChild';
+        const { id } = req.user;
+        const dataId = req.params['id'];
+        const dataUpdate = new Date();
+        try {
+            const [updated] = await children.update({ deleted_at: dataUpdate }, {
+                where: {
+                    'id': dataId,
+                },
+            });
+            if (updated) {
+                const updatedItem = await children.findByPk(dataId);
                 logger.info('Completed', {
                     method,
                     data: { id, dataId },
