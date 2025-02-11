@@ -105,7 +105,8 @@
               <InputGroup v-else for-id="child-name" is-dense v-model="item.name" :data="item.name ?? '-'"
                 label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView">
               </InputGroup>
-              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable :data="item.birthday ?? '-'">
+              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable
+                :data="formatDateThaiSlash(item.birthday) ?? '-'">
                 <DatePicker is-dense v-model:model="item.birthday" v-model:dateShow="item.birthday" for-id="birthday"
                   :no-time="true" />
               </InputGroup>
@@ -148,7 +149,7 @@ import DatePicker from "src/components/DatePicker.vue";
 
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash } from "src/components/format";
+import { formatDateThaiSlash, formatDateSlash } from "src/components/format";
 
 import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -186,8 +187,6 @@ const model = ref({
     },
   ],
 });
-
-
 const isLoading = ref();
 const isError = ref({});
 const isView = ref(false);
@@ -335,10 +334,6 @@ async function submit() {
         router.replace({ name: "user_management_list" });
       });
     }
-    else {
-      model.value.child = [];
-      addChildForm()
-    }
   });
 }
 const optionsPosition = ref([]);
@@ -373,7 +368,7 @@ async function init() {
     try {
       let res = await userManagementService.dataById(route.params.id);
       const dataBinding = res.data.datas;
-      const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : dataBinding.firstWorkingDate;
+      const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : formatDateSlash(dataBinding.firstWorkingDate);
       const childData = [{
         name: null,
         birthday: null,
@@ -393,9 +388,20 @@ async function init() {
         sectorName: dataBinding.sector.name,
         roleId: dataBinding.role.id,
         roleName: dataBinding.role.name,
-        child: Array.isArray(dataBinding.children) && dataBinding.children.length > 0 ? dataBinding.children : childData,
       };
+      if (Array.isArray(dataBinding.children) && dataBinding.children.length > 0) {
+        const newChild = dataBinding.children.map((child) => ({
+          id: child?.id,
+          name: child?.name,
+          birthday: formatDateSlash(child?.birthday),
+        }));
 
+        model.value.child = newChild;
+      }
+      else {
+        model.value.child = childData;
+      }
+      model.value.child
       isLoading.value = false;
     } catch (error) {
       Notify.create({
