@@ -7,6 +7,8 @@ const ActiveDirectory = require('activedirectory');
 const { initLogger } = require('../logger');
 const logger = initLogger('AccountController');
 const { getpathMenu, getpathMenuEditor } = require('../enum/format');
+const permissionType = require('../enum/permission')
+const { Op } = require('sequelize')
 
 exports.login = async (req, res, next) => {
     const method = 'Login';
@@ -72,6 +74,12 @@ exports.login = async (req, res, next) => {
                 user.position = positions;
                 user.department = department;
                 user.sector = sector;
+                const isAccess = await permissionsHasRoles.count({
+                    where: {
+                        [Op.and]: [{ roles_id: user.roleId }, { permissions_id: permissionType.welfareManagement }],
+                    },
+                });
+                user.isEditor = isAccess ? true : false;
                 delete user.role;
                 const token = jwt.sign(
                     {

@@ -83,8 +83,9 @@
                 label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" compclass="col-xs-12 col-lg-4 col-xl-2"
                 :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
-              <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require label="จำนวนที่ต้องการเบิก"
-                type="number" compclass="col-xs-12 col-lg-3 col-xl-2" :is-view="isView" v-if="isView">
+              <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require
+                label="จำนวนที่ต้องการเบิก" type="number" compclass="col-xs-12 col-lg-3 col-xl-2" :is-view="isView"
+                v-if="isView">
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-sm font-medium font-16">
@@ -157,7 +158,6 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { getRoleCanCreateFor } from "src/components/role"
 import { formatDateThaiSlash, formatNumber } from "src/components/format";
 import healthCheckUpWelfareService from "src/boot/service/healthCheckUpWelfareService";
 import userManagementService from "src/boot/service/userManagementService";
@@ -171,7 +171,6 @@ defineOptions({
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
-const roleType = getRoleCanCreateFor();
 const model = ref({
   createFor: null,
   fundReceipt: null,
@@ -202,7 +201,7 @@ const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
 const canCreateFor = computed(() => {
-  return authStore.roleId === roleType;
+  return authStore.isEditor;
 });
 
 onMounted(async () => {

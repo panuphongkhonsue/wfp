@@ -79,7 +79,7 @@
 }
 </style>
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
 import { useMenuStore } from "src/stores/menuStore";
@@ -94,6 +94,12 @@ const router = useRouter();
 const user = ref({
   name: authStore.name,
   position: authStore.position,
+});
+
+onMounted(async () => {
+  if (!authStore.isLoggedIn) {
+    router.push({ name: "login" });
+  }
 });
 const iconMap = {
   outlinedHome,

@@ -100,6 +100,7 @@ async function login() {
             authStore.email = result.data?.user?.email;
             authStore.department = result.data?.user?.department;
             authStore.roleId = result.data?.user?.roleId;
+            authStore.isEditor = result.data?.user?.isEditor;
             menuStore.setPath(result.data?.user?.path);
             menuStore.setPathEditor(result.data?.user?.pathEditor);
             router.push({ name: "home" });
