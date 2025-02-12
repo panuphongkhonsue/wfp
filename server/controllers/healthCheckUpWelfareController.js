@@ -2,7 +2,6 @@ const BaseController = require('./BaseControllers');
 const { reimbursementsGeneral, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
 const { fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
-const roleType = require('../enum/role')
 const logger = initLogger('ReimbursementsGeneralController');
 
 class Controller extends BaseController {
