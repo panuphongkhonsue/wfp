@@ -5,10 +5,11 @@ export const useAuthStore = defineStore('auth', {
     token: null,
     name: null,
     position: null,
-    roleId : null,
-    email : null,
-    department : null,
-    id : null,
+    roleId: null,
+    email: null,
+    department: null,
+    id: null,
+    isEditor: null,
   }),
   actions: {
     setToken(token) {
@@ -22,6 +23,7 @@ export const useAuthStore = defineStore('auth', {
       this.email = null;
       this.department = null;
       this.id = null;
+      this.isEditor = null;
     },
   },
   getters: {

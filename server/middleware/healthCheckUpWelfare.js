@@ -7,7 +7,6 @@ const statusText = require('../enum/statusText')
 const status = require('../enum/status')
 const category = require('../enum/category');
 const welfareType = require('../enum/welfareType');
-const roleType = require('../enum/role')
 const { permissionsHasRoles, reimbursementsGeneral, categories, sequelize } = require('../models/mariadb')
 
 const authPermission = async (req, res, next) => {
@@ -21,6 +20,14 @@ const authPermission = async (req, res, next) => {
         });
         if (!isAccess) {
             throw Error("You don't have access to this API");
+        }
+        else {
+            const isEditor = await permissionsHasRoles.count({
+                where: {
+                    [Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.welfareManagement }],
+                },
+            });
+            if (isEditor) req.isEditor = true;
         }
         next();
     }
@@ -189,7 +196,7 @@ const bindCreate = async (req, res, next) => {
     try {
         const { fundReceipt, fundDecree, fundUniversity, fundEligible, fundEligibleName, fundEligibleSum, fundSumRequest, createFor, actionId } = req.body;
         const { id, roleId } = req.user;
-        if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
+        if (!isNullOrEmpty(createFor) && roleId !== req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
@@ -235,7 +242,7 @@ const bindUpdate = async (req, res, next) => {
     try {
         const { fundReceipt, fundDecree, fundUniversity, fundEligible, fundEligibleName, fundEligibleSum, fundSumRequest, createFor, actionId } = req.body;
         const { id, roleId } = req.user;
-        if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
+        if (!isNullOrEmpty(createFor) && roleId !== req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
             });
@@ -314,12 +321,12 @@ const getRemaining = async (req, res, next) => {
                 { '$reimbursementsGeneral.created_by$': createByData },
             );
         }
-        else if (!isNullOrEmpty(created_by) && roleId == roleType.financialUser) {
+        else if (!isNullOrEmpty(created_by) && roleId == req.isEditor) {
             req.query.filter[Op.and].push(
                 { '$reimbursementsGeneral.created_by$': created_by },
             );
         }
-        else if (!isNullOrEmpty(createFor) && roleId == roleType.financialUser) {
+        else if (!isNullOrEmpty(createFor) && roleId == req.isEditor) {
             req.query.filter[Op.and].push(
                 { '$reimbursementsGeneral.created_by$': createFor },
             );
