@@ -1,5 +1,5 @@
 const { permissionsHasRoles, childrenInfomation, subCategories,reimbursementsChildrenEducationHasChildrenInfomation,reimbursementsChildrenEducation} = require('../models/mariadb')
-const { isNullOrEmpty, getFiscalYear} = require('../middleware/utility');
+const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
 const permissionType = require('../enum/permission')
 const { Op, literal } = require("sequelize");
 const { initLogger } = require('../logger');
@@ -165,71 +165,104 @@ const checkRemaining = async (req, res, next) => {
 };
 
 
-const bindCreate = async(req, res, next) =>{
+const bindCreate = async (req, res, next) => {
     try {
-        const { spouseName,
-                marryRegis,
-                role,
-                position,
-                department,
-                fundReceipt,
-                fundSumRequest,
-                fundEligible,
-                fundUniversity,
-                createFor,
-                fundOther,
-                welfareRight,
-                actionId
-             } = req.body
+        console.log("🟢 Request Body:", req.body);  // Log request body
+        console.log("🟢 User Info:", req.user);     // Log user details
+
+        const {
+            spouse,
+            marry_regis,
+            role,
+            position,
+            department,
+            fund_receipt,
+            fund_sum_request,
+            fund_eligible,
+            fund_university,
+            fund_other,
+            fund_sum_receipt,
+            categories_id,
+            status,
+            child,
+            createFor 
+        } = req.body;
+        
         const { id, roleId } = req.user;
+
         if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
-             return res.status(400).json({
-                message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
-             });
+            console.log("🔴 ไม่มีสิทธิ์สร้างให้คนอื่น");
+            return res.status(400).json({ message: "ไม่มีสิทธิ์สร้างให้คนอื่นได้" });
         }
-         if (!isNullOrEmpty(createFor) && actionId == status.draft) {
-            return res.status(400).json({
-                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
-            });
+        if (!isNullOrEmpty(createFor) && actionId == status.draft) {
+            console.log("🔴 ไม่สามารถบันทึกฉบับร่างได้");
+            return res.status(400).json({ message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้" });
         }
+
         const results = await reimbursementsChildrenEducation.findOne({
             attributes: ["id"],
-            order: [["id", "DESC"]] // Order by id in descending order
+            order: [["id", "DESC"]]
         });
+
         var reimNumber;
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
-            reimNumber = getYear2Digits() + formatNumber(welfareType.childrenEducation)  + formatNumber(datas.id + 1);
+            reimNumber = getYear2Digits() + formatNumber(welfareType.childrenEducation) + formatNumber(datas.id + 1);
+            console.log("🟢 Generated reimNumber:", reimNumber);
         }
-         const dataBinding = {
-                    reim_number: reimNumber,
-                    fund_receipt: fundReceipt,
-                    fund_eligible: fundEligible,
-                    fund_sum_request: fundSumRequest,
-                    fund_university: fundUniversity,
-                    fund_other:fundOther,
-                    status: actionId,
-                    spouse: spouseName,
-                    marry_regis: marryRegis,
-                    role: role,
-                    position: position,
-                    department: department,
-                    welfare_right: welfareRight,
-                    request_date: actionId === status.waitApprove ? new Date() : null,
-                    created_by: createFor ?? id,
-                    updated_by: id,
 
-                }
-                req.body = dataBinding;
-                next();
+const dataBinding = {
+    reim_number: reimNumber,
+    fund_receipt: fund_receipt,
+    fund_eligible: fund_eligible,
+    fund_sum_request: fund_sum_request,
+    fund_sum_receipt: fund_sum_receipt,
+    fund_university: fund_university,
+    fund_other: fund_other,
+    status: status,
+    spouse: spouse,
+    marry_regis: marry_regis,
+    role: role,
+    position: position,
+    department: department,
+    request_date: status === "รอตรวจสอบ" ? new Date() : null,
+    created_by: req.body.created_by ?? id,
+    updated_by: id,
+    categories_id: categories_id,
+    child: child
+};
 
+
+        console.log("🟢 Initial dataBinding:", dataBinding);
+
+        if (isNullOrEmpty(req.body.childrenInfomation)) {
+            console.log("🔴 childrenInfomation is null, deleting child field");
+            delete dataBinding.child;
+        } else {
+            var hasNull = false;
+            if (!isNullOrEmpty(dataBinding.child)) {
+                hasNull = req.body.childrenInfomation.some(item =>
+                    Object.values(item).some(value => value === null || value === "")
+                );
+            }
+            if (hasNull) {
+                console.log("🔴 Some child fields are null, deleting child field");
+                delete dataBinding.child;
+            }
+        }
+
+        console.log("🟢 Final dataBinding:", dataBinding);
+
+        req.body = dataBinding;
+        console.log("🟢 Final dataBinding:", JSON.stringify(dataBinding, null, 2));
+
+        next();
+    } catch (error) {
+        console.error("🚨 Error in bindCreate:", error);  // Log error
+        res.status(500).json({ message: 'Internal Server Error' });
     }
-    catch (error) {
-        res.status(500).json({
-            message: 'Internal Server Error',
-        });
-    }
-}
+};
+
 
 
 

@@ -1,5 +1,5 @@
 const BaseController = require('./BaseControllers');
-const {reimbursementsChildrenEducation, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation } = require('../models/mariadb');
+const {reimbursementsChildrenEducation, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation, sequelize } = require('../models/mariadb');
 const { initLogger } = require('../logger');
 const { Op, fn, col, literal } = require("sequelize");
 const logger = initLogger('reimbursementChildrenEducationController');
@@ -181,6 +181,83 @@ class Controller extends BaseController{
             next(error);
         }
     };
+
+    create = async (req, res, next) => {
+        const method = 'CreateReimbursementsChildrenEducation';
+        const { id } = req.user;
+        const child = req.body.childrenInfomation ?? null;
+        delete req.body.childrenInfomation;
+        const dataCreate = req.body;
+        try {
+            const results = await sequelize.transaction(async t => {
+                const newReimbursementsChild = await reimbursementsChildrenEducation.create(dataCreate, { transaction: t,});
+                if (!isNullOrEmpty(child)) {
+                    var childData = child.map((childObj) => ({
+                        fund_receipt: childObj.fund_receipt,
+                        fund_eligible: childObj.fund_eligible,
+                        fund_sum_request: childObj.fund_sum_request,
+                        child_name: childObj.child_name,
+                        child_birth_day: childObj.child_birth_day,
+                        child_father_number:childObj.child_father_number,
+                        child_mother_number:childObj.child_mother_number,
+                        child_type:childObj.child_type,
+                        school_type:childObj.school_type,
+                        school_name:childObj.school_name,
+                        education_level:childObj.education_level,
+                        district:childObj.district,
+                        province:childObj.province,
+                        sub_categories_id:childObj.sub_categories_id
+
+                    }));
+                    const newItemChild = await childrenInfomation.bulkCreate(childData, {
+                        fields: ['fund_receipt',
+                            "fund_eligible",
+                            'fund_sum_request',
+                            'child_name',
+                            'child_birth_day',
+                            'child_father_number',
+                            'child_mother_number',
+                            'child_type',
+                            'school_type',
+                            'school_name',
+                            'education_level',
+                            'district',
+                            'province',
+                            'sub_categories_id'
+                        ],
+                        transaction: t,
+                    });
+                    var itemsReturned = {
+                        ...newReimbursementsChild.toJSON(),
+                        child: newItemChild,
+                    };
+                    var childrenInfoData = child.map((childrenInfoObj) => ({
+                        reimbursements_children_education_id : newReimbursementsChild.id,
+                        children_infomation_id : newItemChild.id
+
+                    }));
+
+                     await reimbursementsChildrenEducationHasChildrenInfomation.bulkCreate(childrenInfoData,{
+                        fields: ['reimbursements_children_education_id', "children_infomation_id"],
+                        transaction: t,
+                    })
+                }
+                if (!isNullOrEmpty(child)) return itemsReturned
+                return newItemUser;
+
+            });
+            res.status(201).json({ newItem: result, message: "บันทึกข้อมูลสำเร็จ" });
+        }
+        catch (error) {
+            logger.error(`Error ${error.message}`, {
+                method,
+                data: { id },
+            });
+            next(error);
+        }
+    }
+
+
     
     
 
