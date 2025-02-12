@@ -102,6 +102,8 @@ import configWelfareService from "src/boot/service/configWelfareService";
 import { useRoute, useRouter } from "vue-router";
 import { useListStore } from "src/stores/listStore";
 
+let checkSendYearDup = true;
+let checkSearch = false;
 const listStore = useListStore();
 const tableRef = ref();
 const route = useRoute();
@@ -117,18 +119,18 @@ const dataTable = ref([{
 }]);
 
 const optionStartYear = ref([
-    { id: 1, name: currentYear },
-    { id: 1, name: currentYear - 1 },
-    { id: 2, name: currentYear - 2 },
-    { id: 3, name: currentYear - 3 },
+    { id: 2, name: currentYear - 1 },
+    { id: 3, name: currentYear - 2 },
+    { id: 4, name: currentYear - 3 }
 ]);
+
 const model = ref([
 
 ]);
 
 const columns = ref([
-    { name: "createdByName", label: "ชื่อ - สกุล", align: "left", field: (row) => row.reimNumber ?? "-" },
-    { name: "fundSum", label: "รวม", align: "left", field: (row) => row.reimNumber ?? "-" },
+    { name: "createdByName", label: "ชื่อ - สกุล", align: "left", field: (row) => row.createdByName ?? "-" },
+    { name: "fundSum", label: "รวม", align: "left", field: (row) => row.fundSum ?? "-" },
 ]);
 
 onMounted(async () => {
@@ -137,6 +139,18 @@ onMounted(async () => {
     isLoading.value = false;
 });
 
+watch(
+    () => filters.value.year,
+    (newValue) => {
+        checkSendYearDup = false;
+        optionStartYear.value = [
+            { id: 1, name: currentYear },
+            { id: 2, name: currentYear - 1 },
+            { id: 3, name: currentYear - 2 },
+            { id: 4, name: currentYear - 3 }
+        ].filter(item => item.name !== newValue);
+    }
+);
 
 
 watch(
@@ -147,6 +161,13 @@ watch(
 );
 
 function search() {
+    if(checkSendYearDup == false){
+        checkSearch = true;
+    model.value = [];
+    dataTable.value = [];
+    }
+    checkSendYearDup = true;
+    console.log("dataTableInSearch: ", dataTable.value);
     router.push({
         name: router.name,
         query: {
@@ -189,8 +210,9 @@ function onRequest(props) {
                 descending
             );
             columns.value = ([
-                { name: "createdByName", label: "ชื่อ - สกุล", align: "left", field: (row) => row.createdByName ?? "-" },
+                { name: "createdByName", label: "ชื่อ - สกุล", align: "left", field: (row) => row.userName ?? "-" },
             ]);
+
             // Push columns based on the conditions only once
             for (let i = 0; i < allWelfareData.length - 21; i++) {
                 if (
@@ -202,14 +224,15 @@ function onRequest(props) {
                     allWelfareData[i].category_name !== "สนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
                     allWelfareData[i].category_name !== "สนับสนุนพวงหรีดในนามส่วนบุคคล" &&
                     allWelfareData[i].category_name !== "พาหนะเหมาจ่าย" &&
-                    allWelfareData[i].sub_category_name !== "พาหนะเหมาจ่าย"
+                    allWelfareData[i].sub_category_name !== "พาหนะเหมาจ่าย" &&
+                    allWelfareData[i].sub_category_name !== "ประสบอุบัติเหตุขณะปฏิบัติงาน"
                 ) {
                     if (allWelfareData[i].sub_category_name === "บุตร") {
                         columns.value.push({
-                            name: "ครอบครัวเสียชีวิต",
-                            label: "ครอบครัวเสียชีวิต",
+                            name: "เสียชีวิตคนในครอบครัว",
+                            label: "เสียชีวิตคนในครอบครัว",
                             align: "left",
-                            field: "ครอบครัวเสียชีวิต" + "fund"
+                            field: "เสียชีวิตคนในครอบครัว" + "fund"
                         });
                     } else if (allWelfareData[i].sub_category_name === "ระดับมัธยมศึกษาปีที่ 1 - 3") {
                         columns.value.push({
@@ -218,7 +241,16 @@ function onRequest(props) {
                             align: "left",
                             field: "การศึกษาของบุตร" + "fund"
                         });
-                    } else {
+                    }
+                    else if (allWelfareData[i].sub_category_name === "เยี่ยมไข้") {
+                        columns.value.push({
+                            name: "กรณีเจ็บป่วย",
+                            label: "กรณีเจ็บป่วย",
+                            align: "left",
+                            field: "กรณีเจ็บป่วย" + "fund"
+                        });
+                    }
+                    else {
                         columns.value.push({
                             name: allWelfareData[i].category_name,
                             label: allWelfareData[i].category_fund == null
@@ -234,7 +266,9 @@ function onRequest(props) {
             // Create dynamic entries for each user based on the columns
             for (let j = 0; j < userData.length; j++) {
                 const newEntry = {
-                    userName: userData[j].name,  // Access user name correctly
+                    userId: userData[j].id,  // Access user name correctly
+                    userName: userData[j].name,
+                    fundSum: '',
                 };
 
                 // Add dynamic fields for each category
@@ -258,40 +292,100 @@ function onRequest(props) {
                                 newEntry[allWelfareData[i].category_name + "fund"] = '';  // Dynamically add category fund field
                             }
                         }
-                        else{
-                            if(allWelfareData[i].sub_category_name !== "บุตร"){
-                                newEntry["ครอบครัวเสียชีวิต" + "fund"] = '';  // Dynamically add category fund field
+                        else {
+                            if (allWelfareData[i].sub_category_name !== "บุตร") {
+                                newEntry["เสียชีวิตคนในครอบครัว" + "fund"] = '';  // Dynamically add category fund field
                             }
-                            else if(allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาปีที่ 1 - 3"){
+                            if (allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาปีที่ 1 - 3") {
                                 newEntry["การศึกษาของบุตร" + "fund"] = '';
+                            }
+                            if (allWelfareData[i].sub_category_name !== "เยี่ยมไข้") {
+                                newEntry["กรณีเจ็บป่วย" + "fund"] = '';
                             }
                         }
                     }
                 }
                 // Push the new entry for this user into dataTable
+                model.value.push(newEntry);
                 dataTable.value.push(newEntry);
             }
-
-
-
             console.log("dataTables:", dataTable.value);
+
+            for (let i = 0; i < dataTable.value.length; i++) {
+                for (let j = 0; j < viewDashboardData.length; j++) {
+                    if (dataTable.value[i].userId == viewDashboardData[j].created_by) {
+
+                        if (viewDashboardData[j].welfare_type === "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
+                            if (viewDashboardData[j].welfare_type == viewDashboardData[j - 1].welfare_type
+                                && viewDashboardData[j].id == viewDashboardData[j - 1].id
+                            ) {
+                                continue;
+                            }
+                            else {
+                                dataTable.value[i].ผู้ปฏิบัติงานสียชีวิตfund = dataTable.value[i].ผู้ปฏิบัติงานสียชีวิตfund
+                                    = Number(dataTable.value[i].ผู้ปฏิบัติงานสียชีวิตfund + viewDashboardData[j].fund_sum_request);
+                            }
+                        }
+
+                        if (viewDashboardData[j].welfare_type === "สวัสดิการเกี่ยวกับการศึกษาของบุตร") {
+                            if (viewDashboardData[j].welfare_type == viewDashboardData[j - 1].welfare_type
+                                && viewDashboardData[j].id == viewDashboardData[j - 1].id
+                            ) {
+                                continue;
+                            }
+                            else {
+                                dataTable.value[i].การศึกษาของบุตรfund = dataTable.value[i].การศึกษาของบุตรfund
+                                    = Number(dataTable.value[i].การศึกษาของบุตรfund + viewDashboardData[j].fund_sum_request);
+                            }
+                        }
+                        if (j > 0 && viewDashboardData[j].welfare_type == viewDashboardData[j - 1].welfare_type
+                            && viewDashboardData[j].id == viewDashboardData[j - 1].id
+                        ) {
+                            continue;
+                        }
+                        else {
+                            const categoryForDataTable = viewDashboardData[j].category_name + "fund";
+                            dataTable.value[i][categoryForDataTable]
+                                = (Number(dataTable.value[i][categoryForDataTable]) || 0) + viewDashboardData[j].fund_sum_request;
+                        }
+                    }
+                }
+            }
+
+            calculateFundSumForDataTable();
+            if(checkSearch){
+                model.value = dataTable.value.map(item => {
+                // Iterate over each item and replace empty strings with '-'
+                for (let key in item) {
+                    if (item[key] === '') {
+                        item[key] = '-';
+                    }
+                }
+                return item;
+            });
+            }
+            else{
+                model.value = dataTable.value.slice(1).map(item => {
+                // Iterate over each item and replace empty strings with '-'
+                for (let key in item) {
+                    if (item[key] === '') {
+                        item[key] = '-';
+                    }
+                }
+                return item;
+            });
+            }
+
+            console.log("modelValue: ", model.value);
+            console.log("newDataTables:", dataTable.value);
             columns.value.push(
-                { name: "fundSum", label: "รวม", align: "left", field: (row) => row.reimNumber ?? "-" },
+                { name: "fundSum", label: "รวม", align: "left", field: (row) => row.fundSum ?? "-" },
             );
             console.log("viewDashboardData: ", viewDashboardData);
             console.log("userData: ", userData);
             console.log("allWelfare: ", allWelfareData);
-            model.value = userData.map(item => ({
-                createdByName: item.name,
-            }));
-            for (let i = 1; i <= viewDashboardData.length; i++) {
-                if (props.row.createdByName == viewDashboardData[i].created_by_name) {
-                    console.log("sff")
-                }
-            }
             pagination.value.page = page;
             pagination.value.rowsPerPage = rowsPerPage;
-            return viewDashboardData;
         } catch (error) {
             Promise.reject(error)
         }
@@ -299,6 +393,23 @@ function onRequest(props) {
     }, 100);
 }
 
+const calculateFundSumForDataTable = () => {
+  dataTable.value = dataTable.value.map(data => {
+    let sum = 0;
+
+    for (let key in data) {
+      if (key !== "userId" && key !== "fundSum" && key !== "nullfund") {
+        const value = data[key];
+
+        if (!isNaN(value) && value !== '-') {
+          sum += Number(value);
+        }
+      }
+    }
+
+    return { ...data, fundSum: sum };
+  });
+};
 
 async function fetchFromServer(page, rowPerPage, filters) {
     try {
