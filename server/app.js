@@ -26,6 +26,7 @@ const sectorRouter = require('./routes/sector');
 const roleRouter = require('./routes/role');
 const reimbursementWelfareRouter = require('./routes/reimburesmentWelfare');
 const healthCheckUpWelfare = require('./routes/healthCheckUpWelfare')
+const dentalWelfare = require('./routes/dentalWelfare')
 
 
 var app = express();
@@ -77,6 +78,7 @@ app.use('/sector', auth, sectorRouter);
 app.use('/role', auth, roleRouter);
 app.use('/reimbursement-welfare', auth, reimbursementWelfareRouter);
 app.use('/health-check-up-welfare', auth, healthCheckUpWelfare);
+app.use('/dental-welfare', auth, dentalWelfare);
 
 // error handling
 app.use((error, req, res, next) => {

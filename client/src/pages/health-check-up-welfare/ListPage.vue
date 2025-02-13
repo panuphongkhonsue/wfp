@@ -4,7 +4,7 @@
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
           <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense v-model="filter.keyword"
-            label="ค้นหา" placeholder="ค้นหาจากเลขที่ใบเบิก" clearable>
+            label="ค้นหา" placeholder="ค้นหาจากเลขที่ใบเบิก">
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-3">
@@ -19,7 +19,7 @@
             emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
-                <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
+                <q-item-section class="text-grey"> No option </q-item-section>
               </q-item>
             </template>
           </q-select>
