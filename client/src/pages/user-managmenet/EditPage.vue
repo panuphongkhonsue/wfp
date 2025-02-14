@@ -264,11 +264,13 @@ function removeChildForm(index) {
 watch(
   model,
   () => {
-    Object.keys(model.value).forEach((key) => {
-      if (model.value[key] !== null) {
-        delete isError.value[key];
-      }
-    });
+    if (!isView.value) {
+      Object.keys(model.value).forEach((key) => {
+        if (model.value[key] !== null) {
+          delete isError.value[key];
+        }
+      });
+    }
   },
   { deep: true }
 );
