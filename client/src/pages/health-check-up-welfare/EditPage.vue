@@ -55,8 +55,10 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col q-ma-none">ตรวจสุขภาพ : {{ remaining?.fundRemaining + " บาท " }} {{ "( " +
-                remaining?.requestsRemaining + " ครั้ง )" }}</p>
+              <p class="col q-ma-none">ตรวจสุขภาพ : {{ remaining?.fundRemaining ?? remaining?.perTimesRemaining ?? "-"
+                }}
+                {{ "บาท ( " }}
+                {{ remaining?.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
             </q-card-section>
           </q-card>
         </div>
@@ -141,9 +143,8 @@
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'health_check_up_welfare_list' }" />
-        <q-btn :disable="!canRequest" id="button-draft"
-          class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
-          label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
+        <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
+          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
         <q-btn :disable="!canRequest" id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense
           type="submit" style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
           v-if="!isView && !isLoading" />
@@ -193,10 +194,7 @@ const model = ref({
   ],
 });
 const userData = ref({});
-const remaining = ref({
-  requestsRemaining: "-",
-  fundRemaining: "-",
-});
+const remaining = ref({});
 let options = ref([]);
 const isLoading = ref(false);
 const isError = ref({});
@@ -257,7 +255,7 @@ async function fetchDataEdit() {
       if (returnedData) {
         model.value = {
           ...model,
-          createFor: returnedData?.userId,
+          createFor: null,
           reimNumber: returnedData?.reimNumber,
           requestDate: returnedData?.requestDate,
           status: returnedData?.status,
@@ -325,14 +323,11 @@ async function fetchRemaining() {
     if (fetchRemaining.data?.datas?.requestsRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.requestsRemaining))) {
       remaining.value.requestsRemaining = formatNumber(fetchRemaining.data?.datas?.requestsRemaining);
     }
-    else {
-      remaining.value.requestsRemaining = "-";
-    }
     if (fetchRemaining.data?.datas?.fundRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.fundRemaining))) {
       remaining.value.fundRemaining = formatNumber(fetchRemaining.data?.datas?.fundRemaining);
     }
-    else {
-      remaining.value.fundRemaining = "-";
+    if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
+      remaining.value.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
     }
     canRequest.value = fetchRemaining.data?.canRequest;
   } catch (error) {

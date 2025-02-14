@@ -23,7 +23,6 @@ class Controller extends BaseController {
                     [col("reim_number"), "reimNumber"],
                     [col("request_date"), "requestDate"],
                     [col("updated_at"), "updatedAt"],
-                    [col("fund_receipt"), "fundReceipt"],
                     [col("fund_eligible_sum"), "fundEligibleSum"],
                     [col("fund_sum_request"), "fundSumRequest"],
                     'status',
@@ -245,6 +244,8 @@ class Controller extends BaseController {
             })
             if (getFund) {
                 const datas = JSON.parse(JSON.stringify(getFund));
+                datas[0].canRequest = true;
+                datas[1].canRequest = true;
                 logger.info('Complete', { method, data: { id } });
                 return res.status(200).json({
                     datas: datas,
@@ -330,17 +331,30 @@ class Controller extends BaseController {
                     getFiscalYearWhere = getFiscalYear();
                 }
                 whereObj[Op.and].push(
-                    { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
-                    { '$reimbursementsGeneral.categories_id$': category.medicalWelfare },
-                    { '$reimbursementsGeneral.created_by$': datas.userId },
-                    { '$reimbursementsGeneral.id$': { [Op.lte]: datas.id } },
+                    { '$reimbursements_general.request_date$': getFiscalYearWhere },
+                    { '$reimbursements_general.categories_id$': category.medicalWelfare },
+                    { '$reimbursements_general.created_by$': datas.userId },
+                    { '$reimbursements_general.id$': { [Op.lte]: datas.id } },
+                    { '$sub_category.id$': 2 },
                 );
-                const getRequestData = await reimbursementsGeneral.findAll({
+                const getRequestData = await reimbursementsGeneralHasSubCategories.findAll({
                     attributes: [
-                        'id',
-                        [col("start_date"), "startDate"],
-                        [col("end_date"), "endDate"],
-                        [col("fund_sum_request_patient_visit"), "fundSumRquestPatientVisit"],
+                        [col("reimbursements_general.id"), "id"],
+                        [col("reimbursements_general.fund_sum_request_patient_visit"), "fundSumRequestPatientVisit"],
+                        [col("reimbursements_general.start_date"), "startDate"],
+                        [col("reimbursements_general.end_date"), "endDate"],
+                    ],
+                    include: [
+                        {
+                            model: subCategories,
+                            as: "sub_category",
+                            attributes: []
+                        },
+                        {
+                            model: reimbursementsGeneral,
+                            as: "reimbursements_general",
+                            attributes: []
+                        }
                     ],
                     where: whereObj,
                 })

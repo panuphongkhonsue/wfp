@@ -153,6 +153,11 @@ const checkNullValue = async (req, res, next) => {
                     message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });
             }
+            if (fundEligible > fundReceipt) {
+                return res.status(400).json({
+                    message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
+                });
+            }
         }
         else {
             req.body = {
@@ -185,6 +190,11 @@ const checkNullValue = async (req, res, next) => {
             }
             if (isNullOrEmpty(endDate)) {
                 errorObj["endDate"] = "กรุณากรอก วัน/เดือน/ปี ถึงวันที่";
+            }
+            if (fundSumRequestPatientVisit > fundReceiptPatientVisit) {
+                return res.status(400).json({
+                    message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
+                });
             }
         }
         else {
@@ -311,7 +321,7 @@ const bindUpdate = async (req, res, next) => {
                 });
             }
         }
-        else{
+        else {
             return res.status(400).json({
                 message: "ไม่พบข้อมูล",
             });

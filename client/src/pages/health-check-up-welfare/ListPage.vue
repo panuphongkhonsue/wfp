@@ -19,7 +19,7 @@
             emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
-                <q-item-section class="text-grey"> No option </q-item-section>
+                <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
               </q-item>
             </template>
           </q-select>
@@ -32,11 +32,12 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-9 row font-bold font-16  q-col-gutter-md">
+        <p class="col-md col-12 q-ma-none">จำนวนเงินการเบิกคงเหลือ :
+          {{ remaining?.fundRemaining ?? remaining?.perTimesRemaining ?? "-" }} บาท</p>
         <p class="col-md col-12 q-ma-none">
           สิทธิ์คงเหลือ :
           {{ remaining?.requestsRemaining ?? "-" }} ครั้ง
         </p>
-        <p class="col-md col-12 q-ma-none">จำนวนเงินการเบิกคงเหลือ : {{ remaining?.fundRemaining ?? "-" }} บาท</p>
       </div>
       <div class="col-12 col-md-3 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -203,6 +204,12 @@ async function init() {
     else {
       remaining.value.fundRemaining = null;
     }
+    if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
+      remaining.value.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
+    }
+    else {
+      remaining.value.perTimesRemaining = null;
+    }
   }
   catch (error) {
     Promise.reject(error);
@@ -363,7 +370,7 @@ const columns = ref([
   },
   {
     name: "fundReceipt",
-    label: "จำนวนเงินที่เบิกตามใบเสร็จ",
+    label: "จำนวนเงินที่เบิกตามใบเสร็จ / ใบสำคัญรับเงิน",
     align: "right",
     field: (row) => row?.fundReceipt ?? "-",
     format: (val) => {
@@ -391,7 +398,7 @@ const columns = ref([
   },
   {
     name: "fundSumRequest",
-    label: "จำนวนเงินที่เบิกได้",
+    label: "จำนวนเงินที่เบิกทั้งหมด",
     align: "right",
     field: (row) => row?.fundSumRequest ?? "-",
     format: (val) => {

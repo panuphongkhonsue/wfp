@@ -155,6 +155,11 @@ const checkNullValue = async (req, res, next) => {
                 message: "ไม่มีการกระทำที่ต้องการ",
             });
         }
+        if (fundSumRequest > fundReceipt) {
+            return res.status(400).json({
+                message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบเสร็จรับเงินได้",
+            });
+        }
         if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
         next();
     }
