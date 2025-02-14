@@ -19,9 +19,9 @@
                 </p>
                 <q-select v-if="canCreateFor && !isView" popup-content-class="font-14 font-regular" :loading="isLoading"
                   id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
-                  v-model="model.createFor" :options="options" dense clearable option-value="id" emit-value map-options
+                  v-model="model.createFor" :options="options" dense option-value="id" emit-value map-options
                   option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
-                  :error="!!isError?.createFor">
+                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']">
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
@@ -55,8 +55,8 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">คงเหลือ {{ remaining?.fundRemaining ?? "-" }} บาท</p>
-              <p class="col-12 q-mb-none">คงเหลือจำนวน {{ remaining?.requestsRemaining ?? "-" }} ครั้ง</p>
+              <p class="col q-ma-none">ตรวจสุขภาพ : {{ remaining?.fundRemaining + " บาท " }} {{ "( " +
+                remaining?.requestsRemaining + " ครั้ง )" }}</p>
             </q-card-section>
           </q-card>
         </div>
@@ -79,12 +79,15 @@
               <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
-              <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'" is-require
-                label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" compclass="col-xs-12 col-lg-4 col-xl-2"
-                :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
+              <InputGroup :disable="!canRequest" for-id="fund" is-dense v-model="model.fundReceipt"
+                :data="model.fundReceipt ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number"
+                compclass="col-xs-12 col-lg-4 col-xl-2"
+                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ']" :is-view="isView"
+                :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
-              <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require label="จำนวนที่ต้องการเบิก"
-                type="number" compclass="col-xs-12 col-lg-3 col-xl-2" :is-view="isView" v-if="isView">
+              <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require
+                label="จำนวนที่ต้องการเบิก" type="number" compclass="col-xs-12 col-lg-3 col-xl-2" :is-view="isView"
+                v-if="isView">
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-sm font-medium font-16">
@@ -98,7 +101,7 @@
                     {{ props.row.fundEligibleName ?? "-" }}
                   </q-td>
                   <q-td v-else :props="props" class="text-grey-9">
-                    <q-input class="font-14 font-regular" dense
+                    <q-input :disable="!canRequest" class="font-14 font-regular" dense
                       v-model="model.claimByEligible[props.row.id - 1].fundEligibleName" outlined autocomplete="off"
                       color="dark" type="text" :for="'input-fundEligibleName' + props.row.id" placeholder="">
                     </q-input>
@@ -109,7 +112,7 @@
                     {{ props.row.fundEligible ?? 0 }}
                   </q-td>
                   <q-td v-else :props="props" class="text-grey-9">
-                    <q-input class="font-14 font-regular" dense
+                    <q-input :disable="!canRequest" class="font-14 font-regular" dense
                       v-model="model.claimByEligible[props.row.id - 1].fundEligible" outlined autocomplete="off"
                       color="dark" type="number" :forId="'input-fundEligible' + props.row.id" placeholder="0">
                     </q-input>
@@ -138,10 +141,11 @@
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'health_check_up_welfare_list' }" />
-        <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
-        <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
-          style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
+        <q-btn :disable="!canRequest" id="button-draft"
+          class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
+          label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
+        <q-btn :disable="!canRequest" id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense
+          type="submit" style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
           v-if="!isView && !isLoading" />
       </div>
     </template>
@@ -157,7 +161,6 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { getRoleCanCreateFor } from "src/components/role"
 import { formatDateThaiSlash, formatNumber } from "src/components/format";
 import healthCheckUpWelfareService from "src/boot/service/healthCheckUpWelfareService";
 import userManagementService from "src/boot/service/userManagementService";
@@ -171,7 +174,6 @@ defineOptions({
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
-const roleType = getRoleCanCreateFor();
 const model = ref({
   createFor: null,
   fundReceipt: null,
@@ -191,18 +193,21 @@ const model = ref({
   ],
 });
 const userData = ref({});
-const remaining = ref({});
+const remaining = ref({
+  requestsRemaining: "-",
+  fundRemaining: "-",
+});
 let options = ref([]);
 const isLoading = ref(false);
 const isError = ref({});
-
+const canRequest = ref(false);
 const isView = ref(false);
 
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
 const canCreateFor = computed(() => {
-  return authStore.roleId === roleType;
+  return authStore.isEditor;
 });
 
 onMounted(async () => {
@@ -230,15 +235,6 @@ watch(
         if ((newValue !== null && newValue !== undefined) && !isView.value) {
           fetchRemaining();
           fetchUserData(newValue);
-        }
-        else if (!isView.value) {
-          remaining.value = {};
-          userData.value = {
-            position: null,
-            employeeType: null,
-            sector: null,
-            department: null
-          };
         }
       }
     }
@@ -330,14 +326,15 @@ async function fetchRemaining() {
       remaining.value.requestsRemaining = formatNumber(fetchRemaining.data?.datas?.requestsRemaining);
     }
     else {
-      remaining.value.requestsRemaining = null;
+      remaining.value.requestsRemaining = "-";
     }
     if (fetchRemaining.data?.datas?.fundRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.fundRemaining))) {
       remaining.value.fundRemaining = formatNumber(fetchRemaining.data?.datas?.fundRemaining);
     }
     else {
-      remaining.value.fundRemaining = null;
+      remaining.value.fundRemaining = "-";
     }
+    canRequest.value = fetchRemaining.data?.canRequest;
   } catch (error) {
     Promise.reject(error);
   }
@@ -370,7 +367,7 @@ async function submit(actionId) {
     navigate.scrollIntoView(false);
     validate = true;
   } if (!model.value.createFor && canCreateFor.value) {
-    isError.value.createFor = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
+    isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
     let navigate = document.getElementById("selected-user");
     window.location.hash = "selected-user";
     navigate.scrollIntoView(false);

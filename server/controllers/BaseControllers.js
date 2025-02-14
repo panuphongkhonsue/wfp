@@ -177,7 +177,7 @@ class BaseController {
                     message: `ลบข้อมูลสำเร็จ`,
                 });
             } else {
-                logger.info('ไม่พบข้อมูล', {
+                logger.info('Data not Found', {
                     method,
                     data: { id, dataId, model: this.modelName },
                 });
