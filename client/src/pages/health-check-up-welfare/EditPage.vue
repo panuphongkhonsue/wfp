@@ -81,7 +81,7 @@
               <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
-              <InputGroup :disable="!canRequest" for-id="fund" is-dense v-model="model.fundReceipt"
+              <InputGroup for-id="fund" is-dense v-model="model.fundReceipt"
                 :data="model.fundReceipt ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number"
                 compclass="col-xs-12 col-lg-4 col-xl-2"
                 :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ']" :is-view="isView"
@@ -103,7 +103,7 @@
                     {{ props.row.fundEligibleName ?? "-" }}
                   </q-td>
                   <q-td v-else :props="props" class="text-grey-9">
-                    <q-input :disable="!canRequest" class="font-14 font-regular" dense
+                    <q-input class="font-14 font-regular" dense
                       v-model="model.claimByEligible[props.row.id - 1].fundEligibleName" outlined autocomplete="off"
                       color="dark" type="text" :for="'input-fundEligibleName' + props.row.id" placeholder="">
                     </q-input>
@@ -114,7 +114,7 @@
                     {{ props.row.fundEligible ?? 0 }}
                   </q-td>
                   <q-td v-else :props="props" class="text-grey-9">
-                    <q-input :disable="!canRequest" class="font-14 font-regular" dense
+                    <q-input class="font-14 font-regular" dense
                       v-model="model.claimByEligible[props.row.id - 1].fundEligible" outlined autocomplete="off"
                       color="dark" type="number" :forId="'input-fundEligible' + props.row.id" placeholder="0">
                     </q-input>

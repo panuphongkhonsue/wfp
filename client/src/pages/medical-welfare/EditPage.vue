@@ -86,7 +86,7 @@
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
-              <q-checkbox v-if="!isView" v-model="model.selectedAccident" :disable="!canRequest.accident" />
+              <q-checkbox v-if="!isView" v-model="model.selectedAccident" />
               <p class="q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ 1,000 บาท)</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
@@ -106,7 +106,7 @@
             </q-card-section>
             <q-card-section class="row wrap q-pt-none font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
-              <q-checkbox v-if="!isView" v-model="model.selectedPatientVisit" :disable="!canRequest.patientVisit" />
+              <q-checkbox v-if="!isView" v-model="model.selectedPatientVisit" />
               <p class="q-mb-none">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน 1,000 บาท ต่อครั้ง ปีนึงไม่เกิน
                 3 ครั้ง</p>
             </q-card-section>

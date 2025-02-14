@@ -84,7 +84,7 @@
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-x-md font-medium q-pb-xs font-16 text-grey-9">
               <div class="col-12 col-lg">
-                <InputGroup :disable="!canRequest" for-id="fund-receipt" is-dense v-model="model.fundReceipt"
+                <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt"
                   :data="model.fundReceipt ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท"
                   type="number" class="" :is-view="isView"
                   :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ']"
@@ -92,7 +92,7 @@
                 </InputGroup>
               </div>
               <div class="col-12 col-lg">
-                <InputGroup :disable="!canRequest" for-id="fund-claim" is-dense v-model="model.fundSumRequest"
+                <InputGroup for-id="fund-claim" is-dense v-model="model.fundSumRequest"
                   :data="model.fundSumRequest ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท"
                   type="number" class="" :is-view="isView"
                   :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก']"
@@ -102,7 +102,7 @@
               <div class="col-12 col-lg">
                 <InputGroup label="วัน/เดือน/ปี (ตามใบเสร็จ)" :is-view="isView" clearable
                   :data="model.dateReceipt ?? '-'" is-require>
-                  <DatePicker :disabled="!canRequest" class="col-12" is-dense v-model:model="model.dateReceipt"
+                  <DatePicker class="col-12" is-dense v-model:model="model.dateReceipt"
                     v-model:dateShow="model.dateReceipt" for-id="date" :no-time="true"
                     :rules="[(val) => !!val || 'กรุณากรอก วัน/เดือน/ปี (ตามใบเสร็จ)']"
                     :error-message="isError?.dateReceipt" :error="!!isError?.dateReceipt" />
