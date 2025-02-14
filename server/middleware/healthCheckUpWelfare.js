@@ -202,7 +202,7 @@ const bindCreate = async (req, res, next) => {
     try {
         const { fundReceipt, fundDecree, fundUniversity, fundEligible, fundEligibleName, fundEligibleSum, fundSumRequest, createFor, actionId } = req.body;
         const { id } = req.user;
-        if (!isNullOrEmpty(createFor) && req.isEditor) {
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
@@ -248,7 +248,7 @@ const bindUpdate = async (req, res, next) => {
     try {
         const { fundReceipt, fundDecree, fundUniversity, fundEligible, fundEligibleName, fundEligibleSum, fundSumRequest, createFor, actionId } = req.body;
         const { id } = req.user;
-        if (!isNullOrEmpty(createFor) &&  req.isEditor) {
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
             });
@@ -256,7 +256,7 @@ const bindUpdate = async (req, res, next) => {
         const dataId = req.params['id'];
         const results = await reimbursementsGeneral.findOne({
             attributes: ["status", "created_by"],
-            where: { id: dataId },
+            where: { id: dataId, categories_id: category.healthCheckup },
         });
         var createByData;
         if (results) {
@@ -277,6 +277,11 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
+        }
+        else {
+            return res.status(400).json({
+                message: "ไม่พบข้อมูล",
+            });
         }
         const dataBinding = {
             fund_receipt: fundReceipt,
@@ -384,8 +389,13 @@ const checkUpdateRemaining = async (req, res, next) => {
         });
         const welfareCheckData = await reimbursementsGeneral.findOne({
             attributes: ["fund_sum_request"],
-            where: { id: dataId },
+            where: { id: dataId, categories_id: category.healthCheckup },
         });
+        if (!welfareCheckData) {
+            return res.status(400).json({
+                message: "ไม่พบข้อมูล",
+            });
+        }
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
             const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
@@ -510,8 +520,8 @@ const deletedMiddleware = async (req, res, next) => {
         const dataId = req.params['id'];
         const { id } = req.user;
         const results = await reimbursementsGeneral.findOne({
-            attributes: ["status", "created_by"],
-            where: { id: dataId, created_by: id },
+            attributes: ["status"],
+            where: { id: dataId, created_by: id, categories_id: category.healthCheckup },
         });
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));

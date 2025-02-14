@@ -3,7 +3,7 @@ const { reimbursementsGeneral, categories, users, positions, sector, employeeTyp
 const { fn, col, literal, Op } = require("sequelize");
 const { initLogger } = require('../logger');
 const category = require('../enum/category');
-const logger = initLogger('ReimbursementsGeneralController');
+const logger = initLogger('dentalWelfareController');
 const { getFiscalYearDynamic, getFiscalYear } = require('../middleware/utility');
 
 class Controller extends BaseController {
@@ -12,7 +12,7 @@ class Controller extends BaseController {
     }
 
     list = async (req, res, next) => {
-        const method = 'GetListUser';
+        const method = 'GetListDentalWelfare';
         const { id } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
@@ -58,7 +58,7 @@ class Controller extends BaseController {
         }
     }
     getRemaining = async (req, res, next) => {
-        const method = 'GetRemaining';
+        const method = 'GetRemainingDentalWelfare';
         const { id } = req.user;
         try {
             const { filter } = req.query;
@@ -99,6 +99,7 @@ class Controller extends BaseController {
                 whereObj[Op.and].push(
                     { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
                     { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
+                    { '$reimbursementsGeneral.created_by$': id },
                 );
                 const getRequestData = await reimbursementsGeneral.findAll({
                     attributes: [
@@ -145,7 +146,7 @@ class Controller extends BaseController {
         }
     }
     getById = async (req, res, next) => {
-        const method = 'GetHealthCheckupWelfarebyId';
+        const method = 'GetDentalWelfarebyId';
         const { id } = req.user;
         const dataId = req.params['id'];
         try {
@@ -207,6 +208,8 @@ class Controller extends BaseController {
                 whereObj[Op.and].push(
                     { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
                     { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
+                    { '$reimbursementsGeneral.created_by$': datas.userId },
+                    { '$reimbursementsGeneral.id$': { [Op.lte]: datas.id } },
                 );
                 const getRequestData = await reimbursementsGeneral.findAll({
                     attributes: [

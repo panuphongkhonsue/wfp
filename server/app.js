@@ -25,9 +25,9 @@ const postitionRouter = require('./routes/position');
 const sectorRouter = require('./routes/sector');
 const roleRouter = require('./routes/role');
 const reimbursementWelfareRouter = require('./routes/reimburesmentWelfare');
-const healthCheckUpWelfare = require('./routes/healthCheckUpWelfare')
-const dentalWelfare = require('./routes/dentalWelfare')
-
+const healthCheckUpWelfare = require('./routes/healthCheckUpWelfare');
+const dentalWelfare = require('./routes/dentalWelfare');
+const medicalWelfare = require('./routes/medicalWelfare')
 
 var app = express();
 app.set('trust proxy', true);
@@ -79,6 +79,7 @@ app.use('/role', auth, roleRouter);
 app.use('/reimbursement-welfare', auth, reimbursementWelfareRouter);
 app.use('/health-check-up-welfare', auth, healthCheckUpWelfare);
 app.use('/dental-welfare', auth, dentalWelfare);
+app.use('/medical-welfare', auth, medicalWelfare);
 
 // error handling
 app.use((error, req, res, next) => {

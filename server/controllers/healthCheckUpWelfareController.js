@@ -3,7 +3,7 @@ const { reimbursementsGeneral, categories, users, positions, sector, employeeTyp
 const { fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
 const category = require('../enum/category');
-const logger = initLogger('ReimbursementsGeneralController');
+const logger = initLogger('healthCheckUpWelfareController');
 
 class Controller extends BaseController {
     constructor() {
@@ -11,7 +11,7 @@ class Controller extends BaseController {
     }
 
     list = async (req, res, next) => {
-        const method = 'GetListUser';
+        const method = 'GetListHealthCheckupWelfare';
         const { id } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
@@ -58,7 +58,7 @@ class Controller extends BaseController {
         }
     }
     getRemaining = async (req, res, next) => {
-        const method = 'GetRemaining';
+        const method = 'GetRemainingHealthCheckupWelfare';
         const { id } = req.user;
         try {
             const { filter } = req.query;

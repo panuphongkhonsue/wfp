@@ -1,6 +1,6 @@
 const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
 const { initLogger } = require('../logger');
-const logger = initLogger('UserValidator');
+const logger = initLogger('DentalValidator');
 const { Op, literal, col } = require('sequelize')
 const permissionType = require('../enum/permission')
 const statusText = require('../enum/statusText')
@@ -139,12 +139,12 @@ const checkNullValue = async (req, res, next) => {
         }
 
         if (isNullOrEmpty(fundSumRequest)) {
-            errorObj["fundSumRequest"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
+            errorObj["fundSumRequest"] = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก";
         } else if (isInvalidNumber(fundSumRequest)) {
             errorObj["fundSumRequest"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundSumRequest <= 0) {
             return res.status(400).json({
-                message: "จำนวนเงินตามใบเสร็จน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
+                message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
         }
         if (isNullOrEmpty(dateReceipt)) {
@@ -169,7 +169,7 @@ const bindCreate = async (req, res, next) => {
     try {
         const { fundReceipt, fundSumRequest, dateReceipt, createFor, actionId } = req.body;
         const { id } = req.user;
-        if (!isNullOrEmpty(createFor) && req.isEditor) {
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
@@ -186,7 +186,7 @@ const bindCreate = async (req, res, next) => {
         var reimNumber;
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
-            reimNumber = getYear2Digits() + formatNumber(welfareType.dental) + formatNumber(category.dentalWelfare) + formatNumber(Number(datas.id) + 1);
+            reimNumber = getYear2Digits() + formatNumber(welfareType.general) + formatNumber(category.dentalWelfare) + formatNumber(Number(datas.id) + 1);
         }
         const dataBinding = {
             reim_number: reimNumber,
@@ -211,7 +211,7 @@ const bindUpdate = async (req, res, next) => {
     try {
         const { fundReceipt, fundSumRequest, dateReceipt, createFor, actionId } = req.body;
         const { id } = req.user;
-        if (!isNullOrEmpty(createFor) && req.isEditor) {
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
             });
@@ -219,7 +219,7 @@ const bindUpdate = async (req, res, next) => {
         const dataId = req.params['id'];
         const results = await reimbursementsGeneral.findOne({
             attributes: ["status", "created_by"],
-            where: { id: dataId },
+            where: { id: dataId, categories_id: category.dentalWelfare },
         });
         var createByData;
         if (results) {
@@ -240,6 +240,11 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
+        }
+        else {
+            return res.status(400).json({
+                message: "ไม่พบข้อมูล",
+            });
         }
         const dataBinding = {
             fund_receipt: fundReceipt,
@@ -343,8 +348,13 @@ const checkUpdateRemaining = async (req, res, next) => {
         });
         const welfareCheckData = await reimbursementsGeneral.findOne({
             attributes: ["fund_sum_request"],
-            where: { id: dataId },
+            where: { id: dataId, categories_id: category.dentalWelfare },
         });
+        if (!welfareCheckData) {
+            return res.status(400).json({
+                message: "ไม่พบข้อมูล",
+            });
+        }
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
             const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
@@ -469,8 +479,8 @@ const deletedMiddleware = async (req, res, next) => {
         const dataId = req.params['id'];
         const { id } = req.user;
         const results = await reimbursementsGeneral.findOne({
-            attributes: ["status", "created_by"],
-            where: { id: dataId, created_by: id },
+            attributes: ["status"],
+            where: { id: dataId, created_by: id, categories_id: category.dentalWelfare },
         });
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
