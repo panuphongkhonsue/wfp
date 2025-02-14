@@ -353,21 +353,22 @@ const bindUpdate = async (req, res, next) => {
             request_date: actionId === statusText.waitApprove ? new Date() : null,
             updated_by: id,
             categories_id: categories_id,
+            deleteChildId : req.body.deleteChild,
             childrenInfomation: req.body.childrenInfomation,
         };
         if (isNullOrEmpty(req.body.childrenInfomation)) {
             console.log("🔴 childrenInfomation is null, deleting child field");
-            delete dataBinding.child;
+            delete dataBinding.childrenInfomation;
         } else {
             var hasNull = false;
-            if (!isNullOrEmpty(dataBinding.child)) {
+            if (!isNullOrEmpty(dataBinding.childrenInfomation)) {
                 hasNull = req.body.childrenInfomation.some(item =>
                     Object.values(item).some(value => value === null || value === "")
                 );
             }
             if (hasNull) {
                 console.log("🔴 Some child fields are null, deleting child field");
-                delete dataBinding.child;
+                delete dataBinding.childrenInfomation;
             }
         }
 

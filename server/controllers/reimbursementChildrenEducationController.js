@@ -228,8 +228,12 @@ class Controller extends BaseController {
         const method = 'UpdateReimbursementsChildrenEducation';
         const { id } = req.user;
         const dataId = req.params['id'];
+        const deletedChild = req.deleteChild ?? null;
+        console.log("🟢 Checking deleteChild:", deletedChild);
         const child = req.body.childrenInfomation ?? null;
+        console.log("🟢 Checking childrenInfomation:", child);
         delete req.body.childrenInfomation;
+        delete req.body.deleteChild;
         const dataUpdate = req.body;
         var itemsReturned = null;
         dataUpdate.fund_receipt = isNaN(dataUpdate.fund_receipt) ? 0 : parseFloat(dataUpdate.fund_receipt);
@@ -249,6 +253,48 @@ class Controller extends BaseController {
                     return { updated: false };
                 }
 
+
+                if(deletedChild){
+
+                    var childDelete = deletedChild.map((deleteObj) => ({
+                        id: deleteObj.id,
+                    }))
+   
+                    const childIds = await reimbursementsChildrenEducationHasChildrenInfomation.findAll({
+                        attributes: ['children_infomation_id'],
+                        where: { reimbursements_children_education_id: dataId ,
+                            children_infomation_id: childDelete
+                          },
+                        raw: true
+                    });
+                    const childIdArray = childIds.map(item => item.children_infomation_id);
+
+                    const deleteItemSub = await reimbursementsChildrenEducationHasChildrenInfomation.destroy(
+                        {
+                            where: { reimbursements_children_education_id: dataId, children_infomation_id: childIdArray },
+                            transaction: t,
+                        }
+                    );
+
+                    const deleteItemChild = await childrenInfomation.destroy(
+                        {
+                            where: { id:childIdArray},
+                            transaction: t,
+                        }
+                    );
+
+                    if (deleteItemSub > 0 && deleteItemChild > 0) {
+                        itemsReturned = {
+                            ...itemsReturned,
+                            deleteItemAccident: deleteItemSub,
+                            deleteItemAccidentChild: deleteItemChild,
+                        };
+                    }
+        
+                    console.log("deleteItemSub:", deleteItemSub);
+                    console.log("deleteItemChild:", deleteItemChild);
+                }
+                console.log("child:", child);
                 // 🔹 อัปเดตข้อมูลเด็ก
                 if (!isNullOrEmpty(child)) {
                     var childData = child.map((childObj) => ({
@@ -345,6 +391,8 @@ class Controller extends BaseController {
 
 
                 }
+
+
 
                 if (updated > 0 || hasChildUpdated) {
                     itemsReturned = {
