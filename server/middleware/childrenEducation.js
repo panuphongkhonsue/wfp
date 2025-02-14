@@ -6,8 +6,8 @@ const { initLogger } = require('../logger');
 const logger = initLogger('ChildrenEducationValidator');
 const roleType = require('../enum/role')
 const status = require('../enum/status')
+const statusText = require('../enum/statusText')
 const welfareType = require('../enum/welfareType');
-const category = require('../enum/category');
 
 
 const authPermission = async (req, res, next) => {
@@ -128,7 +128,6 @@ const checkRemaining = async (req, res, next) => {
 
         if (results.length > 0) {
             const datas = JSON.parse(JSON.stringify(results));
-            console.log("🚀 ~ datas:", datas); // ตรวจสอบค่าที่ได้
 
             const noRemaining = datas.some(data => 
                 (data.fundRemaining == null || data.fundRemaining <= 0) && 
@@ -164,38 +163,28 @@ const checkRemaining = async (req, res, next) => {
     }
 };
 
-
 const bindCreate = async (req, res, next) => {
     try {
-        console.log("🟢 Request Body:", req.body);  // Log request body
-        console.log("🟢 User Info:", req.user);     // Log user details
-
         const {
             spouse,
             marry_regis,
             role,
             position,
             department,
-            fund_receipt,
-            fund_sum_request,
-            fund_eligible,
             fund_university,
             fund_other,
             fund_sum_receipt,
             categories_id,
-            status,
-            child,
+            actionId,
             createFor 
         } = req.body;
         
         const { id, roleId } = req.user;
 
         if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
-            console.log("🔴 ไม่มีสิทธิ์สร้างให้คนอื่น");
             return res.status(400).json({ message: "ไม่มีสิทธิ์สร้างให้คนอื่นได้" });
         }
         if (!isNullOrEmpty(createFor) && actionId == status.draft) {
-            console.log("🔴 ไม่สามารถบันทึกฉบับร่างได้");
             return res.status(400).json({ message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้" });
         }
 
@@ -208,33 +197,164 @@ const bindCreate = async (req, res, next) => {
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
             reimNumber = getYear2Digits() + formatNumber(welfareType.childrenEducation) + formatNumber(datas.id + 1);
-            console.log("🟢 Generated reimNumber:", reimNumber);
         }
 
-const dataBinding = {
-    reim_number: reimNumber,
-    fund_receipt: fund_receipt,
-    fund_eligible: fund_eligible,
-    fund_sum_request: fund_sum_request,
-    fund_sum_receipt: fund_sum_receipt,
-    fund_university: fund_university,
-    fund_other: fund_other,
-    status: status,
-    spouse: spouse,
-    marry_regis: marry_regis,
-    role: role,
-    position: position,
-    department: department,
-    request_date: status === "รอตรวจสอบ" ? new Date() : null,
-    created_by: req.body.created_by ?? id,
-    updated_by: id,
-    categories_id: categories_id,
-    child: child
+        let childFundReceipt = 0;
+        let childFundEligible = 0;
+        let childFundSumRequest = 0;
+        if (!isNullOrEmpty(req.body.childrenInfomation)) {
+
+            childFundReceipt = req.body.childrenInfomation.reduce((sum, child) => {
+                let childReceipt = parseFloat(child.fund_receipt);
+                    return sum + (isNaN(childReceipt) ? 0 : childReceipt);
+            }, 0);
+
+            childFundEligible = req.body.childrenInfomation.reduce((sum, child) => {
+                let childEligible = parseFloat(child.fund_eligible);
+                    return sum + (isNaN(childEligible) ? 0 : childEligible);
+            }, 0);
+
+            childFundSumRequest = req.body.childrenInfomation.reduce((sum, child) => {
+                let childSumRequest = parseFloat(child.fund_sum_request);
+                    return sum + (isNaN(childSumRequest) ? 0 : childSumRequest);
+            }, 0);
+        }
+
+        // ป้องกัน NaN
+        const safeParseFloat = (value) => isNaN(parseFloat(value)) ? 0 : parseFloat(value);
+        const dataBinding = {
+            reim_number: reimNumber,
+            fund_receipt: safeParseFloat(req.body.fund_receipt) + childFundReceipt, // รวมค่าของบุตร
+            fund_eligible: safeParseFloat(req.body.fund_eligible) + childFundEligible,
+            fund_sum_request: safeParseFloat(req.body.fund_sum_request) + childFundSumRequest,
+            fund_sum_receipt: fund_sum_receipt,
+            fund_university: fund_university,
+            fund_other: fund_other,
+            status: actionId,
+            spouse: spouse,
+            marry_regis: marry_regis,
+            role: role,
+            position: position,
+            department: department,
+            request_date: actionId === status.waitApprove ? new Date() : null,
+            created_by: req.body.created_by ?? id,
+            updated_by: id,
+            categories_id: categories_id,
+            childrenInfomation: req.body.childrenInfomation,
+        };
+
+        if (isNullOrEmpty(req.body.childrenInfomation)) {
+            delete dataBinding.child;
+        } else {
+            var hasNull = false;
+            if (!isNullOrEmpty(dataBinding.child)) {
+                hasNull = req.body.childrenInfomation.some(item =>
+                    Object.values(item).some(value => value === null || value === "")
+                );
+            }
+            if (hasNull) {
+                delete dataBinding.child;
+            }
+        }
+
+        req.body = dataBinding;
+
+        next();
+    } catch (error) {
+        console.error("🚨 Error in bindCreate:", error);  // Log error
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
 };
 
+const bindUpdate = async (req, res, next) => {
+    try {
+        const {
+            spouse,
+            marry_regis,
+            role,
+            position,
+            department,
+            fund_university,
+            fund_other,
+            fund_sum_receipt,
+            categories_id,
+            actionId,
+            createFor 
+        } = req.body;
+        
+        const { id, roleId } = req.user;
+        if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
+            return res.status(400).json({
+                message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+             });
+        }
+        const dataId = req.params['id'];
+        const results = await reimbursementsChildrenEducation.findOne({
+            attributes: ["status", "created_by"],
+            where: { id: dataId },
+        });
+        var createByData;
+        if (results) {
+            const datas = JSON.parse(JSON.stringify(results));
+            createByData = datas.created_by;
+            if (!req.access && datas.created_by !== id) {
+                return res.status(400).json({
+                    message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+                });
+            }
+            if (!req.access && datas.status !== statusText.draft) {
+                return res.status(400).json({
+                    message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
+                });
+            }
+            if (req.access && (datas.status == statusText.draft || datas.status == statusText.approve)) {
+                return res.status(400).json({
+                    message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
+                });
+            }
+        }
 
-        console.log("🟢 Initial dataBinding:", dataBinding);
+        let childFundReceipt = 0;
+        let childFundEligible = 0;
+        let childFundSumRequest = 0;
+        if (!isNullOrEmpty(req.body.childrenInfomation)) {
 
+            childFundReceipt = req.body.childrenInfomation.reduce((sum, child) => {
+                let childReceipt = parseFloat(child.fund_receipt);
+                    return sum + (isNaN(childReceipt) ? 0 : childReceipt);
+            }, 0);
+
+            childFundEligible = req.body.childrenInfomation.reduce((sum, child) => {
+                let childEligible = parseFloat(child.fund_eligible);
+                    return sum + (isNaN(childEligible) ? 0 : childEligible);
+            }, 0);
+
+            childFundSumRequest = req.body.childrenInfomation.reduce((sum, child) => {
+                let childSumRequest = parseFloat(child.fund_sum_request);
+                    return sum + (isNaN(childSumRequest) ? 0 : childSumRequest);
+            }, 0);
+        }
+
+        // ป้องกัน NaN
+        const safeParseFloat = (value) => isNaN(parseFloat(value)) ? 0 : parseFloat(value);
+        const dataBinding = {
+            fund_receipt: safeParseFloat(req.body.fund_receipt) + childFundReceipt, // รวมค่าของบุตร
+            fund_eligible: safeParseFloat(req.body.fund_eligible) + childFundEligible,
+            fund_sum_request: safeParseFloat(req.body.fund_sum_request) + childFundSumRequest,
+            fund_sum_receipt: fund_sum_receipt,
+            fund_university: fund_university,
+            fund_other: fund_other,
+            status: actionId,
+            spouse: spouse,
+            marry_regis: marry_regis,
+            role: role,
+            position: position,
+            department: department,
+            request_date: actionId === statusText.waitApprove ? new Date() : null,
+            updated_by: id,
+            categories_id: categories_id,
+            childrenInfomation: req.body.childrenInfomation,
+        };
         if (isNullOrEmpty(req.body.childrenInfomation)) {
             console.log("🔴 childrenInfomation is null, deleting child field");
             delete dataBinding.child;
@@ -251,10 +371,10 @@ const dataBinding = {
             }
         }
 
-        console.log("🟢 Final dataBinding:", dataBinding);
+        console.log("🟢 Final payload sent to DB:", req.body);
+
 
         req.body = dataBinding;
-        console.log("🟢 Final dataBinding:", JSON.stringify(dataBinding, null, 2));
 
         next();
     } catch (error) {
@@ -263,9 +383,242 @@ const dataBinding = {
     }
 };
 
+const deletedMiddleware = async (req, res, next) => {
+    const method = 'DeletedMiddleware';
+    try {
+        const dataId = req.params['id'];
+        const { id } = req.user;
+        const results = await reimbursementsChildrenEducation.findOne({
+            attributes: ["status"],
+            where: { id: dataId, created_by: id },
+        });
+        if (results) {
+            const datas = JSON.parse(JSON.stringify(results));
+            if (datas.status !== statusText.draft) {
+                logger.info('Can not Deleted', { method });
+                return res.status(400).json({
+                    message: "ไม่สามารถลบใบเบิกนี้ได้",
+                });
+            };
+            return next();
+        };
+        res.status(404).json({
+            message: "ไม่พบข้อมูลที่ต้องการลบ กรุณาลองอีกครั้ง"
+        });
+    }
+    catch (error) {
+        logger.error(`Error ${error.message}`, { method });
+        next(error);
+    }
+}
+
+const byIdMiddleWare = async (req, res, next) => {
+    const method = 'ByIdMiddleware';
+    const dataId = req.params['id'];
+    const { id } = req.user;
+    try {
+        req.query.filter = {};
+        req.query.filter[Op.and] = [];
+
+        req.query.childrenEducation = {};
+        req.query.childrenEducation[Op.and] = [];
+
+        if (req.access) {
+            req.query.filter[Op.and].push(
+                { '$reimbursementsChildrenEducation.id$': { [Op.eq]: dataId } },
+            );
+        }
+        else {
+
+            req.query.filter[Op.and].push(
+                { '$reimbursementsChildrenEducation.id$': { [Op.eq]: dataId } },
+                { '$reimbursementsChildrenEducation.created_by$': { [Op.eq]: id }, }
+            );
+        }
+        next();
+    }
+    catch (error) {
+        logger.error(`Error ${error.message}`, { method });
+        res.status(400).json({ message: error.message });
+    }
+};
+
+const authPermissionEditor = async (req, res, next) => {
+    const method = 'AuthPermissionEditor';
+    const { roleId } = req.user;
+    try {
+        const isAccess = await permissionsHasRoles.count({
+            where: {
+                [Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.welfareManagement }],
+            },
+        });
+        if (!isAccess) {
+            throw Error("You don't have access to this API");
+        }
+        req.access = true;
+        next();
+    }
+    catch (error) {
+        logger.error(`Error ${error.message}`, { method });
+        res.status(401).json({ error: error.message });
+    }
+};
+
+const checkNullValue = async (req, res, next) => {
+    try {
+        const { fundReceipt, fundUniversity, fundEligible, childName, childFatherNum, childMotherNum, schoolName,subCategories, spouse, marryRegis, role, actionId } = req.body;
+        const errorObj = {};
+        if (isNullOrEmpty(fundReceipt)) {
+            errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
+        } else if (isInvalidNumber(fundReceipt)) {
+            errorObj["fundReceipt"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (fundReceipt <= 0) {
+            return res.status(400).json({
+                message: "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้",
+            });
+        }
+
+        if (isInvalidNumber(fundUniversity) && fundUniversity) {
+            errorObj["fundUniversity"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (fundUniversity <= 0) {
+            return res.status(400).json({
+                message: "เงินที่เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพาน้อยกว่า 0 ไม่ได้",
+            });
+        }
+        if (isInvalidNumber(fundEligible) && fundEligible) {
+            errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (fundEligible <= 0) {
+            errorObj["fundEligible"] = "ค่าสิทธิอื่น ๆ น้อยกว่า 0 ไม่ได้";
+            return res.status(400).json({
+                message: "ค่าสิทธิอื่น ๆ น้อยกว่า 0 ไม่ได้",
+            });
+        }
+
+        if(isNullOrEmpty(childName)){
+            errorObj["childName"] = "กรุณากรอกชื่อบุตร";
+        }
+
+        if(isNullOrEmpty(childFatherNum)){
+            errorObj["childFatherNum"] = "กรุณากรอกลำดับบุตร";
+        } else if (isInvalidNumber(childFatherNum)) {
+            errorObj["childFatherNum"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (childFatherNum <= 0) {
+            return res.status(400).json({
+                message: "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้",
+            });
+        }
+
+        if(isNullOrEmpty(childMotherNum)){
+            errorObj["childMotherNum"] = "กรุณากรอกลำดับบุตร";
+        } else if (isInvalidNumber(childMotherNum)) {
+            errorObj["childMotherNum"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+        } else if (childMotherNum <= 0) {
+            return res.status(400).json({
+                message: "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้",
+            });
+        }
+
+        if(isNullOrEmpty(schoolName)){
+            errorObj["schoolName"] = "กรุณากรอกชื่อโรงเรียน";
+        }else if (!isInvalidNumber(schoolName)) {
+            errorObj["childMotherNum"] = "ค่าที่กรอกไม่ใช่ตัวหนังสือ";
+        } 
+
+        
+        if(isNullOrEmpty(subCategories)){
+            errorObj["subCategories"] = "กรุณากรอกระดับชั้นเรียน";
+        }
+
+        if(isNullOrEmpty(spouse)){
+            errorObj["spouse"] = "กรุณากรอกชื่อคู่สมรส";
+        }else if (!isInvalidNumber(spouse)) {
+            errorObj["spouse"] = "ค่าที่กรอกไม่ใช่ตัวหนังสือ";
+        } 
+
+        if(isNullOrEmpty(marryRegis)){
+            errorObj["marryRegis"] = "กรุณาเลือกการจดทะเบียนสมรส";
+        }
+
+        if(isNullOrEmpty(role)){
+            errorObj["marryRegis"] = "กรุณาเลือกประเภทคู่สมรส";
+        }
+
+
+        // const fundSumRequest = Number(fundReceipt) - Number(fundEligibleSum);
+        // if (fundSumRequest <= 0) {
+        //     return res.status(400).json({
+        //         message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ได้รับจากสิทธิอื่น ๆ",
+        //     });
+        // }
+        if ((isNullOrEmpty(actionId) || (actionId != status.draft && actionId != status.waitApprove)) && !req.access) {
+            return res.status(400).json({
+                message: "ไม่มีการกระทำที่ต้องการ",
+            });
+        }
+        if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
+        req.body = {
+            ...req.body,
+            fundEligibleSum: fundEligibleSum,
+            fundSumRequest: fundSumRequest,
+        }
+        next();
+    }
+    catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+        });
+    }
+}
+
+const checkFullPerTimes = async (req, res, next) => {
+    const method = 'CheckFullPerTimes';
+    try {
+        const { fund_sum_request, sub_categories_id } = req.body;
+        const getFund = await subCategories.findAll({
+            attributes: [
+                [col("fund"), "fundRemaining"],
+                [col("per_times"), "perTimes"],
+            ],
+            where: { id: sub_categories_id }
+        })
+        if (getFund) {
+            const datas = JSON.parse(JSON.stringify(getFund));
+            if (fund_sum_request > datas.perTimes) {
+                return res.status(400).json({
+                    message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
+                });
+            }
+            if (fund_sum_request > datas.fundRemaining) {
+                logger.info('Request Over', { method });
+                return res.status(400).json({
+                    message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
+                });
+            }
+        }
+        next();
+    }
+    catch (error) {
+        logger.error(`Error ${error.message}`, { method });
+        next(error);
+    }
+}
 
 
 
 
 
-module.exports = { authPermission, bindFilter, getRemaining, checkRemaining, bindCreate };
+
+
+
+module.exports = {  authPermission,
+                    bindFilter,
+                    getRemaining,
+                    checkRemaining,
+                    bindCreate,
+                    bindUpdate,
+                    deletedMiddleware,
+                    byIdMiddleWare,
+                    authPermissionEditor,
+                    checkNullValue,
+                    checkFullPerTimes,
+                 };
