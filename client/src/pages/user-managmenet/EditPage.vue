@@ -186,6 +186,7 @@ const model = ref({
       birthday: null,
     },
   ],
+  deleteChild: [],
 });
 const isLoading = ref();
 const isError = ref({});
@@ -212,52 +213,14 @@ function addChildForm() {
 }
 function removeChildForm(index) {
   if (isEdit.value && model.value.child[index]?.id) {
-    const childName = model.value.child[index]?.name;
-    Swal.fire({
-      title: "ยืนยันการลบข้อมูลหรือไม่ ???",
-      html: `โปรดตรวจสอบข้อมูลให้แน่ใจก่อนยืนยัน`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "ยืนยัน",
-      cancelButtonText: "ยกเลิก",
-      showLoaderOnConfirm: true,
-      reverseButtons: true,
-      customClass: {
-        confirmButton: "save-button",
-        cancelButton: "cancel-button",
-      },
-      preConfirm: async () => {
-        try {
-          await userManagementService.deleteChild(model.value.child[index]?.id);
-        } catch (error) {
-          Swal.showValidationMessage(error?.response?.data?.message ?? `ไม่สามารถลบข้อมูลได้ กรุณาลองอีกครั้ง`);
-          Notify.create({
-            message:
-              error?.response?.data?.message ??
-              "ลบไม่สำเร็จกรุณาลองอีกครั้ง",
-            position: "bottom-left",
-            type: "negative",
-          });
-        }
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire({
-          html: `บุตร <b>${childName}</b> ถูกลบ`,
-          icon: "success",
-          confirmButtonText: "ตกลง",
-          customClass: {
-            confirmButton: "save-button",
-          },
-        }).then(() => {
-          location.reload();
-        });
-      }
-    });
+    if (!Array.isArray(model.value.deleteChild)) {
+      model.value.deleteChild = [];
+    }
+    if (model.value && Array.isArray(model.value.deleteChild)) {
+      model.value.deleteChild.push({ id: model.value.child[index].id });
+    }
   }
-  else {
-    model.value.child.splice(index, 1);
-  }
+  model.value.child.splice(index, 1);
 };
 
 
@@ -411,7 +374,9 @@ async function fetchInitialData() {
 async function init() {
   isView.value = route.meta.isView;
   isLoading.value = true;
-  await fetchInitialData();
+  if (!isView.value) {
+    await fetchInitialData();
+  }
   if (isEdit.value) {
     try {
       let res = await userManagementService.dataById(route.params.id);
@@ -452,6 +417,7 @@ async function init() {
       model.value.child
       isLoading.value = false;
     } catch (error) {
+      console.log(error);
       Notify.create({
         message:
           error.response?.data?.message ??

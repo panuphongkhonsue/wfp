@@ -55,8 +55,9 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col q-ma-none">ทำฟัน : {{ remaining?.perTimesRemaining + " บาท " }} {{ "( " +
-                remaining?.requestsRemaining + " ครั้ง )" }}</p>
+              <p class="col q-ma-none">ทำฟัน : {{ remaining?.fundRemaining ?? remaining?.perTimesRemaining ?? "-" }}
+                {{ "บาท ( " }}
+                {{ remaining?.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
             </q-card-section>
           </q-card>
         </div>
@@ -83,7 +84,7 @@
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-x-md font-medium q-pb-xs font-16 text-grey-9">
               <div class="col-12 col-lg">
-                <InputGroup :disable="!canRequest" for-id="fund-receipt" is-dense v-model="model.fundReceipt"
+                <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt"
                   :data="model.fundReceipt ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท"
                   type="number" class="" :is-view="isView"
                   :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ']"
@@ -91,7 +92,7 @@
                 </InputGroup>
               </div>
               <div class="col-12 col-lg">
-                <InputGroup :disable="!canRequest" for-id="fund-claim" is-dense v-model="model.fundSumRequest"
+                <InputGroup for-id="fund-claim" is-dense v-model="model.fundSumRequest"
                   :data="model.fundSumRequest ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท"
                   type="number" class="" :is-view="isView"
                   :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก']"
@@ -101,7 +102,7 @@
               <div class="col-12 col-lg">
                 <InputGroup label="วัน/เดือน/ปี (ตามใบเสร็จ)" :is-view="isView" clearable
                   :data="model.dateReceipt ?? '-'" is-require>
-                  <DatePicker :disabled="!canRequest" class="col-12" is-dense v-model:model="model.dateReceipt"
+                  <DatePicker class="col-12" is-dense v-model:model="model.dateReceipt"
                     v-model:dateShow="model.dateReceipt" for-id="date" :no-time="true"
                     :rules="[(val) => !!val || 'กรุณากรอก วัน/เดือน/ปี (ตามใบเสร็จ)']"
                     :error-message="isError?.dateReceipt" :error="!!isError?.dateReceipt" />
@@ -135,13 +136,11 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none font-bold text-black">ประสบอุบัติเหตุขณะปฏิบัติหน้าที่</p>
-              <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
+              <p class="col-12 q-mb-none">1. ใบเสร็จรับเงิน</p>
               <p class="col-12 q-mb-none">2. ใบรับรองแพทย์</p>
-              <p class="col-12 q-mb-none">3. หนังสือรับรองของหัวหน้าส่วนงาน</p>
-              <p class="col-12 q-mb-none font-bold text-black">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน</p>
-              <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
-              <p class="col-12 q-mb-none">2. ใบรับรองแพทย์</p>
+              <p class="col-12 q-mb-none">
+                3. คำสั่งประโยชน์ทดแทนหรือใบยืนยันการใช้สิทธิประโยชน์ทแทน (จากเว็บประกันสังคม) (สถานะ อนุมัติ)
+              </p>
             </q-card-section>
           </q-card>
         </div>
@@ -152,9 +151,8 @@
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'dental_care_welfare_list' }" />
-        <q-btn :disable="!canRequest" id="button-draft"
-          class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
-          label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
+        <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
+          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
         <q-btn :disable="!canRequest" id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense
           type="submit" style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
           v-if="!isView && !isLoading" />
@@ -198,10 +196,7 @@ const model = ref({
 const isError = ref({});
 
 const userData = ref({});
-const remaining = ref({
-  requestsRemaining: "-",
-  perTimesRemaining: "-",
-});
+const remaining = ref({});
 let options = ref([]);
 const isLoading = ref(false);
 const canRequest = ref(false);
@@ -264,7 +259,7 @@ async function fetchDataEdit() {
       var returnedData = result.data.datas;
       if (returnedData) {
         model.value = {
-          createFor: returnedData?.userId,
+          createFor: null,
           reimNumber: returnedData?.reimNumber,
           requestDate: returnedData?.requestDate,
           status: returnedData?.status,
@@ -280,9 +275,7 @@ async function fetchDataEdit() {
           department: returnedData?.user.department,
         };
         if (Array.isArray(returnedData?.requestData) && returnedData.requestData.length > 0) {
-          row.value[0] = returnedData?.requestData[0] ?? {};
-          row.value[1] = returnedData?.requestData[1] ?? {};
-          row.value[2] = returnedData?.requestData[2] ?? {};
+          row.value = returnedData?.requestData ?? {};
         }
       }
     } catch (error) {
@@ -322,20 +315,15 @@ async function fetchRemaining() {
     if (fetchRemaining.data?.datas?.requestsRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.requestsRemaining))) {
       remaining.value.requestsRemaining = formatNumber(fetchRemaining.data?.datas?.requestsRemaining);
     }
-    else {
-      remaining.value.requestsRemaining = "-";
+    if (fetchRemaining.data?.datas?.fundRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.fundRemaining))) {
+      remaining.value.fundRemaining = formatNumber(fetchRemaining.data?.datas?.fundRemaining);
     }
     if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
       remaining.value.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
     }
-    else {
-      remaining.value.perTimesRemaining = "-";
-    }
     canRequest.value = fetchRemaining.data?.canRequest;
     if (Array.isArray(fetchRemaining.data?.requestData) && fetchRemaining.data?.requestData.length > 0) {
-      row.value[0] = fetchRemaining.data?.requestData[0] ?? {};
-      row.value[1] = fetchRemaining.data?.requestData[1] ?? {};
-      row.value[2] = fetchRemaining.data?.requestData[2] ?? {};
+      row.value = fetchRemaining.data?.requestData ?? {};
     }
   } catch (error) {
     Promise.reject(error);
@@ -499,7 +487,7 @@ const columns = ref([
   },
   {
     name: "fundSumRequest",
-    label: "จำนวนเงิน (บาท)",
+    label: "จำนวนเงิน",
     align: "right",
     field: (row) => row.fundSumRequest ?? "-",
     format: (val) => {

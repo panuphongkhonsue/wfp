@@ -9,20 +9,42 @@
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
             </q-card-section>
             <q-separator />
-            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold">
-              <p class="col-lg-4 col-12 q-mb-none">
-                ชื่อ : <span class="font-medium font-16 text-grey-7">สุทะพัด บุญทัน</span>
+            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold"
+              :class="canCreateFor && !isView ? 'items-center' : ''">
+              <div class="col-lg-5 col-12 row q-gutter-y-md q-pr-sm"
+                :class="canCreateFor && !isView ? 'items-center' : ''">
+                <p class="col-auto q-mb-none">
+                  ชื่อ-นามสกุล : <span v-show="!canCreateFor || isView" class="font-medium font-16 text-grey-7">{{
+                    userData?.name ?? "-" }}</span>
+                </p>
+                <q-select v-if="canCreateFor && !isView" popup-content-class="font-14 font-regular" :loading="isLoading"
+                  id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
+                  v-model="model.createFor" :options="options" dense option-value="id" emit-value map-options
+                  option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
+                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']">
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </div>
+              <p class="col-lg-3 col-xl-4 col-12 q-mb-none q-pr-sm text-no-wrap ellipsis"
+                :title="userData?.position ?? '-'">
+                ตำแหน่ง : <span class="font-medium font-16 text-grey-7">{{
+                  userData?.position ?? "-" }}</span>
               </p>
-              <p class="col-lg-4 col-12 q-mb-none">
-                ตำแหน่ง : <span class="font-medium font-16 text-grey-7">รองศาสตราจารย์</span>
+              <p class="col-lg col-xl-4 col-12 q-mb-none text-no-wrap ellipsis" :title="userData?.employeeType ?? '-'">
+                ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">{{
+                  userData?.employeeType ?? "-" }}</span>
               </p>
-              <p class="col-lg-4 col-12 q-mb-none">
-                ประเภทบุคลากร : <span class="font-medium font-16 text-grey-7">พนักงานมหาวิทยาลัย</span>
+              <p class="col-lg-5 col-xl-4 col-12 q-mb-none q-pr-sm">ส่วนงาน : <span
+                  class="font-medium font-16 text-grey-7">{{
+                    userData?.department ?? "-" }}</span></p>
+              <p class="col-lg col-xl-4 col-12 q-mb-none q-pr-sm">ภาควิชา : <span
+                  class="font-medium font-16 text-grey-7">{{
+                    userData?.sector ?? "-" }}</span>
               </p>
-              <p class="col-lg-4 col-12 q-mb-none">ส่วนงาน : <span
-                  class="font-medium font-16 text-grey-7">สถาบันการศึกษา</span></p>
-              <p class="col-lg-4 col-12 q-mb-none">ภาควิชา : <span
-                  class="font-medium font-16 text-grey-7">วิศวกรรมซอฟต์แวร์</span></p>
             </q-card-section>
           </q-card>
         </div>
@@ -33,8 +55,14 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">ประสบอุบัติเหตุฯ : 1,000 บาท (1 ครั้ง)</p>
-              <p class="col-12 q-mb-none">เยี่ยมไข้ : 1,000 บาท (1 ครั้ง)</p>
+              <p class="col-12 q-ma-none">ประสบอุบัติเหตุ :
+                {{ remaining?.accident.fundRemaining ?? remaining?.accident.perTimesRemaining ?? "-" }}
+                {{ "บาท ( " }}
+                {{ remaining?.accident.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
+              <p class="col-12 q-ma-none">เยี่ยมไข้ :
+                {{ remaining?.patientVisit.fundRemaining ?? remaining?.patientVisit.perTimesRemaining ?? "-" }}
+                {{ "บาท ( " }}
+                {{ remaining?.patientVisit.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
             </q-card-section>
           </q-card>
         </div>
@@ -46,70 +74,88 @@
             <q-card-section class="flex justify-between q-px-md q-pt-md q-pb-md font-18 font-bold">
               <p class="q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
               <p class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
-                v-if="isView && (model.status == 'รอตรวจสอบ' || model.status == 'อนุมัติ')"><q-icon
-                  :name="outlinedDownload" />
+                v-if="isView && (model.status == 'รอตรวจสอบ')"><q-icon :name="outlinedDownload" />
                 <span> Export</span>
               </p>
             </q-card-section>
-            <q-card-section v-show="isView" class="row wrap font-medium q-pb-xs font-16 text-grey-9">
+            <q-card-section v-show="isView || isEdit" class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
-              <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ model.requestDate ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
+              </p>
               <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
             </q-card-section>
-            <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center" :class="isView ? '' : 'q-pl-sm'">
-              <q-checkbox v-if="!isView" v-model="model.accident.isSelected" />
+            <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
+              :class="isView ? '' : 'q-pl-sm'">
+              <q-checkbox v-if="!isView" v-model="model.selectedAccident" />
               <p class="q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ 1,000 บาท)</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
-              <InputGroup for-id="fund-receipt-accident" is-dense v-model="model.accident.fundReceipt"
-                :data="model.accident.fundReceipt ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน"
-                :disable="!model.accident.isSelected" placeholder="บาท" type="number" :is-view="isView"
-                compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl">
+              <InputGroup for-id="fund-receipt-accident" is-dense v-model="model.fundReceipt"
+                :data="model.fundReceipt ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน"
+                :disable="!model.selectedAccident" placeholder="บาท" type="number" :is-view="isView"
+                compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl"
+                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
+                :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
-              <InputGroup for-id="fund-claim-accident" is-dense v-model="model.accident.fundEligible"
-                :data="model.accident.fundEligible ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท"
+              <InputGroup for-id="fund-claim-accident" is-dense v-model="model.fundEligible"
+                :data="model.fundEligible ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท"
                 type="number" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl"
-                :disable="!model.accident.isSelected">
+                :disable="!model.selectedAccident" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก']"
+                :error-message="isError?.fundEligible" :error="!!isError?.fundEligible">
               </InputGroup>
             </q-card-section>
             <q-card-section class="row wrap q-pt-none font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
-              <q-checkbox v-if="!isView" v-model="model.visitPatien.isSelected" />
+              <q-checkbox v-if="!isView" v-model="model.selectedPatientVisit" />
               <p class="q-mb-none">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน 1,000 บาท ต่อครั้ง ปีนึงไม่เกิน
                 3 ครั้ง</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-sm font-16 text-grey-9">
               <InputGroup label="ตั้งแต่วันที่" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl"
-                clearable :data="model.visitPatien.startDate ?? '-'" is-require>
-                <DatePicker :disabled="!model.visitPatien.isSelected" class="col-12" is-dense
-                  v-model:model="model.visitPatien.startDate" v-model:dateShow="model.visitPatien.startDate"
-                  for-id="start-date" :no-time="true" />
+                clearable :data="model.startDate ?? '-'" is-require>
+                <DatePicker :disabled="!model.selectedPatientVisit" class="col-12" is-dense
+                  v-model:model="model.startDate" v-model:dateShow="model.startDate" for-id="start-date" :no-time="true"
+                  :rules="[(val) => !!val || 'กรุณากรอก วัน/เดือน/ปี ตั้งแต่วันที่']"
+                  :error-message="isError?.startDate" :error="!!isError?.startDate" />
               </InputGroup>
               <InputGroup label="ถึงวันที่" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl"
-                clearable :data="model.visitPatien.endDate ?? '-'" is-require>
-                <DatePicker is-dense :disabled="!model.visitPatien.isSelected" v-model:model="model.visitPatien.endDate"
-                  v-model:dateShow="model.visitPatien.endDate" for-id="end-date" :no-time="true" />
+                clearable :data="model.endDate ?? '-'" is-require>
+                <DatePicker is-dense :disabled="!model.selectedPatientVisit" v-model:model="model.endDate"
+                  v-model:dateShow="model.endDate" for-id="end-date" :no-time="true"
+                  :rules="[(val) => !!val || 'กรุณากรอก วัน/เดือน/ปี ถึงวันที่']" :error-message="isError?.endDate"
+                  :error="!!isError?.endDate" />
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-none row wrap font-medium q-pb-xs font-16 text-grey-9">
-              <InputGroup for-id="fund-receipt-visit" is-dense v-model="model.visitPatien.fundReceiptPatientVisit"
-                :data="model.visitPatien.fundReceiptPatientVisit ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน"
-                :disable="!model.visitPatien.isSelected" placeholder="บาท" type="number" :is-view="isView"
-                compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl">
+              <InputGroup for-id="fund-receipt-visit" is-dense v-model="model.fundReceiptPatientVisit"
+                :data="model.fundReceiptPatientVisit ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน"
+                :disable="!model.selectedPatientVisit" placeholder="บาท" type="number" :is-view="isView"
+                compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl"
+                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
+                :error-message="isError?.fundReceiptPatientVisit" :error="!!isError?.fundReceiptPatientVisit">
               </InputGroup>
-              <InputGroup for-id="fund-claim-visit" is-dense v-model="model.visitPatien.fundSumRequestPatientVisit"
-                :data="model.visitPatien.fundSumRequestPatientVisit ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก"
+              <InputGroup for-id="fund-claim-visit" is-dense v-model="model.fundSumRequestPatientVisit"
+                :data="model.fundSumRequestPatientVisit ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก"
                 placeholder="บาท" type="number" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl"
-                :disable="!model.visitPatien.isSelected">
+                :disable="!model.selectedPatientVisit"
+                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
+                :error-message="isError?.fundSumRequestPatientVisit" :error="!!isError?.fundSumRequestPatientVisit">
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-none font-medium font-16">
               <q-table flat bordered :rows="row ?? []" :columns="columns" row-key="index" :wrap-cells="$q.screen.gt.lg"
-                table-header-class="font-bold bg-blue-10 text-white" separator="cell" hide-bottom ref="tableRef"
-                :loading="isLoading" @request="onRequest">
+                table-header-class="font-bold bg-blue-10 text-white" separator="cell" hide-bottom :loading="isLoading">
                 <template v-slot:body-cell-index="props">
                   <q-td :props="props">
                     {{ props.rowIndex + 1 }}
+                  </q-td>
+                </template>
+                <template v-slot:body-cell-date="props">
+                  <q-td :props="props" v-if="props.row.startDate && props.row.endDate">
+                    {{ formatDateThaiSlash(props.row.startDate) + "-" + formatDateThaiSlash(props.row.endDate) }}
+                  </q-td>
+                  <q-td :props="props" v-else>
+                    -
                   </q-td>
                 </template>
                 <template v-slot:no-data="{ icon }">
@@ -131,11 +177,13 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">1. ใบเสร็จรับเงิน</p>
+              <p class="col-12 q-mb-none font-bold text-black">ประสบอุบัติเหตุขณะปฏิบัติหน้าที่</p>
+              <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none">2. ใบรับรองแพทย์</p>
-              <p class="col-12 q-mb-none">
-                3. คำสั่งประโยชน์ทดแทนหรือใบยืนยันการใช้สิทธิประโยชน์ทแทน (จากเว็บประกันสังคม) (สถานะ อนุมัติ)
-              </p>
+              <p class="col-12 q-mb-none">3. หนังสือรับรองของหัวหน้าส่วนงาน</p>
+              <p class="col-12 q-mb-none font-bold text-black">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน</p>
+              <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
+              <p class="col-12 q-mb-none">2. ใบรับรองแพทย์</p>
             </q-card-section>
           </q-card>
         </div>
@@ -147,10 +195,10 @@
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'medical_welfare_list' }" />
         <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
-        <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
-          style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(3)"
-          v-if="!isView && !isLoading" />
+          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
+        <q-btn :disable="!canRequest.accident && !canRequest.patientVisit" id="button-approve"
+          class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
+          label="ส่งคำร้องขอ" no-caps @click="submit(2)" v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -164,132 +212,324 @@
 import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import DatePicker from "src/components/DatePicker.vue";
-
-import { formatDateThaiSlash } from "src/components/format";
-
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
+import { formatDateThaiSlash, formatNumber, formatDateSlash, formatDateServer } from "src/components/format";
+import medicalWelfareService from "src/boot/service/medicalWelfareService";
+import userManagementService from "src/boot/service/userManagementService";
 import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
-
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "src/stores/authStore";
 
 defineOptions({
   name: "MedicalfareEdit",
 });
+const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const model = ref({
-  reimNumber: null,
-  requestDate: null,
-  status: null,
-  accident: {
-    isSelected: false,
-    fundReceipt: null,
-    fundEligible: null,
-  },
-  visitPatien: {
-    isSelected: false,
-    fundReceiptPatientVisit: null,
-    fundSumRequestPatientVisit: null,
-    startDate: null,
-    endDate: null,
-  },
+  createFor: null,
+  selectedAccident: false,
+  selectedPatientVisit: false,
+  fundReceipt: null,
+  fundEligible: null,
+  fundReceiptPatientVisit: null,
+  fundSumRequestPatientVisit: null,
+  startDate: null,
+  endDate: null,
 });
+const userData = ref({});
+const remaining = ref({
+  accident: {},
+  patientVisit: {},
+});
+let options = ref([]);
 const isLoading = ref(false);
-const tableRef = ref();
 const isError = ref({});
-
+const canRequest = ref({
+  accident: false,
+  patientVisit: false,
+});
 const isView = ref(false);
 
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
+const canCreateFor = computed(() => {
+  return authStore.isEditor;
+});
 
 onMounted(async () => {
   await init();
   isLoading.value = false;
-  isEdit.value = false;
 });
 
 onBeforeUnmount(() => {
-  clearData(model);
+  model.value = null;
 });
-async function fetchFromServer() {
-  try {
-    // const result = await GspcApproveSerivce.list({
-    //   pageNo: page,
-    //   itemPerPage: count,
-    //   keyword: filter.value.keyword,
-    //   dateSelected: formatDateServer(filter.value.dateSelected),
-    //   endDate: formatDateServer(filter.value.endDate),
-    // });
-    console.log(true);
-    return;
-  } catch (error) {
-    Notify.create({
-      message:
-        error?.response?.data?.errors ??
-        "Something wrong please try again later.",
-      position: "bottom-left",
-      type: "negative",
-    });
-  }
-}
 
-function onRequest() {
-  isLoading.value = true;
+watch(
+  model,
+  () => {
+    if (!isView.value) {
+      Object.keys(model.value).forEach((key) => {
+        if (model.value[key] !== null) {
+          delete isError.value[key];
+        }
+      });
+    }
+  },
+  { deep: true }
+);
+watch(
+  () => model.value.createFor,
+  (newValue) => {
+    try {
+      if (canCreateFor.value) {
+        if ((newValue !== null && newValue !== undefined) && !isView.value) {
+          fetchRemaining();
+          fetchUserData(newValue);
+        }
+      }
+    }
+    catch (error) {
+      Notify.create({
+        message:
+          error?.response?.data?.message ??
+          "ไม่พบข้อมูลสิทธิ์คงเหลือของผู้ใช้งาน",
+        position: "bottom-left",
+        type: "negative",
+      });
+    }
+  }
+);
+watch(
+  () => model.value.startDate,
+  (newValue) => {
+    if (model.value.endDate < newValue && newValue && model.value.endDate) {
+      model.value.endDate = null;
+    }
+  }
+);
+
+watch(
+  () => model.value.endDate,
+  (newValue) => {
+    if (newValue < model.value.startDate) {
+      model.value.endDate = model.value.startDate;
+    }
+  }
+);
+watch(
+  () => model.value.selectedAccident,
+  (newValue) => {
+    if (!newValue) {
+      model.value.fundReceipt = null;
+      model.value.fundEligible = null;
+    }
+  }
+);
+watch(
+  () => model.value.selectedPatientVisit,
+  (newValue) => {
+    if (!newValue) {
+      model.value.fundReceiptPatientVisit = null;
+      model.value.fundSumRequestPatientVisit = null;
+      model.value.startDate = null;
+      model.value.endDate = null;
+    }
+  }
+);
+async function fetchDataEdit() {
   setTimeout(async () => {
     try {
-      const returnedData = await fetchFromServer();
-      if (returnedData) row.value.splice(0, row.value.length, ...returnedData);
+      const result = await medicalWelfareService.dataById(route.params.id);
+      var returnedData = result.data.datas;
+      if (returnedData) {
+        model.value = {
+          ...model,
+          createFor: null,
+          reimNumber: returnedData?.reimNumber,
+          requestDate: returnedData?.requestDate,
+          selectedAccident: returnedData?.fundEligible ? true : false,
+          selectedPatientVisit: returnedData?.fundSumRequestPatientVisit ? true : false,
+          status: returnedData?.status,
+          fundReceipt: returnedData?.fundReceipt,
+          fundEligible: returnedData?.fundEligible,
+          fundReceiptPatientVisit: returnedData?.fundReceiptPatientVisit,
+          fundSumRequestPatientVisit: returnedData?.fundSumRequestPatientVisit,
+          startDate: isView.value === true ? formatDateThaiSlash(returnedData?.startDate) : formatDateSlash(returnedData?.startDate),
+          endDate: isView.value === true ? formatDateThaiSlash(returnedData?.endDate) : formatDateSlash(returnedData?.endDate),
+          fundSumRequest: returnedData?.fundSumRequest,
+          fundEligibleSum: returnedData?.fundEligibleSum,
+        };
+        userData.value = {
+          name: returnedData?.user.name,
+          position: returnedData?.user.position,
+          employeeType: returnedData?.user.employeeType,
+          sector: returnedData?.user.sector,
+          department: returnedData?.user.department,
+        };
+        if (Array.isArray(returnedData?.requestData) && returnedData?.requestData.length > 0) {
+          row.value = returnedData?.requestData;
+        }
+      }
     } catch (error) {
-      Promise.reject(error)
+      router.replace({ name: "medical_welfare_list" });
+      Notify.create({
+        message:
+          error?.response?.data?.message ??
+          "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
+        position: "bottom-left",
+        type: "negative",
+      });
     }
     isLoading.value = false;
   }, 100);
 }
-
-const resetObject = (obj) => {
-  for (const key in obj) {
-    if (obj[key] && typeof obj[key] === "object") {
-      // Recursively reset nested objects
-      resetObject(obj[key]);
-    } else {
-      // Set primitive values to null
-      obj[key] = null;
+async function fetchUserData(id) {
+  try {
+    const result = await userManagementService.dataById(id);
+    var returnedData = result.data.datas;
+    if (returnedData) {
+      userData.value = {
+        name: returnedData?.name,
+        position: returnedData?.position.name,
+        employeeType: returnedData?.employeeType.name,
+        sector: returnedData?.sector.name,
+        department: returnedData?.department.name,
+      };
     }
   }
-};
-function clearData(model) {
-  resetObject(model.value);
+  catch (error) {
+    Promise.reject(error);
+  }
 }
+async function fetchRemaining() {
+  try {
+    const fetchRemaining = await medicalWelfareService.getRemaining({ createFor: model.value.createFor });
+    const accidentData = fetchRemaining.data?.datas[0];
+    const patientVisitData = fetchRemaining.data?.datas[1];
+    if (accidentData.requestsRemaining != null && !isNaN(Number(accidentData.requestsRemaining))) {
+      remaining.value.accident.requestsRemaining = formatNumber(accidentData.requestsRemaining);
+    }
+    if (accidentData.fundRemaining != null && !isNaN(Number(accidentData.fundRemaining))) {
+      remaining.value.accident.fundRemaining = formatNumber(accidentData.fundRemaining);
+    }
+    if (accidentData.perTimesRemaining != null && !isNaN(Number(accidentData.perTimesRemaining))) {
+      remaining.value.accident.perTimesRemaining = formatNumber(accidentData.perTimesRemaining);
+    }
+    if (patientVisitData.requestsRemaining != null && !isNaN(Number(patientVisitData.requestsRemaining))) {
+      remaining.value.patientVisit.requestsRemaining = formatNumber(patientVisitData.requestsRemaining);
+    }
+    if (patientVisitData.fundRemaining != null && !isNaN(Number(patientVisitData.fundRemaining))) {
+      remaining.value.patientVisit.fundRemaining = formatNumber(patientVisitData.fundRemaining);
+    }
+    if (patientVisitData.perTimesRemaining != null && !isNaN(Number(patientVisitData.perTimesRemaining))) {
+      remaining.value.patientVisit.perTimesRemaining = formatNumber(patientVisitData.perTimesRemaining);
+    }
+    canRequest.value.accident = accidentData.canRequest;
+    canRequest.value.patientVisit = patientVisitData.canRequest;
+    if (Array.isArray(patientVisitData?.requestData) && patientVisitData?.requestData.length > 0) {
+      row.value = patientVisitData?.requestData ?? {};
+    }
+  } catch (error) {
+    Promise.reject(error);
+  }
+}
+async function filterFn(val, update) {
+  try {
+    setTimeout(async () => {
+      const result = await userManagementService.getUserInitialData({ keyword: val });
+      var returnedData = result.data.datas;
 
-async function submit() {
+      update(() => {
+        if (returnedData) {
+          options.value = returnedData;
+        }
+      });
+    }, 650);
+
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+}
+async function submit(actionId) {
   let validate = false;
-  // if (!model.value.gspc?.equipment?.equipmentId) {
-  //   isError.value.equipmentId.messageError = "IT Asset No. Is Required";
-  //   let navigate = document.getElementById("selected-it-asset");
-  //   window.location.hash = "selected-it-asset";
-  //   navigate.scrollIntoView(false);
-  //   validate = true;
-  // }
+  if (!model.value.selectedAccident && !model.value.selectedPatientVisit) {
+    Notify.create({
+      message: "กรุณากรอกสวัสดิการที่ต้องการเบิก",
+      position: "bottom-left",
+      type: "negative",
+    });
+    return;
+  }
+  if (model.value.selectedAccident) {
+    if (!model.value.fundReceipt) {
+      isError.value.fundReceipt = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน";
+      validate = true;
+    }
+    if (!model.value.fundEligible) {
+      isError.value.fundEligible = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก";
+      validate = true;
+    }
+  }
+  if (model.value.selectedPatientVisit) {
+    if (!model.value.fundReceiptPatientVisit) {
+      isError.value.fundReceiptPatientVisit = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน";
+      validate = true;
+    }
+    if (!model.value.fundSumRequestPatientVisit) {
+      isError.value.fundSumRequestPatientVisit = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก";
+      validate = true;
+    }
+    if (!model.value.startDate) {
+      isError.value.startDate = "กรุณากรอก วัน/เดือน/ปี ตั้งแต่วันที่";
+      validate = true;
+    }
+    if (!model.value.endDate) {
+      isError.value.endDate = "กรุณากรอก วัน/เดือน/ปี ถึงวันที่";
+      validate = true;
+    }
+  }
+  if (!model.value.createFor && canCreateFor.value) {
+    isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
+    let navigate = document.getElementById("fund-receipt");
+    window.location.hash = "fund-receipt";
+    navigate.scrollIntoView(false);
+    validate = true;
+  }
   if (validate === true) {
     Notify.create({
-      message: "Please Correct Input",
+      message: "กรุณากรอกข้อมูลให้ครบถ้วน",
       position: "bottom-left",
       type: "negative",
     });
     return;
   }
   let isValid = false;
+  let payload = {
+    selectedAccident: model.value.selectedAccident,
+    selectedPatientVisit: model.value.selectedPatientVisit,
+    fundReceipt: model.value.fundReceipt,
+    fundEligible: model.value.fundEligible,
+    fundReceiptPatientVisit: model.value.fundReceiptPatientVisit,
+    fundSumRequestPatientVisit: model.value.fundSumRequestPatientVisit,
+    startDate: model.value.startDate ? formatDateServer(model.value.startDate) : null,
+    endDate: model.value.endDate ? formatDateServer(model.value.endDate) : null,
+    createFor: model.value.createFor,
+    actionId: actionId
+  }
+  var fetch;
   Swal.fire({
-    title: "Do you want to save the changes??",
-    html: `You won't be able to revert this!`,
+    title: "ยืนยันการทำรายการหรือไม่ ???",
+    html: `โปรดตรวจสอบข้อมูลให้แน่ใจก่อนยืนยัน`,
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: "Yes",
-    cancelButtonText: "Cancel",
+    confirmButtonText: "ยืนยัน",
+    cancelButtonText: "ยกเลิก",
     showLoaderOnConfirm: true,
     reverseButtons: true,
     customClass: {
@@ -298,7 +538,12 @@ async function submit() {
     },
     preConfirm: async () => {
       try {
-        // code
+        if (isEdit.value) {
+          fetch = await medicalWelfareService.update(route.params.id, payload);
+        }
+        else {
+          fetch = await medicalWelfareService.create(payload);
+        }
         isValid = true;
       } catch (error) {
         if (error?.response?.status == 400) {
@@ -309,8 +554,11 @@ async function submit() {
             };
           }
         }
+        Swal.showValidationMessage(error?.response?.data?.message ?? `เกิดข้อผิดพลาด กรุณาลองอีกครั้ง`);
         Notify.create({
-          message: `[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง`,
+          message:
+            error?.response?.data?.message ??
+            "บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
           position: "bottom-left",
           type: "negative",
         });
@@ -319,58 +567,38 @@ async function submit() {
   }).then((result) => {
     if (isValid && result.isConfirmed) {
       Swal.fire({
-        html: `Request Save.`,
+        html: fetch.data?.message ?? `สำเร็จ`,
         icon: "success",
-        confirmButtonText: "OK",
+        confirmButtonText: "ตกลง",
         customClass: {
           confirmButton: "save-button",
         },
       }).then(() => {
-        router.replace({ name: "health_check_up_welfare_list" });
+        router.replace({ name: "medical_welfare_list" });
       });
     }
   });
 }
 
-watch(
-  () => model.value.visitPatien.startDate,
-  (newValue) => {
-    if (model.value.visitPatien.endDate < newValue && newValue && model.value.visitPatien.endDate) {
-      model.value.visitPatien.endDate = null;
-    }
-  }
-);
-
-watch(
-  () => model.value.visitPatien.endDate,
-  (newValue) => {
-    if (newValue < model.value.visitPatien.startDate) {
-      model.value.visitPatien.endDate = model.value.visitPatien.startDate;
-    }
-  }
-);
 
 const row = ref([
   {
     id: 1,
-    date: {
-      startDate: new Date(),
-      endDate: new Date()
-    },
-    fundSumRequestPatientVisit: 3000,
+    startDate: null,
+    endDate: null,
+    fundSumRequestPatientVisit: "-",
   },
   {
     id: 2,
-    date: {
-      startDate: new Date(),
-      endDate: new Date()
-    },
-    fundSumRequestPatientVisit: 3000,
+    startDate: null,
+    endDate: null,
+    fundSumRequestPatientVisit: "-",
   },
   {
     id: 3,
-    date: null,
-    fundSumRequestPatientVisit: null,
+    startDate: null,
+    endDate: null,
+    fundSumRequestPatientVisit: "-",
   },
 ]);
 const columns = ref([
@@ -385,19 +613,11 @@ const columns = ref([
     name: "date",
     label: "วัน/เดือน/ปี",
     align: "left",
-    field: (row) => row.date ?? "-",
-    format: (val) => {
-      if (val && val !== "-") {
-        const startDate = formatDateThaiSlash(val.startDate);
-        const endDate = formatDateThaiSlash(val.endDate);
-        return `${startDate} - ${endDate}`;
-      }
-      return "-";
-    },
+    field: (row) => row.startDate ?? "",
     classes: "ellipsis",
   },
   {
-    name: "claimFund",
+    name: "fundSumRequestPatientVisit",
     label: "จำนวนเงิน (บาท)",
     align: "right",
     field: (row) => row.fundSumRequestPatientVisit ?? "-",
@@ -412,8 +632,28 @@ const columns = ref([
   },
 ]);
 async function init() {
-  await tableRef.value.requestServerInteraction();
   isView.value = route.meta.isView;
   isLoading.value = true;
+  try {
+    if (isView.value) {
+      fetchDataEdit();
+    }
+    else if (isEdit.value) {
+      if (!canCreateFor.value) {
+        fetchRemaining();
+      }
+      fetchDataEdit();
+    }
+    else {
+      if (!canCreateFor.value) {
+        fetchRemaining();
+        fetchUserData(authStore.id);
+      }
+    }
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+  isLoading.value = false;
 }
 </script>
