@@ -7,6 +7,7 @@ const statusText = require('../enum/statusText')
 const status = require('../enum/status')
 const welfareType = require('../enum/welfareType');
 const roleType = require('../enum/role')
+const category = require('../enum/category')
 const { permissionsHasRoles, reimbursementsAssist, categories, sequelize } = require('../models/mariadb')
 
 const authPermission = async (req, res, next) => {
@@ -20,6 +21,14 @@ const authPermission = async (req, res, next) => {
         });
         if (!isAccess) {
             throw Error("You don't have access to this API");
+        }
+        else {
+            const isEditor = await permissionsHasRoles.count({
+                where: {
+                    [Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.welfareManagement }],
+                },
+            });
+            if (isEditor) req.isEditor = true;
         }
         next();
     }
@@ -77,6 +86,8 @@ const bindFilter = async (req, res, next) => {
         }
         req.query.filter[Op.and].push({
             '$reimbursementsAssist.created_by$': { [Op.eq]: id },
+            '$reimbursementsAssist.categories_id$': { [Op.ne]: category.variousFuneralFamily }
+
         });
         next();
     }
@@ -103,6 +114,11 @@ const byIdMiddleWare = async (req, res, next) => {
                 { '$reimbursementsAssist.created_by$': { [Op.eq]: id }, }
             );
         }
+        req.query.filter[Op.and].push(
+            {
+                '$reimbursementsAssist.category_id$': { [Op.ne]: category.variousFuneralFamily }
+            }
+        )
         next();
     }
     catch (error) {
@@ -112,7 +128,7 @@ const byIdMiddleWare = async (req, res, next) => {
 };
 const checkNullValue = async (req, res, next) => {
     try {
-        const { fundReceipt, fundEligible, actionId, categoryId } = req.body;
+        const { fundReceipt, fundEligible, actionId } = req.body;
         const errorObj = {};
         if (isNullOrEmpty(fundReceipt)) {
             errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
@@ -123,31 +139,27 @@ const checkNullValue = async (req, res, next) => {
                 message: "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้",
             });
         }
-
         if (isInvalidNumber(fundEligible) && fundEligible) {
             errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+
         } else if (fundEligible < 0) {
             errorObj["fundEligible"] = "จำนวนเงินที่ต้องการเบิก น้อยกว่า 0 ไม่ได้";
             return res.status(400).json({
                 message: "จำนวนเงินที่ต้องการเบิก น้อยกว่า 0 ไม่ได้",
             });
         }
-
-        const fundSumRequest = Number(fundReceipt) - Number(fundEligible);
-
+        const fundSumRequest = Number(fundEligible);
         if (fundSumRequest <= 0) {
             return res.status(400).json({
-                message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ได้รับจากสิทธิอื่น ๆ",
+                message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ต้องการเบิกได้",
             });
         }
-
-        if ((isNullOrEmpty(actionId) || (actionId != status.draft && actionId != status.waitApprove)) && !req.access) {
+        if ((isNullOrEmpty(actionId) || (actionId !== status.draft && actionId !== status.waitApprove)) && !req.access) {
             return res.status(400).json({
                 message: "ไม่มีการกระทำที่ต้องการ",
             });
         }
         if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
-
         req.body = {
             ...req.body,
             fundSumRequest: fundSumRequest,
@@ -164,9 +176,9 @@ const checkNullValue = async (req, res, next) => {
 
 const bindCreate = async (req, res, next) => {
     try {
-        const { fundReceipt, fundEligible, fundSumRequest, createFor, actionId, categoryId } = req.body;
+        const { fundReceipt, fundEligible, fundSumRequest, fundSumReceipt, createFor, actionId, categoryId } = req.body;
         const { id, roleId } = req.user;
-        if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
+        if (!isNullOrEmpty(createFor) && roleId !== req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
@@ -188,6 +200,7 @@ const bindCreate = async (req, res, next) => {
         const dataBinding = {
             reim_number: reimNumber,
             fund_receipt: fundReceipt,
+            fund_sum_receipt: fundReceipt,
             fund_eligible: fundEligible,
             fund_sum_request: fundSumRequest,
             created_by: createFor ?? id,
@@ -209,25 +222,42 @@ const bindUpdate = async (req, res, next) => {
     try {
         const { fundReceipt, fundEligible, fundSumRequest, createFor, actionId, categoryId } = req.body;
         const { id, roleId } = req.user;
-        if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
+        if (!isNullOrEmpty(createFor) && roleId !== req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
             });
         }
+        if (!categoryId) {
+            return res.status(400).json({ message: "Category ID is required" });
+        }
+        const validCategory = await categories.findOne({
+            where: {
+                id: categoryId
+            }
+        });
+        
+        if (!validCategory) {
+            return res.status(400).json({ message: "Invalid Category ID" });
+        }
+        
         const dataId = req.params['id'];
         const results = await reimbursementsAssist.findOne({
-            attributes: ["status", "created_by", "id"],
-            where: { id: dataId },
+            attributes: ["status", "created_by", "id", "categories_id"],
+            where: { id: dataId, categories_id: categoryId },
         });
-        var createByData;
+
+        let createByData;
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
             createByData = datas.created_by;
+
+            
             if (!req.access && datas.created_by !== id) {
                 return res.status(400).json({
-                    message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+                    message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
                 });
             }
+
             if (!req.access && datas.status !== statusText.draft) {
                 return res.status(400).json({
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
@@ -240,14 +270,18 @@ const bindUpdate = async (req, res, next) => {
             }
             var reimNumber;
             reimNumber = getYear2Digits() + formatNumber(welfareType.Assist) + formatNumber(categoryId) + formatNumber(datas.id);
+
         }
 
         const dataBinding = {
             fund_receipt: fundReceipt,
             fund_eligible: fundEligible,
             fund_sum_request: fundSumRequest,
+            status: actionId,
+            categories_id: categoryId,
             updated_by: id,
         }
+
         if (!isNullOrEmpty(actionId)) {
             if (req.access && actionId != status.approve) {
                 return res.status(400).json({
@@ -259,15 +293,22 @@ const bindUpdate = async (req, res, next) => {
                 dataBinding.request_date = new Date();
             }
         }
+
         if (!isNullOrEmpty(createFor) && !req.access) {
             dataBinding.created_by = createFor;
         }
+
         if (!isNullOrEmpty(createByData) && req.access) {
             dataBinding.createByData = createByData;
-        } if (!isNullOrEmpty(reimNumber) && !req.access) {
+        }
+
+        if (!isNullOrEmpty(reimNumber) && !req.access) {
             dataBinding.reimNumber = reimNumber;
         }
+
         req.body = dataBinding;
+
+
         next();
     } catch (error) {
         res.status(500).json({
@@ -281,7 +322,7 @@ const getRemaining = async (req, res, next) => {
     try {
         const { id, roleId } = req.user;
         const { createFor } = req.query;
-        const { created_by, createByData, categoryId } = req.body;
+        const { created_by, createByData, categories_id } = req.body;
         req.query.filter = {};
         req.query.filter[Op.and] = [];
         const getFiscalYearWhere = getFiscalYear();
@@ -290,12 +331,12 @@ const getRemaining = async (req, res, next) => {
                 { '$reimbursementsAssist.created_by$': createByData },
             );
         }
-        else if (!isNullOrEmpty(created_by) && roleId == roleType.financialUser) {
+        else if (!isNullOrEmpty(created_by) && req.isEditor) {
             req.query.filter[Op.and].push(
                 { '$reimbursementsAssist.created_by$': created_by },
             );
         }
-        else if (!isNullOrEmpty(createFor) && roleId == roleType.financialUser) {
+        else if (!isNullOrEmpty(createFor) && req.isEditor) {
             req.query.filter[Op.and].push(
                 { '$reimbursementsAssist.created_by$': createFor },
             );
@@ -305,10 +346,20 @@ const getRemaining = async (req, res, next) => {
                 { '$reimbursementsAssist.created_by$': id },
             );
         }
+        if (!isNullOrEmpty(categories_id)) {
+            req.query.filter[Op.and].push(
+                { '$category.id$': categories_id }
+            );
+        } else {
+            req.query.filter[Op.and].push(
+                { '$category.id$': { [Op.ne]: category.variousFuneralFamily } }
+            );
+        }
+
         req.query.filter[Op.and].push(
             { '$reimbursementsAssist.request_date$': getFiscalYearWhere },
-            { '$category.id$': categoryId }
         );
+
         next();
     }
     catch (error) {
@@ -322,7 +373,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const { filter } = req.query;
         const dataId = req.params['id'];
         var whereObj = { ...filter }
-        const { fund_sum_request } = req.body;
+        const { fund_sum_request, categories_id } = req.body;
         const results = await reimbursementsAssist.findOne({
             attributes: [
                 [
@@ -347,7 +398,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         });
         const welfareCheckData = await reimbursementsAssist.findOne({
             attributes: ["fund_sum_request"],
-            where: { id: dataId },
+            where: { id: dataId, categories_id: categories_id },
         });
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
@@ -379,24 +430,22 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        console.log("🛠️ Debug Middleware (checkFullPerTimes) - req.body:", req.body);
-        const { fund_sum_request, categories_id  } = req.body;
-        const categoryId = categories_id;
+        const { fund_sum_request, categories_id } = req.body;
         const getFund = await categories.findOne({
             attributes: [
                 [col("fund"), "fundRemaining"],
                 [col("per_times"), "perTimes"],
             ],
-            where: { id: categoryId }
+            where: { id: categories_id }
         })
         if (getFund) {
             const datas = JSON.parse(JSON.stringify(getFund));
-            if (fund_sum_request > datas.perTimes) {
+            if (fund_sum_request > datas.perTimes && datas.perTimes) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request > datas.fundRemaining || datas.perTimes === null) {
+            if (fund_sum_request > datas.fundRemaining && datas.fundRemaining) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
@@ -413,79 +462,93 @@ const checkFullPerTimes = async (req, res, next) => {
 const checkRemaining = async (req, res, next) => {
     const method = 'CheckRemainingMiddleware';
     try {
-        const { status, categories_id } = req.body;
-        const categoryId = categories_id;
+        const { status, categories_id, fund_sum_request } = req.body;
+
+        if (!categories_id) {
+            return res.status(400).json({ message: "Category ID is missing or invalid" });
+        }
+
         const { filter } = req.query;
-        if (!categoryId) {
-            return res.status(400).json({ message: "categoryId ไม่ถูกต้องหรือไม่มีค่า" });
+        let whereObj = { ...filter };
+        whereObj["$category.id$"] = categories_id; 
+        const dataId = req.params['id'];
+
+        // ตรวจสอบข้อมูลใน reimbursements_assist และอัพเดต categories_id
+        const updatedRows = await reimbursementsAssist.update(
+            { categories_id: categories_id },  
+            {
+                where: { id: dataId },  
+            }
+        );
+
+        if (updatedRows[0] === 0) {
+            return res.status(404).json({ message: "No data found to update" });
         }
-        if (filter && filter[Symbol.for('and')]) {
-            filter[Symbol.for('and')] = filter[Symbol.for('and')].filter(
-                condition => condition["$category.id$"] !== undefined
-            );
-        }
-        var whereObj = { ...filter }
-        whereObj["$category.id$"] = categoryId;
-        const { fund_sum_request } = req.body;
+
         const results = await reimbursementsAssist.findOne({
             attributes: [
-                [
-                    literal("category.fund - SUM(reimbursementsAssist.fund_sum_request)"),
-                    "fundRemaining"
-                ],
+                [literal("category.fund - SUM(reimbursementsAssist.fund_sum_request)"), "fundRemaining"],
                 [col("category.per_times"), "perTimes"],
-                [
-                    literal("category.per_years - COUNT(reimbursementsAssist.fund_sum_request)"),
-                    "requestsRemaining"
-                ]
+                [literal("category.per_years - COUNT(reimbursementsAssist.fund_sum_request)"), "requestsRemaining"]
             ],
             include: [
                 {
                     model: categories,
                     as: "category",
-                    attributes: []
+                    attributes: [],  
                 }
             ],
-            where: whereObj,
+            where: whereObj, 
             group: ["category.id"]
         });
-        if (results) {
-            const datas = JSON.parse(JSON.stringify(results));
-            if (status === 1) {
-                return next();
-            }
-            if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
-                logger.info('No Remaining', { method });
-                return res.status(400).json({
-                    message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
-                });
-            };
-            if (fund_sum_request > datas.perTimes) {
-                return res.status(400).json({
-                    message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
-                });
-            }
-            if (fund_sum_request > datas.fundRemaining) {
-                logger.info('Request Over', { method });
-                return res.status(400).json({
-                    message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
-                });
-            }
-        };
+
+        if (!results) {
+            return res.status(404).json({ message: "No data found for the category" });
+        }
+
+        const datas = JSON.parse(JSON.stringify(results));
+
+        // ถ้าสถานะเป็น 1 (ร่าง) สามารถดำเนินการต่อได้
+        if (status === 1) {
+            return next();
+        }
+
+        if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+            logger.info('No Remaining', { method });
+            return res.status(400).json({
+                message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
+            });
+        }
+
+        if (fund_sum_request > datas.perTimes) {
+            return res.status(400).json({
+                message: `คุณสามารถเบิกได้สูงสุด ${datas.perTimes} ต่อครั้ง`,
+            });
+        }
+
+        if (fund_sum_request > datas.fundRemaining) {
+            logger.info('Request Over', { method });
+            return res.status(400).json({
+                message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
+            });
+        }
+
         next();
+    } catch (error) {
+        logger.error(`Error in ${method}: ${error.message}`, { method });
+        return res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-    catch (error) {
-        logger.error(`Error ${error.message}`, { method });
-        next(error);
-    }
-}
+};
+
+
+
 const deletedMiddleware = async (req, res, next) => {
     const method = 'DeletedMiddleware';
     try {
         const dataId = req.params['id'];
         const { id } = req.user;
         const results = await reimbursementsAssist.findOne({
-            attributes: ["status", "created_by"],
+            attributes: ["status"],
             where: { id: dataId, created_by: id },
         });
         if (results) {

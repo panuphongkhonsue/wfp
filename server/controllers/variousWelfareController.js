@@ -1,6 +1,6 @@
 const BaseController = require('./BaseControllers');
 const { reimbursementsAssist, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
-const { fn, col, literal } = require("sequelize");
+const { Op, fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
 const logger = initLogger('ReimbursementsAssistController');
 
@@ -26,10 +26,10 @@ class Controller extends BaseController {
                     [col("fund_sum_request"), "fundSumRequest"],
                     'status',
                 ],
-                page: page && !isNaN(page) ? Number(page) : 1,
-                paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 0,
                 where: whereObj,
-                order: [['updated_at', 'DESC'], ['created_at', 'DESC']]
+                order: [['updated_at', 'DESC'], ['created_at', 'DESC']],
+                limit: itemPerPage,
+                offset: (page - 1) * itemPerPage
             });
 
             if (listData) {
@@ -61,8 +61,8 @@ class Controller extends BaseController {
         const { id } = req.user;
         try {
             const { filter } = req.query;
-            var whereObj = { ...filter }
-            const results = await reimbursementsAssist.findOne({
+            var whereObj = { ...filter };
+            const results = await reimbursementsAssist.findAll({
                 attributes: [
                     [col("category.id"), "categoryId"],
                     [fn("SUM", col("reimbursementsAssist.fund_sum_request")), "totalSumRequested"],
@@ -76,31 +76,75 @@ class Controller extends BaseController {
                     [
                         literal("category.per_years - COUNT(reimbursementsAssist.fund_sum_request)"),
                         "requestsRemaining"
-                    ]
+                    ],
+                    [col("category.per_times"), "perTimesRemaining"],
                 ],
                 include: [
                     {
                         model: categories,
                         as: "category",
-                        attributes: []
+                        attributes: [],
+                        required: true
                     }
                 ],
                 where: whereObj,
                 group: ["category.id"]
             });
-            if (results) {
-                const datas = JSON.parse(JSON.stringify(results));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
+            if (results.length > 0) {
+                const datas = results.map(item => {
+                    const fundRemaining = item.dataValues.fundRemaining;
+                    const requestsRemaining = item.dataValues.requestsRemaining;
+
+                    return {
+                        categoryId: item.dataValues.categoryId,
+                        fundRemaining: fundRemaining,
+                        requestsRemaining: requestsRemaining,
+                        perTimesRemaining: item.dataValues.perTimesRemaining,
+                        canRequest: fundRemaining > 0 && requestsRemaining > 0
+                    };
+                });
+
                 logger.info('Complete', { method, data: { id } });
                 return res.status(200).json({
                     datas: datas,
-                    canRequest: datas.canRequest ?? true,
                 });
-            };
-            logger.info('Data not Found', { method, data: { id } });
-            res.status(400).json({
-                message: "ไม่พบข้อมูลที่ต้องการ กรุณาลองอีกครั้ง"
-            });
+            } else {
+                const getFund = await categories.findAll({
+                    attributes: [
+                        [col("id"), "categoryId"],
+                        [col("fund"), "fundRemaining"],
+                        [col("per_years"), "requestsRemaining"],
+                        [col("per_times"), "perTimesRemaining"],
+                    ],
+                    where: {
+                        id: {
+                            [Op.in]: [4, 5, 6, 7]
+                        }
+                    }
+                });
+                if (getFund.length > 0) {
+                    const datas = getFund.map(item => {
+                        const fundRemaining = item.dataValues.fundRemaining;
+                        const requestsRemaining = item.dataValues.requestsRemaining;
+
+                        return {
+                            categoryId: item.dataValues.categoryId,
+                            fundRemaining: fundRemaining,
+                            requestsRemaining: requestsRemaining,
+                            perTimesRemaining: item.dataValues.perTimesRemaining,
+                            canRequest: fundRemaining > 0 && requestsRemaining > 0
+                        };
+                    });
+                    logger.info('Complete', { method, data: { ids: [4, 5, 6, 7] } });
+                    return res.status(200).json({
+                        datas: datas,
+                    });
+                }
+                logger.info('Data not Found', { method, data: { ids: [4, 5, 6, 7] } });
+                res.status(200).json({
+                    message: "ไม่มีข้อมูลสำหรับ ID ที่กำหนด"
+                });
+            }
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {
@@ -109,7 +153,7 @@ class Controller extends BaseController {
             });
             next(error);
         }
-    }
+    };
     getById = async (req, res, next) => {
         const method = 'GetVariousWelfarebyId';
         const { id } = req.user;
@@ -196,6 +240,7 @@ class Controller extends BaseController {
             next(error);
         }
     }
+    
 }
 
 module.exports = new Controller();
