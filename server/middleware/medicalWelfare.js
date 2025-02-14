@@ -493,9 +493,9 @@ const checkUpdateRemaining = async (req, res, next) => {
                 message: "ไม่พบข้อมูล",
             });
         }
-        if ((Array.isArray(accidentRemaining) && accidentRemaining.length > 0) || (Array.isArray(patientVisitRemaining) && patientVisitRemaining.length > 0)) {
+        if (!isNullOrEmpty(accidentRemaining) || !isNullOrEmpty(patientVisitRemaining)) {
             const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
-            if (Array.isArray(accidentRemaining) && accidentRemaining.length > 0) {
+            if (!isNullOrEmpty(accidentRemaining)) {
                 const datas = JSON.parse(JSON.stringify(accidentRemaining[0]));
                 if (fund_eligible < oldWelfareData.fund_eligible) {
                     return next();
@@ -514,7 +514,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                     }
                 }
             }
-            if (Array.isArray(patientVisitRemaining) && patientVisitRemaining.length > 0) {
+            if (!isNullOrEmpty(patientVisitRemaining)) {
                 const datas = JSON.parse(JSON.stringify(patientVisitRemaining[0]));
                 if (fund_sum_request_patient_visit < oldWelfareData.fund_sum_request_patient_visit) {
                     return next();
@@ -559,7 +559,7 @@ const checkFullPerTimes = async (req, res, next) => {
                 }
             }
         })
-        if (Array.isArray(getFund) && getFund.length > 0) {
+        if (!isNullOrEmpty(getFund)) {
             const datasAccident = JSON.parse(JSON.stringify(getFund[0]));
             const datasPatientVisit = JSON.parse(JSON.stringify(getFund[1]));
             if (fund_eligible > datasAccident.perTimes && datasAccident.perTimes) {
@@ -671,11 +671,11 @@ const checkRemaining = async (req, res, next) => {
             where: whereObj,
             group: ["sub_category.id"],
         });
-        if ((Array.isArray(accidentRemaining) && accidentRemaining.length > 0) || (Array.isArray(patientVisitRemaining) && patientVisitRemaining.length > 0)) {
+        if (!isNullOrEmpty(accidentRemaining) || !isNullOrEmpty(patientVisitRemaining)) {
             if (status === 1) {
                 return next();
             }
-            if (Array.isArray(accidentRemaining) && accidentRemaining.length > 0) {
+            if (!isNullOrEmpty(accidentRemaining)) {
                 const datas = JSON.parse(JSON.stringify(accidentRemaining[0]));
                 if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
                     logger.info('No Remaining', { method });
@@ -695,7 +695,7 @@ const checkRemaining = async (req, res, next) => {
                     });
                 }
             }
-            if (Array.isArray(patientVisitRemaining) && patientVisitRemaining.length > 0) {
+            if (!isNullOrEmpty(patientVisitRemaining)) {
                 const datas = JSON.parse(JSON.stringify(patientVisitRemaining[0]));
                 if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
                     logger.info('No Remaining', { method });

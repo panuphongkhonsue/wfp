@@ -5,6 +5,7 @@ const { initLogger } = require('../logger');
 const category = require('../enum/category');
 const logger = initLogger('medicalWelfareController');
 const { getFiscalYearDynamic, getFiscalYear } = require('../middleware/utility');
+const { isNullOrEmpty } = require('../controllers/utility');
 
 class Controller extends BaseController {
     constructor() {
@@ -136,9 +137,9 @@ class Controller extends BaseController {
                 where: whereObj,
                 group: ["sub_category.id"],
             });
-            if ((Array.isArray(accidentRemaining) && accidentRemaining.length > 0) || (Array.isArray(patientVisitRemaining) && patientVisitRemaining.length > 0)) {
+            if (!isNullOrEmpty(accidentRemaining) || !isNullOrEmpty(patientVisitRemaining)) {
                 var bindData = [];
-                if (Array.isArray(accidentRemaining) && accidentRemaining.length > 0) {
+                if (!isNullOrEmpty(accidentRemaining)) {
                     const datas = JSON.parse(JSON.stringify(accidentRemaining[0]));
                     if (datas.fundRemaining == null) {
                         datas.fundRemaining = datas.fund;
@@ -165,7 +166,7 @@ class Controller extends BaseController {
                     datas.canRequest = true;
                     bindData.push(datas);
                 }
-                if (Array.isArray(patientVisitRemaining) && patientVisitRemaining.length > 0) {
+                if (!isNullOrEmpty(patientVisitRemaining)) {
                     const datas = JSON.parse(JSON.stringify(patientVisitRemaining[0]));
                     if (datas.fundRemaining == null) {
                         datas.fundRemaining = datas.fund;
