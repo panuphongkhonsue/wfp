@@ -24,10 +24,10 @@
                 </div>
             </q-form>
 
-            <div class="q-ml-lg q-mt-lg">
+            <div class="col-12 q-ml-md q-mt-lg q-px-md">
                 <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
                     row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
-                    table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
+                    table-header-class="font-bold bg-blue-10 text-white" class="my-sticky-column-table my-sticky-last-column-table" v-model:pagination="pagination" ref="tableRef"
                     @request="onRequest">
 
                     <template v-slot:body-cell-index="props">
@@ -129,7 +129,7 @@ const model = ref([
 ]);
 
 const columns = ref([
-    { name: "createdByName", label: "ชื่อ - สกุล", align: "left", field: (row) => row.createdByName ?? "-" },
+    { name: "createdByName", label: "ชื่อ - สกุล", align: "left", field: (row) => row.createdByName ?? "-"},
     { name: "fundSum", label: "รวม", align: "left", field: (row) => row.fundSum ?? "-" },
 ]);
 
@@ -468,3 +468,65 @@ async function fetchAllWelfare() {
     }
 }
 </script>
+
+<style lang="css">
+.my-sticky-column-table {
+  /* specifying max-width so the example can highlight the sticky column on any browser window */
+  overflow-x: auto;
+  display: block; /* Ensures table respects max-width */
+}
+
+/* Sticky first column */
+.my-sticky-column-table th:first-child,
+.my-sticky-column-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: #ffffff; /* Set background color */
+}
+
+/* Sticky header row */
+.my-sticky-column-table thead tr:first-child th:first-child {
+  background-color: #0D47A1; /* Set background color for the header */
+}
+
+/* Optional: You may want to set a minimum width for the first column */
+.my-sticky-column-table th,
+.my-sticky-column-table td {
+  min-width: 120px; /* Adjust as necessary */
+}
+
+
+.my-sticky-last-column-table {
+  /* specifying max-width so the example can highlight the sticky column on any browser window */
+  overflow-x: auto;
+  display: block; /* Ensures table respects max-width */
+}
+
+.my-sticky-last-column-table {
+  /* specifying max-width so the example can highlight the sticky column on any browser window */
+  overflow-x: auto;
+  display: block; /* Ensures table respects max-width */
+}
+
+/* Sticky last column */
+.my-sticky-last-column-table th:last-child,
+.my-sticky-last-column-table td:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background-color: #ffffff; /* Set background color */
+}
+
+/* Optional: Sticky header for last column (if you need it for the header cell as well) */
+.my-sticky-last-column-table thead tr:last-child th:last-child {
+  background-color: #0D47A1; /* Set background color for the header */
+}
+
+/* Optional: Set min-width for last column */
+.my-sticky-last-column-table th,
+.my-sticky-last-column-table td {
+  min-width: 120px; /* Adjust as needed */
+}
+
+</style>
