@@ -19,7 +19,7 @@
             option-value="status" emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
-                <q-item-section class="text-grey"> No option </q-item-section>
+                <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
               </q-item>
             </template>
           </q-select>
@@ -32,8 +32,9 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-6 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none">สิทธิ์คงเหลือ : {{ remaining?.perTimesRemaining + " บาท " }} {{ "( " +
-          remaining?.requestsRemaining + " ครั้ง )" }}</p>
+        <p class="col q-ma-none">สิทธิ์คงเหลือ : {{ remaining?.fundRemaining ?? remaining?.perTimesRemaining ?? "-" }}
+          {{ "บาท ( " }}
+          {{ remaining?.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
       </div>
       <div class="col-12 col-md-6 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -190,14 +191,11 @@ async function init() {
     if (fetchRemaining.data?.datas?.requestsRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.requestsRemaining))) {
       remaining.value.requestsRemaining = formatNumber(fetchRemaining.data?.datas?.requestsRemaining);
     }
-    else {
-      remaining.value.requestsRemaining = null;
+    if (fetchRemaining.data?.datas?.fundRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.fundRemaining))) {
+      remaining.value.fundRemaining = formatNumber(fetchRemaining.data?.datas?.fundRemaining);
     }
     if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
       remaining.value.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
-    }
-    else {
-      remaining.value.perTimesRemaining = null;
     }
   }
   catch (error) {
@@ -360,7 +358,7 @@ const columns = ref([
   },
   {
     name: "fundReceipt",
-    label: "จำนวนเงินที่เบิกตามใบเสร็จ",
+    label: "จำนวนเงินที่เบิกตามใบเสร็จ / ใบสำคัญรับเงิน",
     align: "right",
     field: (row) => row?.fundReceipt ?? "-",
     format: (val) => {
@@ -374,7 +372,7 @@ const columns = ref([
   },
   {
     name: "fundSumRequest",
-    label: "จำนวนเงินที่เบิกได้",
+    label: "จำนวนเงินที่ขอเบิกทั้งหมด",
     align: "right",
     field: (row) => row?.fundSumRequest ?? "-",
     format: (val) => {

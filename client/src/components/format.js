@@ -8,7 +8,7 @@ export function formatDate(d) {
 
 export function formatDateSlash(d) {
   if (d) return format(d, "dd/MMM/yyyy");
-  return "-";
+  return null;
 }
 
 export function formatDateServer(d) {

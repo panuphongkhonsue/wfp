@@ -77,7 +77,7 @@ const bindCreate = async (req, res, next) => {
 };
 const bindUpdate = async (req, res, next) => {
 	try {
-		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId } = req.body;
+		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId, deleteChild } = req.body;
 		const errorObj = {};
 		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
 		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
@@ -104,6 +104,9 @@ const bindUpdate = async (req, res, next) => {
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
+		}
+		if (!isNullOrEmpty(deleteChild)) {
+			req.deleteChild = deleteChild;
 		}
 		else {
 			var hasNull = false;
