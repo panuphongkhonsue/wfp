@@ -375,6 +375,7 @@ function onRequest(props) {
             }
 
             console.log("modelValue: ", model.value);
+            console.log("dataTables:", dataTable.value);
             columns.value.push(
                 { name: "fundSum", label: "รวม", align: "left", field: (row) => row.fundSum ?? "-" },
             );
