@@ -11,6 +11,11 @@ export default {
   dataById(id) {
     return api.get(`${path}/${id}`);
   },
+  getRemaining(options) {
+    return api.get(`${path}/remaining`, {
+      params: options,
+    });
+  },
   create(payload) {
     try {
       return api.post(`${path}/`, payload);

@@ -16,7 +16,7 @@ const authPermission = async (req, res, next) => {
     try {
         const isAccess = await permissionsHasRoles.count({
             where: {
-                [Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.variousWelfare }],
+                [Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.generalWelfare }],
             },
         });
         if (!isAccess) {
@@ -173,12 +173,11 @@ const checkNullValue = async (req, res, next) => {
         });
     }
 };
-
 const bindCreate = async (req, res, next) => {
     try {
         const { fundReceipt, fundEligible, fundSumRequest, fundSumReceipt, createFor, actionId, categoryId } = req.body;
         const { id, roleId } = req.user;
-        if (!isNullOrEmpty(createFor) && roleId !== req.isEditor) {
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
@@ -221,25 +220,22 @@ const bindCreate = async (req, res, next) => {
 const bindUpdate = async (req, res, next) => {
     try {
         const { fundReceipt, fundEligible, fundSumRequest, createFor, actionId, categoryId } = req.body;
-        const { id, roleId } = req.user;
-        if (!isNullOrEmpty(createFor) && roleId !== req.isEditor) {
+        const { id, } = req.user;
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
+            console.log(createFor);
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
             });
-        }
-        if (!categoryId) {
-            return res.status(400).json({ message: "Category ID is required" });
         }
         const validCategory = await categories.findOne({
             where: {
                 id: categoryId
             }
         });
-        
         if (!validCategory) {
             return res.status(400).json({ message: "Invalid Category ID" });
         }
-        
+
         const dataId = req.params['id'];
         const results = await reimbursementsAssist.findOne({
             attributes: ["status", "created_by", "id", "categories_id"],
@@ -250,30 +246,26 @@ const bindUpdate = async (req, res, next) => {
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
             createByData = datas.created_by;
-
-            
             if (!req.access && datas.created_by !== id) {
                 return res.status(400).json({
-                    message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
+                    message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
                 });
             }
-
             if (!req.access && datas.status !== statusText.draft) {
                 return res.status(400).json({
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if (req.access && (datas.status == statusText.draft || datas.status == statusText.approve)) {
+            if (req.access && (datas.status != statusText.waitApprove)) {
                 return res.status(400).json({
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
             var reimNumber;
             reimNumber = getYear2Digits() + formatNumber(welfareType.Assist) + formatNumber(categoryId) + formatNumber(datas.id);
-
         }
-
         const dataBinding = {
+            reim_number: reimNumber,
             fund_receipt: fundReceipt,
             fund_eligible: fundEligible,
             fund_sum_request: fundSumRequest,
@@ -281,7 +273,7 @@ const bindUpdate = async (req, res, next) => {
             categories_id: categoryId,
             updated_by: id,
         }
-
+        console.log(dataBinding);
         if (!isNullOrEmpty(actionId)) {
             if (req.access && actionId != status.approve) {
                 return res.status(400).json({
@@ -293,7 +285,6 @@ const bindUpdate = async (req, res, next) => {
                 dataBinding.request_date = new Date();
             }
         }
-
         if (!isNullOrEmpty(createFor) && !req.access) {
             dataBinding.created_by = createFor;
         }
@@ -305,10 +296,7 @@ const bindUpdate = async (req, res, next) => {
         if (!isNullOrEmpty(reimNumber) && !req.access) {
             dataBinding.reimNumber = reimNumber;
         }
-
         req.body = dataBinding;
-
-
         next();
     } catch (error) {
         res.status(500).json({
@@ -316,11 +304,10 @@ const bindUpdate = async (req, res, next) => {
         });
     }
 };
-
 const getRemaining = async (req, res, next) => {
     const method = 'RemainingMiddleware';
     try {
-        const { id, roleId } = req.user;
+        const { id } = req.user;
         const { createFor } = req.query;
         const { created_by, createByData, categories_id } = req.body;
         req.query.filter = {};
@@ -406,7 +393,7 @@ const checkUpdateRemaining = async (req, res, next) => {
             if (fund_sum_request < oldWelfareData.fund_sum_request) {
                 return next();
             }
-            else if (fund_sum_request > datas.perTimes) {
+            else if (fund_sum_request > datas.perTimes && datas.perTimes) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
@@ -467,24 +454,9 @@ const checkRemaining = async (req, res, next) => {
         if (!categories_id) {
             return res.status(400).json({ message: "Category ID is missing or invalid" });
         }
-
         const { filter } = req.query;
         let whereObj = { ...filter };
-        whereObj["$category.id$"] = categories_id; 
-        const dataId = req.params['id'];
-
-        // ตรวจสอบข้อมูลใน reimbursements_assist และอัพเดต categories_id
-        const updatedRows = await reimbursementsAssist.update(
-            { categories_id: categories_id },  
-            {
-                where: { id: dataId },  
-            }
-        );
-
-        if (updatedRows[0] === 0) {
-            return res.status(404).json({ message: "No data found to update" });
-        }
-
+        whereObj["$category.id$"] = categories_id;
         const results = await reimbursementsAssist.findOne({
             attributes: [
                 [literal("category.fund - SUM(reimbursementsAssist.fund_sum_request)"), "fundRemaining"],
@@ -495,43 +467,36 @@ const checkRemaining = async (req, res, next) => {
                 {
                     model: categories,
                     as: "category",
-                    attributes: [],  
+                    attributes: [],
                 }
             ],
-            where: whereObj, 
+            where: whereObj,
             group: ["category.id"]
         });
 
-        if (!results) {
-            return res.status(404).json({ message: "No data found for the category" });
-        }
-
-        const datas = JSON.parse(JSON.stringify(results));
-
-        // ถ้าสถานะเป็น 1 (ร่าง) สามารถดำเนินการต่อได้
-        if (status === 1) {
-            return next();
-        }
-
-        if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
-            logger.info('No Remaining', { method });
-            return res.status(400).json({
-                message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
-            });
-        }
-
-        if (fund_sum_request > datas.perTimes) {
-            return res.status(400).json({
-                message: `คุณสามารถเบิกได้สูงสุด ${datas.perTimes} ต่อครั้ง`,
-            });
-        }
-
-        if (fund_sum_request > datas.fundRemaining) {
-            logger.info('Request Over', { method });
-            return res.status(400).json({
-                message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
-            });
-        }
+        if (results) {
+            const datas = JSON.parse(JSON.stringify(results));
+            if (status === 1) {
+                return next();
+            }
+            if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+                logger.info('No Remaining', { method });
+                return res.status(400).json({
+                    message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
+                });
+            };
+            if (fund_sum_request > datas.perTimes && datas.perTimes) {
+                return res.status(400).json({
+                    message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
+                });
+            }
+            if (fund_sum_request > datas.fundRemaining) {
+                logger.info('Request Over', { method });
+                return res.status(400).json({
+                    message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
+                });
+            }
+        };
 
         next();
     } catch (error) {
@@ -539,9 +504,6 @@ const checkRemaining = async (req, res, next) => {
         return res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 };
-
-
-
 const deletedMiddleware = async (req, res, next) => {
     const method = 'DeletedMiddleware';
     try {
