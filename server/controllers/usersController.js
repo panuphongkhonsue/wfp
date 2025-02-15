@@ -278,7 +278,6 @@ class Controller extends BaseController {
         const child = req.body.child ?? null;
         delete req.body.child;
         const deleteChild = req.deleteChild ?? null;
-        console.log(deleteChild);
         const dataUpdate = req.body;
         const dataId = req.params['id'];
         var itemsReturned = null;
@@ -321,13 +320,16 @@ class Controller extends BaseController {
                 }
                 if (!isNullOrEmpty(deleteChild)) {
                     const idsToDelete = deleteChild.map(child => child.id);
-                    var deleted = await children.destroy({
-                        where: {
-                            id: idsToDelete,
-                            users_id: dataId
-                        }, transaction: t,
-                    });
-                    console.log(deleted);
+                    var deleted = await children.update(
+                        { deleted_at: new Date() },
+                        {
+                            where: {
+                                id: idsToDelete,
+                                users_id: dataId
+                            },
+                            transaction: t
+                        }
+                    );
                 }
                 if (updated > 0 || hasChildUpdated || deleted) {
                     itemsReturned = {
