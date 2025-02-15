@@ -167,7 +167,6 @@ function search() {
     dataTable.value = [];
     }
     checkSendYearDup = true;
-    console.log("dataTableInSearch: ", dataTable.value);
     router.push({
         name: router.name,
         query: {
@@ -309,7 +308,6 @@ function onRequest(props) {
                 model.value.push(newEntry);
                 dataTable.value.push(newEntry);
             }
-            console.log("dataTables:", dataTable.value);
 
             for (let i = 0; i < dataTable.value.length; i++) {
                 for (let j = 0; j < viewDashboardData.length; j++) {
@@ -377,7 +375,6 @@ function onRequest(props) {
             }
 
             console.log("modelValue: ", model.value);
-            console.log("newDataTables:", dataTable.value);
             columns.value.push(
                 { name: "fundSum", label: "รวม", align: "left", field: (row) => row.fundSum ?? "-" },
             );
@@ -433,7 +430,7 @@ async function fetchFromServer(page, rowPerPage, filters) {
 
 async function fetchUserData() {
     try {
-        const result = await userManagementService.list({
+        const result = await userManagementService.listOrderName({
             page: 1,
             itemPerPage: 10000,
         });
