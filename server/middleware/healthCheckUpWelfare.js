@@ -138,7 +138,7 @@ const checkNullValue = async (req, res, next) => {
             });
         }
 
-        if (isInvalidNumber(fundDecree) && fundDecree) {
+        if (isInvalidNumber(fundDecree) && !isNullOrEmpty(fundDecree)) {
             errorObj["fundDecree"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundDecree < 0) {
             return res.status(400).json({
@@ -146,14 +146,14 @@ const checkNullValue = async (req, res, next) => {
             });
         }
 
-        if (isInvalidNumber(fundUniversity) && fundUniversity) {
+        if (isInvalidNumber(fundUniversity) && !isNullOrEmpty(fundUniversity)) {
             errorObj["fundUniversity"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundUniversity < 0) {
             return res.status(400).json({
                 message: "เงินที่เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพาน้อยกว่า 0 ไม่ได้",
             });
         }
-        if (isInvalidNumber(fundEligible) && fundEligible) {
+        if (isInvalidNumber(fundEligible) && !isNullOrEmpty(fundEligible)) {
             errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundEligible < 0) {
             errorObj["fundEligible"] = "ค่าสิทธิอื่น ๆ น้อยกว่า 0 ไม่ได้";
@@ -402,7 +402,7 @@ const checkUpdateRemaining = async (req, res, next) => {
             if (fund_sum_request < oldWelfareData.fund_sum_request) {
                 return next();
             }
-            else if (fund_sum_request > datas.perTimes && datas.perTimes) {
+            else if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
@@ -436,12 +436,12 @@ const checkFullPerTimes = async (req, res, next) => {
         })
         if (getFund) {
             const datas = JSON.parse(JSON.stringify(getFund));
-            if (fund_sum_request > datas.perTimes && datas.perTimes) {
+            if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request > datas.fundRemaining && datas.fundRemaining) {
+            if (fund_sum_request > datas.fundRemaining && !isNullOrEmpty(datas.fundRemaining)) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
@@ -495,12 +495,12 @@ const checkRemaining = async (req, res, next) => {
                     message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
                 });
             };
-            if (fund_sum_request > datas.perTimes && datas.perTimes) {
+            if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request > datas.fundRemaining && datas.fundRemaining) {
+            if (fund_sum_request > datas.fundRemaining && !isNullOrEmpty(datas.fundRemaining)) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
