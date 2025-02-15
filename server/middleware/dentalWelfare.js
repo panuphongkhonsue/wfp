@@ -366,7 +366,7 @@ const checkUpdateRemaining = async (req, res, next) => {
             if (fund_sum_request < oldWelfareData.fund_sum_request) {
                 return next();
             }
-            else if (fund_sum_request > datas.perTimes) {
+            else if (fund_sum_request > datas.perTimes && datas.perTimes) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });

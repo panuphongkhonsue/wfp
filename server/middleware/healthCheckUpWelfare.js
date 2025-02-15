@@ -402,7 +402,7 @@ const checkUpdateRemaining = async (req, res, next) => {
             if (fund_sum_request < oldWelfareData.fund_sum_request) {
                 return next();
             }
-            else if (fund_sum_request > datas.perTimes) {
+            else if (fund_sum_request > datas.perTimes && datas.perTimes) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
@@ -436,12 +436,12 @@ const checkFullPerTimes = async (req, res, next) => {
         })
         if (getFund) {
             const datas = JSON.parse(JSON.stringify(getFund));
-            if (fund_sum_request > datas.perTimes) {
+            if (fund_sum_request > datas.perTimes && datas.perTimes) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request > datas.fundRemaining) {
+            if (fund_sum_request > datas.fundRemaining && datas.fundRemaining) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
@@ -495,12 +495,12 @@ const checkRemaining = async (req, res, next) => {
                     message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
                 });
             };
-            if (fund_sum_request > datas.perTimes) {
+            if (fund_sum_request > datas.perTimes && datas.perTimes) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request > datas.fundRemaining) {
+            if (fund_sum_request > datas.fundRemaining && datas.fundRemaining) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",

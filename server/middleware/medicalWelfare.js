@@ -500,7 +500,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 if (fund_eligible < oldWelfareData.fund_eligible) {
                     return next();
                 }
-                else if (fund_eligible > datas.perTimes) {
+                else if (fund_eligible > datas.perTimes && datas.perTimes) {
                     return res.status(400).json({
                         message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                     });
@@ -519,7 +519,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 if (fund_sum_request_patient_visit < oldWelfareData.fund_sum_request_patient_visit) {
                     return next();
                 }
-                else if (fund_sum_request_patient_visit > datas.perTimes) {
+                else if (fund_sum_request_patient_visit > datas.perTimes && datas.perTimes) {
                     return res.status(400).json({
                         message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                     });
