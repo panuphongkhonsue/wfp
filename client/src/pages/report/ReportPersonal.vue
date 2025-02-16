@@ -17,18 +17,27 @@
                         </q-select>
                     </InputGroup>
                 </div>
-                <div class="col-12 col-md content-center q-pt-lg q-pt-md-xs">
-                    <q-btn id="button-search"
-                        class="font-medium bg-blue-10 text-white font-16 q-px-sm q-pt-sm weight-8 q-mt-xs" dense
-                        type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
-                </div>
+                    <div class="col-12 col-md content-center q-pt-lg q-pt-md-xs">
+                        <q-btn id="button-search"
+                            class="font-medium bg-blue-10 text-white font-16 q-px-sm q-pt-sm weight-8 q-mt-xs" dense
+                            type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
+                    </div>
+
+                    <div class="col-12 col-md content-left q-pt-lg q-pt-md-xs row justify-end q-mr-md">
+                        <q-btn id="button-export-excel"
+                            class="font-medium bg-blue-10 text-white font-16 q-px-sm q-pt-sm weight-8 q-mt-xs" dense
+                            label="export" icon="search" no-caps :loading="isLoading" @click="exportToExcel()" />
+                    </div>
             </q-form>
+
+
 
             <div class="col-12 q-ml-md q-mt-lg q-px-md">
                 <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
                     row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
-                    table-header-class="font-bold bg-blue-10 text-white" class="my-sticky-column-table my-sticky-last-column-table" v-model:pagination="pagination" ref="tableRef"
-                    @request="onRequest">
+                    table-header-class="font-bold bg-blue-10 text-white"
+                    class="my-sticky-column-table my-sticky-last-column-table" v-model:pagination="pagination"
+                    ref="tableRef" @request="onRequest">
 
                     <template v-slot:body-cell-index="props">
                         <q-td :props="props">
@@ -91,6 +100,7 @@
 </template>
 
 <script setup>
+import * as XLSX from "xlsx";
 import ReportLayout from "src/layouts/ReportLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import { ref, onMounted, watch } from "vue";
@@ -129,7 +139,7 @@ const model = ref([
 ]);
 
 const columns = ref([
-    { name: "createdByName", label: "ชื่อ - สกุล", align: "left", field: (row) => row.createdByName ?? "-"},
+    { name: "createdByName", label: "ชื่อ - สกุล", align: "left", field: (row) => row.createdByName ?? "-" },
     { name: "fundSum", label: "รวม", align: "left", field: (row) => row.fundSum ?? "-" },
 ]);
 
@@ -161,10 +171,10 @@ watch(
 );
 
 function search() {
-    if(checkSendYearDup == false){
+    if (checkSendYearDup == false) {
         checkSearch = true;
-    model.value = [];
-    dataTable.value = [];
+        model.value = [];
+        dataTable.value = [];
     }
     checkSendYearDup = true;
     router.push({
@@ -351,27 +361,33 @@ function onRequest(props) {
             }
 
             calculateFundSumForDataTable();
-            if(checkSearch){
+            if (checkSearch) {
+                dataTable.value.forEach(item => {
+                delete item.nullfund; // Delete the 'nullfund' key from each item
+                });
                 model.value = dataTable.value.map(item => {
-                // Iterate over each item and replace empty strings with '-'
-                for (let key in item) {
-                    if (item[key] === '') {
-                        item[key] = '-';
+                    // Iterate over each item and replace empty strings with '-'
+                    for (let key in item) {
+                        if (item[key] === '') {
+                            item[key] = '-';
+                        }
                     }
-                }
-                return item;
-            });
+                    return item;
+                });
             }
-            else{
+            else {
+                dataTable.value.forEach(item => {
+                delete item.nullfund; // Delete the 'nullfund' key from each item
+                });
                 model.value = dataTable.value.slice(1).map(item => {
-                // Iterate over each item and replace empty strings with '-'
-                for (let key in item) {
-                    if (item[key] === '') {
-                        item[key] = '-';
+                    // Iterate over each item and replace empty strings with '-'
+                    for (let key in item) {
+                        if (item[key] === '') {
+                            item[key] = '-';
+                        }
                     }
-                }
-                return item;
-            });
+                    return item;
+                });
             }
 
             console.log("modelValue: ", model.value);
@@ -392,21 +408,21 @@ function onRequest(props) {
 }
 
 const calculateFundSumForDataTable = () => {
-  dataTable.value = dataTable.value.map(data => {
-    let sum = 0;
+    dataTable.value = dataTable.value.map(data => {
+        let sum = 0;
 
-    for (let key in data) {
-      if (key !== "userId" && key !== "fundSum" && key !== "nullfund") {
-        const value = data[key];
+        for (let key in data) {
+            if (key !== "userId" && key !== "fundSum" && key !== "nullfund") {
+                const value = data[key];
 
-        if (!isNaN(value) && value !== '-') {
-          sum += Number(value);
+                if (!isNaN(value) && value !== '-') {
+                    sum += Number(value);
+                }
+            }
         }
-      }
-    }
 
-    return { ...data, fundSum: sum };
-  });
+        return { ...data, fundSum: sum };
+    });
 };
 
 async function fetchFromServer(page, rowPerPage, filters) {
@@ -465,66 +481,98 @@ async function fetchAllWelfare() {
         });
     }
 }
+
+function exportToExcel() {
+// Ensure 'fundSum' is the last column by repositioning it
+model.value.forEach(item => {
+  const fundSum = item.fundSum;
+  delete item.fundSum; // Remove 'fundSum' from its current position
+  item.fundSum = fundSum; // Add 'fundSum' back at the end
+});
+
+// Convert the updated model to a sheet
+const ws = XLSX.utils.json_to_sheet(model.value);
+
+// Rename 'fundSum' to 'รวม'
+Object.keys(ws).forEach(key => {
+  if (ws[key] && ws[key].v === 'fundSum') {
+    ws[key].v = 'รวม';
+  }
+});
+
+// Add the worksheet to a workbook and export as Excel
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+XLSX.writeFile(wb, "ExportedData.xlsx");
+}
 </script>
 
 <style lang="css">
 .my-sticky-column-table {
-  /* specifying max-width so the example can highlight the sticky column on any browser window */
-  overflow-x: auto;
-  display: block; /* Ensures table respects max-width */
+    /* specifying max-width so the example can highlight the sticky column on any browser window */
+    overflow-x: auto;
+    display: block;
+    /* Ensures table respects max-width */
 }
 
 /* Sticky first column */
 .my-sticky-column-table th:first-child,
 .my-sticky-column-table td:first-child {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  background-color: #ffffff; /* Set background color */
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: #ffffff;
+    /* Set background color */
 }
 
 /* Sticky header row */
 .my-sticky-column-table thead tr:first-child th:first-child {
-  background-color: #0D47A1; /* Set background color for the header */
+    background-color: #0D47A1;
+    /* Set background color for the header */
 }
 
 /* Optional: You may want to set a minimum width for the first column */
 .my-sticky-column-table th,
 .my-sticky-column-table td {
-  min-width: 120px; /* Adjust as necessary */
+    min-width: 120px;
+    /* Adjust as necessary */
 }
 
 
 .my-sticky-last-column-table {
-  /* specifying max-width so the example can highlight the sticky column on any browser window */
-  overflow-x: auto;
-  display: block; /* Ensures table respects max-width */
+    /* specifying max-width so the example can highlight the sticky column on any browser window */
+    overflow-x: auto;
+    display: block;
+    /* Ensures table respects max-width */
 }
 
 .my-sticky-last-column-table {
-  /* specifying max-width so the example can highlight the sticky column on any browser window */
-  overflow-x: auto;
-  display: block; /* Ensures table respects max-width */
+    /* specifying max-width so the example can highlight the sticky column on any browser window */
+    overflow-x: auto;
+    display: block;
+    /* Ensures table respects max-width */
 }
 
 /* Sticky last column */
 .my-sticky-last-column-table th:last-child,
 .my-sticky-last-column-table td:last-child {
-  position: sticky;
-  right: 0;
-  z-index: 1;
-  background-color: #ffffff; /* Set background color */
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background-color: #ffffff;
+    /* Set background color */
 }
 
 /* Optional: Sticky header for last column (if you need it for the header cell as well) */
 .my-sticky-last-column-table thead tr:last-child th:last-child {
-  background-color: #0D47A1; /* Set background color for the header */
+    background-color: #0D47A1;
+    /* Set background color for the header */
 }
 
 /* Optional: Set min-width for last column */
 .my-sticky-last-column-table th,
 .my-sticky-last-column-table td {
-  min-width: 120px; /* Adjust as needed */
+    min-width: 120px;
+    /* Adjust as needed */
 }
-
 </style>
