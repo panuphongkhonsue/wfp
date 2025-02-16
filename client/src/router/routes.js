@@ -244,6 +244,30 @@ const routes = [
         meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าตรวจสุขภาพ' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
         component: () => import('pages/welfare-management/EditHealthCheckUpPage.vue'),
       },
+      {
+        path: 'financial-medical-welfare-edit/:id',
+        name: 'financial_medical_welfare_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'กรณีเจ็บป่วย' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/welfare-management/EditMedicalPage.vue'),
+      },
+      {
+        path: 'financial-medical-welfare-view/:id',
+        name: 'financial_medical_welfare_view',
+        meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'กรณีเจ็บป่วย' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/welfare-management/EditMedicalPage.vue'),
+      },
+      {
+        path: 'financial-dental-welfare-edit/:id',
+        name: 'financial_dental_welfare_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าทำฟัน' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/welfare-management/EditDentalPage.vue'),
+      },
+      {
+        path: 'financial-dental-welfare-view/:id',
+        name: 'financial_dental_welfare_view',
+        meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าทำฟัน' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/welfare-management/EditDentalPage.vue'),
+      },
 
     ],
   },

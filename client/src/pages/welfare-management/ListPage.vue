@@ -306,6 +306,18 @@ function viewData(requestId, categoryName) {
     params: { id: requestId },
   });
   }
+  else if (categoryName == "กรณีเจ็บป่วย") {
+    router.push({
+    name: "financial_medical_welfare_view",
+    params: { id: requestId },
+  });
+  }
+  else if (categoryName == "ทำฟัน") {
+    router.push({
+    name: "financial_dental_welfare_view",
+    params: { id: requestId },
+  });
+  }
   
 }
 
@@ -313,6 +325,18 @@ function goto(requestId, categoryName) {
   if (categoryName == "ตรวจสุขภาพ") {
     router.push({
       name: "financial_health_check_up_welfare_edit",
+      params: { id: requestId },
+    });
+  }
+  else if(categoryName == "กรณีเจ็บป่วย") {
+    router.push({
+      name: "financial_medical_welfare_edit",
+      params: { id: requestId },
+    });
+  }
+  else if(categoryName == "ทำฟัน") {
+    router.push({
+      name: "financial_dental_welfare_edit",
       params: { id: requestId },
     });
   }
