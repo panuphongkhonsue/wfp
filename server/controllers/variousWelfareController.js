@@ -2,7 +2,7 @@ const BaseController = require('./BaseControllers');
 const { reimbursementsAssist, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
 const { Op, fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
-const logger = initLogger('ReimbursementsAssistController');
+const logger = initLogger('variousWelfareController');
 
 class Controller extends BaseController {
     constructor() {
@@ -10,7 +10,7 @@ class Controller extends BaseController {
     }
 
     list = async (req, res, next) => {
-        const method = 'GetListUser';
+        const method = 'GetListVariousWelfare';
         const { id } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
@@ -57,7 +57,7 @@ class Controller extends BaseController {
         }
     }
     getRemaining = async (req, res, next) => {
-        const method = 'GetRemaining';
+        const method = 'GetRemainingVariousWelfare';
         const { id } = req.user;
         try {
             const { filter } = req.query;

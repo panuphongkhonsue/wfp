@@ -50,50 +50,47 @@
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md  font-medium font-16 text-grey-9">
               <p class="col-12 q-mb-none q-pt-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
-              <!-- <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
-                <q-input v-if="selection" v-model="nameInput" outlined dense label="ชื่อ-นามสกุล" class="" />
-              </div> -->
-              <div v-for="option in options" :key="option.value" class="col-12 row q-mb-none">
+              <div v-for="option in Deceaseoptions" :key="option.value" class="col-12 row q-mb-none">
                 <div class="col-md-2"><q-radio v-model="selection" :val="option.value" :label="option.label"
-                    class="q-mr-md" />
+                    class="q-mr-md"/>
                 </div>
-                <q-input v-if="selection === option.value" v-model="inputValues[option.value]" :data="model.fund ?? '-'"
-                  outlined dense placeholder="ชื่อ-นามสกุล" class="q-ml-md" />
+                <q-input v-if="selectedDecease === option.value" v-model="inputName[option.value]" :data="model.fund ?? '-'"
+                  outlined dense placeholder="ชื่อ-นามสกุล" class="col-md-4 q-ml-md" />
               </div>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
-              <div class="q-pb-md q-mb-none font-16 font-bold text-black">
-                <q-checkbox v-model="supwreath" val="wreathRequire" label="ค่าสนับสนุนค่าพวงหรีด" />
-              </div>
-              <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายไม่เกิน 2,000 บาท ในนามมหาวิทยาลัย และไม่เกิน
-                2,000 บาท ในนามส่วนงาน)</p>
-            </q-card-section>
-            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
-              <div class="col-lg-4 col-12 q-pr-lg-xl">
-                <InputGroup for-id="fund" is-dense v-model="model.fund1" :data="model.fund ?? '-'" is-require
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
+                <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fund ?? '-'" is-require
                   label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
-              <div class="col-lg-4 col-12 q-pr-lg-xl">
-                <InputGroup for-id="fund" is-dense v-model="model.fund2" :data="model.fund ?? '-'" is-require
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
+                <InputGroup for-id="fund" is-dense v-model="model.fundDecease" :data="model.fund ?? '-'" is-require
                   label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-card-section v-show="supwreath" class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
-              <div class="col-lg-4 col-12 q-pr-lg-xl q-pt-lg-lg q-pt-xl-none">
-                <InputGroup for-id="fund" is-dense v-model="model.fund3" :data="model.fund ?? '-'" is-require
+            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
+              <div class="q-pb-md q-mb-none font-16 font-bold text-black">
+                <q-checkbox v-model="selectedWreath" val="wreathRequire" label="ค่าสนับสนุนค่าพวงหรีด" />
+              </div>
+              <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายไม่เกิน 2,000 บาท ในนามมหาวิทยาลัย และไม่เกิน
+                2,000 บาท ในนามส่วนงาน)</p>
+            </q-card-section>
+            <q-card-section v-show="selectedWreath" class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
+                <InputGroup for-id="fund" is-dense v-model="model.fundReceiptWreath" :data="model.fund ?? '-'" is-require
                   label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
-              <div class="col-lg-4 col-12 q-pr-lg-xl">
-                <InputGroup for-id="fund" is-dense v-model="model.fund4" :data="model.fund ?? '-'" is-require
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
+                <InputGroup for-id="fund" is-dense v-model="model.fundWreathUniversity" :data="model.fund ?? '-'" is-require
                   label="จำนวนเงินที่ต้องการเบิก (ในนามมหาวิทยาลัย)" placeholder="บาท" type="number" class=""
                   :is-view="isView">
                 </InputGroup>
               </div>
-              <div class="col-lg-4 col-12 q-pr-lg-xl">
-                <InputGroup for-id="fund" is-dense v-model="model.fund5" :data="model.fund ?? '-'" is-require
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
+                <InputGroup for-id="fund" is-dense v-model="model.fundWreathArrange" :data="model.fund ?? '-'" is-require
                   label="จำนวนเงินที่ต้องการเบิกในนามส่วนงาน" placeholder="บาท" type="number" class=""
                   :is-view="isView">
                 </InputGroup>
@@ -103,26 +100,20 @@
             <q-separator inset />
             <q-card-section class="col row">
               <div class=" q-pb-md q-mb-none font-16 font-bold">
-                <q-checkbox v-model="suptransportation" label="ค่าสนับสนุนค่าพาหนะเหมาจ่าย" />
+                <q-checkbox v-model="selectedVechicle" label="ค่าสนับสนุนค่าพาหนะเหมาจ่าย" />
               </div>
               <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายจริงคนละไม่เกิน 5,000 บาท)</p>
             </q-card-section>
-            <q-card-section v-show="suptransportation"
+            <q-card-section v-show="selectedVechicle"
               class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
-              <div class="col-lg-4 col-12 q-pr-lg-xl q-pt-lg-lg q-pt-xl-none">
-                <InputGroup for-id="fund" is-dense v-model="model.fund6" :data="model.fund ?? '-'" is-require
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
+                <InputGroup for-id="fund" is-dense v-model="model.fundReceiptVechicle" :data="model.fund ?? '-'" is-require
                   label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
-              <div class="col-lg-4 col-12 q-pr-lg-xl">
-                <InputGroup for-id="fund" is-dense v-model="model.fund7" :data="model.fund ?? '-'" is-require
-                  label="จำนวนเงินที่ต้องการเบิก (ในนามมหาวิทยาลัย)" placeholder="บาท" type="number" class=""
-                  :is-view="isView">
-                </InputGroup>
-              </div>
-              <div class="col-lg-4 col-12 q-pr-lg-xl">
-                <InputGroup for-id="fund" is-dense v-model="model.fund8" :data="model.fund ?? '-'" is-require
-                  label="จำนวนเงินที่ต้องการเบิกในนามส่วนงาน" placeholder="บาท" type="number" class=""
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
+                <InputGroup for-id="fund" is-dense v-model="model.fundVechicle" :data="model.fund ?? '-'" is-require
+                  label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class=""
                   :is-view="isView">
                 </InputGroup>
               </div>
@@ -192,17 +183,19 @@ defineOptions({
 const router = useRouter();
 const route = useRoute();
 const model = ref({
-  fund1: null,
-  fund2: null,
-  fund3: null,
-  fund4: null,
-  fund5: null,
-  fund6: null,
-  fund7: null,
-  fund8: null,
+  fundReceipt: null,
+  fundDecease: null,
+  fundReceiptWreath: null,
+  fundWreathUniversity: null,
+  fundWreathArrange: null,
+  fundReceiptVechicle: null,
+  fundVechicle: null,
+  selectedWreath: false,
+  selectedVechicle: false,
+  selectedDecease: false,
 });
 
-const options = [
+const Deceaseoptions = [
   {
     label: 'บิดา',
     value: '1'
@@ -220,10 +213,7 @@ const options = [
     value: '4'
   }
 ]
-const selection = ref(null)
-const suptransportation = ref(false)
-const inputValues = ref({});
-const supwreath = ref(false)
+const inputName = ref({});
 
 const isError = ref({});
 
@@ -346,8 +336,8 @@ async function init() {
 
 
 // const handleSelection = (value) => {
-//   if (!inputValues.value[value]) {
-//     inputValues.value[value] = "";
+//   if (!inputName.value[value]) {
+//     inputName.value[value] = "";
 //   }
 // };
 </script>
