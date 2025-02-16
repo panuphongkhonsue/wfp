@@ -58,13 +58,14 @@ const bindCreate = async (req, res, next) => {
 			delete dataBinding.child;
 		}
 		else {
-			var hasNull = false;
 			if (!isNullOrEmpty(dataBinding.child)) {
-				hasNull = req.body.child.some(item =>
-					Object.values(item).some(value => value === null || value === "")
+				dataBinding.child = dataBinding.child.filter(item =>
+					!Object.values(item).some(value => value === null || value === "")
 				);
+				if (dataBinding.child.length === 0) {
+					delete dataBinding.child;
+				}
 			}
-			if (hasNull) delete dataBinding.child;
 		}
 		req.body = dataBinding;
 		next();
@@ -76,7 +77,7 @@ const bindCreate = async (req, res, next) => {
 };
 const bindUpdate = async (req, res, next) => {
 	try {
-		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId } = req.body;
+		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId, deleteChild } = req.body;
 		const errorObj = {};
 		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
 		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
@@ -103,6 +104,9 @@ const bindUpdate = async (req, res, next) => {
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
+		}
+		if (!isNullOrEmpty(deleteChild)) {
+			req.deleteChild = deleteChild;
 		}
 		else {
 			var hasNull = false;

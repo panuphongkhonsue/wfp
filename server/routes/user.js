@@ -9,4 +9,5 @@ router.get('/:id', userController.getById);
 router.post('/', authPermission, bindCreate, validateDuplicate, userController.create);
 router.put('/:id', authPermission, bindUpdate, validateDuplicate, userController.update);
 router.delete('/:id', authPermission, userController.delete);
+router.delete('/delete-child/:id', authPermission, userController.deletChild);
 module.exports = router;

@@ -1,6 +1,6 @@
 import { api } from "../axios";
 
-const path = "user";
+const path = "medical-welfare";
 
 export default {
   list(options) {
@@ -11,8 +11,8 @@ export default {
   dataById(id) {
     return api.get(`${path}/${id}`);
   },
-  getUserInitialData(options) {
-    return api.get(`${path}/userInitialData`, {
+  getRemaining(options) {
+    return api.get(`${path}/remaining`, {
       params: options,
     });
   },
@@ -35,14 +35,6 @@ export default {
   delete(id) {
     try {
       return api.delete(`${path}/${id}`);
-    }
-    catch (error) {
-      Promise.reject(error);
-    }
-  },
-  deleteChild(id) {
-    try {
-      return api.delete(`${path}/delete-child/${id}`);
     }
     catch (error) {
       Promise.reject(error);

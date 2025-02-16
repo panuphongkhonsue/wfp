@@ -1,9 +1,10 @@
 const BaseController = require('./BaseControllers');
 const { reimbursementsGeneral, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
-const { fn, col, literal } = require("sequelize");
+const { fn, col, literal, Op } = require("sequelize");
 const { initLogger } = require('../logger');
 const category = require('../enum/category');
-const logger = initLogger('healthCheckUpWelfareController');
+const logger = initLogger('dentalWelfareController');
+const { getFiscalYearDynamic, getFiscalYear } = require('../middleware/utility');
 
 class Controller extends BaseController {
     constructor() {
@@ -11,7 +12,7 @@ class Controller extends BaseController {
     }
 
     list = async (req, res, next) => {
-        const method = 'GetListHealthCheckupWelfare';
+        const method = 'GetListDentalWelfare';
         const { id } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
@@ -23,7 +24,6 @@ class Controller extends BaseController {
                     [col("request_date"), "requestDate"],
                     [col("updated_at"), "updatedAt"],
                     [col("fund_receipt"), "fundReceipt"],
-                    [col("fund_eligible_sum"), "fundEligibleSum"],
                     [col("fund_sum_request"), "fundSumRequest"],
                     'status',
                 ],
@@ -58,7 +58,7 @@ class Controller extends BaseController {
         }
     }
     getRemaining = async (req, res, next) => {
-        const method = 'GetRemainingHealthCheckupWelfare';
+        const method = 'GetRemainingDentalWelfare';
         const { id } = req.user;
         try {
             const { filter } = req.query;
@@ -93,10 +93,27 @@ class Controller extends BaseController {
             if (results) {
                 const datas = JSON.parse(JSON.stringify(results));
                 if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
+                whereObj = {};
+                whereObj[Op.and] = [];
+                var getFiscalYearWhere = getFiscalYear();
+                whereObj[Op.and].push(
+                    { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
+                    { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
+                    { '$reimbursementsGeneral.created_by$': id },
+                );
+                const getRequestData = await reimbursementsGeneral.findAll({
+                    attributes: [
+                        'id',
+                        [col("date_receipt"), "dateReceipt"],
+                        [col("fund_sum_request"), "fundSumRequest"],
+                    ],
+                    where: whereObj,
+                })
                 logger.info('Complete', { method, data: { id } });
                 return res.status(200).json({
                     datas: datas,
                     canRequest: datas.canRequest ?? true,
+                    requestData: JSON.parse(JSON.stringify(getRequestData)),
                 });
             };
             const getFund = await categories.findOne({
@@ -105,7 +122,7 @@ class Controller extends BaseController {
                     [col("per_years"), "requestsRemaining"],
                     [col("per_times"), "perTimesRemaining"],
                 ],
-                where: { id: category.healthCheckup }
+                where: { id: category.dentalWelfare }
             })
             if (getFund) {
                 const datas = JSON.parse(JSON.stringify(getFund));
@@ -129,7 +146,7 @@ class Controller extends BaseController {
         }
     }
     getById = async (req, res, next) => {
-        const method = 'GetHealthCheckupWelfarebyId';
+        const method = 'GetDentalWelfarebyId';
         const { id } = req.user;
         const dataId = req.params['id'];
         try {
@@ -140,12 +157,8 @@ class Controller extends BaseController {
                     'id',
                     [col("reim_number"), "reimNumber"],
                     [col("fund_receipt"), "fundReceipt"],
-                    [col("fund_eligible"), "fundEligible"],
+                    [col("date_receipt"), "dateReceipt"],
                     [col("fund_sum_request"), "fundSumRequest"],
-                    [col("fund_decree"), "fundDecree"],
-                    [col("fund_university"), "fundUniversity"],
-                    [col("fund_eligible_name"), "fundEligibleName"],
-                    [col("fund_eligible_sum"), "fundEligibleSum"],
                     [col("request_date"), "requestDate"],
                     [col("status"), "status"],
                     [col("created_by_user.id"), "userId"],
@@ -183,6 +196,29 @@ class Controller extends BaseController {
             });
             if (requestData) {
                 const datas = JSON.parse(JSON.stringify(requestData));
+                whereObj = {};
+                whereObj[Op.and] = [];
+                var getFiscalYearWhere;
+                if (datas.requestDate) {
+                    getFiscalYearWhere = getFiscalYearDynamic(datas.requestDate);
+                }
+                else {
+                    getFiscalYearWhere = getFiscalYear();
+                }
+                whereObj[Op.and].push(
+                    { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
+                    { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
+                    { '$reimbursementsGeneral.created_by$': datas.userId },
+                    { '$reimbursementsGeneral.id$': { [Op.lte]: datas.id } },
+                );
+                const getRequestData = await reimbursementsGeneral.findAll({
+                    attributes: [
+                        'id',
+                        [col("date_receipt"), "dateReceipt"],
+                        [col("fund_sum_request"), "fundSumRequest"],
+                    ],
+                    where: whereObj,
+                })
                 var welfareData = {
                     ...datas,
                     user: {
@@ -192,7 +228,8 @@ class Controller extends BaseController {
                         employeeType: datas.employeeType,
                         sector: datas.sector,
                         department: datas.department,
-                    }
+                    },
+                    requestData: JSON.parse(JSON.stringify(getRequestData))
                 }
                 delete welfareData.userId;
                 delete welfareData.name;

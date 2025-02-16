@@ -24,6 +24,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
+    fund_sum_receipt: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: false
+    },
     fund_wreath_university: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: true

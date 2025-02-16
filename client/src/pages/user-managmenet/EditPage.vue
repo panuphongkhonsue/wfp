@@ -105,13 +105,14 @@
               <InputGroup v-else for-id="child-name" is-dense v-model="item.name" :data="item.name ?? '-'"
                 label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView">
               </InputGroup>
-              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable :data="item.birthday ?? '-'">
+              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable
+                :data="formatDateThaiSlash(item.birthday) ?? '-'">
                 <DatePicker is-dense v-model:model="item.birthday" v-model:dateShow="item.birthday" for-id="birthday"
                   :no-time="true" />
               </InputGroup>
               <div>
-                <q-btn v-if="index > 0 && !isView && !isLoading" color="red" @click="removeChildForm(index)"
-                  class="q-mt-sm">ลบ</q-btn>
+                <q-btn v-if="(index > 0 && !isView && !isLoading) || (isEdit && !isView && item?.id && !isLoading)"
+                  color="red" @click="removeChildForm(index)" class="q-mt-sm">ลบ</q-btn>
               </div>
             </q-card-section>
             <div v-if="!isView && !isLoading">
@@ -148,7 +149,7 @@ import DatePicker from "src/components/DatePicker.vue";
 
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash } from "src/components/format";
+import { formatDateThaiSlash, formatDateSlash } from "src/components/format";
 
 import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -185,9 +186,8 @@ const model = ref({
       birthday: null,
     },
   ],
+  deleteChild: [],
 });
-
-
 const isLoading = ref();
 const isError = ref({});
 const isView = ref(false);
@@ -212,6 +212,14 @@ function addChildForm() {
   });
 }
 function removeChildForm(index) {
+  if (isEdit.value && model.value.child[index]?.id) {
+    if (!Array.isArray(model.value.deleteChild)) {
+      model.value.deleteChild = [];
+    }
+    if (model.value && Array.isArray(model.value.deleteChild)) {
+      model.value.deleteChild.push({ id: model.value.child[index].id });
+    }
+  }
   model.value.child.splice(index, 1);
 };
 
@@ -219,11 +227,13 @@ function removeChildForm(index) {
 watch(
   model,
   () => {
-    Object.keys(model.value).forEach((key) => {
-      if (model.value[key] !== null) {
-        delete isError.value[key];
-      }
-    });
+    if (!isView.value) {
+      Object.keys(model.value).forEach((key) => {
+        if (model.value[key] !== null) {
+          delete isError.value[key];
+        }
+      });
+    }
   },
   { deep: true }
 );
@@ -273,10 +283,10 @@ async function submit() {
     });
     return;
   }
-  const hasNull = model.value.child.some(item =>
-    Object.values(item).some(value => value === null || value === "")
+  model.value.child = model.value.child.filter(item =>
+    !Object.values(item).some(value => value === null || value === "")
   );
-  if (hasNull) {
+  if (model.value.child.length === 0) {
     delete model.value.child;
   }
   let isValid = false;
@@ -335,10 +345,6 @@ async function submit() {
         router.replace({ name: "user_management_list" });
       });
     }
-    else {
-      model.value.child = [];
-      addChildForm()
-    }
   });
 }
 const optionsPosition = ref([]);
@@ -368,12 +374,14 @@ async function fetchInitialData() {
 async function init() {
   isView.value = route.meta.isView;
   isLoading.value = true;
-  await fetchInitialData();
+  if (!isView.value) {
+    await fetchInitialData();
+  }
   if (isEdit.value) {
     try {
       let res = await userManagementService.dataById(route.params.id);
       const dataBinding = res.data.datas;
-      const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : dataBinding.firstWorkingDate;
+      const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : formatDateSlash(dataBinding.firstWorkingDate);
       const childData = [{
         name: null,
         birthday: null,
@@ -393,11 +401,23 @@ async function init() {
         sectorName: dataBinding.sector.name,
         roleId: dataBinding.role.id,
         roleName: dataBinding.role.name,
-        child: Array.isArray(dataBinding.children) && dataBinding.children.length > 0 ? dataBinding.children : childData,
       };
+      if (Array.isArray(dataBinding.children) && dataBinding.children.length > 0) {
+        const newChild = dataBinding.children.map((child) => ({
+          id: child?.id,
+          name: child?.name,
+          birthday: formatDateSlash(child?.birthday),
+        }));
 
+        model.value.child = newChild;
+      }
+      else {
+        model.value.child = childData;
+      }
+      model.value.child
       isLoading.value = false;
     } catch (error) {
+      console.log(error);
       Notify.create({
         message:
           error.response?.data?.message ??
