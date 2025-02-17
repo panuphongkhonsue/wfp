@@ -126,8 +126,8 @@ const byIdMiddleWare = async (req, res, next) => {
 };
 const checkNullValue = async (req, res, next) => {
     try {
-        const { fundReceipt, Decease, fundDecease, fundReceiptWreath, fundSumWreathUniversity, fundSumWreathArrange,
-            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, actionId } = req.body;
+        const { fundReceipt, decease, fundDecease, fundReceiptWreath, fundWreathUniversity, fundWreathArrange,
+            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, actionId, selectedDecease } = req.body;
         const errorObj = {};
 
         if (isNullOrEmpty(fundReceipt)) {
@@ -139,9 +139,7 @@ const checkNullValue = async (req, res, next) => {
                 message: "จำนวนเงินตามใบเสร็จน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
         }
-        if (isNullOrEmpty(Decease)) {
-            errorObj["Decease"] = "กรุณากรอกข้อมูล ชื่อ - นามสกุล ของผู้เสียชีวิต";
-        }
+
         if (isInvalidNumber(fundDecease)) {
             errorObj["fundDecease"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundDecease <= 0) {
@@ -150,11 +148,12 @@ const checkNullValue = async (req, res, next) => {
             });
         }
 
-        // if (!selectedWreath && !selectedVechicle) {
-        //     return res.status(400).json({
-        //         message: "กรุณาเลือกอย่างน้อย 1 สวัสดิการสำหรับเบิก",
-        //     });
-        // }
+        if (selectedDecease) {
+            if (isNullOrEmpty(decease)) {
+                errorObj["decease"] = "กรุณากรอกข้อมูล ชื่อ - นามสกุล ของผู้เสียชีวิต";
+            }
+        }
+
         if (selectedWreath) {
             if (isNullOrEmpty(fundReceiptWreath)) {
                 errorObj["fundReceiptWreath"] = "กรุณากรอกข้อมูลจำนวนเงินสนับสนุนค่าพวงหรีดตามใบสำคัญรับเงิน";
@@ -165,25 +164,24 @@ const checkNullValue = async (req, res, next) => {
                     message: "จำนวนเงินตามใบสำคัญรับเงินน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });
             }
-            if (isNullOrEmpty(fundSumWreathUniversity)) {
-                errorObj["fundSumWreathUniversity"] = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก (ในนามมหาวิทยาลัย)";
-            } else if (isInvalidNumber(fundSumWreathUniversity)) {
-                errorObj["fundSumWreathUniversity"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-            } else if (fundSumWreathUniversity <= 0) {
+            if (isNullOrEmpty(fundWreathUniversity)) {
+                errorObj["fundWreathUniversity"] = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก (ในนามมหาวิทยาลัย)";
+            } else if (isInvalidNumber(fundWreathUniversity)) {
+                errorObj["fundWreathUniversity"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+            } else if (fundWreathUniversity <= 0) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });
             }
-            if (isNullOrEmpty(fundSumWreathArrange)) {
-                errorObj["fundSumWreathArrange"] = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก (ในนามส่วนงาน)";
-            } else if (isInvalidNumber(fundSumWreathArrange)) {
-                errorObj["fundSumWreathArrange"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-            } else if (fundSumWreathArrange <= 0) {
+            if (isNullOrEmpty(fundWreathArrange)) {
+                errorObj["fundWreathArrange"] = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก (ในนามส่วนงาน)";
+            } else if (isInvalidNumber(fundWreathArrange)) {
+                errorObj["fundWreathArrange"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
+            } else if (fundWreathArrange <= 0) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });
             }
-            const fundSumWreathRequest = Number(fundSumWreathUniversity) + Number(fundSumWreathArrange);
             if (fundSumWreathRequest > fundReceiptWreath) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
@@ -194,7 +192,8 @@ const checkNullValue = async (req, res, next) => {
             req.body = {
                 ...req.body,
                 fundReceiptWreath: null,
-                fundSumWreathRequest: null,
+                fundWreathUniversity: null,
+                fundWreathArrange: null,
             }
         }
         if (selectedVechicle) {
@@ -235,6 +234,7 @@ const checkNullValue = async (req, res, next) => {
             });
         }
         if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
+        var fundSumWreathRequest = Number(fundWreathUniversity) + Number(fundWreathArrange);
         var fundSumRequest = Number(fundDecease) + Number(fundSumWreathRequest) + Number(fundVechicle);
         var fundSumReceipt = Number(fundReceipt) + Number(fundReceiptWreath) + Number(fundReceiptVechicle);
         req.body = {
@@ -253,8 +253,8 @@ const checkNullValue = async (req, res, next) => {
 const bindCreate = async (req, res, next) => {
     try {
         const {
-            fundReceipt, Decease, fundDecease, fundReceiptWreath, fundSumWreathUniversity, fundSumWreathArrange, fundSumReceipt,
-            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, fundSumRequest, createFor, actionId } = req.body;
+            fundReceipt, decease, fundDecease, fundReceiptWreath, fundWreathUniversity, fundWreathArrange, fundSumReceipt,
+            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, fundSumRequest, createFor, actionId, selectedDecease } = req.body;
         const { id } = req.user;
         if (!isNullOrEmpty(createFor) && req.isEditor) {
             return res.status(400).json({
@@ -277,14 +277,15 @@ const bindCreate = async (req, res, next) => {
         }
         const dataBinding = {
             reim_number: reimNumber,
-            deceased: Decease,
+            selected_decease: selectedDecease,
+            deceased: decease,
             selected_wreath: selectedWreath,
             selected_vechicle: selectedVechicle,
             fund_receipt: fundReceipt,
             fund_decease: fundDecease,
             fund_receipt_wreath: fundReceiptWreath,
-            fund_wreath_university: fundSumWreathUniversity,
-            fund_wreath_arrange: fundSumWreathArrange,
+            fund_wreath_university: fundWreathUniversity,
+            fund_wreath_arrange: fundWreathArrange,
             fund_sum_request_vechicle: fundReceiptVechicle,
             fund_vechicle: fundVechicle,
             fund_sum_request: fundSumRequest,
@@ -298,16 +299,19 @@ const bindCreate = async (req, res, next) => {
         req.body = dataBinding;
         next();
     } catch (error) {
+        console.error('Error in bindCreate middleware:', error);  // เพิ่ม log ข้อผิดพลาด
         res.status(500).json({
             message: 'Internal Server Error',
+            error: error.message,
         });
     }
+
 };
 const bindUpdate = async (req, res, next) => {
     try {
         const {
-            fundReceipt, Decease, fundDecease, fundReceiptWreath, fundSumWreathUniversity, fundSumWreathArrange, fundSumReceipt,
-            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, fundSumRequest, createFor, actionId } = req.body;
+            fundReceipt, decease, fundDecease, fundReceiptWreath, fundWreathUniversity, fundWreathArrange, fundSumReceipt,
+            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, fundSumRequest, createFor, actionId, selectedDecease } = req.body;
         const { id } = req.user;
         if (!isNullOrEmpty(createFor) && req.isEditor) {
             return res.status(400).json({
@@ -345,14 +349,15 @@ const bindUpdate = async (req, res, next) => {
             });
         }
         const dataBinding = {
-            deceased: Decease,
+            selected_decease: selectedDecease,
+            deceased: decease,
             selected_wreath: selectedWreath,
             selected_vechicle: selectedVechicle,
             fund_receipt: fundReceipt,
             fund_decease: fundDecease,
             fund_receipt_wreath: fundReceiptWreath,
-            fund_wreath_university: fundSumWreathUniversity,
-            fund_wreath_arrange: fundSumWreathArrange,
+            fund_wreath_university: fundWreathUniversity,
+            fund_wreath_arrange: fundWreathArrange,
             fund_sum_request_vechicle: fundReceiptVechicle,
             fund_vechicle: fundVechicle,
             fund_sum_request: fundSumRequest,
@@ -431,6 +436,9 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_decease, fund_wreath_university, fund_wreath_arrange, fund_vechicle } = req.body;
+        whereObj[Op.and].push(
+            { '$sub_category.id$': { [Op.in]: [3, 4, 5, 6] } }
+        );
         const decreaseRemaining = await reimbursementsAssistHasSubCategories.findAll({
             attributes: [
                 [col("sub_category.id"), "subCategoriesId"],
@@ -474,40 +482,41 @@ const checkUpdateRemaining = async (req, res, next) => {
                 [col("sub_category.fund"), "fund"],
                 [col("sub_category.per_years"), "perYears"],
                 [col("sub_category.per_times"), "perTimesRemaining"],
-                //fund_wreath_arrange
+
+                // fund_wreath_arrange
                 [
                     fn("SUM", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE 0 END")),
-                    "totalSumRequested"
+                    "totalSumRequestedArrange"
                 ],
                 [
-                    literal("sub_category.fund - SUM(CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE 0 END)"),
-                    "fundRemaining"
+                    fn("SUM", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE 0 END")),
+                    "fundRemainingArrange"
                 ],
                 [
                     fn("COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
-                    "totalCountRequested"
+                    "totalCountRequestedArrange"
                 ],
                 [
-                    literal("sub_category.per_years - COUNT(CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END)"),
-                    "requestsRemaining"
+                    fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
+                    "requestsRemainingArrange"
                 ],
 
                 // fund_wreath_university
                 [
                     fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
-                    "totalSumRequested"
+                    "totalSumRequestedUniversity"
                 ],
                 [
-                    literal("sub_category.fund - SUM(CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END)"),
-                    "fundRemaining"
+                    fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
+                    "fundRemainingUniversity"
                 ],
                 [
                     fn("COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
-                    "totalCountRequested"
+                    "totalCountRequestedUniversity"
                 ],
                 [
-                    literal("sub_category.per_years - COUNT(CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END)"),
-                    "requestsRemaining"
+                    fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
+                    "requestsRemainingUniversity"
                 ],
             ],
             include: [
@@ -733,6 +742,9 @@ const checkRemaining = async (req, res, next) => {
         const { status, fund_decease, fund_wreath_university, fund_wreath_arrange, fund_vechicle } = req.body;
         const { filter } = req.query;
         var whereObj = { ...filter }
+        whereObj[Op.and].push(
+            { '$sub_category.id$': { [Op.in]: [3, 4, 5, 6] } }
+        );
         const decreaseRemaining = await reimbursementsAssistHasSubCategories.findAll({
             attributes: [
                 [col("sub_category.id"), "subCategoriesId"],
@@ -776,40 +788,41 @@ const checkRemaining = async (req, res, next) => {
                 [col("sub_category.fund"), "fund"],
                 [col("sub_category.per_years"), "perYears"],
                 [col("sub_category.per_times"), "perTimesRemaining"],
-                //fund_wreath_arrange
+
+                // fund_wreath_arrange
                 [
                     fn("SUM", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE 0 END")),
-                    "totalSumRequested"
+                    "totalSumRequestedArrange"
                 ],
                 [
-                    literal("sub_category.fund - SUM(CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE 0 END)"),
-                    "fundRemaining"
+                    fn("SUM", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE 0 END")),
+                    "fundRemainingArrange"
                 ],
                 [
                     fn("COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
-                    "totalCountRequested"
+                    "totalCountRequestedArrange"
                 ],
                 [
-                    literal("sub_category.per_years - COUNT(CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END)"),
-                    "requestsRemaining"
+                    fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
+                    "requestsRemainingArrange"
                 ],
 
                 // fund_wreath_university
                 [
                     fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
-                    "totalSumRequested"
+                    "totalSumRequestedUniversity"
                 ],
                 [
-                    literal("sub_category.fund - SUM(CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END)"),
-                    "fundRemaining"
+                    fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
+                    "fundRemainingUniversity"
                 ],
                 [
                     fn("COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
-                    "totalCountRequested"
+                    "totalCountRequestedUniversity"
                 ],
                 [
-                    literal("sub_category.per_years - COUNT(CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END)"),
-                    "requestsRemaining"
+                    fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
+                    "requestsRemainingUniversity"
                 ],
             ],
             include: [
