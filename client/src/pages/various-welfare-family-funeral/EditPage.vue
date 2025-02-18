@@ -101,8 +101,9 @@
                   <q-radio v-model="model.deceasedType" :val="option.value" :label="option.label" class="q-mr-md"
                     :disable="isView" />
                 </div>
-                <InputGroup label="" v-if="model.deceasedType === option.value" v-model="model.decease"  :data="model.fund ?? '-'"
-                  placeholder="ชื่อ-นามสกุล" type="text" class="col-md-4 q-ml-md" :is-view="isView" is-dense>
+                <InputGroup label="" v-if="model.deceasedType === option.value" v-model="model.decease"
+                  :data="model.fund ?? '-'" placeholder="ชื่อ-นามสกุล" type="text" class="col-md-4 q-ml-md"
+                  :is-view="isView" is-dense>
                 </InputGroup>
               </div>
             </q-card-section>
@@ -222,7 +223,7 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash, formatNumber } from "src/components/format";
+import { formatDateThaiSlash } from "src/components/format";
 import userManagementService from "src/boot/service/userManagementService";
 import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
@@ -453,42 +454,39 @@ async function fetchUserData(id) {
 }
 async function fetchRemaining() {
   try {
-    const fetchRemaining = await variousWelfareFuneralFamilyService.getRemaining({ createFor: model.value.createFor });
+    const fetchRemainingData = await variousWelfareFuneralFamilyService.getRemaining({ createFor: model.value.createFor });
 
-    const deceaseData = fetchRemaining.data?.datas[0];
+    const deceaseData = fetchRemainingData.data?.datas[0];
 
     if (Array.isArray(deceaseData)) {
       deceaseData.forEach((item) => {
-        const matchedOption = deceaseOptions.find(option => option.value === String(item.subCategoriesId));
+        const matchedOption = deceaseOptions.find(option => option.value === item.subCategoriesId);
 
         if (matchedOption) {
           remaining.value[matchedOption.value] = {
-            requestsRemaining: item.requestsRemaining != null && !isNaN(Number(item.requestsRemaining))
-              ? formatNumber(item.requestsRemaining)
+            requestsRemaining: item.requestsRemaining !== null && item.requestsRemaining !== undefined 
+              ? item.requestsRemaining 
               : "-",
-            fundRemaining: item.fundRemaining != null && !isNaN(Number(item.fundRemaining))
-              ? formatNumber(item.fundRemaining)
+            fundRemaining: item.fundRemaining !== null && item.fundRemaining !== undefined 
+              ? item.fundRemaining 
               : "-",
-            perTimesRemaining: item.perTimesRemaining != null && !isNaN(Number(item.perTimesRemaining))
-              ? formatNumber(item.perTimesRemaining)
+            perTimesRemaining: item.perTimesRemaining !== null && item.perTimesRemaining !== undefined 
+              ? item.perTimesRemaining 
               : "-",
           };
-        }
-      });
-    }
-
-    if (Array.isArray(deceaseData)) {
-      deceaseData.forEach((item) => {
-        const matchedOption = deceaseOptions.find(option => option.value === String(item.subCategoriesId));
-        if (matchedOption) {
           canRequest.value[matchedOption.value] = item.canRequest;
         }
       });
     }
+
+    isLoading.value = false;
+
   } catch (error) {
-    Promise.reject(error);
+    console.error("Error fetching remaining data:", error);
+    isLoading.value = false; 
   }
 }
+
 async function filterFn(val, update) {
   try {
     setTimeout(async () => {
