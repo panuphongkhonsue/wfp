@@ -13,7 +13,7 @@ class Controller extends BaseController {
     }
 
     list = async (req, res, next) => {
-        const method = 'GetListvariousWelfareFuneralFamily';
+        const method = 'GetListFuneralWelfare';
         const { id } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
@@ -59,145 +59,145 @@ class Controller extends BaseController {
         }
     }
     getRemaining = async (req, res, next) => {
-        const method = 'GetRemainingvariousWelfareFuneralFamily';
+        const method = 'GetRemainingFuneralWelfare';
         const { id } = req.user;
         try {
             const { filter } = req.query;
             var whereObj = { ...filter }
             whereObj[Op.and].push(
-                { '$sub_category.id$': { [Op.in]: [3, 4, 5, 6] } }
+                { '$category.id$':  9 }
             );
-            const decreaseRemaining = await reimbursementsAssistHasSubCategories.findAll({
+            const decreaseRemaining = await reimbursementsEmployeeDeceasedHasCategories.findAll({
                 attributes: [
-                    [col("sub_category.id"), "subCategoriesId"],
-                    [col("sub_category.name"), "subCategoriesName"],
-                    [fn("SUM", col("reimbursements_assist.fund_decease")), "totalSumRequested"],
-                    [col("sub_category.fund"), "fund"],
+                    [col("category.id"), "categoriesId"],
+                    [col("category.name"), "categoriesName"],
+                    [fn("SUM", col("reimbursements_employee_deceased.fund_request")), "totalSumRequested"],
+                    [col("category.fund"), "fund"],
                     [
-                        literal("sub_category.fund - SUM(reimbursements_assist.fund_decease)"),
+                        literal("category.fund - SUM(reimbursements_employee_deceased.fund_request)"),
                         "fundRemaining"
                     ],
-                    [fn("COUNT", col("reimbursements_assist.fund_decease")), "totalCountRequested"],
-                    [col("sub_category.per_years"), "perYears"],
+                    [fn("COUNT", col("reimbursements_employee_deceased.fund_request")), "totalCountRequested"],
+                    [col("category.per_years"), "perYears"],
                     [
-                        literal("sub_category.per_years - COUNT(reimbursements_assist.fund_decease)"),
+                        literal("category.per_years - COUNT(reimbursements_employee_deceased.fund_request)"),
                         "requestsRemaining"
                     ],
-                    [col("sub_category.per_times"), "perTimesRemaining"],
+                    [col("category.per_times"), "perTimesRemaining"],
                 ],
                 include: [
                     {
-                        model: subCategories,
-                        as: "sub_category",
+                        model: categories,
+                        as: "category",
                         attributes: []
                     },
                     {
-                        model: reimbursementsAssist,
-                        as: "reimbursements_assist",
+                        model: reimbursementsEmployeeDeceased,
+                        as: "reimbursements_employee_deceased",
                         attributes: []
                     }
                 ],
                 where: whereObj,
-                group: ["sub_category.id"],
+                group: ["category.id"],
             });
             whereObj[Op.and].push(
-                { '$sub_category.id$': { [Op.in]: [7, 8] } }
+                { '$sub_category.id$': { [Op.in]: [10, 11] } }
             );
-            const wreathRemaining = await reimbursementsAssistHasSubCategories.findAll({
+            const wreathRemaining = await reimbursementsEmployeeDeceasedHasCategories.findAll({
                 attributes: [
-                    [col("sub_category.id"), "subCategoriesId"],
-                    [col("sub_category.name"), "subCategoriesName"],
-                    [col("sub_category.fund"), "fund"],
-                    [col("sub_category.per_years"), "perYears"],
-                    [col("sub_category.per_times"), "perTimesRemaining"],
+                    [col("category.id"), "categoriesId"],
+                    [col("category.name"), "categoriesName"],
+                    [col("category.fund"), "fund"],
+                    [col("category.per_years"), "perYears"],
+                    [col("category.per_times"), "perTimesRemaining"],
 
                     // fund_wreath_arrange
                     [
-                        fn("SUM", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE 0 END")),
+                        fn("SUM", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE 0 END")),
                         "totalSumRequestedArrange"
                     ],
                     [
-                        fn("SUM", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE 0 END")),
+                        fn("SUM", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE 0 END")),
                         "fundRemainingArrange"
                     ],
                     [
-                        fn("COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
+                        fn("COUNT", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE NULL END")),
                         "totalCountRequestedArrange"
                     ],
                     [
-                        fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
+                        fn("category.per_years - COUNT", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE NULL END")),
                         "requestsRemainingArrange"
                     ],
 
                     // fund_wreath_university
                     [
-                        fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
+                        fn("SUM", literal("CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE 0 END")),
                         "totalSumRequestedUniversity"
                     ],
                     [
-                        fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
+                        fn("SUM", literal("CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE 0 END")),
                         "fundRemainingUniversity"
                     ],
                     [
-                        fn("COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
+                        fn("COUNT", literal("CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE NULL END")),
                         "totalCountRequestedUniversity"
                     ],
                     [
-                        fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
+                        fn("category.per_years - COUNT", literal("CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE NULL END")),
                         "requestsRemainingUniversity"
                     ],
                 ],
                 include: [
                     {
-                        model: subCategories,
-                        as: "sub_category",
+                        model: categories,
+                        as: "category",
                         attributes: []
                     },
                     {
-                        model: reimbursementsAssist,
-                        as: "reimbursements_assist",
+                        model: reimbursementsEmployeeDeceased,
+                        as: "reimbursements_employee_deceased",
                         attributes: []
                     }
                 ],
                 where: whereObj,
-                group: ["sub_category.id"],
+                group: ["category.id"],
             });
-            whereObj[Op.and] = whereObj[Op.and].filter(item => [7, 8].includes(item['$sub_category.id$']));
+            whereObj[Op.and] = whereObj[Op.and].filter(item => [10, 11].includes(item['$category.id$']));
             whereObj[Op.and].push(
-                { '$sub_category.id$': 9 }
+                { '$category.id$': 12 }
             );
-            const vechicleRemaining = await reimbursementsAssistHasSubCategories.findAll({
+            const vechicleRemaining = await reimbursementsEmployeeDeceasedHasCategories.findAll({
                 attributes: [
-                    [col("sub_category.id"), "subCategoriesId"],
-                    [col("sub_category.name"), "subCategoriesName"],
-                    [fn("SUM", col("reimbursements_assist.fund_vechicle")), "totalSumRequested"],
-                    [col("sub_category.fund"), "fund"],
+                    [col("category.id"), "categoriesId"],
+                    [col("category.name"), "categoriesName"],
+                    [fn("SUM", col("reimbursements_employee_deceased.fund_vechicle")), "totalSumRequested"],
+                    [col("category.fund"), "fund"],
                     [
-                        literal("sub_category.fund - SUM(reimbursements_assist.fund_vechicle)"),
+                        literal("category.fund - SUM(reimbursements_employee_deceased.fund_vechicle)"),
                         "fundRemaining"
                     ],
-                    [fn("COUNT", col("reimbursements_assist.fund_vechicle")), "totalCountRequested"],
-                    [col("sub_category.per_years"), "perYears"],
+                    [fn("COUNT", col("reimbursements_employee_deceased.fund_vechicle")), "totalCountRequested"],
+                    [col("category.per_years"), "perYears"],
                     [
-                        literal("sub_category.per_years - COUNT(reimbursements_assist.fund_vechicle)"),
+                        literal("category.per_years - COUNT(reimbursements_employee_deceased.fund_vechicle)"),
                         "requestsRemaining"
                     ],
-                    [col("sub_category.per_times"), "perTimesRemaining"],
+                    [col("category.per_times"), "perTimesRemaining"],
                 ],
                 include: [
                     {
-                        model: subCategories,
-                        as: "sub_category",
+                        model: categories,
+                        as: "category",
                         attributes: []
                     },
                     {
-                        model: reimbursementsAssist,
-                        as: "reimbursements_assist",
+                        model: reimbursementsEmployeeDeceased,
+                        as: "reimbursements_employee_deceased",
                         attributes: []
                     }
                 ],
                 where: whereObj,
-                group: ["sub_category.id"],
+                group: ["category.id"],
             });
             if (!isNullOrEmpty(decreaseRemaining) || !isNullOrEmpty(wreathRemaining) || !isNullOrEmpty(vechicleRemaining)) {
                 let bindData = [];
@@ -214,15 +214,15 @@ class Controller extends BaseController {
                     bindData.push(datas);
                 }
                 else {
-                    const getFund = await subCategories.findAll({
+                    const getFund = await categories.findAll({
                         attributes: [
-                            [col("id"), "subCategoriesId"],
-                            [col("name"), "subCategoriesName"],
+                            [col("id"), "categoriesId"],
+                            [col("name"), "categoriesName"],
                             [col("fund"), "fundRemaining"],
                             [col("per_years"), "requestsRemaining"],
                             [col("per_times"), "perTimesRemaining"],
                         ],
-                        where: { id: [3, 4, 5, 6] }
+                        where: { id: 9 }
                     });
                     const datas = JSON.parse(JSON.stringify(getFund));
                     datas.forEach(item => {
@@ -246,15 +246,15 @@ class Controller extends BaseController {
                     bindData.push(datas);
                 }
                 else {
-                    const getFund = await subCategories.findAll({
+                    const getFund = await categories.findAll({
                         attributes: [
-                            [col("id"), "subCategoriesId"],
-                            [col("name"), "subCategoriesName"],
+                            [col("id"), "categoriesId"],
+                            [col("name"), "categoriesName"],
                             [col("fund"), "fundRemaining"],
                             [col("per_years"), "requestsRemaining"],
                             [col("per_times"), "perTimesRemaining"],
                         ],
-                        where: { id: [7, 8] }
+                        where: { id: [10, 11] }
                     })
                     const datas = JSON.parse(JSON.stringify(getFund));
                     datas.forEach(item => {
@@ -282,15 +282,15 @@ class Controller extends BaseController {
                     bindData.push(datas);
                 }
                 else {
-                    const getFund = await subCategories.findAll({
+                    const getFund = await categories.findAll({
                         attributes: [
-                            [col("id"), "subCategoriesId"],
-                            [col("name"), "subCategoriesName"],
+                            [col("id"), "categoriesId"],
+                            [col("name"), "categoriesName"],
                             [col("fund"), "fundRemaining"],
                             [col("per_years"), "requestsRemaining"],
                             [col("per_times"), "perTimesRemaining"],
                         ],
-                        where: { id: 9 }
+                        where: { id: 12 }
                     })
                     const datas = JSON.parse(JSON.stringify(getFund));
                     datas.canRequest = true;
@@ -301,17 +301,17 @@ class Controller extends BaseController {
                     datas: bindData,
                 });
             };
-            const getFund = await subCategories.findAll({
+            const getFund = await categories.findAll({
                 attributes: [
-                    [col("id"), "subCategoriesId"],
-                    [col("name"), "subCategoriesName"],
+                    [col("id"), "categoriesId"],
+                    [col("name"), "categoriesName"],
                     [col("fund"), "fundRemaining"],
                     [col("per_years"), "requestsRemaining"],
                     [col("per_times"), "perTimesRemaining"],
                 ],
                 where: {
                     id: {
-                        [Op.in]: [3, 4, 5, 6, 7, 8, 9]
+                        [Op.in]: [9, 10, 11, 12]
                     }
                 }
             })
@@ -340,19 +340,19 @@ class Controller extends BaseController {
     };
 
     getById = async (req, res, next) => {
-        const method = 'GetvariousWelfareFuneralFamilybyId';
+        const method = 'GetFuneralWelfarebyId';
         const { id } = req.user;
         const dataId = req.params['id'];
         try {
             const { filter } = req.query;
             var whereObj = { ...filter }
-            const requestData = await reimbursementsAssist.findByPk(dataId, {
+            const requestData = await reimbursementsEmployeeDeceased.findByPk(dataId, {
                 attributes: [
                     [col("reim_number"), "reimNumber"],
                     [col("fund_receipt"), "fundReceipt"],
-                    [col("fund_decease"), "fundDecease"],
+                    [col("fund_request"), "fundRequest"],
                     [col("deceased"), "decease"],
-                    [col("deceased_type"), "deceasedType"],
+                    [col("organizer"), "organizer"],
                     [col("fund_receipt_wreath"), "fundReceiptWreath"],
                     [col("fund_wreath_university"), "fundWreathUniversity"],
                     [col("fund_wreath_arrange"), "fundWreathArrange"],
@@ -362,7 +362,6 @@ class Controller extends BaseController {
                     [col("fund_sum_request"), "fundSumRequest"],
                     [col("request_date"), "requestDate"],
                     [col("status"), "status"],
-                    [col("categories_id"), "categoryId"],
                     [col("created_by_user.id"), "userId"],
                     [col("created_by_user.name"), "name"],
                     [col("created_by_user.position.name"), "position"],
@@ -407,26 +406,26 @@ class Controller extends BaseController {
                     getFiscalYearWhere = getFiscalYear();
                 }
                 whereObj[Op.and].push(
-                    { '$reimbursements_assist.request_date$': getFiscalYearWhere },
-                    { '$reimbursements_assist.categories_id$': category.variousFuneralFamily },
-                    { '$reimbursements_assist.created_by$': datas.userId },
-                    { '$reimbursements_assist.id$': { [Op.lte]: datas.id } },
-                    { '$sub_category.id$': { [Op.in]: [7, 8, 9] } },
+                    { '$reimbursements_employee_deceased.request_date$': getFiscalYearWhere },
+                    { '$reimbursements_employee_deceased.categories_id$': category.funeralWelfare },
+                    { '$reimbursements_employee_deceased.created_by$': datas.userId },
+                    { '$reimbursements_employee_deceased.id$': { [Op.lte]: datas.id } },
+                    { '$category.id$': { [Op.in]: [10,11,12] } },
                 );
-                const getRequestData = await reimbursementsAssistHasSubCategories.findAll({
+                const getRequestData = await reimbursementsEmployeeDeceasedHasCategories.findAll({
                     attributes: [
-                        [col("reimbursements_assist.id"), "id"],
-                        [col("reimbursements_assist.fund_vechicle"), "fundVecicle"],
+                        [col("reimbursements_employee_deceased.id"), "id"],
+                        [col("reimbursements_employee_deceased.fund_vechicle"), "fundVecicle"],
                     ],
                     include: [
                         {
-                            model: subCategories,
-                            as: "sub_category",
+                            model: categories,
+                            as: "category",
                             attributes: []
                         },
                         {
-                            model: reimbursementsAssist,
-                            as: "reimbursements_assist",
+                            model: reimbursementsEmployeeDeceased,
+                            as: "reimbursements_employee_deceased",
                             attributes: []
                         }
                     ],
@@ -473,19 +472,14 @@ class Controller extends BaseController {
         }
     }
     create = async (req, res, next) => {
-        const method = 'CreateVariousWelfareFuneralFamily';
+        const method = 'CreateFuneralWelfare';
         const { id } = req.user;
         const selectedWreath = req.body.selected_wreath ?? false;
         const selectedVechicle = req.body.selected_vechicle ?? false;
-        const fundEligible = req.body.fund_eligible ?? 0;
-        const deceasedType = req.body.deceased_type ?? null;
+        const deceased = req.body.deceased ?? null;
         delete req.body.selected_wreath;
         delete req.body.selected_vechicle;
         delete req.body.deceased_type;
-        const dataCreate = {
-            ...req.body,
-            fund_eligible: fundEligible
-        };
         try {
             const result = await sequelize.transaction(async t => {
                 const newItem = await reimbursementsAssist.create(dataCreate, { transaction: t, });
@@ -493,17 +487,17 @@ class Controller extends BaseController {
                     ...newItem.toJSON(),
                 };
                 if (selectedWreath) {
-                    const newItemSub1 = await reimbursementsAssistHasSubCategories.create(
+                    const newItemSub1 = await reimbursementsEmployeeDeceasedHasCategories.create(
                         {
-                            reimbursements_assist_id: newItem.id,
-                            sub_categories_id: 7,
+                            reimbursements_employee_deceased_id: newItem.id,
+                            categories_id: 10,
                         },
                         { transaction: t }
                     );
-                    const newItemSub2 = await reimbursementsAssistHasSubCategories.create(
+                    const newItemSub2 = await reimbursementsEmployeeDeceasedHasCategories.create(
                         {
-                            reimbursements_assist_id: newItem.id,
-                            sub_categories_id: 8,
+                            reimbursements_employee_deceased_id: newItem.id,
+                            categories_id: 11,
                         },
                         { transaction: t }
                     );
@@ -514,10 +508,10 @@ class Controller extends BaseController {
                     };
                 }
                 if (selectedVechicle) {
-                    const newItemSub = await reimbursementsAssistHasSubCategories.create(
+                    const newItemSub = await reimbursementsEmployeeDeceasedHasCategories.create(
                         {
-                            reimbursements_assist_id: newItem.id,
-                            sub_categories_id: 9,
+                            reimbursements_employee_deceased_id: newItem.id,
+                            categories_id: 12,
                         },
                         { transaction: t, });
                     itemsReturned = {
@@ -526,25 +520,22 @@ class Controller extends BaseController {
                     }
                 }
 
-                if (deceasedType && [3, 4, 5, 6].includes(deceasedType)) {
-                    console.log("Selected DeceasedType:", deceasedType);
-                    const newItemSub = await reimbursementsAssistHasSubCategories.create(
+                if (deceased) {
+                    console.log("Selected Deceased:", deceased);
+                    const newItemSub = await reimbursementsEmployeeDeceasedHasCategories.create(
                         {
-                            reimbursements_assist_id: newItem.id,
-                            sub_categories_id: deceasedType,
+                            reimbursements_employee_deceased_id: newItem.id,
+                            categories_id: 9,
                         },
                         { transaction: t }
                     );
                     itemsReturned = {
                         ...itemsReturned,
-                        newItemDeceasedType: newItemSub,
+                        newItemDecease: newItemSub,
                     };
-                    console.log("New Item Sub (DeceasedType):", newItemSub);
-                } else if (deceasedType) {
-                    console.log("Invalid DeceasedType:", deceasedType);
-                }
+                } 
 
-                if (selectedWreath || selectedVechicle || deceasedType) {
+                if (selectedWreath || selectedVechicle || deceased) {
                     return itemsReturned;
                 }
                 return newItem;
