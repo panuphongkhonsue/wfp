@@ -11,6 +11,11 @@ export default {
   dataById(id) {
     return api.get(`${path}/${id}`);
   },
+  getUserInitialData(options) {
+    return api.get(`${path}/userInitialData`, {
+      params: options,
+    });
+  },
   create(payload) {
     try {
       return api.post(`${path}/`, payload);
@@ -30,6 +35,14 @@ export default {
   delete(id) {
     try {
       return api.delete(`${path}/${id}`);
+    }
+    catch (error) {
+      Promise.reject(error);
+    }
+  },
+  deleteChild(id) {
+    try {
+      return api.delete(`${path}/delete-child/${id}`);
     }
     catch (error) {
       Promise.reject(error);

@@ -26,6 +26,18 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: Sequelize.Sequelize.fn('current_timestamp')
     },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    created_by: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    updated_by: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
     users_id: {
       type: DataTypes.BIGINT,
       allowNull: false,

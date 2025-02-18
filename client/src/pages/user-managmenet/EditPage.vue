@@ -27,7 +27,7 @@
                   :error="!!isError?.positionId" :rules="[(val) => !!val || 'กรุณาเลือกตำแหน่ง']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
@@ -41,7 +41,7 @@
                   :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
@@ -55,7 +55,7 @@
                   :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
@@ -67,7 +67,7 @@
                   :error="!!isError?.sectorId" :rules="[(val) => !!val || 'กรุณาเลือกภาควิชา']">
                   <template v-slot:no-option>
                     <q-item>
-                      <q-item-section class="text-grey font-14 font-regular"> No option </q-item-section>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
@@ -84,7 +84,7 @@
               <q-option-group v-if="!isView && !isLoading" v-model="model.roleId" :options="optionRole"
                 option-value="id" option-label="name" :color="isError.roleId ? 'red' : 'primary'"
                 :keep-color="isError.roleId ?? false" id="role" />
-              <p v-else> {{ model.roleName }} </p>
+              <p v-else class="font-regular"> {{ model.roleName }} </p>
             </q-card-section>
           </q-card>
         </div>
@@ -105,13 +105,14 @@
               <InputGroup v-else for-id="child-name" is-dense v-model="item.name" :data="item.name ?? '-'"
                 label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView">
               </InputGroup>
-              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable :data="item.birthday ?? '-'">
+              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable
+                :data="formatDateThaiSlash(item.birthday) ?? '-'">
                 <DatePicker is-dense v-model:model="item.birthday" v-model:dateShow="item.birthday" for-id="birthday"
                   :no-time="true" />
               </InputGroup>
               <div>
-                <q-btn v-if="index > 0 && !isView && !isLoading" color="red" @click="removeChildForm(index)"
-                  class="q-mt-sm">ลบ</q-btn>
+                <q-btn v-if="(index > 0 && !isView && !isLoading) || (isEdit && !isView && item?.id && !isLoading)"
+                  color="red" @click="removeChildForm(index)" class="q-mt-sm">ลบ</q-btn>
               </div>
             </q-card-section>
             <div v-if="!isView && !isLoading">
@@ -148,7 +149,7 @@ import DatePicker from "src/components/DatePicker.vue";
 
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash } from "src/components/format";
+import { formatDateThaiSlash, formatDateSlash } from "src/components/format";
 
 import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -182,13 +183,11 @@ const model = ref({
   child: [
     {
       name: null,
-      surname: null,
       birthday: null,
     },
   ],
+  deleteChild: [],
 });
-
-
 const isLoading = ref();
 const isError = ref({});
 const isView = ref(false);
@@ -203,31 +202,24 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  clearData(model);
+  model.value = null;
 });
 
-const resetObject = (obj) => {
-  for (const key in obj) {
-    if (obj[key] && typeof obj[key] === "object") {
-      // Recursively reset nested objects
-      resetObject(obj[key]);
-    } else {
-      // Set primitive values to null
-      obj[key] = null;
-    }
-  }
-};
-function clearData(model) {
-  resetObject(model.value);
-}
 function addChildForm() {
   model.value.child.push({
     name: null,
-    surname: null,
     birthday: null,
   });
 }
 function removeChildForm(index) {
+  if (isEdit.value && model.value.child[index]?.id) {
+    if (!Array.isArray(model.value.deleteChild)) {
+      model.value.deleteChild = [];
+    }
+    if (model.value && Array.isArray(model.value.deleteChild)) {
+      model.value.deleteChild.push({ id: model.value.child[index].id });
+    }
+  }
   model.value.child.splice(index, 1);
 };
 
@@ -235,11 +227,13 @@ function removeChildForm(index) {
 watch(
   model,
   () => {
-    Object.keys(model.value).forEach((key) => {
-      if (model.value[key] !== null) {
-        delete isError.value[key];
-      }
-    });
+    if (!isView.value) {
+      Object.keys(model.value).forEach((key) => {
+        if (model.value[key] !== null) {
+          delete isError.value[key];
+        }
+      });
+    }
   },
   { deep: true }
 );
@@ -289,13 +283,14 @@ async function submit() {
     });
     return;
   }
-  const hasNull = model.value.child.some(item =>
-    Object.values(item).some(value => value === null || value === "")
+  model.value.child = model.value.child.filter(item =>
+    !Object.values(item).some(value => value === null || value === "")
   );
-  if (hasNull) {
+  if (model.value.child.length === 0) {
     delete model.value.child;
   }
   let isValid = false;
+  var fetch;
   Swal.fire({
     title: "ยืนยันการทำรายการหรือไม่ ???",
     html: `โปรดตรวจสอบข้อมูลให้แน่ใจก่อนยืนยัน`,
@@ -312,10 +307,10 @@ async function submit() {
     preConfirm: async () => {
       try {
         if (isEdit.value) {
-          await userManagementService.update(route.params.id, model.value);
+          fetch = await userManagementService.update(route.params.id, model.value);
         }
         else {
-          await userManagementService.create(model.value);
+          fetch = await userManagementService.create(model.value);
         }
         isValid = true;
       } catch (error) {
@@ -327,8 +322,11 @@ async function submit() {
             };
           }
         }
+        Swal.showValidationMessage(error?.response?.data?.message ?? `เกิดข้อผิดพลาด กรุณาลองอีกครั้ง`);
         Notify.create({
-          message: `[ผิดพลาด].บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง`,
+          message:
+            error?.response?.data?.message ??
+            "บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
           position: "bottom-left",
           type: "negative",
         });
@@ -337,7 +335,7 @@ async function submit() {
   }).then((result) => {
     if (isValid && result.isConfirmed) {
       Swal.fire({
-        html: `บันทึกข้อมูลสำเร็จ`,
+        html: fetch.data?.message ?? `บันทึกข้อมูลสำเร็จ`,
         icon: "success",
         confirmButtonText: "ตกลง",
         customClass: {
@@ -346,10 +344,6 @@ async function submit() {
       }).then(() => {
         router.replace({ name: "user_management_list" });
       });
-    }
-    else {
-      model.value.child = [];
-      addChildForm()
     }
   });
 }
@@ -380,15 +374,16 @@ async function fetchInitialData() {
 async function init() {
   isView.value = route.meta.isView;
   isLoading.value = true;
-  await fetchInitialData();
+  if (!isView.value) {
+    await fetchInitialData();
+  }
   if (isEdit.value) {
     try {
       let res = await userManagementService.dataById(route.params.id);
       const dataBinding = res.data.datas;
-      const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : dataBinding.firstWorkingDate;
+      const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : formatDateSlash(dataBinding.firstWorkingDate);
       const childData = [{
         name: null,
-        surname: null,
         birthday: null,
       }]
       model.value = {
@@ -406,15 +401,26 @@ async function init() {
         sectorName: dataBinding.sector.name,
         roleId: dataBinding.role.id,
         roleName: dataBinding.role.name,
-        child: Array.isArray(dataBinding.children) && dataBinding.children.length > 0 ? dataBinding.children : childData,
       };
+      if (Array.isArray(dataBinding.children) && dataBinding.children.length > 0) {
+        const newChild = dataBinding.children.map((child) => ({
+          id: child?.id,
+          name: child?.name,
+          birthday: formatDateSlash(child?.birthday),
+        }));
 
+        model.value.child = newChild;
+      }
+      else {
+        model.value.child = childData;
+      }
+      model.value.child
       isLoading.value = false;
     } catch (error) {
       console.log(error);
       Notify.create({
         message:
-          error.response?.data?.errors ??
+          error.response?.data?.message ??
           "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
         position: "bottom-left",
         type: "negative",

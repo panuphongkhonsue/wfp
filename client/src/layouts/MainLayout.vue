@@ -79,7 +79,7 @@
 }
 </style>
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
 import { useMenuStore } from "src/stores/menuStore";
@@ -95,6 +95,12 @@ const user = ref({
   name: authStore.name,
   position: authStore.position,
 });
+
+onMounted(async () => {
+  if (!authStore.isLoggedIn) {
+    router.push({ name: "login" });
+  }
+});
 const iconMap = {
   outlinedHome,
   outlinedDescription,
@@ -108,6 +114,7 @@ const iconMap = {
 const rawMenuData = ref(menuStore.getPath());
 const rawMenuEditorData = ref(menuStore.getPathEditor());
 const essentialLinksUser = computed(() => {
+  if (!rawMenuData.value) return []; // Ensure rawMenuData is not null
   return rawMenuData.value.map(item => ({
     ...item,
     icon: iconMap[item.icon] ?? null,
@@ -117,7 +124,9 @@ const essentialLinksUser = computed(() => {
     })) || null,
   }));
 });
+
 const essentialLinksEditor = computed(() => {
+  if (!rawMenuEditorData.value) return []; // Ensure rawMenuEditorData is not null
   return rawMenuEditorData.value.map(item => ({
     ...item,
     icon: iconMap[item.icon] ?? null,
@@ -126,7 +135,8 @@ const essentialLinksEditor = computed(() => {
       icon: iconMap[child.icon] ?? null
     })) || null,
   }));
-});;
+});
+
 function toggleLeftDrawer() {
   menuStore.setState(!leftDrawerOpen.value);
   leftDrawerOpen.value = !leftDrawerOpen.value;

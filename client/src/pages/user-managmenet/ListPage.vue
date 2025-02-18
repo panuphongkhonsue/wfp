@@ -4,11 +4,11 @@
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
           <InputGroup more-class="font-16 font-medium" for-id="requesId" is-dense v-model="filter.keyword" label="ค้นหา"
-            placeholder="ชื่อ-นามสกุล">
+            placeholder="ชื่อ-นามสกุล" clearable>
           </InputGroup>
         </div>
-        <div class="content-center q-pt-lg q-pt-md-xs col-2">
-          <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm q-pt-sm weight-8 q-mt-xs"
+        <div class="content-center q-pt-sm-lg  q-pt-md-xs col-2">
+          <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs"
             dense type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>
       </q-form>
@@ -28,6 +28,9 @@
             {{ props.rowIndex + 1 }}
           </q-td>
         </template>
+        <template v-slot:loading>
+          <q-inner-loading showing color="primary" />
+        </template>
         <template v-slot:no-data="{ icon }">
           <div class="full-width row flex-center text-negative q-gutter-sm">
             <q-icon size="2em" :name="icon" />
@@ -38,7 +41,7 @@
         </template>
         <template v-slot:body-cell-department="props">
           <q-td :props="props" class="">
-            {{ props.row.department }} / {{ props.row.sector }}
+            {{ props.row?.department ?? "-" }} / {{ props.row?.sector ?? "-" }}
           </q-td>
         </template>
         <template v-slot:body-cell-tools="props">
@@ -137,10 +140,10 @@ async function deleteData(id, name) {
       try {
         await userManagementService.delete(id);
       } catch (error) {
-        Swal.showValidationMessage(`Delete Request Failed.`);
+        Swal.showValidationMessage(error?.response?.data?.message ?? `ไม่สามารถลบข้อมูลได้ กรุณาลองอีกครั้ง`);
         Notify.create({
           message:
-            error?.response?.data?.errors ??
+            error?.response?.data?.message ??
             "ลบไม่สำเร็จกรุณาลองอีกครั้ง",
           position: "bottom-left",
           type: "negative",
@@ -174,7 +177,7 @@ async function fetchFromServer(page, itemPerPage, filter) {
   } catch (error) {
     Notify.create({
       message:
-        error?.response?.data?.errors ??
+        error?.response?.data?.message ??
         "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
       position: "bottom-left",
       type: "negative",
@@ -183,7 +186,7 @@ async function fetchFromServer(page, itemPerPage, filter) {
 }
 
 function onRequest(props) {
-  const { page, rowsPerPage, } = props.pagination;
+  const { page, rowsPerPage } = props.pagination;
   listStore.setState(rowsPerPage);
   isLoading.value = true;
   setTimeout(async () => {
@@ -236,9 +239,9 @@ const columns = ref([
   },
   {
     name: "name",
-    label: "ชื่อนามสกุล",
+    label: "ชื่อ - นามสกุล",
     align: "left",
-    field: (row) => row.name ?? "-",
+    field: (row) => row?.name ?? "-",
     format: (val) => `${val}`,
     classes: "ellipsis",
   },
@@ -246,28 +249,28 @@ const columns = ref([
     name: "position",
     label: "ตำแหน่ง",
     align: "left",
-    field: (row) => row.position ?? "-",
+    field: (row) => row?.position ?? "-",
     classes: "ellipsis",
   },
   {
     name: "employeeType",
     label: "ประเภทบุคลากร",
     align: "left",
-    field: (row) => row.employeeType ?? "-",
+    field: (row) => row?.employeeType ?? "-",
     classes: "ellipsis",
   },
   {
     name: "department",
     label: "สังกัด ภาควิชา / ส่วนงาน",
     align: "left",
-    field: (row) => row.department ?? "-",
+    field: (row) => row?.department ?? "-",
     classes: "ellipsis",
   },
   {
     name: "tools",
     label: "จัดการ",
     align: "center",
-    field: (row) => row.tools ?? "-",
+    field: (row) => row?.tools ?? "-",
     classes: "ellipsis",
   },
 ]);

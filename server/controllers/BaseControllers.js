@@ -18,18 +18,18 @@ class BaseController {
 
     create = async (req, res, next) => {
         const method = 'Create';
-        const { userId } = req.user;
+        const { id } = req.user;
         try {
             const newItem = await this.model.create(req.body);
             res.status(201).json({ newItem: newItem, message: "สำเร็จ" });
         } catch (error) {
-            this.handleError(error, method, userId, next);
+            this.handleError(error, method, id, next);
         }
     };
 
     list = async (req, res, next) => {
         const method = 'List';
-        const { userId } = req.user;
+        const { id } = req.user;
         try {
             let { pageNo, itemPerPage } = req.query;
             pageNo = !isNaN(pageNo) ? Number(pageNo) : 1;
@@ -56,13 +56,13 @@ class BaseController {
                 pagination: { totalPages: pages, totalItems: total },
             });
         } catch (error) {
-            this.handleError(error, method, { userId }, next);
+            this.handleError(error, method, { id }, next);
         }
     };
 
     listAll = async (req, res, next) => {
         const method = 'ListAll';
-        const { userId } = req.user;
+        const { id } = req.user;
         try {
             var options = {
                 where: req.query,
@@ -76,13 +76,13 @@ class BaseController {
             const datas = await this.model.findAll(options);
             res.status(200).json(datas);
         } catch (error) {
-            this.handleError(error, method, { userId }, next);
+            this.handleError(error, method, { id }, next);
         }
     };
 
     getById = async (req, res, next) => {
         const method = 'GetById';
-        const { userId } = req.user;
+        const { id } = req.user;
         const dataId = req.params[this.primaryKey] ?? req.params['id'];
         try {
             const item = await this.model.findByPk(dataId);
@@ -91,20 +91,20 @@ class BaseController {
             } else {
                 logger.info('Data not found', {
                     method,
-                    data: { userId, dataId },
+                    data: { id, dataId },
                 });
                 res.status(404).json({
-                    message: `Data not found`,
+                    message: `ไม่พบข้อมูล`,
                 });
             }
         } catch (error) {
-            this.handleError(error, method, { userId, dataId }, next);
+            this.handleError(error, method, { id, dataId }, next);
         }
     };
 
     update = async (req, res, next) => {
         const method = 'Update';
-        const { userId } = req.user;
+        const { id } = req.user;
         const dataId = req.params[this.primaryKey] ?? req.params['id'];
         try {
             const updateData = this.filterAllowedAttributes(
@@ -121,26 +121,26 @@ class BaseController {
                 const updatedItem = await this.model.findByPk(dataId);
                 logger.info('Completed', {
                     method,
-                    data: { userId, dataId, model: this.modelName },
+                    data: { id, dataId, model: this.modelName },
                 });
                 res.status(200).json({ updatedItem: updatedItem, message: "สำเร็จ" });
             } else {
-                logger.info('Data not found', {
+                logger.info('No Modify', {
                     method,
-                    data: { userId, dataId, model: this.modelName },
+                    data: { id, dataId, model: this.modelName },
                 });
                 res.status(404).json({
-                    message: `Data not found`,
+                    message: `ไม่มีข้อมูลที่ถูกแก้ไข`,
                 });
             }
         } catch (error) {
-            this.handleError(error, method, { userId, dataId }, next);
+            this.handleError(error, method, { id, dataId }, next);
         }
     };
 
     reorder = async (req, res, next) => {
         const method = 'Reorder';
-        const { userId } = req.user;
+        const { id } = req.user;
         try {
             const { list } = req.body;
             if (list) {
@@ -154,15 +154,15 @@ class BaseController {
                     );
                 }
             }
-            res.status(200).json({ message: 'reorder is successfully' });
+            res.status(200).json({ message: 'สำเร็จ' });
         } catch (error) {
-            this.handleError(error, method, { userId }, next);
+            this.handleError(error, method, { id }, next);
         }
     };
 
     delete = async (req, res, next) => {
         const method = 'Delete';
-        const { userId } = req.user;
+        const { id } = req.user;
         const dataId = req.params[this.primaryKey] ?? req.params['id'];
         try {
             const deleted = await this.model.destroy({
@@ -171,22 +171,22 @@ class BaseController {
             if (deleted) {
                 logger.info('Completed', {
                     method,
-                    data: { userId, dataId, model: this.modelName },
+                    data: { id, dataId, model: this.modelName },
                 });
                 res.status(200).json({
                     message: `ลบข้อมูลสำเร็จ`,
                 });
             } else {
-                logger.info('Data not found', {
+                logger.info('Data not Found', {
                     method,
-                    data: { userId, dataId, model: this.modelName },
+                    data: { id, dataId, model: this.modelName },
                 });
                 res.status(404).json({
-                    message: `Data not found`,
+                    message: `ไม่พบข้อมูล`,
                 });
             }
         } catch (error) {
-            this.handleError(error, method, { userId }, next);
+            this.handleError(error, method, { id }, next);
         }
     };
 
