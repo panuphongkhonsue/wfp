@@ -563,13 +563,6 @@ async function submit(actionId) {
     navigate.scrollIntoView(false);
     validate = true;
   }
-  if (!model.value.fundDecease) {
-    isError.value.fundDecease = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก";
-    let navigate = document.getElementById("fund-receipt");
-    window.location.hash = "fund-receipt";
-    navigate.scrollIntoView(false);
-    validate = true;
-  }
   if (validate === true) {
     Notify.create({
       message: "กรุณากรอกข้อมูลให้ครบถ้วน",

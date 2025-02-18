@@ -478,8 +478,10 @@ class Controller extends BaseController {
         const selectedWreath = req.body.selected_wreath ?? false;
         const selectedVechicle = req.body.selected_vechicle ?? false;
         const fundEligible = req.body.fund_eligible ?? 0;
+        const deceasedType = req.body.deceased_type ?? null;
         delete req.body.selected_wreath;
         delete req.body.selected_vechicle;
+        delete req.body.deceased_type;
         const dataCreate = {
             ...req.body,
             fund_eligible: fundEligible
@@ -523,7 +525,28 @@ class Controller extends BaseController {
                         newItemVechicle: newItemSub,
                     }
                 }
-                if (selectedWreath || selectedVechicle) return itemsReturned
+
+                if (deceasedType && [3, 4, 5, 6].includes(deceasedType)) {
+                    console.log("Selected DeceasedType:", deceasedType);
+                    const newItemSub = await reimbursementsAssistHasSubCategories.create(
+                        {
+                            reimbursements_assist_id: newItem.id,
+                            sub_categories_id: deceasedType,
+                        },
+                        { transaction: t }
+                    );
+                    itemsReturned = {
+                        ...itemsReturned,
+                        newItemDeceasedType: newItemSub,
+                    };
+                    console.log("New Item Sub (DeceasedType):", newItemSub);
+                } else if (deceasedType) {
+                    console.log("Invalid DeceasedType:", deceasedType);
+                }
+
+                if (selectedWreath || selectedVechicle || deceasedType) {
+                    return itemsReturned;
+                }
                 return newItem;
             });
             res.status(201).json({ newItem: result, message: "บันทึกข้อมูลสำเร็จ" });
@@ -541,8 +564,10 @@ class Controller extends BaseController {
         const { id } = req.user;
         const selectedWreath = req.body.selected_wreath ?? false;
         const selectedVechicle = req.body.selected_vechicle ?? false;
+        const deceasedType = req.body.deceased_type ?? null; 
         delete req.body.selected_wreath;
         delete req.body.selected_vechicle
+        delete req.body.deceased_type;
         const dataUpdate = req.body;
         const dataId = req.params['id'];
         var itemsReturned = null;
@@ -612,7 +637,46 @@ class Controller extends BaseController {
                         checkingEdit = true;
                     }
                 }
-
+                if (deceasedType && [3, 4, 5, 6].includes(deceasedType)) {
+                    const deletedDeceased = await reimbursementsAssistHasSubCategories.destroy({
+                        where: { reimbursements_assist_id: dataId, sub_categories_id: { [Op.in]: [3, 4, 5, 6] } },
+                        transaction: t,
+                    });
+    
+                    if (deletedDeceased) {
+                        console.log("Deleted old DeceasedType:", deletedDeceased);  
+                        itemsReturned = { ...itemsReturned, deleteItemDeceasedType: deletedDeceased };
+                        checkingEdit = true;
+                    }
+    
+                    const existingDeceased = await reimbursementsAssistHasSubCategories.count({
+                        where: { reimbursements_assist_id: dataId, sub_categories_id: deceasedType },
+                        transaction: t,
+                    });
+    
+                    if (!existingDeceased) {
+                        const newDeceasedSub = await reimbursementsAssistHasSubCategories.create(
+                            {
+                                reimbursements_assist_id: dataId,
+                                sub_categories_id: deceasedType,
+                            },
+                            { transaction: t }
+                        );
+    
+                        itemsReturned = { ...itemsReturned, newItemDeceasedType: newDeceasedSub };
+                        checkingEdit = true;
+                    }
+                } else if (deceasedType) {
+                    const deletedDeceased = await reimbursementsAssistHasSubCategories.destroy({
+                        where: { reimbursements_assist_id: dataId, sub_categories_id: { [Op.in]: [3, 4, 5, 6] } },
+                        transaction: t,
+                    });
+    
+                    if (deletedDeceased) {
+                        itemsReturned = { ...itemsReturned, deleteItemDeceasedType: deletedDeceased };
+                        checkingEdit = true;
+                    }
+                }
                 return checkingEdit || updated > 0 ? itemsReturned : null;
             });
 
@@ -634,7 +698,7 @@ class Controller extends BaseController {
         const dataId = req.params['id'];
         try {
             const deletedSub = await reimbursementsAssistHasSubCategories.destroy({
-                where: { reimbursements_assist_id: dataId },  
+                where: { reimbursements_assist_id: dataId },
             });
 
             const deleted = await reimbursementsAssist.destroy({
