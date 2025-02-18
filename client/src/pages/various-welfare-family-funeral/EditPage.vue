@@ -98,10 +98,12 @@
               <p class="col-12 q-mb-none q-pt-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
               <div v-for="option in deceaseOptions" :key="option.value" class="col-12 row q-mb-none">
                 <div class="col-md-2">
-                  <q-radio v-model="model.value.deceasedType" :val="option.value" :label="option.label" class="q-mr-md" :disable="isView" />
+                  <q-radio v-model="model.deceasedType" :val="option.value" :label="option.label" class="q-mr-md"
+                    :disable="isView" />
                 </div>
-                <q-input v-if="model.value.deceasedType === option.value" v-model="model.decease[option.value]"
-                  :data="model.fund ?? '-'" outlined dense placeholder="ชื่อ-นามสกุล" class="col-md-4 q-ml-md" />
+                <InputGroup label="" v-if="model.deceasedType === option.value" v-model="model.decease"  :data="model.fund ?? '-'"
+                  placeholder="ชื่อ-นามสกุล" type="text" class="col-md-4 q-ml-md" :is-view="isView" is-dense>
+                </InputGroup>
               </div>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
@@ -118,7 +120,8 @@
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
               <div class="q-pb-md q-mb-none font-16 font-bold text-black">
-                <q-checkbox v-model="model.selectedWreath" val="wreathRequire" label="ค่าสนับสนุนค่าพวงหรีด" :disable="isView" />
+                <q-checkbox v-model="model.selectedWreath" val="wreathRequire" label="ค่าสนับสนุนค่าพวงหรีด"
+                  :disable="isView" />
               </div>
               <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายไม่เกิน 2,000 บาท ในนามมหาวิทยาลัย และไม่เกิน
                 2,000 บาท ในนามส่วนงาน)</p>
@@ -203,12 +206,13 @@
     <template v-slot:action>
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
-          style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'various_welfare_funeral_family_list' }" />
+          style="background : #BFBFBF;" label="ย้อนกลับ" no-caps
+          :to="{ name: 'various_welfare_funeral_family_list' }" />
         <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
           type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
-        <q-btn  id="button-approve"
-          class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
-          label="ส่งคำร้องขอ" no-caps @click="submit(2)" v-if="!isView && !isLoading" />
+        <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
+          style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
+          v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -243,25 +247,25 @@ const model = ref({
   selectedWreath: false,
   selectedVechicle: false,
   deceasedType: null,
-  decease: {},
+  decease: null,
 });
 let options = ref([]);
 const deceaseOptions = [
   {
     label: 'บิดา',
-    value: '3'
+    value: 3
   },
   {
     label: 'มารดา',
-    value: '4'
+    value: 4
   },
   {
     label: 'คู่สมรส',
-    value: '5'
+    value: 5
   },
   {
     label: 'บุตร',
-    value: '6'
+    value: 6
   }
 ]
 const isError = ref({});
@@ -294,15 +298,18 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   model.value = null;
+
 });
 watch(
   () => model.value.deceasedType,
   (newValue) => {
-    if (newValue !== undefined) {
-      console.log('Decease Model:', model.value.decease);  // ตรวจสอบค่าทั้งหมดใน model.decease
+    if (newValue && !model.value.decease) {
+      model.value.decease = "";  // รีเซ็ตค่า
     }
   }
 );
+
+
 
 
 watch(
@@ -340,20 +347,20 @@ watch(
     }
   }
 );
-watch(
-  () => model.value.deceasedType,
-  (newValue) => {
-    if (!newValue) {
-      model.value.decease = null;
-    }
-  }
-);
-watch(
-  () => model.value.deceasedType,
-  (newValue) => {
-    model.value.deceasedType = newValue; 
-  }
-);
+// watch(
+//   () => model.value.deceasedType,
+//   (newValue) => {
+//     if (!newValue) {
+//       model.value.decease = null;
+//     }
+//   }
+// );
+// watch(
+//   () => model.value.deceasedType,
+//   (newValue) => {
+//     model.value.deceasedType = newValue;
+//   }
+// );
 
 watch(
   () => model.value.selectedWreath,
@@ -389,8 +396,8 @@ async function fetchDataEdit() {
           selectedWreath: returnedData?.fundWreathUniversity && returnedData?.fundWreathArrange ? true : false,
           selectedVechicle: returnedData?.fundVechicle ? true : false,
           status: returnedData?.status,
-          deceasedType: returnedData?.deceasedType ?? null, 
-          decease: returnedData?.decease ?? {},
+          deceasedType: returnedData?.deceasedType,
+          decease: returnedData?.decease,
           fundReceipt: returnedData?.fundReceipt,
           fundDecease: returnedData?.fundDecease,
           fundReceiptWreath: returnedData?.fundReceiptWreath,
@@ -407,8 +414,11 @@ async function fetchDataEdit() {
           department: returnedData?.user.department,
         };
       }
-      console.log('Fetched Data:', returnedData);  // ดูข้อมูลที่ดึงมา
-
+      const check = deceaseOptions.some(option => model.value.deceasedType === option.value);
+      console.log("Check result:", check);
+      console.log("returnData:", returnedData);
+      console.log("userData:", userData.value);
+      console.log("ModelData:", model.value);
     } catch (error) {
       router.replace({ name: "various_welfare_funeral_family_list" });
       Notify.create({
@@ -422,6 +432,7 @@ async function fetchDataEdit() {
     isLoading.value = false;
   }, 100);
 }
+
 async function fetchUserData(id) {
   try {
     const result = await userManagementService.dataById(id);
@@ -443,13 +454,13 @@ async function fetchUserData(id) {
 async function fetchRemaining() {
   try {
     const fetchRemaining = await variousWelfareFuneralFamilyService.getRemaining({ createFor: model.value.createFor });
-    
+
     const deceaseData = fetchRemaining.data?.datas[0];
 
     if (Array.isArray(deceaseData)) {
       deceaseData.forEach((item) => {
         const matchedOption = deceaseOptions.find(option => option.value === String(item.subCategoriesId));
-        
+
         if (matchedOption) {
           remaining.value[matchedOption.value] = {
             requestsRemaining: item.requestsRemaining != null && !isNaN(Number(item.requestsRemaining))
@@ -572,7 +583,7 @@ async function submit(actionId) {
     fundReceipt: model.value.fundReceipt,
     fundDecease: model.value.fundDecease,
     deceasedType: model.value.deceasedType,
-    decease: model.value.decease ? model.value.decease[model.value.deceasedType] : "",
+    decease: model.value.decease,
     selectedWreath: model.value.selectedWreath,
     selectedVechicle: model.value.selectedVechicle,
     fundReceiptWreath: model.value.fundReceiptWreath,
@@ -641,11 +652,13 @@ async function submit(actionId) {
   });
 }
 async function init() {
+
   isView.value = route.meta.isView;
   isLoading.value = true;
   try {
     if (isView.value) {
-      fetchDataEdit();
+      await fetchDataEdit();
+      console.log("dataModel:", model.value);
     }
     else if (isEdit.value) {
       if (!canCreateFor.value) {

@@ -478,7 +478,6 @@ class Controller extends BaseController {
         const selectedWreath = req.body.selected_wreath ?? false;
         const selectedVechicle = req.body.selected_vechicle ?? false;
         const fundEligible = req.body.fund_eligible ?? 0;
-        
         delete req.body.selected_wreath;
         delete req.body.selected_vechicle;
         const dataCreate = {
