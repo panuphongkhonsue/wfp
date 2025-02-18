@@ -152,7 +152,7 @@
               <div class=" q-pb-md q-mb-none font-16 font-bold">
                 <q-checkbox v-model="model.selectedVechicle" label="ค่าสนับสนุนค่าพาหนะเหมาจ่าย" :disable="isView" />
               </div>
-              <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายจริงคนละไม่เกิน 5,000 บาท)</p>
+              <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายจริงคนละไม่เกิน 10,000 บาท)</p>
             </q-card-section>
             <q-card-section v-show="model.selectedVechicle"
               class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
