@@ -27,7 +27,9 @@ const roleRouter = require('./routes/role');
 const reimbursementWelfareRouter = require('./routes/reimburesmentWelfare');
 const healthCheckUpWelfare = require('./routes/healthCheckUpWelfare');
 const dentalWelfare = require('./routes/dentalWelfare');
-const medicalWelfare = require('./routes/medicalWelfare')
+const medicalWelfare = require('./routes/medicalWelfare');
+const variousWelfare = require('./routes/variousWelfare');
+const variousFuneralFamilyWelfare = require('./routes/variousFamilyFuneralWelfare');
 
 var app = express();
 app.set('trust proxy', true);
@@ -80,6 +82,8 @@ app.use('/reimbursement-welfare', auth, reimbursementWelfareRouter);
 app.use('/health-check-up-welfare', auth, healthCheckUpWelfare);
 app.use('/dental-welfare', auth, dentalWelfare);
 app.use('/medical-welfare', auth, medicalWelfare);
+app.use('/various-welfare', auth, variousWelfare);
+app.use('/various-welfare-funeral-family', auth, variousFuneralFamilyWelfare);
 
 // error handling
 app.use((error, req, res, next) => {
