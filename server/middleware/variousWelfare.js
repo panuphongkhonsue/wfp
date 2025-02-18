@@ -275,7 +275,7 @@ const bindUpdate = async (req, res, next) => {
         }
         console.log(dataBinding);
         if (!isNullOrEmpty(actionId)) {
-            if (req.access && actionId != status.approve) {
+            if (req.access && actionId != 3) {
                 return res.status(400).json({
                     message: "ไม่มีการกระทำที่ต้องการ",
                 });
