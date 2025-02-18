@@ -70,10 +70,10 @@
 
         <template v-slot:body-cell-tools="props">
           <q-td :props="props" class="">
-            <a @click.stop.prevent="viewData(props.row.id, props.row.categoryName)" class="text-dark q-py-sm q-px-xs cursor-pointer">
+            <a @click.stop.prevent="viewData(props.row.id, props.row.categoryName, props.row.welfareType)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
-            <a v-show="props.row.status.statusId == 2" @click.stop.prevent="goto(props.row.id, props.row.categoryName)"
+            <a v-show="props.row.status.statusId == 2" @click.stop.prevent="goto(props.row.id, props.row.categoryName, props.row.welfareType)"
               class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
@@ -299,7 +299,7 @@ function search() {
   });
 }
 
-function viewData(requestId, categoryName) {
+function viewData(requestId, categoryName, welfareType) {
   if (categoryName == "ตรวจสุขภาพ") {
     router.push({
     name: "financial_health_check_up_welfare_view",
@@ -318,10 +318,25 @@ function viewData(requestId, categoryName) {
     params: { id: requestId },
   });
   }
+  else if(welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
+    if(categoryName == "เสียชีวิตคนในครอบครัว"){
+      router.push({
+      name: "financial_family_funeral_welfare_view",
+      params: { id: requestId },
+    });
+    }
+    else{
+      router.push({
+      name: "financial_various_welfare_view",
+      params: { id: requestId },
+    });
+    }
+    
+  }
   
 }
 
-function goto(requestId, categoryName) {
+function goto(requestId, categoryName, welfareType) {
   if (categoryName == "ตรวจสุขภาพ") {
     router.push({
       name: "financial_health_check_up_welfare_edit",
@@ -339,6 +354,21 @@ function goto(requestId, categoryName) {
       name: "financial_dental_welfare_edit",
       params: { id: requestId },
     });
+  }
+  else if(welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
+    if(categoryName == "เสียชีวิตคนในครอบครัว"){
+      router.push({
+      name: "financial_family_funeral_welfare_edit",
+      params: { id: requestId },
+    });
+    }
+    else{
+      router.push({
+      name: "financial_various_welfare_edit",
+      params: { id: requestId },
+    });
+    }
+    
   }
 }
 
