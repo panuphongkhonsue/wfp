@@ -356,7 +356,7 @@ class Controller extends BaseController {
                     [col("fund_receipt_wreath"), "fundReceiptWreath"],
                     [col("fund_wreath_university"), "fundWreathUniversity"],
                     [col("fund_wreath_arrange"), "fundWreathArrange"],
-                    [col("fund_receipt_vechicle"), "fundReceiptVecicle"],
+                    [col("fund_receipt_vechicle"), "fundReceiptVechicle"],
                     [col("fund_vechicle"), "fundVechicle"],
                     [col("fund_sum_receipt"), "fundSumReceipt"],
                     [col("fund_sum_request"), "fundSumRequest"],

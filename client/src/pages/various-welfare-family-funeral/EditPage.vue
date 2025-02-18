@@ -98,9 +98,9 @@
               <p class="col-12 q-mb-none q-pt-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
               <div v-for="option in deceaseOptions" :key="option.value" class="col-12 row q-mb-none">
                 <div class="col-md-2">
-                  <q-radio v-model="model.selectedDecease" :val="option.value" :label="option.label" class="q-mr-md" />
+                  <q-radio v-model="model.value.deceasedType" :val="option.value" :label="option.label" class="q-mr-md" :disable="isView" />
                 </div>
-                <q-input v-if="model.selectedDecease === option.value" v-model="model.decease[option.value]"
+                <q-input v-if="model.value.deceasedType === option.value" v-model="model.decease[option.value]"
                   :data="model.fund ?? '-'" outlined dense placeholder="ชื่อ-นามสกุล" class="col-md-4 q-ml-md" />
               </div>
             </q-card-section>
@@ -118,7 +118,7 @@
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
               <div class="q-pb-md q-mb-none font-16 font-bold text-black">
-                <q-checkbox v-model="model.selectedWreath" val="wreathRequire" label="ค่าสนับสนุนค่าพวงหรีด" />
+                <q-checkbox v-model="model.selectedWreath" val="wreathRequire" label="ค่าสนับสนุนค่าพวงหรีด" :disable="isView" />
               </div>
               <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายไม่เกิน 2,000 บาท ในนามมหาวิทยาลัย และไม่เกิน
                 2,000 บาท ในนามส่วนงาน)</p>
@@ -147,7 +147,7 @@
             <q-separator inset />
             <q-card-section class="col row">
               <div class=" q-pb-md q-mb-none font-16 font-bold">
-                <q-checkbox v-model="model.selectedVechicle" label="ค่าสนับสนุนค่าพาหนะเหมาจ่าย" />
+                <q-checkbox v-model="model.selectedVechicle" label="ค่าสนับสนุนค่าพาหนะเหมาจ่าย" :disable="isView" />
               </div>
               <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายจริงคนละไม่เกิน 5,000 บาท)</p>
             </q-card-section>
@@ -242,7 +242,7 @@ const model = ref({
   fundVechicle: null,
   selectedWreath: false,
   selectedVechicle: false,
-  selectedDecease: null,
+  deceasedType: null,
   decease: {},
 });
 let options = ref([]);
@@ -296,6 +296,16 @@ onBeforeUnmount(() => {
   model.value = null;
 });
 watch(
+  () => model.value.deceasedType,
+  (newValue) => {
+    if (newValue !== undefined) {
+      console.log('Decease Model:', model.value.decease);  // ตรวจสอบค่าทั้งหมดใน model.decease
+    }
+  }
+);
+
+
+watch(
   model,
   () => {
     if (!isView.value) {
@@ -331,13 +341,20 @@ watch(
   }
 );
 watch(
-  () => model.value.selectedDecease,
+  () => model.value.deceasedType,
   (newValue) => {
     if (!newValue) {
-      model.value.deceaseecease = null;
+      model.value.decease = null;
     }
   }
 );
+watch(
+  () => model.value.deceasedType,
+  (newValue) => {
+    model.value.deceasedType = newValue; 
+  }
+);
+
 watch(
   () => model.value.selectedWreath,
   (newValue) => {
@@ -372,7 +389,8 @@ async function fetchDataEdit() {
           selectedWreath: returnedData?.fundWreathUniversity && returnedData?.fundWreathArrange ? true : false,
           selectedVechicle: returnedData?.fundVechicle ? true : false,
           status: returnedData?.status,
-          deceased: returnedData?.decease,
+          deceasedType: returnedData?.deceasedType ?? null, 
+          decease: returnedData?.decease ?? {},
           fundReceipt: returnedData?.fundReceipt,
           fundDecease: returnedData?.fundDecease,
           fundReceiptWreath: returnedData?.fundReceiptWreath,
@@ -389,6 +407,8 @@ async function fetchDataEdit() {
           department: returnedData?.user.department,
         };
       }
+      console.log('Fetched Data:', returnedData);  // ดูข้อมูลที่ดึงมา
+
     } catch (error) {
       router.replace({ name: "various_welfare_funeral_family_list" });
       Notify.create({
@@ -478,7 +498,7 @@ async function filterFn(val, update) {
 }
 async function submit(actionId) {
   let validate = false;
-  if (!model.value.selectedWreath && !model.value.selectedVechicle && !model.value.selectedDecease) {
+  if (!model.value.selectedWreath && !model.value.selectedVechicle && !model.value.deceasedType) {
     Notify.create({
       message: "กรุณากรอกสวัสดิการที่ต้องการเบิก",
       position: "bottom-left",
@@ -486,7 +506,7 @@ async function submit(actionId) {
     });
     return;
   }
-  if (model.value.selectedDecease) {
+  if (model.value.deceasedType) {
     if (!model.value.decease) {
       isError.value.decease = "กรุณากรอกข้อมูลชื่อ - นามสกุลของผู้เสียชีวิต";
       validate = true;
@@ -551,8 +571,8 @@ async function submit(actionId) {
   let payload = {
     fundReceipt: model.value.fundReceipt,
     fundDecease: model.value.fundDecease,
-    selectedDecease: model.value.selectedDecease,
-    decease: model.value.decease ? model.value.decease[model.value.selectedDecease] : "",
+    deceasedType: model.value.deceasedType,
+    decease: model.value.decease ? model.value.decease[model.value.deceasedType] : "",
     selectedWreath: model.value.selectedWreath,
     selectedVechicle: model.value.selectedVechicle,
     fundReceiptWreath: model.value.fundReceiptWreath,

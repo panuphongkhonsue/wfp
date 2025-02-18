@@ -127,7 +127,7 @@ const byIdMiddleWare = async (req, res, next) => {
 const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, decease, fundDecease, fundReceiptWreath, fundWreathUniversity, fundWreathArrange,
-            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, actionId, selectedDecease } = req.body;
+            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, actionId, deceasedType } = req.body;
         const errorObj = {};
 
         if (isNullOrEmpty(fundReceipt)) {
@@ -148,7 +148,7 @@ const checkNullValue = async (req, res, next) => {
             });
         }
 
-        if (selectedDecease) {
+        if (deceasedType) {
             if (isNullOrEmpty(decease)) {
                 errorObj["decease"] = "กรุณากรอกข้อมูล ชื่อ - นามสกุล ของผู้เสียชีวิต";
             }
@@ -254,7 +254,7 @@ const bindCreate = async (req, res, next) => {
     try {
         const {
             fundReceipt, decease, fundDecease, fundReceiptWreath, fundWreathUniversity, fundWreathArrange, fundSumReceipt,
-            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, fundSumRequest, createFor, actionId, selectedDecease } = req.body;
+            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, fundSumRequest, createFor, actionId, deceasedType } = req.body;
         const { id } = req.user;
         if (!isNullOrEmpty(createFor) && req.isEditor) {
             return res.status(400).json({
@@ -277,7 +277,7 @@ const bindCreate = async (req, res, next) => {
         }
         const dataBinding = {
             reim_number: reimNumber,
-            selected_decease: selectedDecease,
+            deceased_type: deceasedType,
             deceased: decease,
             selected_wreath: selectedWreath,
             selected_vechicle: selectedVechicle,
@@ -286,7 +286,7 @@ const bindCreate = async (req, res, next) => {
             fund_receipt_wreath: fundReceiptWreath,
             fund_wreath_university: fundWreathUniversity,
             fund_wreath_arrange: fundWreathArrange,
-            fund_sum_request_vechicle: fundReceiptVechicle,
+            fund_receipt_vechicle: fundReceiptVechicle,
             fund_vechicle: fundVechicle,
             fund_sum_request: fundSumRequest,
             fund_sum_receipt: fundSumReceipt,
@@ -311,7 +311,7 @@ const bindUpdate = async (req, res, next) => {
     try {
         const {
             fundReceipt, decease, fundDecease, fundReceiptWreath, fundWreathUniversity, fundWreathArrange, fundSumReceipt,
-            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, fundSumRequest, createFor, actionId, selectedDecease } = req.body;
+            fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, fundSumRequest, createFor, actionId, deceasedType } = req.body;
         const { id } = req.user;
         if (!isNullOrEmpty(createFor) && req.isEditor) {
             return res.status(400).json({
@@ -349,7 +349,7 @@ const bindUpdate = async (req, res, next) => {
             });
         }
         const dataBinding = {
-            selected_decease: selectedDecease,
+            deceased_type: deceasedType,
             deceased: decease,
             selected_wreath: selectedWreath,
             selected_vechicle: selectedVechicle,
@@ -358,7 +358,7 @@ const bindUpdate = async (req, res, next) => {
             fund_receipt_wreath: fundReceiptWreath,
             fund_wreath_university: fundWreathUniversity,
             fund_wreath_arrange: fundWreathArrange,
-            fund_sum_request_vechicle: fundReceiptVechicle,
+            fund_receipt_vechicle: fundReceiptVechicle,
             fund_vechicle: fundVechicle,
             fund_sum_request: fundSumRequest,
             fund_sum_receipt: fundSumReceipt,
