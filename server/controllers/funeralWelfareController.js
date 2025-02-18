@@ -479,7 +479,7 @@ class Controller extends BaseController {
         const deceased = req.body.deceased ?? null;
         delete req.body.selected_wreath;
         delete req.body.selected_vechicle;
-        delete req.body.deceased_type;
+        delete req.body.deceased;
         try {
             const result = await sequelize.transaction(async t => {
                 const newItem = await reimbursementsAssist.create(dataCreate, { transaction: t, });
@@ -551,20 +551,20 @@ class Controller extends BaseController {
         }
     }
     update = async (req, res, next) => {
-        const method = 'UpdateVariousWelfareFuneralFamily';
+        const method = 'UpdateFuneralWelfare';
         const { id } = req.user;
         const selectedWreath = req.body.selected_wreath ?? false;
         const selectedVechicle = req.body.selected_vechicle ?? false;
-        const deceasedType = req.body.deceased_type ?? null; 
+        const deceased = req.body.deceased ?? null;
         delete req.body.selected_wreath;
-        delete req.body.selected_vechicle
-        delete req.body.deceased_type;
+        delete req.body.selected_vechicle;
+        delete req.body.deceased;
         const dataUpdate = req.body;
         const dataId = req.params['id'];
         var itemsReturned = null;
         try {
             const result = await sequelize.transaction(async t => {
-                const [updated] = await reimbursementsAssist.update(dataUpdate, {
+                const [updated] = await reimbursementsEmployeeDeceased.update(dataUpdate, {
                     where: { id: dataId },
                     transaction: t,
                 });
@@ -573,23 +573,23 @@ class Controller extends BaseController {
                 let itemsReturned = { updated };
 
                 if (selectedWreath) {
-                    const existingWreath = await reimbursementsAssistHasSubCategories.count({
-                        where: { reimbursements_assist_id: dataId, sub_categories_id: { [Op.in]: [7, 8] } },
+                    const existingWreath = await reimbursementsEmployeeDeceasedHasCategories.count({
+                        where: { reimbursements_employee_deceased_id: dataId, categories_id: { [Op.in]: [10,11] } },
                         transaction: t,
                     });
 
                     if (!existingWreath) {
-                        const newWreathItems = await reimbursementsAssistHasSubCategories.bulkCreate([
-                            { reimbursements_assist_id: dataId, sub_categories_id: 7 },
-                            { reimbursements_assist_id: dataId, sub_categories_id: 8 }
+                        const newWreathItems = await reimbursementsEmployeeDeceasedHasCategories.bulkCreate([
+                            { reimbursements_employee_deceased_id: dataId, categories_id: 10 },
+                            { reimbursements_employee_deceased_id: dataId, ategories_id: 11 }
                         ], { transaction: t });
 
                         itemsReturned = { ...itemsReturned, newItemWreath: newWreathItems };
                         checkingEdit = true;
                     }
                 } else {
-                    const deletedWreath = await reimbursementsAssistHasSubCategories.destroy({
-                        where: { reimbursements_assist_id: dataId, sub_categories_id: { [Op.in]: [7, 8] } },
+                    const deletedWreath = await reimbursementsEmployeeDeceasedHasCategories.destroy({
+                        where: { reimbursements_employee_deceased_id: dataId, categories_id: { [Op.in]: [10, 11] } },
                         transaction: t,
                     });
 
@@ -600,16 +600,16 @@ class Controller extends BaseController {
                 }
 
                 if (selectedVechicle) {
-                    const existingVechicle = await reimbursementsAssistHasSubCategories.count({
-                        where: { reimbursements_assist_id: dataId, sub_categories_id: 9 },
+                    const existingVechicle = await reimbursementsEmployeeDeceasedHasCategories.count({
+                        where: { reimbursements_employee_deceased_id: dataId, categories_id: 12 },
                         transaction: t,
                     });
 
                     if (!existingVechicle) {
-                        const newItemSub = await reimbursementsAssistHasSubCategories.create(
+                        const newItemSub = await reimbursementsEmployeeDeceasedHasCategories.create(
                             {
-                                reimbursements_assist_id: dataId,
-                                sub_categories_id: 9,
+                                reimbursements_employee_deceased_id: dataId,
+                                categories_id: 12,
                             },
                             { transaction: t }
                         );
@@ -618,8 +618,8 @@ class Controller extends BaseController {
                         checkingEdit = true;
                     }
                 } else {
-                    const deletedVechicle = await reimbursementsAssistHasSubCategories.destroy({
-                        where: { reimbursements_assist_id: dataId, sub_categories_id: 9 },
+                    const deletedVechicle = await reimbursementsEmployeeDeceasedHasCategories.destroy({
+                        where: { reimbursements_employee_deceased_id: dataId, categories_id: 12 },
                         transaction: t,
                     });
 
@@ -628,43 +628,43 @@ class Controller extends BaseController {
                         checkingEdit = true;
                     }
                 }
-                if (deceasedType && [3, 4, 5, 6].includes(deceasedType)) {
-                    const deletedDeceased = await reimbursementsAssistHasSubCategories.destroy({
-                        where: { reimbursements_assist_id: dataId, sub_categories_id: { [Op.in]: [3, 4, 5, 6] } },
+                if (deceased) {
+                    const deletedDeceased = await reimbursementsEmployeeDeceasedHasCategories.destroy({
+                        where: { reimbursements_employee_deceased_id: dataId, categories_id:  9 },
                         transaction: t,
                     });
     
                     if (deletedDeceased) {
-                        console.log("Deleted old DeceasedType:", deletedDeceased);  
-                        itemsReturned = { ...itemsReturned, deleteItemDeceasedType: deletedDeceased };
+                        console.log("Deleted old Deceased:", deletedDeceased);  
+                        itemsReturned = { ...itemsReturned, deleteItemDeceased: deletedDeceased };
                         checkingEdit = true;
                     }
     
-                    const existingDeceased = await reimbursementsAssistHasSubCategories.count({
-                        where: { reimbursements_assist_id: dataId, sub_categories_id: deceasedType },
+                    const existingDeceased = await reimbursementsEmployeeDeceasedHasCategories.count({
+                        where: { reimbursements_employee_deceased_id: dataId, categories_id: 9 },
                         transaction: t,
                     });
     
                     if (!existingDeceased) {
-                        const newDeceasedSub = await reimbursementsAssistHasSubCategories.create(
+                        const newDeceasedSub = await reimbursementsEmployeeDeceasedHasCategories.create(
                             {
-                                reimbursements_assist_id: dataId,
-                                sub_categories_id: deceasedType,
+                                reimbursements_employee_deceased_id: dataId,
+                                categories_id: 9,
                             },
                             { transaction: t }
                         );
     
-                        itemsReturned = { ...itemsReturned, newItemDeceasedType: newDeceasedSub };
+                        itemsReturned = { ...itemsReturned, newItemDeceased: newDeceasedSub };
                         checkingEdit = true;
                     }
-                } else if (deceasedType) {
-                    const deletedDeceased = await reimbursementsAssistHasSubCategories.destroy({
-                        where: { reimbursements_assist_id: dataId, sub_categories_id: { [Op.in]: [3, 4, 5, 6] } },
+                } else if (deceased) {
+                    const deletedDeceased = await reimbursementsEmployeeDeceasedHasCategories.destroy({
+                        where: { reimbursements_employee_deceased_id: dataId, categories_id: 9 },
                         transaction: t,
                     });
     
                     if (deletedDeceased) {
-                        itemsReturned = { ...itemsReturned, deleteItemDeceasedType: deletedDeceased };
+                        itemsReturned = { ...itemsReturned, deleteItemDeceased: deletedDeceased };
                         checkingEdit = true;
                     }
                 }
@@ -684,20 +684,20 @@ class Controller extends BaseController {
         }
     }
     delete = async (req, res, next) => {
-        const method = 'DeletedVariousWelfareFuneralFamily';
+        const method = 'DeletedFuneralWelfare';
         const { id } = req.user;
         const dataId = req.params['id'];
         try {
-            const deletedSub = await reimbursementsAssistHasSubCategories.destroy({
-                where: { reimbursements_assist_id: dataId },
+            const deletedSub = await reimbursementsEmployeeDeceasedHasCategories.destroy({
+                where: { reimbursements_employee_deceased_id: dataId },
             });
 
-            const deleted = await reimbursementsAssist.destroy({
+            const deleted = await reimbursementsEmployeeDeceased.destroy({
                 where: { id: dataId },
             });
 
             if (deletedSub && deleted) {
-                const updatedItem = await reimbursementsAssist.findByPk(dataId);
+                const updatedItem = await reimbursementsEmployeeDeceased.findByPk(dataId);
                 logger.info('Completed', {
                     method,
                     data: { id, dataId },
