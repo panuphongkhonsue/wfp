@@ -25,9 +25,10 @@ const postitionRouter = require('./routes/position');
 const sectorRouter = require('./routes/sector');
 const roleRouter = require('./routes/role');
 const reimbursementWelfareRouter = require('./routes/reimburesmentWelfare');
-const healthCheckUpWelfare = require('./routes/healthCheckUpWelfare');
-const dentalWelfare = require('./routes/dentalWelfare');
-const medicalWelfare = require('./routes/medicalWelfare')
+const healthCheckUpWelfareRouter = require('./routes/healthCheckUpWelfare');
+const dentalWelfareRouter = require('./routes/dentalWelfare');
+const medicalWelfareRouter = require('./routes/medicalWelfare');
+const exportRouter = require('./routes/export')
 
 var app = express();
 app.set('trust proxy', true);
@@ -58,6 +59,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use("/assets", express.static(__dirname + "/public"));
 
 // --- Map router ---
 app.use('/', indexRouter);
@@ -77,9 +79,10 @@ app.use('/position', auth, postitionRouter);
 app.use('/sector', auth, sectorRouter);
 app.use('/role', auth, roleRouter);
 app.use('/reimbursement-welfare', auth, reimbursementWelfareRouter);
-app.use('/health-check-up-welfare', auth, healthCheckUpWelfare);
-app.use('/dental-welfare', auth, dentalWelfare);
-app.use('/medical-welfare', auth, medicalWelfare);
+app.use('/health-check-up-welfare', auth, healthCheckUpWelfareRouter);
+app.use('/dental-welfare', auth, dentalWelfareRouter);
+app.use('/medical-welfare', auth, medicalWelfareRouter);
+app.use('/export', auth, exportRouter);
 
 // error handling
 app.use((error, req, res, next) => {

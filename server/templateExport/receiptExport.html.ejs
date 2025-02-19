@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ใบสำคัญรับเงินค่าตรวจสุขภาพประจำปี</title>
+    <%- cssStyles %>
+  </head>
+  <body>
+    <div class="content">
+      <table>
+        <tr>
+          <td>
+            <div class="d-flex justify-end py-md">(บ.๑๔)</div>
+            <div class="d-flex justify-center">
+              <img
+                src="<%= path %>assets/buu_logo_thai.jpg"
+                alt="logo-buu"
+                width="80"
+                height="80"
+              />
+            </div>
+            <div class="d-flex justify-center">
+              <div class="title-container font-18 py-sm">
+                <b>ใบสำคัญรับเงิน</b>
+              </div>
+            </div>
+            <div class="d-flex justify-end py-sm">
+              วันที่..................................................
+            </div>
+            <div class="px-md py-sm">
+              ข้าพเจ้าชื่อ (เขียนชื่อ-นามสกุล
+              ตัวบรรจง).................................................................
+            </div>
+            <div>
+              อยู่บ้านเลขที่...................ถนน.....................ตำบล/แขวง.....................................
+            </div>
+            <div class="py-sm   ">
+              อำเภอ/เขต..........................จังหวัด................................รหัสไปรษณีย์................
+            </div>
+            <div>
+              ได้รับเงินจากมหาวิทยาลัยบูรพา ดังรายการต่อไปนี้
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td
+            style="
+              padding: 0px !important;
+              margin: 0px;
+              border-right: 1px solid black;
+            "
+          >
+            <table style="padding: 0px !important; margin: 0px">
+              <tr>
+                <td
+                  style="
+                    border: 0px solid black;
+                    border-right: 1px solid black;
+                    width: 60%;
+                  "
+                >
+                  <div class="d-flex justify-center">รายการ</div>
+                </td>
+                <td
+                  style="
+                    border: 0px solid black;
+                    width: 40%;
+                    padding: 0px;
+                  "
+                >
+                  <div
+                    class="d-flex justify-center"
+                    style="border-bottom: 1px solid black"
+                  >
+                    <div class="py-sm">จำนวนเงิน</div>
+                  </div>
+                  <div class="d-flex justify-center">
+                    <div
+                      class="col py-sm"
+                      style="border-right: 1px solid black; text-align: center"
+                    >
+                      บาท
+                    </div>
+                    <div class="col py-sm" style="text-align: center">
+                      สตางค์
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <% if (body.receiptInfo && Array.isArray(body.receiptInfo)) { %>
+          <% for (var i = 0; i < body.receiptInfo.length; i++) { %>
+            <tr>
+              <td
+                style="
+                  padding: 0px !important;
+                  margin: 0px;
+                  border: 0 !important;
+                  border-left: 1px solid black !important;
+                  border-right: 1px solid black !important;
+                "
+              >
+                <table style="padding: 0px !important; margin: 0px">
+                  <tr>
+                    <td
+                      style="
+                        border: 0px solid black;
+                        border-right: 1px solid black;
+                        width: 60%;
+                        border-bottom:0;
+                      "
+                    >
+                      <div class="d-flex"><%= body.receiptInfo[i].categoryName %> </div>
+                    </td>
+                    <td
+                      style="
+                        border: 0px solid black;
+                        width: 40%;
+                        padding: 0px;
+                      "
+                    >
+                      <div class="d-flex justify-center">
+                        <div
+                          class="col py-sm"
+                          style="border-right: 1px solid black; text-align: center"
+                        >
+                        <%= Math.floor(body.receiptInfo[i].fundSumRequest).toLocaleString(); %>
+                        </div>
+                        <div class="col py-sm" style="text-align: center">
+                          <%= Math.round((body.receiptInfo[i].fundSumRequest - Math.floor(body.receiptInfo[i].fundSumRequest)) * 100) %>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          <% } %>
+        <% }%>
+        <tr>
+          <td
+            style="
+              padding: 0px !important;
+              margin: 0px;
+              border-right: 1px solid black;
+            "
+          >
+            <table style="padding: 0px !important; margin: 0px">
+              <tr>
+                <td
+                  style="
+                    border: 0px solid black;
+                    border-right: 1px solid black;
+                    width: 60%;
+                  "
+                >
+                  <div class="d-flex justify-end">รวมเงิน</div>
+                </td>
+                <td
+                  style="
+                    border: 0px solid black;
+                    width: 40%;
+                    padding: 0px;
+                  "
+                >
+                  <div class="d-flex justify-center">
+                    <div
+                      class="col py-sm"
+                      style="border-right: 1px solid black; text-align: center"
+                    >
+                    <%= Math.floor(body.total).toLocaleString(); %>
+                    </div>
+                    <div class="col py-sm" style="text-align: center">
+                      <%= Math.round((body.total - Math.floor(body.total)) * 100) %>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <div class="d-flex py-sm pl-md">
+        <span style="text-decoration: underline;"><b>หมายเหตุ</b></span>
+        <span class="pl-sm">การใช้ใบสำคัญรับเงินเป็นไปตามระเบียบมหาวิทยาลัยบูรพาว่าด้วยการจ่ายเงินและวิธีการจ่ายเงิน</span>
+      </div>
+    </div>
+  </body>
+</html>

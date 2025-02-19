@@ -1,6 +1,6 @@
 const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
 const { initLogger } = require('../logger');
-const logger = initLogger('UserValidator');
+const logger = initLogger('DentalValidator');
 const { Op, literal, col, fn } = require('sequelize')
 const permissionType = require('../enum/permission')
 const statusText = require('../enum/statusText')
