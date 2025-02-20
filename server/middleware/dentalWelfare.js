@@ -155,7 +155,7 @@ const checkNullValue = async (req, res, next) => {
                 message: "ไม่มีการกระทำที่ต้องการ",
             });
         }
-        if (fundSumRequest > fundReceipt) {
+        if (Number(fundSumRequest) > Number(fundReceipt)) {
             return res.status(400).json({
                 message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบเสร็จรับเงินได้",
             });
@@ -179,7 +179,7 @@ const bindCreate = async (req, res, next) => {
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
         }
-        if (!isNullOrEmpty(createFor) && actionId == status.draft) {
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
             return res.status(400).json({
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
@@ -221,6 +221,11 @@ const bindUpdate = async (req, res, next) => {
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
             });
         }
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
+            return res.status(400).json({
+                message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
+            });
+        }
         const dataId = req.params['id'];
         const results = await reimbursementsGeneral.findOne({
             attributes: ["status", "created_by"],
@@ -259,6 +264,7 @@ const bindUpdate = async (req, res, next) => {
         }
         if (!isNullOrEmpty(actionId)) {
             if (req.access && actionId != status.approve) {
+                console.log("pass");
                 return res.status(400).json({
                     message: "ไม่มีการกระทำที่ต้องการ",
                 });

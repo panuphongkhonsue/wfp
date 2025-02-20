@@ -28,7 +28,22 @@ const authPermission = async (req, res, next) => {
 
 const bindCreate = async (req, res, next) => {
 	try {
-		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId } = req.body;
+		const {
+			username,
+			name,
+			positionId,
+			employeeTypeId,
+			departmentId,
+			sectorId,
+			firstWorkingDate,
+			roleId,
+			houseNumber,
+			street,
+			district,
+			subDistrict,
+			province,
+			postalCode,
+		} = req.body;
 		const errorObj = {};
 		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
 		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
@@ -38,6 +53,11 @@ const bindCreate = async (req, res, next) => {
 		if (isNullOrEmpty(sectorId)) errorObj['sectorId'] = 'กรุณากรอกภาควิชา';
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
 		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
+		if (isNullOrEmpty(houseNumber)) errorObj['houseNumber'] = 'กรุณากรอกบ้านเลขที่';
+		if (isNullOrEmpty(district)) errorObj['district'] = 'กรุณากรอก อำเภอ/เขต';
+		if (isNullOrEmpty(subDistrict)) errorObj['subDistrict'] = 'กรุณากรอก ตำบล/แขวง';
+		if (isNullOrEmpty(province)) errorObj['province'] = 'กรุณากรอกจังหวัด';
+		if (isNullOrEmpty(postalCode)) errorObj['postalCode'] = 'กรุณากรอกรหัสไปรษณีย์';
 		if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
 		const { id } = req.user;
 		const dataBinding = {
@@ -53,6 +73,12 @@ const bindCreate = async (req, res, next) => {
 			child: req.body.child,
 			created_by: id,
 			updated_by: id,
+			house_number: houseNumber,
+			street: street ?? "-",
+			district: district,
+			sub_district: subDistrict,
+			province: province,
+			postal_code: postalCode,
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
@@ -77,7 +103,14 @@ const bindCreate = async (req, res, next) => {
 };
 const bindUpdate = async (req, res, next) => {
 	try {
-		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId, deleteChild } = req.body;
+		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId, deleteChild,
+			houseNumber,
+			street,
+			district,
+			subDistrict,
+			province,
+			postalCode,
+		} = req.body;
 		const errorObj = {};
 		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
 		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
@@ -87,6 +120,11 @@ const bindUpdate = async (req, res, next) => {
 		if (isNullOrEmpty(sectorId)) errorObj['sectorId'] = 'กรุณากรอกภาควิชา';
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
 		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
+		if (isNullOrEmpty(houseNumber)) errorObj['houseNumber'] = 'กรุณากรอกบ้านเลขที่';
+		if (isNullOrEmpty(district)) errorObj['district'] = 'กรุณากรอก อำเภอ/เขต';
+		if (isNullOrEmpty(subDistrict)) errorObj['subDistrict'] = 'กรุณากรอก ตำบล/แขวง';
+		if (isNullOrEmpty(province)) errorObj['province'] = 'กรุณากรอกจังหวัด';
+		if (isNullOrEmpty(postalCode)) errorObj['postalCode'] = 'กรุณากรอกรหัสไปรษณีย์';
 		if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
 		const { id } = req.user;
 		const dataBinding = {
@@ -101,6 +139,12 @@ const bindUpdate = async (req, res, next) => {
 			roles_id: roleId,
 			child: req.body.child,
 			updated_by: id,
+			house_number: houseNumber,
+			street: street ?? "-",
+			district: district,
+			sub_district: subDistrict,
+			province: province,
+			postal_code: postalCode,
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
