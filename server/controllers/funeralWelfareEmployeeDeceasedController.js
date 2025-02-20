@@ -3,7 +3,7 @@ const { reimbursementsEmployeeDeceased, categories, subCategories, reimbursement
 const { Op, fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
 const category = require('../enum/category');
-const logger = initLogger('funeralWelfareController');
+const logger = initLogger('funeralWelfareEmployeeDeceasedController');
 const { getFiscalYearDynamic, getFiscalYear } = require('../middleware/utility');
 const { isNullOrEmpty } = require('./utility');
 
@@ -13,7 +13,7 @@ class Controller extends BaseController {
     }
 
     list = async (req, res, next) => {
-        const method = 'GetListFuneralWelfare';
+        const method = 'GetListFuneralWelfareEmployeeDeceased';
         const { id } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
@@ -59,13 +59,16 @@ class Controller extends BaseController {
         }
     }
     getRemaining = async (req, res, next) => {
-        const method = 'GetRemainingFuneralWelfare';
+        const method = 'GetRemainingFuneralWelfareEmployeeDeceased';
         const { id } = req.user;
         try {
             const { filter } = req.query;
             var whereObj = { ...filter }
+            if (!whereObj[Op.and]) {
+                whereObj[Op.and] = [];
+            }
             whereObj[Op.and].push(
-                { '$category.id$':  9 }
+                { '$category.id$': 9 }
             );
             const decreaseRemaining = await reimbursementsEmployeeDeceasedHasCategories.findAll({
                 attributes: [
@@ -94,15 +97,22 @@ class Controller extends BaseController {
                     {
                         model: reimbursementsEmployeeDeceased,
                         as: "reimbursements_employee_deceased",
-                        attributes: []
-                    }
+                        attributes: [],
+                        include: [
+                            {
+                                model: users,
+                                as: 'created_by_user',
+                                attributes: ['id', 'name'],
+                            },
+                        ]
+                    },
                 ],
                 where: whereObj,
                 group: ["category.id"],
             });
-            whereObj[Op.and].push(
-                { '$sub_category.id$': { [Op.in]: [10, 11] } }
-            );
+
+            whereObj[Op.and].push({ '$category.id$': { [Op.in]: [10, 11] } });
+
             const wreathRemaining = await reimbursementsEmployeeDeceasedHasCategories.findAll({
                 attributes: [
                     [col("category.id"), "categoriesId"],
@@ -110,7 +120,6 @@ class Controller extends BaseController {
                     [col("category.fund"), "fund"],
                     [col("category.per_years"), "perYears"],
                     [col("category.per_times"), "perTimesRemaining"],
-
                     // fund_wreath_arrange
                     [
                         fn("SUM", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE 0 END")),
@@ -128,7 +137,6 @@ class Controller extends BaseController {
                         fn("category.per_years - COUNT", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE NULL END")),
                         "requestsRemainingArrange"
                     ],
-
                     // fund_wreath_university
                     [
                         fn("SUM", literal("CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE 0 END")),
@@ -156,30 +164,37 @@ class Controller extends BaseController {
                     {
                         model: reimbursementsEmployeeDeceased,
                         as: "reimbursements_employee_deceased",
-                        attributes: []
-                    }
+                        attributes: [],
+                        include: [
+                            {
+                                model: users,
+                                as: 'created_by_user',
+                                attributes: ['id', 'name'],
+                            },
+                        ]
+                    },
                 ],
                 where: whereObj,
                 group: ["category.id"],
             });
+
             whereObj[Op.and] = whereObj[Op.and].filter(item => [10, 11].includes(item['$category.id$']));
-            whereObj[Op.and].push(
-                { '$category.id$': 12 }
-            );
-            const vechicleRemaining = await reimbursementsEmployeeDeceasedHasCategories.findAll({
+            whereObj[Op.and].push({ '$category.id$': 12 });
+
+            const vehicleRemaining = await reimbursementsEmployeeDeceasedHasCategories.findAll({
                 attributes: [
                     [col("category.id"), "categoriesId"],
                     [col("category.name"), "categoriesName"],
-                    [fn("SUM", col("reimbursements_employee_deceased.fund_vechicle")), "totalSumRequested"],
+                    [fn("SUM", col("reimbursements_employee_deceased.fund_vehicle")), "totalSumRequested"],
                     [col("category.fund"), "fund"],
                     [
-                        literal("category.fund - SUM(reimbursements_employee_deceased.fund_vechicle)"),
+                        literal("category.fund - SUM(reimbursements_employee_deceased.fund_vehicle)"),
                         "fundRemaining"
                     ],
-                    [fn("COUNT", col("reimbursements_employee_deceased.fund_vechicle")), "totalCountRequested"],
+                    [fn("COUNT", col("reimbursements_employee_deceased.fund_vehicle")), "totalCountRequested"],
                     [col("category.per_years"), "perYears"],
                     [
-                        literal("category.per_years - COUNT(reimbursements_employee_deceased.fund_vechicle)"),
+                        literal("category.per_years - COUNT(reimbursements_employee_deceased.fund_vehicle)"),
                         "requestsRemaining"
                     ],
                     [col("category.per_times"), "perTimesRemaining"],
@@ -193,27 +208,34 @@ class Controller extends BaseController {
                     {
                         model: reimbursementsEmployeeDeceased,
                         as: "reimbursements_employee_deceased",
-                        attributes: []
-                    }
+                        attributes: [],
+                        include: [
+                            {
+                                model: users,
+                                as: 'created_by_user',
+                                attributes: ['id', 'name'],
+                            },
+                        ]
+                    },
                 ],
                 where: whereObj,
                 group: ["category.id"],
             });
-            if (!isNullOrEmpty(decreaseRemaining) || !isNullOrEmpty(wreathRemaining) || !isNullOrEmpty(vechicleRemaining)) {
+
+            if (!isNullOrEmpty(decreaseRemaining) || !isNullOrEmpty(wreathRemaining) || !isNullOrEmpty(vehicleRemaining)) {
                 let bindData = [];
+                // Decrease Remaining Data
                 if (!isNullOrEmpty(decreaseRemaining)) {
                     const datas = JSON.parse(JSON.stringify(decreaseRemaining[0]));
-                    if (datas.fundRemaining == null) {
-                        datas.fundRemaining = datas.fund;
-                    }
-                    if (datas.requestsRemaining == null) {
-                        datas.requestsRemaining = datas.perYears;
-                    }
-                    if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
-                    else datas.canRequest = true;
-                    bindData.push(datas);
-                }
-                else {
+                    bindData.push({
+                        categoriesId: datas.categoriesId,
+                        categoriesName: datas.categoriesName,
+                        fundRemaining: datas.fundRemaining,
+                        requestsRemaining: datas.requestsRemaining,
+                        perTimesRemaining: datas.perTimesRemaining,
+                        canRequest: datas.fundRemaining > 0 ? true : false
+                    });
+                } else {
                     const getFund = await categories.findAll({
                         attributes: [
                             [col("id"), "categoriesId"],
@@ -226,26 +248,29 @@ class Controller extends BaseController {
                     });
                     const datas = JSON.parse(JSON.stringify(getFund));
                     datas.forEach(item => {
-                        if (item.fundRemaining === 0 || item.requestsRemaining === 0) item.canRequest = false;
-                        else item.canRequest = true;
+                        bindData.push({
+                            categoriesId: item.categoriesId,
+                            categoriesName: item.categoriesName,
+                            fundRemaining: item.fundRemaining,
+                            requestsRemaining: item.requestsRemaining,
+                            perTimesRemaining: item.perTimesRemaining,
+                            canRequest: item.fundRemaining > 0 ? true : false
+                        });
                     });
-                    bindData.push(datas);
                 }
 
-
+                // Wreath Remaining Data
                 if (!isNullOrEmpty(wreathRemaining)) {
                     const datas = JSON.parse(JSON.stringify(wreathRemaining[0]));
-                    if (datas.fundRemaining == null) {
-                        datas.fundRemaining = datas.fund;
-                    }
-                    if (datas.requestsRemaining == null) {
-                        datas.requestsRemaining = datas.perYears;
-                    }
-                    if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
-                    else datas.canRequest = true;
-                    bindData.push(datas);
-                }
-                else {
+                    bindData.push({
+                        categoriesId: datas.categoriesId,
+                        categoriesName: datas.categoriesName,
+                        fundRemaining: datas.fundRemaining,
+                        requestsRemaining: datas.requestsRemaining,
+                        perTimesRemaining: datas.perTimesRemaining,
+                        canRequest: datas.fundRemaining > 0 ? true : false
+                    });
+                } else {
                     const getFund = await categories.findAll({
                         attributes: [
                             [col("id"), "categoriesId"],
@@ -255,33 +280,32 @@ class Controller extends BaseController {
                             [col("per_times"), "perTimesRemaining"],
                         ],
                         where: { id: [10, 11] }
-                    })
+                    });
                     const datas = JSON.parse(JSON.stringify(getFund));
                     datas.forEach(item => {
-                        if (item.fundRemaining === 0 || item.requestsRemaining === 0) item.canRequest = false;
-                        else item.canRequest = true;
+                        bindData.push({
+                            categoriesId: item.categoriesId,
+                            categoriesName: item.categoriesName,
+                            fundRemaining: item.fundRemaining,
+                            requestsRemaining: item.requestsRemaining,
+                            perTimesRemaining: item.perTimesRemaining,
+                            canRequest: item.fundRemaining > 0 ? true : false
+                        });
                     });
-                    bindData.push(datas);
                 }
 
-                if (!isNullOrEmpty(vechicleRemaining)) {
-                    const datas = JSON.parse(JSON.stringify(vechicleRemaining[0]));
-                    if (datas.fundRemaining == null) {
-                        datas.fundRemaining = datas.fund;
-                    }
-                    if (datas.requestsRemaining == null) {
-                        datas.requestsRemaining = datas.perYears;
-                    }
-                    if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
-                    else datas.canRequest = true;
-
-                    delete datas.totalSumRequested;
-                    delete datas.fund;
-                    delete datas.totalCountRequested;
-                    delete datas.perYears;
-                    bindData.push(datas);
-                }
-                else {
+                // Vehicle Remaining Data
+                if (!isNullOrEmpty(vehicleRemaining)) {
+                    const datas = JSON.parse(JSON.stringify(vehicleRemaining[0]));
+                    bindData.push({
+                        categoriesId: datas.categoriesId,
+                        categoriesName: datas.categoriesName,
+                        fundRemaining: datas.fundRemaining,
+                        requestsRemaining: datas.requestsRemaining,
+                        perTimesRemaining: datas.perTimesRemaining,
+                        canRequest: datas.fundRemaining > 0 ? true : false
+                    });
+                } else {
                     const getFund = await categories.findAll({
                         attributes: [
                             [col("id"), "categoriesId"],
@@ -291,16 +315,26 @@ class Controller extends BaseController {
                             [col("per_times"), "perTimesRemaining"],
                         ],
                         where: { id: 12 }
-                    })
+                    });
                     const datas = JSON.parse(JSON.stringify(getFund));
-                    datas.canRequest = true;
-                    bindData.push(datas);
+                    datas.forEach(item => {
+                        bindData.push({
+                            categoriesId: item.categoriesId,
+                            categoriesName: item.categoriesName,
+                            fundRemaining: item.fundRemaining,
+                            requestsRemaining: item.requestsRemaining,
+                            perTimesRemaining: item.perTimesRemaining,
+                            canRequest: item.fundRemaining > 0 ? true : false
+                        });
+                    });
                 }
+
                 logger.info('Complete', { method, data: { id } });
                 return res.status(200).json({
                     datas: bindData,
                 });
-            };
+            }
+
             const getFund = await categories.findAll({
                 attributes: [
                     [col("id"), "categoriesId"],
@@ -314,17 +348,26 @@ class Controller extends BaseController {
                         [Op.in]: [9, 10, 11, 12]
                     }
                 }
-            })
+            });
+
             if (getFund) {
                 const datas = JSON.parse(JSON.stringify(getFund));
                 datas[0].canRequest = true;
                 datas[1].canRequest = true;
                 logger.info('Complete', { method, data: { id } });
                 return res.status(200).json({
-                    datas: datas,
+                    datas: datas.map(item => ({
+                        categoriesId: item.categoriesId,
+                        categoriesName: item.categoriesName,
+                        fundRemaining: item.fundRemaining,
+                        requestsRemaining: item.requestsRemaining,
+                        perTimesRemaining: item.perTimesRemaining,
+                        canRequest: item.fundRemaining > 0 ? true : false
+                    })),
                     canRequest: datas.canRequest ?? true,
                 });
             }
+
             logger.info('Data not Found', { method, data: { id } });
             res.status(200).json({
                 message: "มีสิทธ์คงเหลือเท่ากับเพดานเงิน"
@@ -339,25 +382,28 @@ class Controller extends BaseController {
         }
     };
 
+
     getById = async (req, res, next) => {
-        const method = 'GetFuneralWelfarebyId';
+        const method = 'GetFuneralWelfareEmployeeDeceasedbyId';
         const { id } = req.user;
         const dataId = req.params['id'];
         try {
+            logger.info('Received dataId:', dataId);
             const { filter } = req.query;
             var whereObj = { ...filter }
+            logger.info('Where Object:', whereObj); 
             const requestData = await reimbursementsEmployeeDeceased.findByPk(dataId, {
                 attributes: [
                     [col("reim_number"), "reimNumber"],
                     [col("fund_receipt"), "fundReceipt"],
                     [col("fund_request"), "fundRequest"],
-                    [col("deceased"), "decease"],
+                    [col("deceased"), "deceased"],
                     [col("organizer"), "organizer"],
                     [col("fund_receipt_wreath"), "fundReceiptWreath"],
                     [col("fund_wreath_university"), "fundWreathUniversity"],
                     [col("fund_wreath_arrange"), "fundWreathArrange"],
-                    [col("fund_receipt_vechicle"), "fundReceiptVechicle"],
-                    [col("fund_vechicle"), "fundVechicle"],
+                    [col("fund_receipt_vehicle"), "fundReceiptVehicle"],
+                    [col("fund_vehicle"), "fundVehicle"],
                     [col("fund_sum_receipt"), "fundSumReceipt"],
                     [col("fund_sum_request"), "fundSumRequest"],
                     [col("request_date"), "requestDate"],
@@ -396,6 +442,7 @@ class Controller extends BaseController {
             });
             if (requestData) {
                 const datas = JSON.parse(JSON.stringify(requestData));
+                logger.info("Data found:", datas);
                 whereObj = {};
                 whereObj[Op.and] = [];
                 var getFiscalYearWhere;
@@ -407,15 +454,14 @@ class Controller extends BaseController {
                 }
                 whereObj[Op.and].push(
                     { '$reimbursements_employee_deceased.request_date$': getFiscalYearWhere },
-                    { '$reimbursements_employee_deceased.categories_id$': category.funeralWelfare },
                     { '$reimbursements_employee_deceased.created_by$': datas.userId },
                     { '$reimbursements_employee_deceased.id$': { [Op.lte]: datas.id } },
-                    { '$category.id$': { [Op.in]: [10,11,12] } },
+                    { '$category.id$': { [Op.in]: [9, 10, 11, 12] } },
                 );
                 const getRequestData = await reimbursementsEmployeeDeceasedHasCategories.findAll({
                     attributes: [
                         [col("reimbursements_employee_deceased.id"), "id"],
-                        [col("reimbursements_employee_deceased.fund_vechicle"), "fundVecicle"],
+                        [col("reimbursements_employee_deceased.fund_vehicle"), "fundVehicle"],
                     ],
                     include: [
                         {
@@ -426,8 +472,15 @@ class Controller extends BaseController {
                         {
                             model: reimbursementsEmployeeDeceased,
                             as: "reimbursements_employee_deceased",
-                            attributes: []
-                        }
+                            attributes: [],
+                            include: [
+                                {
+                                    model: users,
+                                    as: 'created_by_user',
+                                    attributes: ['id', 'name'],
+                                },
+                            ]
+                        },
                     ],
                     where: whereObj,
                 })
@@ -472,17 +525,19 @@ class Controller extends BaseController {
         }
     }
     create = async (req, res, next) => {
-        const method = 'CreateFuneralWelfare';
+        console.log("📌 Received payload:", req.body);
+        const method = 'CreateFuneralWelfareEmployeeDeceased';
         const { id } = req.user;
         const selectedWreath = req.body.selected_wreath ?? false;
-        const selectedVechicle = req.body.selected_vechicle ?? false;
+        const selectedVehicle = req.body.selected_vehicle ?? false;
         const deceased = req.body.deceased ?? null;
         delete req.body.selected_wreath;
-        delete req.body.selected_vechicle;
-        delete req.body.deceased;
+        delete req.body.selected_vehicle; 
+        const dataCreate = req.body;
+        
         try {
             const result = await sequelize.transaction(async t => {
-                const newItem = await reimbursementsAssist.create(dataCreate, { transaction: t, });
+                const newItem = await reimbursementsEmployeeDeceased.create(dataCreate,{ transaction: t, });
                 var itemsReturned = {
                     ...newItem.toJSON(),
                 };
@@ -507,7 +562,7 @@ class Controller extends BaseController {
                         newItemWreath2: newItemSub2,
                     };
                 }
-                if (selectedVechicle) {
+                if (selectedVehicle) {
                     const newItemSub = await reimbursementsEmployeeDeceasedHasCategories.create(
                         {
                             reimbursements_employee_deceased_id: newItem.id,
@@ -516,7 +571,7 @@ class Controller extends BaseController {
                         { transaction: t, });
                     itemsReturned = {
                         ...itemsReturned,
-                        newItemVechicle: newItemSub,
+                        newItemVehicle: newItemSub,
                     }
                 }
 
@@ -533,9 +588,9 @@ class Controller extends BaseController {
                         ...itemsReturned,
                         newItemDecease: newItemSub,
                     };
-                } 
+                }
 
-                if (selectedWreath || selectedVechicle || deceased) {
+                if (selectedWreath || selectedVehicle || deceased) {
                     return itemsReturned;
                 }
                 return newItem;
@@ -543,6 +598,7 @@ class Controller extends BaseController {
             res.status(201).json({ newItem: result, message: "บันทึกข้อมูลสำเร็จ" });
         }
         catch (error) {
+
             logger.error(`Error ${error.message}`, {
                 method,
                 data: { id },
@@ -551,140 +607,108 @@ class Controller extends BaseController {
         }
     }
     update = async (req, res, next) => {
-        const method = 'UpdateFuneralWelfare';
+        const method = 'UpdateFuneralWelfareEmployeeDeceased';
         const { id } = req.user;
         const selectedWreath = req.body.selected_wreath ?? false;
-        const selectedVechicle = req.body.selected_vechicle ?? false;
+        const selectedVehicle = req.body.selected_vehicle ?? false;
         const deceased = req.body.deceased ?? null;
         delete req.body.selected_wreath;
-        delete req.body.selected_vechicle;
-        delete req.body.deceased;
+        delete req.body.selected_vehicle;
         const dataUpdate = req.body;
         const dataId = req.params['id'];
-        var itemsReturned = null;
+    
         try {
             const result = await sequelize.transaction(async t => {
                 const [updated] = await reimbursementsEmployeeDeceased.update(dataUpdate, {
                     where: { id: dataId },
                     transaction: t,
                 });
-
-                let checkingEdit = false;
+    
                 let itemsReturned = { updated };
-
+    
+                // Handle selected wreath
                 if (selectedWreath) {
                     const existingWreath = await reimbursementsEmployeeDeceasedHasCategories.count({
-                        where: { reimbursements_employee_deceased_id: dataId, categories_id: { [Op.in]: [10,11] } },
+                        where: { reimbursements_employee_deceased_id: dataId, categories_id: { [Op.in]: [10, 11] } },
                         transaction: t,
                     });
-
+    
                     if (!existingWreath) {
                         const newWreathItems = await reimbursementsEmployeeDeceasedHasCategories.bulkCreate([
                             { reimbursements_employee_deceased_id: dataId, categories_id: 10 },
-                            { reimbursements_employee_deceased_id: dataId, ategories_id: 11 }
+                            { reimbursements_employee_deceased_id: dataId, categories_id: 11 }
                         ], { transaction: t });
-
-                        itemsReturned = { ...itemsReturned, newItemWreath: newWreathItems };
-                        checkingEdit = true;
+                        itemsReturned.newItemWreath = newWreathItems;
                     }
                 } else {
                     const deletedWreath = await reimbursementsEmployeeDeceasedHasCategories.destroy({
                         where: { reimbursements_employee_deceased_id: dataId, categories_id: { [Op.in]: [10, 11] } },
                         transaction: t,
                     });
-
-                    if (deletedWreath) {
-                        itemsReturned = { ...itemsReturned, deleteItemWreath: deletedWreath };
-                        checkingEdit = true;
-                    }
+                    if (deletedWreath) itemsReturned.deleteItemWreath = deletedWreath;
                 }
-
-                if (selectedVechicle) {
-                    const existingVechicle = await reimbursementsEmployeeDeceasedHasCategories.count({
+    
+                // Handle selected vehicle
+                if (selectedVehicle) {
+                    const existingVehicle = await reimbursementsEmployeeDeceasedHasCategories.count({
                         where: { reimbursements_employee_deceased_id: dataId, categories_id: 12 },
                         transaction: t,
                     });
-
-                    if (!existingVechicle) {
-                        const newItemSub = await reimbursementsEmployeeDeceasedHasCategories.create(
-                            {
-                                reimbursements_employee_deceased_id: dataId,
-                                categories_id: 12,
-                            },
-                            { transaction: t }
-                        );
-
-                        itemsReturned = { ...itemsReturned, newItemVechicle: newItemSub };
-                        checkingEdit = true;
+    
+                    if (!existingVehicle) {
+                        const newVehicleItem = await reimbursementsEmployeeDeceasedHasCategories.create({
+                            reimbursements_employee_deceased_id: dataId,
+                            categories_id: 12,
+                        }, { transaction: t });
+                        itemsReturned.newItemVehicle = newVehicleItem;
                     }
                 } else {
-                    const deletedVechicle = await reimbursementsEmployeeDeceasedHasCategories.destroy({
+                    const deletedVehicle = await reimbursementsEmployeeDeceasedHasCategories.destroy({
                         where: { reimbursements_employee_deceased_id: dataId, categories_id: 12 },
                         transaction: t,
                     });
-
-                    if (deletedVechicle) {
-                        itemsReturned = { ...itemsReturned, deleteItemVechicle: deletedVechicle };
-                        checkingEdit = true;
-                    }
+                    if (deletedVehicle) itemsReturned.deleteItemVehicle = deletedVehicle;
                 }
+    
+                // Handle deceased
                 if (deceased) {
-                    const deletedDeceased = await reimbursementsEmployeeDeceasedHasCategories.destroy({
-                        where: { reimbursements_employee_deceased_id: dataId, categories_id:  9 },
-                        transaction: t,
-                    });
-    
-                    if (deletedDeceased) {
-                        console.log("Deleted old Deceased:", deletedDeceased);  
-                        itemsReturned = { ...itemsReturned, deleteItemDeceased: deletedDeceased };
-                        checkingEdit = true;
-                    }
-    
                     const existingDeceased = await reimbursementsEmployeeDeceasedHasCategories.count({
                         where: { reimbursements_employee_deceased_id: dataId, categories_id: 9 },
                         transaction: t,
                     });
     
                     if (!existingDeceased) {
-                        const newDeceasedSub = await reimbursementsEmployeeDeceasedHasCategories.create(
-                            {
-                                reimbursements_employee_deceased_id: dataId,
-                                categories_id: 9,
-                            },
-                            { transaction: t }
-                        );
-    
-                        itemsReturned = { ...itemsReturned, newItemDeceased: newDeceasedSub };
-                        checkingEdit = true;
+                        const newDeceasedItem = await reimbursementsEmployeeDeceasedHasCategories.create({
+                            reimbursements_employee_deceased_id: dataId,
+                            categories_id: 9,
+                        }, { transaction: t });
+                        itemsReturned.newItemDeceased = newDeceasedItem;
                     }
-                } else if (deceased) {
+                } else {
                     const deletedDeceased = await reimbursementsEmployeeDeceasedHasCategories.destroy({
                         where: { reimbursements_employee_deceased_id: dataId, categories_id: 9 },
                         transaction: t,
                     });
-    
-                    if (deletedDeceased) {
-                        itemsReturned = { ...itemsReturned, deleteItemDeceased: deletedDeceased };
-                        checkingEdit = true;
-                    }
+                    if (deletedDeceased) itemsReturned.deleteItemDeceased = deletedDeceased;
                 }
-                return checkingEdit || updated > 0 ? itemsReturned : null;
+    
+                return updated > 0 ? itemsReturned : null;
             });
-
+    
             if (result) {
                 logger.info('Complete', { method, data: { id } });
-                return res.status(201).json({ newItem: result, message: "อัปเดตข้อมูลสำเร็จ" });
+                return res.status(200).json({ newItem: result, message: "อัปเดตข้อมูลสำเร็จ" });
+            } else {
+                res.status(400).json({ message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
             }
-
-            res.status(400).json({ message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
-
         } catch (error) {
             logger.error(`Error ${error.message}`, { method, data: { id } });
             next(error);
         }
-    }
+    };
+    
     delete = async (req, res, next) => {
-        const method = 'DeletedFuneralWelfare';
+        const method = 'DeletedFuneralWelfareEmployeeDeceased';
         const { id } = req.user;
         const dataId = req.params['id'];
         try {
