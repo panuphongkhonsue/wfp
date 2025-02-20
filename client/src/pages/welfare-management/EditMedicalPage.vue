@@ -204,6 +204,7 @@ import Swal from "sweetalert2";
 import { Notify } from "quasar";
 import { formatDateThaiSlash, formatNumber, formatDateSlash, formatDateServer } from "src/components/format";
 import medicalWelfareService from "src/boot/service/medicalWelfareService";
+import welfareManagementService from "src/boot/service/welfareManagementService";
 import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -312,7 +313,7 @@ watch(
 async function fetchDataEdit() {
   setTimeout(async () => {
     try {
-      const result = await medicalWelfareService.dataEditorById(route.params.id);
+      const result = await welfareManagementService.dataMedicalById(route.params.id);
       var returnedData = result.data.datas;
       if (returnedData) {
         model.value = {
@@ -466,7 +467,7 @@ async function submit(actionId) {
     preConfirm: async () => {
       try {
         if (isEdit.value) {
-          fetch = await medicalWelfareService.updateEditor(route.params.id, payload);
+          fetch = await welfareManagementService.updateMedical(route.params.id, payload);
         }
         else {
           fetch = await medicalWelfareService.create(payload);

@@ -155,6 +155,7 @@
   import { Notify } from "quasar";
   import { formatDateThaiSlash, formatNumber } from "src/components/format";
   import userManagementService from "src/boot/service/userManagementService";
+  import welfareManagementService from "src/boot/service/welfareManagementService";
   import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
   import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
   import { useRoute, useRouter } from "vue-router";
@@ -235,7 +236,7 @@
   async function fetchDataEdit() {
     setTimeout(async () => {
       try {
-        const result = await variousWelfareService.dataEditorById(route.params.id);
+        const result = await welfareManagementService.dataVariousById(route.params.id);
         console.log("API Response:", result.data?.datas);
         var returnedData = result.data.datas;
         if (returnedData) {
@@ -354,7 +355,7 @@
       preConfirm: async () => {
         try {
           if (isEdit.value) {
-            fetch = await variousWelfareService.updateEditor(route.params.id, payload);
+            fetch = await welfareManagementService.updateVarious(route.params.id, payload);
           }
           else {
             fetch = await variousWelfareService.create(payload);

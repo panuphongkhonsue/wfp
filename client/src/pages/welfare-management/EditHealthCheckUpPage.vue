@@ -146,7 +146,7 @@
   import { Notify } from "quasar";
   import { formatDateThaiSlash } from "src/components/format";
   import healthCheckUpWelfareService from "src/boot/service/healthCheckUpWelfareService";
-  import financialHealthCheckUpWelfareService from "src/boot/service/welfareManagementService";
+  import welfareManagementService from "src/boot/service/welfareManagementService";
   import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
   import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
   import { useRoute, useRouter } from "vue-router";
@@ -214,7 +214,7 @@
   async function fetchDataEdit() {
     setTimeout(async () => {
       try {
-        const result = await financialHealthCheckUpWelfareService.dataFinancialById(route.params.id);
+        const result = await welfareManagementService.dataHealthCheckUpById(route.params.id);
         var returnedData = result.data.datas;
         if (returnedData) {
           model.value = {
@@ -308,7 +308,7 @@
       preConfirm: async () => {
         try {
           if (isEdit.value) {
-            fetch = await financialHealthCheckUpWelfareService.update(route.params.id, payload);
+            fetch = await welfareManagementService.updateHealthCheckUp(route.params.id, payload);
           }
           else {
             fetch = await healthCheckUpWelfareService.create(payload);

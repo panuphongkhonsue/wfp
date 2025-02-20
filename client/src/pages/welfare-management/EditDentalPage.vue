@@ -161,7 +161,7 @@
   import { formatDateThaiSlash, formatNumber, formatDateSlash, formatDateServer } from "src/components/format";
   import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
   import dentalWelfareService from "src/boot/service/dentalWelfareService";
-  
+  import welfareManagementService from "src/boot/service/welfareManagementService";
   import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
   import { useRoute, useRouter } from "vue-router";
   
@@ -220,7 +220,7 @@
   async function fetchDataEdit() {
     setTimeout(async () => {
       try {
-        const result = await dentalWelfareService.dataEditorById(route.params.id);
+        const result = await welfareManagementService.dataDentalById(route.params.id);
         var returnedData = result.data.datas;
         if (returnedData) {
           model.value = {
@@ -332,7 +332,7 @@
       preConfirm: async () => {
         try {
           if (isEdit.value) {
-            fetch = await dentalWelfareService.updateEditor(route.params.id, payload);
+            fetch = await welfareManagementService.updateDental(route.params.id, payload);
           }
           isValid = true;
         } catch (error) {

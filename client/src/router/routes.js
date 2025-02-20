@@ -292,6 +292,18 @@ const routes = [
         meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' }, { name: 'ค่าสงเคราะห์การเสียชีวิตครอบครัว' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
         component: () => import('pages/welfare-management/EditFamilyFuneralPage.vue'),
       },
+      {
+        path: 'financial-funeral-welfare-edit/:id',
+        name: 'financial_funeral_welfare_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/welfare-management/EditFuneralPage.vue'),
+      },
+      {
+        path: 'financial-funeral-welfare-view/:id',
+        name: 'financial_funeral_welfare_view',
+        meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/welfare-management/EditFuneralPage.vue'),
+      },
     ],
   },
   {

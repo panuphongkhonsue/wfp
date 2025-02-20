@@ -331,9 +331,13 @@ function viewData(requestId, categoryName, welfareType) {
       params: { id: requestId },
     });
     }
-    
   }
-  
+  else if (welfareType == "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
+    router.push({
+    name: "financial_funeral_welfare_view",
+    params: { id: requestId },
+  });
+  }
 }
 
 function goto(requestId, categoryName, welfareType) {
@@ -368,7 +372,12 @@ function goto(requestId, categoryName, welfareType) {
       params: { id: requestId },
     });
     }
-    
+  }
+  else if (welfareType == "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
+    router.push({
+    name: "financial_funeral_welfare_edit",
+    params: { id: requestId },
+  });
   }
 }
 

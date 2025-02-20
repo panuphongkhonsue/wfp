@@ -11,9 +11,6 @@ export default {
   dataById(id) {
     return api.get(`${path}/${id}`);
   },
-  dataEditorById(id) {
-    return api.get(`${path}/get-welfare/${id}`);
-  },
   getRemaining(options) {
     return api.get(`${path}/remaining`, {
       params: options,
@@ -30,14 +27,6 @@ export default {
   update(id, options) {
     try {
       return api.put(`${path}/${id}`, options);
-    }
-    catch (error) {
-      Promise.reject(error);
-    }
-  },
-  updateEditor(id, options) {
-    try {
-      return api.put(`${path}/update-welfare/${id}`, options);
     }
     catch (error) {
       Promise.reject(error);

@@ -215,6 +215,7 @@
   import { Notify } from "quasar";
   import { formatDateThaiSlash } from "src/components/format";
   import userManagementService from "src/boot/service/userManagementService";
+  import welfareManagementService from "src/boot/service/welfareManagementService";
   import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
   import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
   import { useRoute, useRouter } from "vue-router";
@@ -295,10 +296,6 @@
       }
     }
   );
-  
-  
-  
-  
   watch(
     model,
     () => {
@@ -336,7 +333,7 @@
   async function fetchDataEdit() {
     setTimeout(async () => {
       try {
-        const result = await variousWelfareFuneralFamilyService.dataEditorById(route.params.id);
+        const result = await welfareManagementService.dataFamilyFuneralById(route.params.id);
         var returnedData = result.data.datas;
         if (returnedData) {
           model.value = {
@@ -527,7 +524,7 @@
       preConfirm: async () => {
         try {
           if (isEdit.value) {
-            fetch = await variousWelfareFuneralFamilyService.updateEditor(route.params.id, payload);
+            fetch = await welfareManagementService.updateFamilyFuneral(route.params.id, payload);
           }
           else {
             fetch = await variousWelfareFuneralFamilyService.create(payload);
