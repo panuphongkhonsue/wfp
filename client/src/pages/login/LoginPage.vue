@@ -130,10 +130,9 @@ async function login() {
     } else {
         localStorage.removeItem('rememberedUsername');
     }
-
-};
-
-const isError = ref({
+  
+  };
+  const isError = ref({
     username: null,
     password: null,
 });
@@ -147,4 +146,5 @@ function clearData() {
         model.value[key] = null;
     });
 }
-</script>
+  </script>
+  
