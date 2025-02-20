@@ -1,5 +1,5 @@
 <template>
-  <ListLayout title="สวัสดิการทั่วไป (ค่าตรวจสุขภาพ)">
+  <ListLayout title="สวัสดิการค่าสงเคราะห์การเสียชีวิตครอบครัว">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
@@ -58,12 +58,12 @@
             </span>
           </div>
         </template>
-        <template v-slot:body-cell-statusName="props">
+        <template v-slot:body-cell-status="props">
           <q-td :props="props" class="text-center">
             <q-badge class="font-regular font-remark weight-5 q-py-xs full-width"
               :color="statusColor(props.row.status)">
               <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.status)">
-                {{ props.row.status.name }}
+                {{ props.row.status }}
               </p>
             </q-badge>
           </q-td>
@@ -73,16 +73,16 @@
             <a @click.stop.prevent="viewData(props.row.requestId)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
-            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="goto(props.row.requestId)"
+            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="goto(props.row.requestId)"
               class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
-            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="
+            <a v-show="props.row.status == 'บันทึกฉบับร่าง'" @click.stop.prevent="
               deleteData(props.row.requestId)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDelete" size="xs" color="red" />
             </a>
-            <a v-show="props.row.status.statusId == 2 || props.row.status.statusId == 3" @click.stop.prevent="
+            <a v-show="props.row.status == 'รอตรวจสอบ'|| props.row.status == 'อนุมัติ'" @click.stop.prevent="
               downloadData(props.row.requestId)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDownload" size="xs" color="blue" />
@@ -122,9 +122,9 @@ const listStore = useListStore();
 const router = useRouter();
 const route = useRoute();
 let options = [
-  { statusId: 1, name: "บันทึกฉบับร่าง" },
-  { statusId: 2, name: "รอตรวจสอบ" },
-  { statusId: 3, name: "อนุมัติ" },
+  { status: "บันทึกฉบับร่าง", name: "บันทึกฉบับร่าง" },
+  { status: "รอตรวจสอบ", name: "รอตรวจสอบ" },
+  { status: "อนุมัติ", name: "อนุมัติ" },
 ];;
 const modelDate = ref(null);
 const filter = ref({
@@ -146,10 +146,7 @@ const model = ref([
     money: 3000,
     otherWelfare: 3000,
     moneyCanGet: 3000,
-    status: {
-      statusId: 2,
-      name: "รอตรวจสอบ"
-    },
+    status: "รอตรวจสอบ"
   },
   {
     requestId: '670002',
@@ -158,10 +155,7 @@ const model = ref([
     money: 3000,
     otherWelfare: 3000,
     moneyCanGet: 3000,
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
+    status: "บันทึกฉบับร่าง"
   },
   {
     requestId: '670003',
@@ -170,10 +164,7 @@ const model = ref([
     money: 3000,
     otherWelfare: 3000,
     moneyCanGet: 3000,
-    status: {
-      statusId: 3,
-      name: "อนุมัติ"
-    },
+    status: "อนุมัติ"
   },
   {
     requestId: '670004',
@@ -182,10 +173,7 @@ const model = ref([
     money: 3000,
     otherWelfare: 3000,
     moneyCanGet: 3000,
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
+    status: "บันทึกฉบับร่าง"
   },
   {
     requestId: '670005',
@@ -194,10 +182,7 @@ const model = ref([
     money: "3000",
     otherWelfare: 3000,
     moneyCanGet: 3000,
-    status: {
-      statusId: 1,
-      name: "บันทึกฉบับร่าง"
-    },
+    status: "บันทึกฉบับร่าง"
   },
 ]);
 const tableRef = ref();
@@ -214,14 +199,26 @@ onBeforeUnmount(() => {
 watch(
   () => filter.value.dateSelected,
   (newValue) => {
-    modelDate.value = newValue.from + " - " + newValue.to;
+    console.log(newValue);
+    if (typeof newValue === "object" && newValue !== null) modelDate.value = newValue.from + " - " + newValue.to;
+    else modelDate.value = newValue;
   }
 );
+
 
 watch(
   () => route.query,
   async () => {
     await init();
+  }
+);
+
+watch(
+  () => modelDate.value,
+  (newValue) => {
+    if (!newValue) {
+      filter.value.dateSelected = newValue;
+    }
   }
 );
 
@@ -348,12 +345,14 @@ async function deleteData(id) {
     }
   });
 }
+
 function search() {
+  if (!filter.value.dateSelected) filter.value.dateSelected = '';
   router.push({
     name: router.name,
     query: {
       keyword: filter.value.keyword,
-      dateSelected: JSON.stringify(filter.value.dateSelected),
+      dateSelected: filter.value.dateSelected ? JSON.stringify(filter.value.dateSelected) : null,
       statusId: filter.value.statusId,
     },
   });
@@ -435,10 +434,10 @@ const columns = ref([
     classes: "ellipsis",
   },
   {
-    name: "statusName",
+    name: "status",
     label: "สถานะ",
     align: "center",
-    field: (row) => row.status?.name ?? "-",
+    field: (row) => row.status ?? "-",
     classes: "ellipsis",
   },
   {
