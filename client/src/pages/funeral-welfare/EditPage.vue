@@ -73,9 +73,12 @@
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
         <div class="col-md-9 col-12">
           <q-card flat bordered class="full-height">
-            <q-card-section class="col row q-pb-none">
-              <p class="q-pb-md font-18 font-bold q-pb-md">ข้อมูลการเบิกสวัสดิการ</p>
+            <q-card-section class="col row flex justify-between q-pb-none">
+              <div class="row">
+                 <p class="q-pb-md font-18 font-bold q-pb-md">ข้อมูลการเบิกสวัสดิการ</p>
               <p class="q-pl-md q-pb-md font-16 q-mb-none">(จ่ายจริงคนละไม่เกิน 10,000 บาท)</p>
+              </div>
+             
               <p class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
                 v-if="isView && (model.status == 'รอตรวจสอบ')"><q-icon :name="outlinedDownload" />
                 <span> Export</span>
@@ -90,7 +93,7 @@
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
               <div class="col-lg-4 col-12 q-mb-none">
                 <InputGroup label="ชื่อ - นามสกุล" is-require :is-view="isView" :data="isView ? deceasedName : null">
-                  <q-select v-model="model.deceased" :options="options" label="ชื่อ - นามสกุล" :loading="isLoading"
+                  <q-select v-model="model.deceased" :options="options"  :loading="isLoading"
                     :clearable="true" emit-value map-options option-value="id" option-label="name"
                     :rules="[(val) => !!val || '']" dense outlined use-input input-debounce="100" hide-bottom-space
                     :error="!!isError?.deceased" @filter="filterFn" />
@@ -264,7 +267,6 @@ const model = ref({
 const options = ref([]);
 const deceasedName = computed(() => {
   if (isView.value && model.value.deceased) {
-    // หาใน options ว่ามีข้อมูลตรงกับ model.deceased หรือไม่
     const found = options.value.find(option => option.id === model.value.deceased);
     return found ? found.name : "-";
   }
@@ -272,7 +274,9 @@ const deceasedName = computed(() => {
 });
 const selectedUserData = computed(() => {
   if (!model.value.deceased) return {};
-  return options.value.find(option => option.id === model.value.deceased) || {};
+
+  const found = options.value.find(option => option.id === model.value.deceased);
+  return found || {};
 });
 
 const positionName = computed(() => {
@@ -286,7 +290,6 @@ const sectorName = computed(() => {
 const departmentName = computed(() => {
   return selectedUserData.value?.department ?? "-";
 });
-
 
 const isError = ref({});
 const remaining = ref({
@@ -321,9 +324,7 @@ onBeforeUnmount(() => {
   model.value = null;
 
 });
-watch(selectedUserData, (newValue) => {
-  console.log("Selected User Data:", newValue);
-}, { deep: true });
+
 
 watch(
   model,
@@ -381,28 +382,38 @@ watch(
     }
   }
 );
-watch(model, () => {
-  console.log("model.deceased:", model.value.deceased);
-  console.log("options:", options.value);
-});
 
-watch(
-  () => model.value.deceased,
-  (newVal) => {
-    console.log("model.deceased changed to:", newVal);
+async function fetchDeceasedName() {
+  if (!model.value.deceased) {
+    console.warn("No deceased ID found!");
+    return;
   }
-);
 
-watch(
-  () => options.value,
-  (newOptions) => {
-    console.log("options updated:", newOptions);
+  try {
+    console.log("Fetching deceased name for ID:", model.value.deceased);
+
+    const response = await userManagementService.dataById(model.value.deceased);
+    const deceasedData = response.data.datas;
+
+    if (deceasedData) {
+      console.log("Deceased data:", deceasedData);
+
+      const newDeceased = {
+        id: deceasedData.id,
+        name: deceasedData.name,
+        position: deceasedData.position?.name ?? "-",
+        sector: deceasedData.sector?.name ?? "-",
+        department: deceasedData.department?.name ?? "-",
+      };
+
+      options.value = [newDeceased, ...options.value];
+
+      model.value.deceased = deceasedData.id;
+    }
+  } catch (error) {
+    console.error("Error fetching deceased name:", error);
   }
-);
-
-
-
-
+}
 
 async function fetchDataEdit() {
   setTimeout(async () => {
@@ -435,6 +446,9 @@ async function fetchDataEdit() {
           sector: returnedData?.user.sector,
           department: returnedData?.user.department,
         };
+        if (model.value.deceased) {
+        await fetchDeceasedName(); 
+      }
       }
     } catch (error) {
       router.replace({ name: "funeral_welfare_list" });
