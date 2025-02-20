@@ -241,6 +241,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const model = ref({
+  createFor: null,
   fundReceipt: null,
   fundDecease: null,
   fundReceiptWreath: null,
