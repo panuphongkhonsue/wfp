@@ -30,6 +30,7 @@ const dentalWelfareRouter = require('./routes/dentalWelfare');
 const medicalWelfareRouter = require('./routes/medicalWelfare');
 const exportRouter = require('./routes/export');
 const variousWelfare = require('./routes/variousWelfare');
+const variousFuneralFamilyWelfare = require('./routes/variousFamilyFuneralWelfare');
 
 
 var app = express();
@@ -85,7 +86,9 @@ app.use('/health-check-up-welfare', auth, healthCheckUpWelfareRouter);
 app.use('/dental-welfare', auth, dentalWelfareRouter);
 app.use('/medical-welfare', auth, medicalWelfareRouter);
 app.use('/various-welfare', auth, variousWelfare);
+app.use('/various-welfare-funeral-family', auth, variousFuneralFamilyWelfare);
 app.use('/export', auth, exportRouter);
+
 
 // error handling
 app.use((error, req, res, next) => {
