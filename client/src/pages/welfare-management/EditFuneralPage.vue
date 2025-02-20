@@ -46,8 +46,11 @@
               <p class="col-12 q-mb-none">
                 ผู้ปฏิบัติงานเสียชีวิตเบิกได้สูงสุดไม่เกิน :
                 {{ remaining[9]?.perTimesRemaining ?? "-" }}
-                บาท
+                บาท 
               </p>
+
+
+
             </q-card-section>
           </q-card>
         </div>
@@ -57,9 +60,12 @@
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
         <div class="col-md-9 col-12">
           <q-card flat bordered class="full-height">
-            <q-card-section class="col row q-pb-none">
-              <p class="q-pb-md font-18 font-bold q-pb-md">ข้อมูลการเบิกสวัสดิการ</p>
+            <q-card-section class="col row flex justify-between q-pb-none">
+              <div class="row">
+                 <p class="q-pb-md font-18 font-bold q-pb-md">ข้อมูลการเบิกสวัสดิการ</p>
               <p class="q-pl-md q-pb-md font-16 q-mb-none">(จ่ายจริงคนละไม่เกิน 10,000 บาท)</p>
+              </div>
+             
               <p class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
                 v-if="isView && (model.status == 'รอตรวจสอบ')"><q-icon :name="outlinedDownload" />
                 <span> Export</span>
@@ -74,7 +80,7 @@
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
               <div class="col-lg-4 col-12 q-mb-none">
                 <InputGroup label="ชื่อ - นามสกุล" is-require :is-view="isView" :data="isView ? deceasedName : null">
-                  <q-select v-model="model.deceased" :options="options" label="ชื่อ - นามสกุล" :loading="isLoading"
+                  <q-select v-model="model.deceased" :options="options"  :loading="isLoading"
                     :clearable="true" emit-value map-options option-value="id" option-label="name"
                     :rules="[(val) => !!val || '']" dense outlined use-input input-debounce="100" hide-bottom-space
                     :error="!!isError?.deceased" @filter="filterFn" />
@@ -206,7 +212,8 @@
         <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
           type="submit" label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
         <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
-          style="background-color: #43a047" label="อนุมัติ" no-caps @click="submit(3)" v-if="!isView && !isLoading" />
+          style="background-color: #43a047" label="อนุมัติ" no-caps @click="submit(3)"
+          v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -272,7 +279,6 @@ const departmentName = computed(() => {
   return selectedUserData.value?.department ?? "-";
 });
 
-
 const isError = ref({});
 const remaining = ref({
   9: { fundRemaining: "-", requestsRemaining: "-", perTimesRemaining: "-" },
@@ -301,9 +307,7 @@ onBeforeUnmount(() => {
   model.value = null;
 
 });
-watch(selectedUserData, (newValue) => {
-  console.log("Selected User Data:", newValue);
-}, { deep: true });
+
 
 watch(
   model,
@@ -317,6 +321,26 @@ watch(
     }
   },
   { deep: true }
+);
+watch(
+  () => model.value.createFor,
+  (newValue) => {
+    try {
+        if ((newValue !== null && newValue !== undefined) && !isView.value) {
+          fetchRemaining();
+          fetchUserData(newValue);
+        }
+    }
+    catch (error) {
+      Notify.create({
+        message:
+          error?.response?.data?.message ??
+          "ไม่พบข้อมูลสิทธิ์คงเหลือของผู้ใช้งาน",
+        position: "bottom-left",
+        type: "negative",
+      });
+    }
+  }
 );
 
 watch(
@@ -339,81 +363,6 @@ watch(
     }
   }
 );
-watch(model, () => {
-  console.log("model.deceased:", model.value.deceased);
-  console.log("options:", options.value);
-});
-
-watch(
-  () => model.value.deceased,
-  (newVal) => {
-    console.log("model.deceased changed to:", newVal);
-  }
-);
-
-watch(
-  () => options.value,
-  (newOptions) => {
-    console.log("options updated:", newOptions);
-  }
-);
-watch(
-  () => model.value.createFor,
-  async (newValue) => {
-    if (newValue !== null) {
-      await fetchRemaining();
-    }
-  }
-);
-async function fetchDataEdit() {
-  setTimeout(async () => {
-    try {
-      const result = await welfareManagementService.dataFuneralById(route.params.id);
-      var returnedData = result.data.datas;
-      if (returnedData) {
-        model.value = {
-          ...model,
-          createFor: returnedData?.user.userId,
-          reimNumber: returnedData?.reimNumber,
-          requestDate: returnedData?.requestDate,
-          selectedWreath: returnedData?.fundWreathUniversity && returnedData?.fundWreathArrange ? true : false,
-          selectedVehicle: returnedData?.fundVehicle ? true : false,
-          status: returnedData?.status,
-          organizer: returnedData?.organizer,
-          deceased: returnedData?.deceased ?? null,
-          fundReceipt: returnedData?.fundReceipt,
-          fundRequest: returnedData?.fundRequest,
-          fundReceiptWreath: returnedData?.fundReceiptWreath,
-          fundWreathArrange: returnedData?.fundWreathArrange,
-          fundWreathUniversity: returnedData?.fundWreathUniversity,
-          fundReceiptVehicle: returnedData?.fundReceiptVehicle,
-          fundVehicle: returnedData?.fundVehicle,
-        };
-        userData.value = {
-          name: returnedData?.user.name,
-          position: returnedData?.user.position,
-          employeeType: returnedData?.user.employeeType,
-          sector: returnedData?.user.sector,
-          department: returnedData?.user.department,
-        };
-        if (model.value.deceased) {
-          await fetchDeceasedName();
-        }
-      }
-      console.log("model: ", model.value);
-    } catch (error) {
-      router.replace({ name: "welfare_management_list" });
-      Notify.create({
-        message:
-          error?.response?.data?.message ??
-          "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
-        position: "bottom-left",
-        type: "negative",
-      });
-    }
-    isLoading.value = false;
-  }, 100);
-}
 
 async function fetchDeceasedName() {
   if (!model.value.deceased) {
@@ -447,6 +396,54 @@ async function fetchDeceasedName() {
   }
 }
 
+async function fetchDataEdit() {
+  setTimeout(async () => {
+    try {
+      const result = await welfareManagementService.dataFuneralById(route.params.id);
+      var returnedData = result.data.datas;
+      if (returnedData) {
+        model.value = {
+          ...model,
+          createFor: null,
+          reimNumber: returnedData?.reimNumber,
+          requestDate: returnedData?.requestDate,
+          selectedWreath: returnedData?.fundWreathUniversity && returnedData?.fundWreathArrange ? true : false,
+          selectedVehicle: returnedData?.fundVehicle ? true : false,
+          status: returnedData?.status,
+          organizer: returnedData?.organizer,
+          deceased: returnedData?.deceased ?? null,
+          fundReceipt: returnedData?.fundReceipt,
+          fundRequest: returnedData?.fundRequest,
+          fundReceiptWreath: returnedData?.fundReceiptWreath,
+          fundWreathArrange: returnedData?.fundWreathArrange,
+          fundWreathUniversity: returnedData?.fundWreathUniversity,
+          fundReceiptVehicle: returnedData?.fundReceiptVehicle,
+          fundVehicle: returnedData?.fundVehicle,
+        };
+        userData.value = {
+          name: returnedData?.user.name,
+          position: returnedData?.user.position,
+          employeeType: returnedData?.user.employeeType,
+          sector: returnedData?.user.sector,
+          department: returnedData?.user.department,
+        };
+        if (model.value.deceased) {
+        await fetchDeceasedName(); 
+      }
+      }
+    } catch (error) {
+      router.replace({ name: "welfare_management_list" });
+      Notify.create({
+        message:
+          error?.response?.data?.message ??
+          "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
+        position: "bottom-left",
+        type: "negative",
+      });
+    }
+    isLoading.value = false;
+  }, 100);
+}
 async function fetchUserData(id) {
   try {
     const result = await userManagementService.dataById(id);
@@ -470,7 +467,9 @@ async function fetchRemaining() {
     const fetchedData = await funeralWelfareEmployeeDeceasedService.getRemaining({
       createFor: model.value.createFor
     });
+
     const deceaseData = fetchedData.data?.datas;
+
     if (Array.isArray(deceaseData)) {
       deceaseData.forEach((item) => {
         remaining.value[item.categoriesId] = {
@@ -555,12 +554,12 @@ async function submit(actionId) {
     }
 
   }
-  if (!model.value.fundReceipt || !model.value.fundRequest) {
+if (!model.value.fundReceipt || !model.value.fundRequest) {
     isError.value.fundRequest = "กรุณากรอกจำนวนเงินให้ครบถ้วน";
     validate = true;
-  } else if (Number(model.value.fundReceipt) < Number(model.value.fundRequest)) {
+} else if (Number(model.value.fundReceipt) < Number(model.value.fundRequest)) {
     isError.value.fundRequest = "จำนวนเงินที่ต้องการเบิกต้องไม่เกินจำนวนเงินตามใบเสร็จ";
-  }
+}
   if (!model.value.fundReceipt) {
     isError.value.fundReceipt = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
     let navigate = document.getElementById("fund");
@@ -651,6 +650,7 @@ async function submit(actionId) {
   });
 }
 async function init() {
+
   isView.value = route.meta.isView;
   isLoading.value = true;
   try {
