@@ -134,26 +134,32 @@ const checkNullValue = async (req, res, next) => {
             errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
         } else if (isInvalidNumber(fundReceipt)) {
             errorObj["fundReceipt"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-        } else if (fundReceipt < 0) {
+        } else if (fundReceipt <= 0) {
             return res.status(400).json({
-                message: "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้",
+                message: "จำนวนเงินตามใบเสร็จน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
         }
         if (isInvalidNumber(fundEligible) && fundEligible) {
             errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
 
-        } else if (fundEligible < 0) {
-            errorObj["fundEligible"] = "จำนวนเงินที่ต้องการเบิก น้อยกว่า 0 ไม่ได้";
+        } else if (fundEligible <= 0) {
+            errorObj["fundEligible"] = "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้";
             return res.status(400).json({
-                message: "จำนวนเงินที่ต้องการเบิก น้อยกว่า 0 ไม่ได้",
+                message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
         }
         const fundSumRequest = Number(fundEligible);
+        if (Number(fundEligible) > Number(fundReceipt)) {
+            return res.status(400).json({
+                message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
+            });
+        }
         if (fundSumRequest <= 0) {
             return res.status(400).json({
                 message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ต้องการเบิกได้",
             });
         }
+        
         if ((isNullOrEmpty(actionId) || (actionId !== status.draft && actionId !== status.waitApprove)) && !req.access) {
             return res.status(400).json({
                 message: "ไม่มีการกระทำที่ต้องการ",
@@ -182,7 +188,7 @@ const bindCreate = async (req, res, next) => {
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
         }
-        if (!isNullOrEmpty(createFor) && actionId == status.draft) {
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
             return res.status(400).json({
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
@@ -225,6 +231,11 @@ const bindUpdate = async (req, res, next) => {
             console.log(createFor);
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+            });
+        }
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
+            return res.status(400).json({
+                message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
         }
         const validCategory = await categories.findOne({

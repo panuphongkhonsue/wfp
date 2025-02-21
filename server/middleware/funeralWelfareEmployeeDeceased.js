@@ -154,7 +154,7 @@ const checkNullValue = async (req, res, next) => {
                 message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
         }
-        if (fundRequest > fundReceipt) {
+        if (Number(fundRequest) > Number(fundReceipt)) {
             return res.status(400).json({
                 message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
             });
@@ -196,7 +196,7 @@ const checkNullValue = async (req, res, next) => {
                     message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });
             }
-            if (fundSumWreathRequest > fundReceiptWreath) {
+            if (Number(fundSumWreathRequest) > Number(fundReceiptWreath)) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
                 });
@@ -230,7 +230,7 @@ const checkNullValue = async (req, res, next) => {
                     message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });
             }
-            if (fundVehicle > fundReceiptVehicle) {
+            if (Number(fundVehicle) > Number(fundReceiptVehicle)) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
                 });
@@ -275,12 +275,12 @@ const bindCreate = async (req, res, next) => {
             fundReceipt, deceased, organizer, fundRequest, fundReceiptWreath, fundWreathUniversity, fundWreathArrange,
             fundReceiptVehicle, fundVehicle, selectedWreath, selectedVehicle, actionId, fundSumRequest, fundSumReceipt, createFor } = req.body;
         const { id } = req.user;
-        if (!isNullOrEmpty(createFor) && req.isEditor) {
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
         }
-        if (!isNullOrEmpty(createFor) && actionId == status.draft) {
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
             return res.status(400).json({
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
@@ -330,9 +330,14 @@ const bindUpdate = async (req, res, next) => {
             fundReceipt, deceased, organizer, fundRequest, fundReceiptWreath, fundWreathUniversity, fundWreathArrange,
             fundReceiptVehicle, fundVehicle, selectedWreath, selectedVehicle, actionId, fundSumRequest, fundSumReceipt, createFor } = req.body;
         const { id } = req.user;
-        if (!isNullOrEmpty(createFor) && req.isEditor) {
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+            });
+        }
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
+            return res.status(400).json({
+                message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
         }
         const dataId = req.params['id'];
