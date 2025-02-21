@@ -310,15 +310,15 @@ watch(
       }
     }
   );
-async function fetchDataEdit() {
+  async function fetchDataEdit() {
   setTimeout(async () => {
     try {
-      const result = await welfareManagementService.dataMedicalById(route.params.id);
+      const result = await medicalWelfareService.dataById(route.params.id);
       var returnedData = result.data.datas;
       if (returnedData) {
         model.value = {
           ...model,
-          createFor: returnedData?.user.userId,
+          createFor: returnedData?.user?.userId,
           reimNumber: returnedData?.reimNumber,
           requestDate: returnedData?.requestDate,
           selectedAccident: returnedData?.fundEligible ? true : false,
@@ -341,11 +341,52 @@ async function fetchDataEdit() {
           department: returnedData?.user.department,
         };
         if (Array.isArray(returnedData?.requestData) && returnedData?.requestData.length > 0) {
-          row.value = returnedData?.requestData;
+          row.value = returnedData?.requestData ?? [
+            {
+              id: 1,
+              startDate: null,
+              endDate: null,
+              fundSumRequestPatientVisit: "-",
+            },
+            {
+              id: 2,
+              startDate: null,
+              endDate: null,
+              fundSumRequestPatientVisit: "-",
+            },
+            {
+              id: 3,
+              startDate: null,
+              endDate: null,
+              fundSumRequestPatientVisit: "-",
+            },
+          ];
+        }
+        else {
+          row.value = [
+            {
+              id: 1,
+              startDate: null,
+              endDate: null,
+              fundSumRequestPatientVisit: "-",
+            },
+            {
+              id: 2,
+              startDate: null,
+              endDate: null,
+              fundSumRequestPatientVisit: "-",
+            },
+            {
+              id: 3,
+              startDate: null,
+              endDate: null,
+              fundSumRequestPatientVisit: "-",
+            },
+          ]
         }
       }
     } catch (error) {
-      router.replace({ name: "welfare_management_list" });
+      router.replace({ name: "medical_welfare_list" });
       Notify.create({
         message:
           error?.response?.data?.message ??
@@ -384,7 +425,48 @@ async function fetchRemaining() {
     canRequest.value.accident = accidentData.canRequest;
     canRequest.value.patientVisit = patientVisitData.canRequest;
     if (Array.isArray(patientVisitData?.requestData) && patientVisitData?.requestData.length > 0) {
-      row.value = patientVisitData?.requestData ?? {};
+      row.value = patientVisitData?.requestData ?? [
+        {
+          id: 1,
+          startDate: null,
+          endDate: null,
+          fundSumRequestPatientVisit: "-",
+        },
+        {
+          id: 2,
+          startDate: null,
+          endDate: null,
+          fundSumRequestPatientVisit: "-",
+        },
+        {
+          id: 3,
+          startDate: null,
+          endDate: null,
+          fundSumRequestPatientVisit: "-",
+        },
+      ];
+    }
+    else {
+      row.value = [
+        {
+          id: 1,
+          startDate: null,
+          endDate: null,
+          fundSumRequestPatientVisit: "-",
+        },
+        {
+          id: 2,
+          startDate: null,
+          endDate: null,
+          fundSumRequestPatientVisit: "-",
+        },
+        {
+          id: 3,
+          startDate: null,
+          endDate: null,
+          fundSumRequestPatientVisit: "-",
+        },
+      ]
     }
   } catch (error) {
     Promise.reject(error);
