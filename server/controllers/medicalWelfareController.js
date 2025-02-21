@@ -182,7 +182,7 @@ class Controller extends BaseController {
                     whereObj[Op.and].push(
                         { '$reimbursements_general.request_date$': getFiscalYearWhere },
                         { '$reimbursements_general.categories_id$': category.medicalWelfare },
-                        { '$reimbursements_general.created_by$': id },
+                        { '$reimbursements_general.created_by$': req.query.createFor ?? id  },
                         { '$sub_category.id$': 2 },
                     );
                     const getRequestData = await reimbursementsGeneralHasSubCategories.findAll({
@@ -222,6 +222,7 @@ class Controller extends BaseController {
                     })
                     const datas = JSON.parse(JSON.stringify(getFund));
                     datas.canRequest = true;
+                    datas.requestData = null;
                     bindData.push(datas);
                 }
                 logger.info('Complete', { method, data: { id } });
@@ -251,6 +252,7 @@ class Controller extends BaseController {
                 return res.status(200).json({
                     datas: datas,
                     canRequest: datas.canRequest ?? true,
+                    requestData: null,
                 });
             }
             logger.info('Data not Found', { method, data: { id } });

@@ -274,7 +274,42 @@ async function fetchDataEdit() {
           department: returnedData?.user.department,
         };
         if (Array.isArray(returnedData?.requestData) && returnedData.requestData.length > 0) {
-          row.value = returnedData?.requestData ?? {};
+          row.value = returnedData?.requestData ?? [
+            {
+              id: 1,
+              dateReceipt: null,
+              fundSumRequest: null,
+            },
+            {
+              id: 2,
+              dateReceipt: null,
+              fundSumRequest: null,
+            },
+            {
+              id: 3,
+              dateReceipt: null,
+              fundSumRequest: null,
+            },
+          ];
+        }
+        else {
+          row.value = [
+            {
+              id: 1,
+              dateReceipt: null,
+              fundSumRequest: null,
+            },
+            {
+              id: 2,
+              dateReceipt: null,
+              fundSumRequest: null,
+            },
+            {
+              id: 3,
+              dateReceipt: null,
+              fundSumRequest: null,
+            },
+          ]
         }
       }
     } catch (error) {
@@ -322,7 +357,23 @@ async function fetchRemaining() {
     }
     canRequest.value = fetchRemaining.data?.canRequest;
     if (Array.isArray(fetchRemaining.data?.requestData) && fetchRemaining.data?.requestData.length > 0) {
-      row.value = fetchRemaining.data?.requestData ?? {};
+      row.value = fetchRemaining.data?.requestData ?? [
+        {
+          id: 1,
+          dateReceipt: null,
+          fundSumRequest: null,
+        },
+        {
+          id: 2,
+          dateReceipt: null,
+          fundSumRequest: null,
+        },
+        {
+          id: 3,
+          dateReceipt: null,
+          fundSumRequest: null,
+        },
+      ];
     }
     else {
       row.value = [
