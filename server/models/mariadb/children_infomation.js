@@ -40,15 +40,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.ENUM('DELEGATE','COMMON'),
       allowNull: false
     },
-    school_type: {
-      type: DataTypes.ENUM('SATIT','GENERAL'),
-      allowNull: false
-    },
     school_name: {
-      type: DataTypes.STRING(255),
-      allowNull: false
-    },
-    education_level: {
       type: DataTypes.STRING(255),
       allowNull: false
     },
@@ -60,6 +52,30 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: false
     },
+    eligible: {
+      type: DataTypes.ENUM('ตามสิทธิ', 'เฉพาะส่วนที่ยังขาดจากสิทธิ'),
+      allowNull: true
+    },
+    delegate_name: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    delegate_number: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    delegate_birth_day: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    delegate_death_day: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    fund_university: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
     sub_categories_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -67,7 +83,8 @@ module.exports = function(sequelize, DataTypes) {
         model: 'sub_categories',
         key: 'id'
       }
-    }
+    },
+    
   }, {
     sequelize,
     tableName: 'children_infomation',

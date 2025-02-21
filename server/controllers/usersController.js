@@ -278,7 +278,6 @@ class Controller extends BaseController {
         const child = req.body.child ?? null;
         delete req.body.child;
         const deleteChild = req.deleteChild ?? null;
-        console.log(deleteChild);
         const dataUpdate = req.body;
         const dataId = req.params['id'];
         var itemsReturned = null;
@@ -327,7 +326,6 @@ class Controller extends BaseController {
                             users_id: dataId
                         }, transaction: t,
                     });
-                    console.log(deleted);
                 }
                 if (updated > 0 || hasChildUpdated || deleted) {
                     itemsReturned = {

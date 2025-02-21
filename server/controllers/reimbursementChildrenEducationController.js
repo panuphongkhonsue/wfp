@@ -2,8 +2,10 @@ const BaseController = require('./BaseControllers');
 const { reimbursementsChildrenEducation, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation, sequelize, categories } = require('../models/mariadb');
 const { initLogger } = require('../logger');
 const { isNullOrEmpty } = require('../controllers/utility');
-const { Sequelize, Op, fn, col, literal } = require("sequelize");
+const { Op, fn, col, literal, where } = require("sequelize");
 const logger = initLogger('reimbursementChildrenEducationController');
+const childType =  require('../enum/childType');
+const sub_categories = require('../models/mariadb/sub_categories');
 
 class Controller extends BaseController {
     constructor() {
@@ -18,18 +20,20 @@ class Controller extends BaseController {
             var whereObj = { ...filter }
             const reimbursChildEdiDataList = await reimbursementsChildrenEducation.paginate({
                 attributes: [
-                    'reim_number',
-                    'created_at',
-                    'updated_at',
-                    'fund_receipt',
-                    'fund_sum_request'
+                    'id',
+                    [col("reim_number"), "reimNumber"],
+                    [col("request_date"), "requestDate"],
+                    [col("updated_at"), "updatedAt"],
+                    [col("fund_receipt"), "fundReceipt"],
+                    [col("fund_eligible"), "fundEligible"],
+                    [col("fund_sum_request"), "fundSumRequest"],
+                    'status',
                 ],
                 page: page && !isNaN(page) ? Number(page) : 1,
                 paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 10,
                 where: whereObj,
-                order: [['created_at', 'DESC']]
+                order: [['updated_at', 'DESC'], ['created_at', 'DESC']]
             });
-            console.log('Paginate Result:', reimbursChildEdiDataList);
 
             if (reimbursChildEdiDataList) {
                 var reimbursChildEdiList = {};
@@ -57,6 +61,7 @@ class Controller extends BaseController {
     getRemainingChildFund = async (req, res, next) => {
         const method = 'getChildFundSummary';
         const userId = req.user?.id;
+        const { sub_categories_id } = req.body;
 
         try {
             const { filter } = req.query;
@@ -128,6 +133,24 @@ class Controller extends BaseController {
                 });
             };
 
+            const getFund = await subCategories.findAll({
+                attributes: [
+                    [col("fund"), "fundRemaining"],
+                    [col("per_years"), "requestsRemaining"],
+                    [col("per_times"), "perTimesRemaining"],
+                ],
+                where: { id: sub_categories_id}
+            })
+
+            if (getFund) {
+                const datas = JSON.parse(JSON.stringify(getFund));
+                logger.info('Complete', { method, data: { userId } });
+                return res.status(200).json({
+                    datas: datas,
+                    canRequest: datas.canRequest ?? true,
+                });
+            }
+
             logger.info('Data not Found', { method, data: { userId } });
             res.status(400).json({
                 message: "ไม่พบข้อมูลที่ต้องการ กรุณาลองอีกครั้ง"
@@ -145,83 +168,78 @@ class Controller extends BaseController {
     create = async (req, res, next) => {
         const method = 'CreateReimbursementsChildrenEducation';
         const { id } = req.user;
-        const child = req.body.childrenInfomation ?? null;
-        console.log("🟢 Checking childrenInfomation:", child);
-        delete req.body.childrenInfomation;
+        const child = req.body.child ?? null;
+        delete req.body.child
         const dataCreate = req.body;
         dataCreate.fund_receipt = isNaN(dataCreate.fund_receipt) ? 0 : parseFloat(dataCreate.fund_receipt);
-
+    
         try {
             const results = await sequelize.transaction(async t => {
-                const newReimbursementsChild = await reimbursementsChildrenEducation.create(dataCreate, { transaction: t, });
+                const newReimbursementsChild = await reimbursementsChildrenEducation.create(dataCreate, { transaction: t });
+                console.log("🚀 Debug:", child);
                 if (!isNullOrEmpty(child)) {
                     var childData = child.map((childObj) => ({
                         reimbursements_children_education_id: newReimbursementsChild.id,
                         fund_receipt: childObj.fund_receipt,
                         fund_eligible: childObj.fund_eligible,
-                        fund_sum_request: childObj.fund_sum_request,
+                        fund_university : childObj.fund_university,
+                        fund_sum_request: (parseFloat(childObj.fund_receipt) || 0) + (parseFloat(childObj.fund_eligible) || 0),
                         child_name: childObj.child_name,
                         child_birth_day: childObj.child_birth_day,
                         child_father_number: childObj.child_father_number,
                         child_mother_number: childObj.child_mother_number,
-                        child_type: childObj.child_type,
-                        school_type: childObj.school_type,
+                        child_type: childObj.childPassedAway ? childType.DELEGATE : childType.COMMON,
                         school_name: childObj.school_name,
-                        education_level: childObj.education_level,
                         district: childObj.district,
                         province: childObj.province,
-                        sub_categories_id: childObj.sub_categories_id
-
+                        sub_categories_id: childObj.sub_categories_id,
+                        delegate_name: childObj.childPassedAway ? childObj.delegate_name : null,
+                        delegate_number: childObj.childPassedAway ? childObj.delegate_number : null,
+                        delegate_birth_day: childObj.childPassedAway ? childObj.delegate_birth_day : null,
+                        delegate_death_day: childObj.childPassedAway ? childObj.delegate_death_day : null,
                     }));
+    
                     const newItemChild = await childrenInfomation.bulkCreate(childData, {
-                        fields: ['reimbursements_children_education_id', 'fund_receipt',
-                            "fund_eligible",
-                            'fund_sum_request',
-                            'child_name',
-                            'child_birth_day',
-                            'child_father_number',
-                            'child_mother_number',
-                            'child_type',
-                            'school_type',
-                            'school_name',
-                            'education_level',
-                            'district',
-                            'province',
-                            'sub_categories_id'
+                        fields: [
+                            'reimbursements_children_education_id', 'fund_receipt',
+                            'fund_eligible','fund_university', 'fund_sum_request', 'child_name',
+                            'child_birth_day', 'child_father_number', 'child_mother_number',
+                            'child_type', 'school_name','district', 'province', 'sub_categories_id',
+                            'delegate_name', 'delegate_number', 'delegate_birth_day', 'delegate_death_day' // ✅ บันทึกเฉพาะค่า delegate
                         ],
                         transaction: t,
                     });
-                    console.log(newItemChild); // 🔥 newItemChild เป็น Array
+
                     var itemsReturned = {
                         ...newReimbursementsChild.toJSON(),
                         child: newItemChild,
                     };
+    
                     var childrenInfoData = newItemChild.map((childItem) => ({
                         reimbursements_children_education_id: newReimbursementsChild.id,
                         children_infomation_id: childItem.id
                     }));
-
-
+    
                     await reimbursementsChildrenEducationHasChildrenInfomation.bulkCreate(childrenInfoData, {
                         fields: ['reimbursements_children_education_id', "children_infomation_id"],
                         transaction: t,
-                    })
+                    });
                 }
-                if (!isNullOrEmpty(child)) return itemsReturned
+    
+                if (!isNullOrEmpty(child)) return itemsReturned;
                 return newReimbursementsChild;
-
             });
+    
             res.status(201).json({ newItem: results, message: "บันทึกข้อมูลสำเร็จ" });
-        }
-        catch (error) {
+        } catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
                 data: { id },
             });
             next(error);
         }
-    }
-
+    };
+    
 
 
     update = async (req, res, next) => {
@@ -229,11 +247,8 @@ class Controller extends BaseController {
         const { id } = req.user;
         const dataId = req.params['id'];
         const deletedChild = req.deleteChild ?? null;
-        console.log("🟢 Checking deleteChild:", deletedChild);
-        const child = req.body.childrenInfomation ?? null;
-        console.log("🟢 Checking childrenInfomation:", child);
-        delete req.body.childrenInfomation;
-        delete req.body.deleteChild;
+        const child = req.body.child ?? null;
+        delete req.body.child;
         const dataUpdate = req.body;
         var itemsReturned = null;
         dataUpdate.fund_receipt = isNaN(dataUpdate.fund_receipt) ? 0 : parseFloat(dataUpdate.fund_receipt);
@@ -254,65 +269,54 @@ class Controller extends BaseController {
                 }
 
 
-                if(deletedChild){
+                if (!isNullOrEmpty(deletedChild)) {
+                    const idsToDelete = deletedChild.map(child => child.id);
 
-                    var childDelete = deletedChild.map((deleteObj) => ({
-                        id: deleteObj.id,
-                    }))
-   
-                    const childIds = await reimbursementsChildrenEducationHasChildrenInfomation.findAll({
+                    var childIds = await reimbursementsChildrenEducationHasChildrenInfomation.findAll({
                         attributes: ['children_infomation_id'],
-                        where: { reimbursements_children_education_id: dataId ,
-                            children_infomation_id: childDelete
-                          },
+                        where: {
+                            reimbursements_children_education_id: dataId,
+                            children_infomation_id: idsToDelete
+                        },
                         raw: true
                     });
                     const childIdArray = childIds.map(item => item.children_infomation_id);
 
-                    const deleteItemSub = await reimbursementsChildrenEducationHasChildrenInfomation.destroy(
+                    var deleteItemSub = await reimbursementsChildrenEducationHasChildrenInfomation.destroy(
                         {
                             where: { reimbursements_children_education_id: dataId, children_infomation_id: childIdArray },
                             transaction: t,
                         }
                     );
 
-                    const deleteItemChild = await childrenInfomation.destroy(
+                    var deleteItemChild = await childrenInfomation.destroy(
                         {
-                            where: { id:childIdArray},
+                            where: { id: childIdArray },
                             transaction: t,
                         }
                     );
-
-                    if (deleteItemSub > 0 && deleteItemChild > 0) {
-                        itemsReturned = {
-                            ...itemsReturned,
-                            deleteItemAccident: deleteItemSub,
-                            deleteItemAccidentChild: deleteItemChild,
-                        };
-                    }
-        
-                    console.log("deleteItemSub:", deleteItemSub);
-                    console.log("deleteItemChild:", deleteItemChild);
                 }
-                console.log("child:", child);
                 // 🔹 อัปเดตข้อมูลเด็ก
                 if (!isNullOrEmpty(child)) {
                     var childData = child.map((childObj) => ({
-                        id: childObj.id,
+                        reimbursements_children_education_id: newReimbursementsChild.id,
                         fund_receipt: childObj.fund_receipt,
                         fund_eligible: childObj.fund_eligible,
-                        fund_sum_request: childObj.fund_sum_request,
+                        fund_university : childObj.fund_university,
+                        fund_sum_request: (parseFloat(childObj.fund_receipt) || 0) + (parseFloat(childObj.fund_eligible) || 0),
                         child_name: childObj.child_name,
                         child_birth_day: childObj.child_birth_day,
                         child_father_number: childObj.child_father_number,
                         child_mother_number: childObj.child_mother_number,
                         child_type: childObj.child_type,
-                        school_type: childObj.school_type,
                         school_name: childObj.school_name,
-                        education_level: childObj.education_level,
                         district: childObj.district,
                         province: childObj.province,
-                        sub_categories_id: childObj.sub_categories_id
+                        sub_categories_id: childObj.sub_categories_id,
+                        delegate_name: childObj.childPassedAway ? childObj.delegate_name : null,
+                        delegate_number: childObj.childPassedAway ? childObj.delegate_number : null,
+                        delegate_birth_day: childObj.childPassedAway ? childObj.delegate_birth_day : null,
+                        delegate_death_day: childObj.childPassedAway ? childObj.delegate_death_day : null,
                     }));
 
                     const existingChildren = await childrenInfomation.findAll({
@@ -342,10 +346,11 @@ class Controller extends BaseController {
                     console.log("🚀 Child data before bulkCreate:", JSON.stringify(childData, null, 2));
 
                     var updateItemChild = await childrenInfomation.bulkCreate(childData, {
-                        updateOnDuplicate: ['fund_receipt', 'fund_eligible', 'fund_sum_request',
-                            'child_name', 'child_birth_day', 'child_father_number',
-                            'child_mother_number', 'child_type', 'school_type', 'school_name',
-                            'education_level', 'district', 'province', 'sub_categories_id'],
+                        updateOnDuplicate: ['fund_receipt',
+                            'fund_eligible','fund_university', 'fund_sum_request', 'child_name',
+                            'child_birth_day', 'child_father_number', 'child_mother_number',
+                            'child_type', 'school_name','district', 'province', 'sub_categories_id',
+                            'delegate_name', 'delegate_number', 'delegate_birth_day', 'delegate_death_day'],
                         transaction: t,
                         returning: true,
                         individualHooks: true, // ✅ ลองเพิ่มตัวนี้
@@ -394,10 +399,12 @@ class Controller extends BaseController {
 
 
 
-                if (updated > 0 || hasChildUpdated) {
+                if (updated > 0 || hasChildUpdated || deleteItemSub || deleteItemChild) {
                     itemsReturned = {
                         ...updated,
                         child: updateItemChild,
+                        delete: deleteItemSub,
+                        deleteChild: deleteItemChild,
                     };
                 }
                 else {
@@ -425,7 +432,7 @@ class Controller extends BaseController {
     };
 
 
-    
+
 
 
     getById = async (req, res, next) => {
@@ -518,6 +525,31 @@ class Controller extends BaseController {
             next(error);
         }
     }
+
+    getByCategories = async (req, res, next) => {
+        const method = 'getSubCategories';
+        const { id } = req.user;
+        const { categories_id } = req.query;
+        try {
+            const subCategoriesData = await subCategories.findAll({
+                attributes: ['id', 'name'],
+                where: { categories_id: categories_id }
+            });
+    
+            if (subCategoriesData && subCategoriesData.length > 0) {
+                logger.info('Complete', { method, data: { id } });
+                res.status(200).json(subCategoriesData);
+            } else {
+                logger.info('No data found', { method, data: { id } });
+                res.status(404).json({ message: 'No subcategories found' });
+            }
+        } catch (error) {
+            logger.error('Error occurred', { method, error: error.message });
+            res.status(500).json({ message: 'Internal server error' });
+            next(error);
+        }
+    };
+    
 
     deleteReimbursement = async (req, res, next) => {
         const method = 'DeleteReimbursementsChildrenEducation';

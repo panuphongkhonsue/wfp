@@ -77,7 +77,7 @@ app.use('/employee-type', auth, employeeTypeRouter);
 app.use('/position', auth, postitionRouter);
 app.use('/sector', auth, sectorRouter);
 app.use('/role', auth, roleRouter);
-app.use('/childrenEducation', auth, childrenEducationRouter);
+app.use('/reimbursement-children-education', auth, childrenEducationRouter);
 
 app.use('/reimbursement-welfare', auth, reimbursementWelfareRouter);
 app.use('/health-check-up-welfare', auth, healthCheckUpWelfare);
