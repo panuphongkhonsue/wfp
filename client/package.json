@@ -25,6 +25,7 @@
     "uuid": "^10.0.0",
     "vue": "^3.4.18",
     "vue-router": "^4.0.0",
+    "vue3-apexcharts": "^1.8.0",
     "zipson": "^0.2.12"
   },
   "devDependencies": {
