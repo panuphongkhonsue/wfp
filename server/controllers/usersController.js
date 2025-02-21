@@ -1,6 +1,6 @@
 const BaseController = require('./BaseControllers');
 const { users, positions, sector, employeeTypes, roles, departments, children, sequelize } = require('../models/mariadb');
-const { Op } = require('sequelize')
+const { Op, col } = require('sequelize')
 const { initLogger } = require('../logger');
 const logger = initLogger('UserController');
 const { isNullOrEmpty } = require('../controllers/utility');
@@ -93,6 +93,12 @@ class Controller extends BaseController {
                     'name',
                     'username',
                     'first_working_date',
+                    [col("house_number"), "houseNumber"],
+                    [col("street"), "street"],
+                    [col("district"), "district"],
+                    [col("sub_district"), "subDistrict"],
+                    [col("province"), "province"],
+                    [col("postal_code"), "postalCode"],
                 ],
                 include: [
                     {

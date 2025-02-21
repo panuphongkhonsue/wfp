@@ -14,7 +14,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     fund_receipt: {
       type: DataTypes.DECIMAL(10,0),
-      allowNull: false
+      allowNull: true
     },
     fund_eligible: {
       type: DataTypes.DECIMAL(10,0),

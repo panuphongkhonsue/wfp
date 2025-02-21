@@ -324,6 +324,25 @@ async function fetchRemaining() {
     if (Array.isArray(fetchRemaining.data?.requestData) && fetchRemaining.data?.requestData.length > 0) {
       row.value = fetchRemaining.data?.requestData ?? {};
     }
+    else {
+      row.value = [
+        {
+          id: 1,
+          dateReceipt: null,
+          fundSumRequest: null,
+        },
+        {
+          id: 2,
+          dateReceipt: null,
+          fundSumRequest: null,
+        },
+        {
+          id: 3,
+          dateReceipt: null,
+          fundSumRequest: null,
+        },
+      ]
+    }
   } catch (error) {
     Promise.reject(error);
   }

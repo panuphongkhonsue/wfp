@@ -207,7 +207,7 @@ const bindCreate = async (req, res, next) => {
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
         }
-        if (!isNullOrEmpty(createFor) && actionId == status.draft) {
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
             return res.status(400).json({
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
@@ -251,6 +251,11 @@ const bindUpdate = async (req, res, next) => {
         if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+            });
+        }
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
+            return res.status(400).json({
+                message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
         }
         const dataId = req.params['id'];

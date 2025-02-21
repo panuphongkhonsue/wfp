@@ -1,6 +1,6 @@
 const sequelizePaginate = require('sequelize-paginate');
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   const model = sequelize.define('users', {
     id: {
       autoIncrement: true,
@@ -50,6 +50,30 @@ module.exports = function(sequelize, DataTypes) {
     deleted_at: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    house_number: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    street: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    district: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    sub_district: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    province: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    postal_code: {
+      type: DataTypes.STRING(255),
+      allowNull: false
     },
     employee_types_id: {
       type: DataTypes.BIGINT,

@@ -153,7 +153,7 @@ const checkNullValue = async (req, res, next) => {
                     message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });
             }
-            if (fundEligible > fundReceipt) {
+            if (Number(fundEligible) > Number(fundReceipt)) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
                 });
@@ -191,7 +191,7 @@ const checkNullValue = async (req, res, next) => {
             if (isNullOrEmpty(endDate)) {
                 errorObj["endDate"] = "กรุณากรอก วัน/เดือน/ปี ถึงวันที่";
             }
-            if (fundSumRequestPatientVisit > fundReceiptPatientVisit) {
+            if (Number(fundSumRequestPatientVisit) > Number(fundReceiptPatientVisit)) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
                 });
@@ -237,12 +237,12 @@ const bindCreate = async (req, res, next) => {
             createFor, actionId
         } = req.body;
         const { id } = req.user;
-        if (!isNullOrEmpty(createFor) && req.isEditor) {
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
         }
-        if (!isNullOrEmpty(createFor) && actionId == status.draft) {
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
             return res.status(400).json({
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
@@ -291,9 +291,14 @@ const bindUpdate = async (req, res, next) => {
             createFor, actionId
         } = req.body;
         const { id } = req.user;
-        if (!isNullOrEmpty(createFor) && req.isEditor) {
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+            });
+        }
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
+            return res.status(400).json({
+                message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
         }
         const dataId = req.params['id'];

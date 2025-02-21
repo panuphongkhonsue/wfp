@@ -99,7 +99,7 @@ class Controller extends BaseController {
                 whereObj[Op.and].push(
                     { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
                     { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
-                    { '$reimbursementsGeneral.created_by$': id },
+                    { '$reimbursementsGeneral.created_by$': req.query.createFor ?? id },
                 );
                 const getRequestData = await reimbursementsGeneral.findAll({
                     attributes: [
@@ -130,6 +130,7 @@ class Controller extends BaseController {
                 return res.status(200).json({
                     datas: datas,
                     canRequest: datas.canRequest ?? true,
+                    requestData: null,
                 });
             }
             logger.info('Data not Found', { method, data: { id } });
