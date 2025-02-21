@@ -31,6 +31,12 @@ const fetchDataHealthCheckup = async (req, res, next) => {
                 [col("created_by_user.employee_type.name"), "employeeType"],
                 [col("created_by_user.sector.name"), "sector"],
                 [col("created_by_user.department.name"), "department"],
+                [col("created_by_user.house_number"), "houseNumber"],
+                [col("created_by_user.street"), "street"],
+                [col("created_by_user.district"), "district"],
+                [col("created_by_user.province"), "province"],
+                [col("created_by_user.sub_district"), "subDistrict"],
+                [col("created_by_user.postal_code"), "postalCode"],
                 [col("category.id"), "categoryId"],
                 [col("category.name"), "categoryName"],
             ],
@@ -82,6 +88,13 @@ const fetchDataHealthCheckup = async (req, res, next) => {
                 employeeType: datas.employeeType,
                 sector: datas.sector,
                 department: datas.department,
+                houseNumber: datas.houseNumber,
+                subDistrict: datas.subDistrict,
+                postalCode: datas.postalCode,
+                street: datas.street,
+                district: datas.district,
+                province: datas.province
+
             },
             receiptInfo: [
                 {
@@ -99,6 +112,12 @@ const fetchDataHealthCheckup = async (req, res, next) => {
         delete welfareData.sector;
         delete welfareData.department;
         delete welfareData.employeeTypeId;
+        delete welfareData.houseNumber;
+        delete welfareData.subDistrict;
+        delete welfareData.postalCode;
+        delete welfareData.street;
+        delete welfareData.district;
+        delete welfareData.province;
         req.body.datas = welfareData;
         next();
     }

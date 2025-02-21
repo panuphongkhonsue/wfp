@@ -63,7 +63,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-
+app.use("/assets", express.static(__dirname + "/public"));
 // --- Map router ---
 app.use('/', indexRouter);
 app.use('/account', accountRouter);

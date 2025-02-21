@@ -16,11 +16,18 @@ const createPdfGeneral = async (req, res, next) => {
             textColor: '#333',
         });
 
-
-        let options = { format: "A4", waitUntil: "networkidle0" , displayHeaderFooter : true };
+        let options = { format: "A4", waitUntil: "networkidle0" };
+        const receipt = await ejs.renderFile('./templateExport/receiptExport.html.ejs',
+            {
+                body: req.body.datas,
+                async: true,
+                path: process.env.fileAccess,
+            }
+        )
         const html = await ejs.renderFile('./templateExport/generalExport.html.ejs',
             {
                 body: req.body.datas,
+                receipt: receipt,
                 async: true,
                 cssStyles: `<style>${cssData}</style>`,
             }
