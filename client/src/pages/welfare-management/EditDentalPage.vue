@@ -219,7 +219,7 @@ watch(
 async function fetchDataEdit() {
   setTimeout(async () => {
     try {
-      const result = await dentalWelfareService.dataById(route.params.id);
+      const result = await welfareManagementService.dataDentalById(route.params.id);
       var returnedData = result.data.datas;
       if (returnedData) {
         model.value = {
