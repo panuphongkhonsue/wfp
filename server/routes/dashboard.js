@@ -5,4 +5,6 @@ const { authPermission, bindGetDataDashboard } = require('../middleware/dashboar
 
 router.get('/report/report-compare-expense', authPermission, bindGetDataDashboard, dashboardController.list);
 router.get('/report/report-personal', authPermission, bindGetDataDashboard, dashboardController.list);
+router.get('/report/report-fund-request-per-year', authPermission, dashboardController.reportFundRequestPerYear);
+router.get('/report/report-fund-request-per-year-each-type', authPermission, dashboardController.reportFundRequestPerYearEachType);
 module.exports = router;
