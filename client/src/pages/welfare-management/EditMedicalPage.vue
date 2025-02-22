@@ -9,25 +9,13 @@
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
             </q-card-section>
             <q-separator />
-            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold"
-              :class="canCreateFor && !isView ? 'items-center' : ''">
-              <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm"
-                :class="canCreateFor && !isView ? 'items-center' : ''">
+            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold">
+              <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm">
                 <p class="col-auto q-mb-none">
-                  ชื่อ-นามสกุล : <span v-show="!canCreateFor || isView" class="font-medium font-16 text-grey-7">{{
+                  ชื่อ-นามสกุล : <span class="font-medium font-16 text-grey-7">{{
                     userData?.name ?? "-" }}</span>
                 </p>
-                <q-select v-if="canCreateFor && !isView" popup-content-class="font-14 font-regular" :loading="isLoading"
-                  id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
-                  v-model="model.createFor" :options="options" dense option-value="id" emit-value map-options
-                  option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
-                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']">
-                  <template v-slot:no-option>
-                    <q-item>
-                      <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
-                    </q-item>
-                  </template>
-                </q-select>
+                
               </div>
               <p class="col-lg-3 col-xl-4 col-12 q-mb-none q-pr-sm text-no-wrap ellipsis"
                 :title="userData?.position ?? '-'">
@@ -193,12 +181,12 @@
     <template v-slot:action>
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
-          style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'medical_welfare_list' }" />
+          style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'welfare_management_list' }" />
         <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
-        <q-btn :disable="!canRequest.accident && !canRequest.patientVisit" id="button-approve"
+          type="submit" label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
+        <q-btn id="button-approve"
           class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
-          label="ส่งคำร้องขอ" no-caps @click="submit(2)" v-if="!isView && !isLoading" />
+          label="อนุมัติ" no-caps @click="submit(3)" v-if="!isView" />
       </div>
     </template>
   </PageLayout>
@@ -216,16 +204,14 @@ import Swal from "sweetalert2";
 import { Notify } from "quasar";
 import { formatDateThaiSlash, formatNumber, formatDateSlash, formatDateServer } from "src/components/format";
 import medicalWelfareService from "src/boot/service/medicalWelfareService";
-import userManagementService from "src/boot/service/userManagementService";
+import welfareManagementService from "src/boot/service/welfareManagementService";
 import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useAuthStore } from "src/stores/authStore";
 
 defineOptions({
   name: "MedicalfareEdit",
 });
-const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const model = ref({
@@ -244,7 +230,6 @@ const remaining = ref({
   accident: {},
   patientVisit: {},
 });
-let options = ref([]);
 const isLoading = ref(false);
 const isError = ref({});
 const canRequest = ref({
@@ -255,9 +240,6 @@ const isView = ref(false);
 
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
-});
-const canCreateFor = computed(() => {
-  return authStore.isEditor;
 });
 
 onMounted(async () => {
@@ -282,28 +264,7 @@ watch(
   },
   { deep: true }
 );
-watch(
-  () => model.value.createFor,
-  (newValue) => {
-    try {
-      if (canCreateFor.value) {
-        if ((newValue !== null && newValue !== undefined) && !isView.value) {
-          fetchRemaining();
-          fetchUserData(newValue);
-        }
-      }
-    }
-    catch (error) {
-      Notify.create({
-        message:
-          error?.response?.data?.message ??
-          "ไม่พบข้อมูลสิทธิ์คงเหลือของผู้ใช้งาน",
-        position: "bottom-left",
-        type: "negative",
-      });
-    }
-  }
-);
+
 watch(
   () => model.value.startDate,
   (newValue) => {
@@ -341,15 +302,23 @@ watch(
     }
   }
 );
+watch(
+    () => model.value.createFor,
+    async (newValue) => {
+      if (newValue !== null) {
+        await fetchRemaining();
+      }
+    }
+  );
 async function fetchDataEdit() {
   setTimeout(async () => {
     try {
-      const result = await medicalWelfareService.dataById(route.params.id);
+      const result = await welfareManagementService.dataMedicalById(route.params.id);
       var returnedData = result.data.datas;
       if (returnedData) {
         model.value = {
           ...model,
-          createFor: null,
+          createFor: returnedData?.user.userId,
           reimNumber: returnedData?.reimNumber,
           requestDate: returnedData?.requestDate,
           selectedAccident: returnedData?.fundEligible ? true : false,
@@ -372,52 +341,11 @@ async function fetchDataEdit() {
           department: returnedData?.user.department,
         };
         if (Array.isArray(returnedData?.requestData) && returnedData?.requestData.length > 0) {
-          row.value = returnedData?.requestData ?? [
-            {
-              id: 1,
-              startDate: null,
-              endDate: null,
-              fundSumRequestPatientVisit: "-",
-            },
-            {
-              id: 2,
-              startDate: null,
-              endDate: null,
-              fundSumRequestPatientVisit: "-",
-            },
-            {
-              id: 3,
-              startDate: null,
-              endDate: null,
-              fundSumRequestPatientVisit: "-",
-            },
-          ];
-        }
-        else {
-          row.value = [
-            {
-              id: 1,
-              startDate: null,
-              endDate: null,
-              fundSumRequestPatientVisit: "-",
-            },
-            {
-              id: 2,
-              startDate: null,
-              endDate: null,
-              fundSumRequestPatientVisit: "-",
-            },
-            {
-              id: 3,
-              startDate: null,
-              endDate: null,
-              fundSumRequestPatientVisit: "-",
-            },
-          ]
+          row.value = returnedData?.requestData;
         }
       }
     } catch (error) {
-      router.replace({ name: "medical_welfare_list" });
+      router.replace({ name: "welfare_management_list" });
       Notify.create({
         message:
           error?.response?.data?.message ??
@@ -429,24 +357,7 @@ async function fetchDataEdit() {
     isLoading.value = false;
   }, 100);
 }
-async function fetchUserData(id) {
-  try {
-    const result = await userManagementService.dataById(id);
-    var returnedData = result.data.datas;
-    if (returnedData) {
-      userData.value = {
-        name: returnedData?.name,
-        position: returnedData?.position.name,
-        employeeType: returnedData?.employeeType.name,
-        sector: returnedData?.sector.name,
-        department: returnedData?.department.name,
-      };
-    }
-  }
-  catch (error) {
-    Promise.reject(error);
-  }
-}
+
 async function fetchRemaining() {
   try {
     const fetchRemaining = await medicalWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -473,71 +384,13 @@ async function fetchRemaining() {
     canRequest.value.accident = accidentData.canRequest;
     canRequest.value.patientVisit = patientVisitData.canRequest;
     if (Array.isArray(patientVisitData?.requestData) && patientVisitData?.requestData.length > 0) {
-      row.value = patientVisitData?.requestData ?? [
-        {
-          id: 1,
-          startDate: null,
-          endDate: null,
-          fundSumRequestPatientVisit: "-",
-        },
-        {
-          id: 2,
-          startDate: null,
-          endDate: null,
-          fundSumRequestPatientVisit: "-",
-        },
-        {
-          id: 3,
-          startDate: null,
-          endDate: null,
-          fundSumRequestPatientVisit: "-",
-        },
-      ];
-    }
-    else {
-      row.value = [
-        {
-          id: 1,
-          startDate: null,
-          endDate: null,
-          fundSumRequestPatientVisit: "-",
-        },
-        {
-          id: 2,
-          startDate: null,
-          endDate: null,
-          fundSumRequestPatientVisit: "-",
-        },
-        {
-          id: 3,
-          startDate: null,
-          endDate: null,
-          fundSumRequestPatientVisit: "-",
-        },
-      ]
+      row.value = patientVisitData?.requestData ?? {};
     }
   } catch (error) {
     Promise.reject(error);
   }
 }
-async function filterFn(val, update) {
-  try {
-    setTimeout(async () => {
-      const result = await userManagementService.getUserInitialData({ keyword: val });
-      var returnedData = result.data.datas;
 
-      update(() => {
-        if (returnedData) {
-          options.value = returnedData;
-        }
-      });
-    }, 650);
-
-  }
-  catch (error) {
-    Promise.reject(error);
-  }
-}
 async function submit(actionId) {
   let validate = false;
   if (!model.value.selectedAccident && !model.value.selectedPatientVisit) {
@@ -575,13 +428,6 @@ async function submit(actionId) {
       isError.value.endDate = "กรุณากรอก วัน/เดือน/ปี ถึงวันที่";
       validate = true;
     }
-  }
-  if (!model.value.createFor && canCreateFor.value) {
-    isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
-    let navigate = document.getElementById("fund-receipt");
-    window.location.hash = "fund-receipt";
-    navigate.scrollIntoView(false);
-    validate = true;
   }
   if (validate === true) {
     Notify.create({
@@ -621,7 +467,7 @@ async function submit(actionId) {
     preConfirm: async () => {
       try {
         if (isEdit.value) {
-          fetch = await medicalWelfareService.update(route.params.id, payload);
+          fetch = await welfareManagementService.updateMedical(route.params.id, payload);
         }
         else {
           fetch = await medicalWelfareService.create(payload);
@@ -656,7 +502,7 @@ async function submit(actionId) {
           confirmButton: "save-button",
         },
       }).then(() => {
-        router.replace({ name: "medical_welfare_list" });
+        router.replace({ name: "welfare_management_list" });
       });
     }
   });
@@ -721,16 +567,7 @@ async function init() {
       fetchDataEdit();
     }
     else if (isEdit.value) {
-      if (!canCreateFor.value) {
-        fetchRemaining();
-      }
-      fetchDataEdit();
-    }
-    else {
-      if (!canCreateFor.value) {
-        fetchRemaining();
-        fetchUserData(authStore.id);
-      }
+        fetchDataEdit();
     }
   }
   catch (error) {

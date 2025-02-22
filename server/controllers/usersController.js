@@ -1,6 +1,6 @@
 const BaseController = require('./BaseControllers');
 const { users, positions, sector, employeeTypes, roles, departments, children, sequelize } = require('../models/mariadb');
-const { Op } = require('sequelize')
+const { Op, col } = require('sequelize')
 const { initLogger } = require('../logger');
 const logger = initLogger('UserController');
 const { isNullOrEmpty } = require('../controllers/utility');
@@ -93,6 +93,12 @@ class Controller extends BaseController {
                     'name',
                     'username',
                     'first_working_date',
+                    [col("house_number"), "houseNumber"],
+                    [col("street"), "street"],
+                    [col("district"), "district"],
+                    [col("sub_district"), "subDistrict"],
+                    [col("province"), "province"],
+                    [col("postal_code"), "postalCode"],
                 ],
                 include: [
                     {
@@ -320,12 +326,16 @@ class Controller extends BaseController {
                 }
                 if (!isNullOrEmpty(deleteChild)) {
                     const idsToDelete = deleteChild.map(child => child.id);
-                    var deleted = await children.destroy({
-                        where: {
-                            id: idsToDelete,
-                            users_id: dataId
-                        }, transaction: t,
-                    });
+                    var deleted = await children.update(
+                        { deleted_at: new Date() },
+                        {
+                            where: {
+                                id: idsToDelete,
+                                users_id: dataId
+                            },
+                            transaction: t
+                        }
+                    );
                 }
                 if (updated > 0 || hasChildUpdated || deleted) {
                     itemsReturned = {

@@ -18,8 +18,8 @@
 
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
           <q-select :loading="isLoading" id="selected-status" class="q-pt-sm" outlined v-model="filter.statusName"
-            :options="optionStatus" label="สถานะ" dense clearable option-value="name" emit-value
-            map-options option-label="name">
+            :options="optionStatus" label="สถานะ" dense clearable option-value="name" emit-value map-options
+            option-label="name">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey"> No option </q-item-section>
@@ -30,8 +30,8 @@
 
         <div class="col-12 col-md q-pt-lg">
           <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm" outlined v-model="filter.welfareName"
-            :options="optionWelfareType" label="ประเภทสวัสดิการ" dense clearable option-value="name"
-            emit-value map-options option-label="name">
+            :options="optionWelfareType" label="ประเภทสวัสดิการ" dense clearable option-value="name" emit-value
+            map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey">No option</q-item-section>
@@ -70,10 +70,10 @@
 
         <template v-slot:body-cell-tools="props">
           <q-td :props="props" class="">
-            <a @click.stop.prevent="viewData(props.row.requestId)" class="text-dark q-py-sm q-px-xs cursor-pointer">
+            <a @click.stop.prevent="viewData(props.row.id, props.row.categoryName, props.row.welfareType)" class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
-            <a v-show="props.row.status.statusId == 2" @click.stop.prevent="goto(props.row.requestId)"
+            <a v-show="props.row.status.statusId == 2" @click.stop.prevent="goto(props.row.id, props.row.categoryName, props.row.welfareType)"
               class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
@@ -92,14 +92,14 @@
 
         <template v-slot:body-cell-statusName="props">
           <q-td :props="props" class="text-center">
-            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width" :color="statusColor(props.row.statusName)">
+            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width"
+              :color="statusColor(props.row.statusName)">
               <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.statusName)">
                 {{ props.row.status.name }}
               </p>
             </q-badge>
           </q-td>
         </template>
-
       </q-table>
     </template>
 
@@ -118,7 +118,7 @@ import { useListStore } from "src/stores/listStore";
 import { statusColor, textStatusColor } from "src/components/status";
 import { Notify } from "quasar";
 import Swal from "sweetalert2";
-import {formatDateThaiSlash, formatDateServer} from "src/components/format"
+import { formatDateThaiSlash, formatDateServer } from "src/components/format"
 
 import {
   outlinedEdit,
@@ -151,7 +151,7 @@ let optionWelfareType = [
   { welfareId: 1, name: "สวัสดิการทั่วไป" },
   { welfareId: 2, name: "สวัสดิการค่าสงเคราะห์ต่าง ๆ" },
   { welfareId: 3, name: "สวัสดิการเกี่ยวกับการศึกษาของบุตร" },
-  { welfareId: 4, name: "สวัสดิการค่าสงเคราะห์การเสียชีวิต"},
+  { welfareId: 4, name: "สวัสดิการค่าสงเคราะห์การเสียชีวิต" },
 ];
 
 const columns = [
@@ -161,9 +161,11 @@ const columns = [
   { name: "sendDate", label: "วันที่ร้องขอ", align: "left", field: (row) => row.requestDate ?? "-" },
   { name: "updatedAt", label: "วันที่แก้ไขล่าสุด", align: "left", field: (row) => row.updatedAt ?? "-" },
   { name: "welfareType", label: "ประเภท", align: "left", field: (row) => row.welfareType ?? "-" },
-  { name: "subCategory", label: "ประเภทย่อย", align: "left", field: (row) => row.categoryName
-    ? row.categoryName
-    : (row.subCategoryName ? row.subCategoryName : "-")},
+  {
+    name: "subCategory", label: "ประเภทย่อย", align: "left", field: (row) => row.categoryName
+      ? row.categoryName
+      : (row.subCategoryName ? row.subCategoryName : "-")
+  },
   { name: "statusName", label: "สถานะ", align: "center", field: (row) => row.status?.name ?? "-" },
   { name: "tools", label: "จัดการ", align: "left", field: "tools" },
 ];
@@ -290,24 +292,93 @@ function search() {
     name: router.name,
     query: {
       keyword: filter.value.keyword,
-      welfareName : filter.value.welfareName,
+      welfareName: filter.value.welfareName,
       dateSelected: filter.value.dateSelected ? JSON.stringify(filter.value.dateSelected) : null,
       statusName: filter.value.statusName,
     },
   });
 }
 
-function viewData(requestId) {
-  router.push({
-    name: "health_check_up_welfare_view",
+function viewData(requestId, categoryName, welfareType) {
+  if (categoryName == "ตรวจสุขภาพ") {
+    router.push({
+    name: "financial_health_check_up_welfare_view",
     params: { id: requestId },
   });
+  }
+  else if (categoryName == "กรณีเจ็บป่วย") {
+    router.push({
+    name: "financial_medical_welfare_view",
+    params: { id: requestId },
+  });
+  }
+  else if (categoryName == "ทำฟัน") {
+    router.push({
+    name: "financial_dental_welfare_view",
+    params: { id: requestId },
+  });
+  }
+  else if(welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
+    if(categoryName == "เสียชีวิตคนในครอบครัว"){
+      router.push({
+      name: "financial_family_funeral_welfare_view",
+      params: { id: requestId },
+    });
+    }
+    else{
+      router.push({
+      name: "financial_various_welfare_view",
+      params: { id: requestId },
+    });
+    }
+  }
+  else if (welfareType == "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
+    router.push({
+    name: "financial_funeral_welfare_view",
+    params: { id: requestId },
+  });
+  }
 }
-function goto(requestId) {
-  router.push({
-    name: "health_check_up_welfare_edit",
+
+function goto(requestId, categoryName, welfareType) {
+  if (categoryName == "ตรวจสุขภาพ") {
+    router.push({
+      name: "financial_health_check_up_welfare_edit",
+      params: { id: requestId },
+    });
+  }
+  else if(categoryName == "กรณีเจ็บป่วย") {
+    router.push({
+      name: "financial_medical_welfare_edit",
+      params: { id: requestId },
+    });
+  }
+  else if(categoryName == "ทำฟัน") {
+    router.push({
+      name: "financial_dental_welfare_edit",
+      params: { id: requestId },
+    });
+  }
+  else if(welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
+    if(categoryName == "เสียชีวิตคนในครอบครัว"){
+      router.push({
+      name: "financial_family_funeral_welfare_edit",
+      params: { id: requestId },
+    });
+    }
+    else{
+      router.push({
+      name: "financial_various_welfare_edit",
+      params: { id: requestId },
+    });
+    }
+  }
+  else if (welfareType == "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
+    router.push({
+    name: "financial_funeral_welfare_edit",
     params: { id: requestId },
   });
+  }
 }
 
 async function deleteData(id) {

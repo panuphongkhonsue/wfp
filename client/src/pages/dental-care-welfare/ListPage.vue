@@ -15,7 +15,7 @@
         </div>
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
           <q-select popup-content-class="font-14 font-regular" :loading="isLoading" id="selected-status" class="q-pt-sm"
-            outlined v-model="filter.status" :options="options" label="สถานะ" multiple dense clearable
+            outlined v-model="filter.status" :options="options" label="สถานะ" dense clearable
             option-value="status" emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>

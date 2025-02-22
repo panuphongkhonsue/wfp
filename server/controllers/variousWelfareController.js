@@ -1,36 +1,35 @@
 const BaseController = require('./BaseControllers');
-const { reimbursementsGeneral, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
-const { fn, col, literal, Op } = require("sequelize");
+const { reimbursementsAssist, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
+const { Op, fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
-const category = require('../enum/category');
-const logger = initLogger('dentalWelfareController');
-const { getFiscalYearDynamic, getFiscalYear } = require('../middleware/utility');
+const logger = initLogger('variousWelfareController');
 
 class Controller extends BaseController {
     constructor() {
-        super(reimbursementsGeneral);
+        super(reimbursementsAssist);
     }
 
     list = async (req, res, next) => {
-        const method = 'GetListDentalWelfare';
+        const method = 'GetListVariousWelfare';
         const { id } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
             var whereObj = { ...filter }
-            const listData = await reimbursementsGeneral.paginate({
+            const listData = await reimbursementsAssist.paginate({
                 attributes: [
                     'id',
                     [col("reim_number"), "reimNumber"],
                     [col("request_date"), "requestDate"],
                     [col("updated_at"), "updatedAt"],
                     [col("fund_receipt"), "fundReceipt"],
+                    [col("fund_eligible"), "fundEligible"],
                     [col("fund_sum_request"), "fundSumRequest"],
                     'status',
                 ],
-                page: page && !isNaN(page) ? Number(page) : 1,
-                paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 0,
                 where: whereObj,
-                order: [['updated_at', 'DESC'], ['created_at', 'DESC']]
+                order: [['updated_at', 'DESC'], ['created_at', 'DESC']],
+                limit: itemPerPage,
+                offset: (page - 1) * itemPerPage
             });
 
             if (listData) {
@@ -58,24 +57,24 @@ class Controller extends BaseController {
         }
     }
     getRemaining = async (req, res, next) => {
-        const method = 'GetRemainingDentalWelfare';
+        const method = 'GetRemainingVariousWelfare';
         const { id } = req.user;
         try {
             const { filter } = req.query;
-            var whereObj = { ...filter }
-            const results = await reimbursementsGeneral.findOne({
+            var whereObj = { ...filter };
+            const results = await reimbursementsAssist.findAll({
                 attributes: [
                     [col("category.id"), "categoryId"],
-                    [fn("SUM", col("reimbursementsGeneral.fund_sum_request")), "totalSumRequested"],
+                    [fn("SUM", col("reimbursementsAssist.fund_sum_request")), "totalSumRequested"],
                     [col("category.fund"), "fund"],
                     [
-                        literal("category.fund - SUM(reimbursementsGeneral.fund_sum_request)"),
+                        literal("category.fund - SUM(reimbursementsAssist.fund_sum_request)"),
                         "fundRemaining"
                     ],
-                    [fn("COUNT", col("reimbursementsGeneral.fund_sum_request")), "totalCountRequested"],
+                    [fn("COUNT", col("reimbursementsAssist.fund_sum_request")), "totalCountRequested"],
                     [col("category.per_years"), "perYears"],
                     [
-                        literal("category.per_years - COUNT(reimbursementsGeneral.fund_sum_request)"),
+                        literal("category.per_years - COUNT(reimbursementsAssist.fund_sum_request)"),
                         "requestsRemaining"
                     ],
                     [col("category.per_times"), "perTimesRemaining"],
@@ -84,59 +83,68 @@ class Controller extends BaseController {
                     {
                         model: categories,
                         as: "category",
-                        attributes: []
+                        attributes: [],
+                        required: true
                     }
                 ],
                 where: whereObj,
                 group: ["category.id"]
             });
-            if (results) {
-                const datas = JSON.parse(JSON.stringify(results));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
-                whereObj = {};
-                whereObj[Op.and] = [];
-                var getFiscalYearWhere = getFiscalYear();
-                whereObj[Op.and].push(
-                    { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
-                    { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
-                    { '$reimbursementsGeneral.created_by$': req.query.createFor ?? id },
-                );
-                const getRequestData = await reimbursementsGeneral.findAll({
-                    attributes: [
-                        'id',
-                        [col("date_receipt"), "dateReceipt"],
-                        [col("fund_sum_request"), "fundSumRequest"],
-                    ],
-                    where: whereObj,
-                })
-                logger.info('Complete', { method, data: { id } });
-                return res.status(200).json({
-                    datas: datas,
-                    canRequest: datas.canRequest ?? true,
-                    requestData: JSON.parse(JSON.stringify(getRequestData)),
+            if (results.length > 0) {
+                const datas = results.map(item => {
+                    const fundRemaining = item.dataValues.fundRemaining;
+                    const requestsRemaining = item.dataValues.requestsRemaining;
+
+                    return {
+                        categoryId: item.dataValues.categoryId,
+                        fundRemaining: fundRemaining,
+                        requestsRemaining: requestsRemaining,
+                        perTimesRemaining: item.dataValues.perTimesRemaining,
+                        canRequest: fundRemaining > 0 && requestsRemaining > 0
+                    };
                 });
-            };
-            const getFund = await categories.findOne({
-                attributes: [
-                    [col("fund"), "fundRemaining"],
-                    [col("per_years"), "requestsRemaining"],
-                    [col("per_times"), "perTimesRemaining"],
-                ],
-                where: { id: category.dentalWelfare }
-            })
-            if (getFund) {
-                const datas = JSON.parse(JSON.stringify(getFund));
+
                 logger.info('Complete', { method, data: { id } });
                 return res.status(200).json({
                     datas: datas,
-                    canRequest: datas.canRequest ?? true,
-                    requestData: null,
+                });
+            } else {
+                const getFund = await categories.findAll({
+                    attributes: [
+                        [col("id"), "categoryId"],
+                        [col("fund"), "fundRemaining"],
+                        [col("per_years"), "requestsRemaining"],
+                        [col("per_times"), "perTimesRemaining"],
+                    ],
+                    where: {
+                        id: {
+                            [Op.in]: [4, 5, 6, 7]
+                        }
+                    }
+                });
+                if (getFund.length > 0) {
+                    const datas = getFund.map(item => {
+                        const fundRemaining = item.dataValues.fundRemaining;
+                        const requestsRemaining = item.dataValues.requestsRemaining;
+
+                        return {
+                            categoryId: item.dataValues.categoryId,
+                            fundRemaining: fundRemaining,
+                            requestsRemaining: requestsRemaining,
+                            perTimesRemaining: item.dataValues.perTimesRemaining,
+                            canRequest: fundRemaining > 0 && requestsRemaining > 0
+                        };
+                    });
+                    logger.info('Complete', { method, data: { ids: [4, 5, 6, 7] } });
+                    return res.status(200).json({
+                        datas: datas,
+                    });
+                }
+                logger.info('Data not Found', { method, data: { ids: [4, 5, 6, 7] } });
+                res.status(200).json({
+                    message: "ไม่มีข้อมูลสำหรับ ID ที่กำหนด"
                 });
             }
-            logger.info('Data not Found', { method, data: { id } });
-            res.status(200).json({
-                message: "มีสิทธ์คงเหลือเท่ากับเพดานเงิน"
-            });
         }
         catch (error) {
             logger.error(`Error ${error.message}`, {
@@ -145,23 +153,21 @@ class Controller extends BaseController {
             });
             next(error);
         }
-    }
+    };
     getById = async (req, res, next) => {
-        const method = 'GetDentalWelfarebyId';
+        const method = 'GetVariousWelfarebyId';
         const { id } = req.user;
         const dataId = req.params['id'];
         try {
-            const { filter } = req.query;
-            var whereObj = { ...filter }
-            const requestData = await reimbursementsGeneral.findOne({
+            const requestData = await reimbursementsAssist.findByPk(dataId, {
                 attributes: [
-                    'id',
                     [col("reim_number"), "reimNumber"],
                     [col("fund_receipt"), "fundReceipt"],
-                    [col("date_receipt"), "dateReceipt"],
                     [col("fund_sum_request"), "fundSumRequest"],
+                    [col("fund_eligible"), "fundEligible"],
                     [col("request_date"), "requestDate"],
                     [col("status"), "status"],
+                    [col("categories_id"), "categoryId"],
                     [col("created_by_user.id"), "userId"],
                     [col("created_by_user.name"), "name"],
                     [col("created_by_user.position.name"), "position"],
@@ -176,63 +182,38 @@ class Controller extends BaseController {
                         include: [
                             {
                                 model: positions, as: 'position',
-                                attributes: []
+                                attributes: ['name']
                             },
                             {
                                 model: employeeTypes, as: 'employee_type',
-                                attributes: []
+                                attributes: ['name']
                             },
                             {
                                 model: sector, as: 'sector',
-                                attributes: []
+                                attributes: ['name']
                             },
                             {
                                 model: departments, as: 'department',
-                                attributes: []
+                                attributes: ['name']
                             },
                         ]
                     },
                 ],
-                where: whereObj,
             });
             if (requestData) {
                 const datas = JSON.parse(JSON.stringify(requestData));
-                whereObj = {};
-                whereObj[Op.and] = [];
-                var getFiscalYearWhere;
-                if (datas.requestDate) {
-                    getFiscalYearWhere = getFiscalYearDynamic(datas.requestDate);
-                }
-                else {
-                    getFiscalYearWhere = getFiscalYear();
-                }
-                whereObj[Op.and].push(
-                    { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
-                    { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
-                    { '$reimbursementsGeneral.created_by$': datas.userId },
-                    { '$reimbursementsGeneral.id$': { [Op.lte]: datas.id } },
-                );
-                const getRequestData = await reimbursementsGeneral.findAll({
-                    attributes: [
-                        'id',
-                        [col("date_receipt"), "dateReceipt"],
-                        [col("fund_sum_request"), "fundSumRequest"],
-                    ],
-                    where: whereObj,
-                })
                 var welfareData = {
                     ...datas,
                     user: {
-                        userId: datas.userId,
+                        id: datas.id,
                         name: datas.name,
                         position: datas.position,
                         employeeType: datas.employeeType,
                         sector: datas.sector,
                         department: datas.department,
-                    },
-                    requestData: JSON.parse(JSON.stringify(getRequestData))
+                    }
                 }
-                delete welfareData.userId;
+                delete welfareData.id;
                 delete welfareData.name;
                 delete welfareData.position;
                 delete welfareData.employeeType;
@@ -260,6 +241,7 @@ class Controller extends BaseController {
             next(error);
         }
     }
+    
 }
 
 module.exports = new Controller();

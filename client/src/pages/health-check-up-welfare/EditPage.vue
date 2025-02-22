@@ -11,7 +11,7 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold"
               :class="canCreateFor && !isView ? 'items-center' : ''">
-              <div class="col-lg-5 col-12 row q-gutter-y-md q-pr-sm"
+              <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm"
                 :class="canCreateFor && !isView ? 'items-center' : ''">
                 <p class="col-auto q-mb-none">
                   ชื่อ-นามสกุล : <span v-show="!canCreateFor || isView" class="font-medium font-16 text-grey-7">{{

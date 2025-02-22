@@ -39,11 +39,6 @@
             </span>
           </div>
         </template>
-        <template v-slot:body-cell-department="props">
-          <q-td :props="props" class="">
-            {{ props.row?.department ?? "-" }} / {{ props.row?.sector ?? "-" }}
-          </q-td>
-        </template>
         <template v-slot:body-cell-tools="props">
           <q-td :props="props" class="">
             <a @click.stop.prevent="viewData(props.row.id)" class="text-dark q-py-sm q-px-xs cursor-pointer">
@@ -261,9 +256,16 @@ const columns = ref([
   },
   {
     name: "department",
-    label: "สังกัด ภาควิชา / ส่วนงาน",
+    label: "ส่วนงาน",
     align: "left",
     field: (row) => row?.department ?? "-",
+    classes: "ellipsis",
+  },
+  {
+    name: "sector",
+    label: "ภาควิชา",
+    align: "left",
+    field: (row) => row?.sector ?? "-",
     classes: "ellipsis",
   },
   {

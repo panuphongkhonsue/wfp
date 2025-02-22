@@ -1,6 +1,6 @@
 const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
 const { initLogger } = require('../logger');
-const logger = initLogger('UserValidator');
+const logger = initLogger('DentalValidator');
 const { Op, literal, col, fn } = require('sequelize')
 const permissionType = require('../enum/permission')
 const statusText = require('../enum/statusText')
@@ -153,7 +153,7 @@ const checkNullValue = async (req, res, next) => {
                     message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });
             }
-            if (fundEligible > fundReceipt) {
+            if (Number(fundEligible) > Number(fundReceipt)) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
                 });
@@ -191,7 +191,7 @@ const checkNullValue = async (req, res, next) => {
             if (isNullOrEmpty(endDate)) {
                 errorObj["endDate"] = "กรุณากรอก วัน/เดือน/ปี ถึงวันที่";
             }
-            if (fundSumRequestPatientVisit > fundReceiptPatientVisit) {
+            if (Number(fundSumRequestPatientVisit) > Number(fundReceiptPatientVisit)) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
                 });
@@ -237,12 +237,12 @@ const bindCreate = async (req, res, next) => {
             createFor, actionId
         } = req.body;
         const { id } = req.user;
-        if (!isNullOrEmpty(createFor) && req.isEditor) {
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
         }
-        if (!isNullOrEmpty(createFor) && actionId == status.draft) {
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
             return res.status(400).json({
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
@@ -291,9 +291,14 @@ const bindUpdate = async (req, res, next) => {
             createFor, actionId
         } = req.body;
         const { id } = req.user;
-        if (!isNullOrEmpty(createFor) && req.isEditor) {
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+            });
+        }
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
+            return res.status(400).json({
+                message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
         }
         const dataId = req.params['id'];
@@ -500,7 +505,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 if (fund_eligible < oldWelfareData.fund_eligible) {
                     return next();
                 }
-                else if (fund_eligible > datas.perTimes) {
+                else if (fund_eligible > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                     return res.status(400).json({
                         message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                     });
@@ -519,7 +524,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 if (fund_sum_request_patient_visit < oldWelfareData.fund_sum_request_patient_visit) {
                     return next();
                 }
-                else if (fund_sum_request_patient_visit > datas.perTimes) {
+                else if (fund_sum_request_patient_visit > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                     return res.status(400).json({
                         message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                     });
@@ -562,23 +567,23 @@ const checkFullPerTimes = async (req, res, next) => {
         if (!isNullOrEmpty(getFund)) {
             const datasAccident = JSON.parse(JSON.stringify(getFund[0]));
             const datasPatientVisit = JSON.parse(JSON.stringify(getFund[1]));
-            if (fund_eligible > datasAccident.perTimes && datasAccident.perTimes) {
+            if (fund_eligible > datasAccident.perTimes && !isNullOrEmpty(datasAccident.perTimes)) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกสวัสดิการประสบอุบัติเหตุขณะปฏิบัติงานได้สูงสุด " + datasAccident.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_eligible > datasAccident.fundRemaining && datasAccident.fundRemaining) {
+            if (fund_eligible > datasAccident.fundRemaining && !isNullOrEmpty(datasAccident.fundRemaining)) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกสวัสดิการประสบอุบัติเหตุขณะปฏิบัติงานเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
                 });
             }
-            if (fund_sum_request_patient_visit > datasPatientVisit.perTimes && datasPatientVisit.perTimes) {
+            if (fund_sum_request_patient_visit > datasPatientVisit.perTimes && !isNullOrEmpty(datasPatientVisit.perTimes)) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกสวัสดิการเยี่ยมไข้ผู้ปฏิบัติงาน " + datasPatientVisit.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request_patient_visit > datasPatientVisit.fundRemaining && datasPatientVisit.fundRemaining) {
+            if (fund_sum_request_patient_visit > datasPatientVisit.fundRemaining && !isNullOrEmpty(datasPatientVisit.fundRemaining)) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกสวัสดิการเยี่ยมไข้ผู้ปฏิบัติงานเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
@@ -683,12 +688,12 @@ const checkRemaining = async (req, res, next) => {
                         message: "ไม่มีสิทธ์ขอเบิกสวัสดิการประสบอุบัติเหตุขณะปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
                     });
                 };
-                if (fund_eligible > datas.perTimes && datas.perTimes) {
+                if (fund_eligible > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                     return res.status(400).json({
                         message: "คุณสามารถเบิกสวัสดิการประสบอุบัติเหตุขณะปฏิบัติงานได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                     });
                 }
-                if (fund_eligible > datas.fundRemaining && datas.fundRemaining) {
+                if (fund_eligible > datas.fundRemaining && !isNullOrEmpty(datas.fundRemaining)) {
                     logger.info('Request Over', { method });
                     return res.status(400).json({
                         message: "จำนวนที่ขอเบิกสวัสดิการประสบอุบัติเหตุขณะปฏิบัติงานเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
@@ -703,12 +708,12 @@ const checkRemaining = async (req, res, next) => {
                         message: "ไม่มีสิทธ์ขอเบิกสวัสดิการเยี่ยมไข้ผู้ปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
                     });
                 };
-                if (fund_sum_request_patient_visit > datas.perTimes && datas.perTimes) {
+                if (fund_sum_request_patient_visit > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                     return res.status(400).json({
                         message: "คุณสามารถเบิกสวัสดิการเยี่ยมไข้ผู้ปฏิบัติงาน " + datas.perTimes + " ต่อครั้ง",
                     });
                 }
-                if (fund_sum_request_patient_visit > datas.fundRemaining && datas.fundRemaining) {
+                if (fund_sum_request_patient_visit > datas.fundRemaining && !isNullOrEmpty(datas.fundRemaining)) {
                     logger.info('Request Over', { method });
                     return res.status(400).json({
                         message: "จำนวนที่ขอเบิกสวัสดิการเยี่ยมไข้ผู้ปฏิบัติงานเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
