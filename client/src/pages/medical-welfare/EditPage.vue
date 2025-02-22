@@ -21,7 +21,7 @@
                   id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
                   v-model="model.createFor" :options="options" dense option-value="id" emit-value map-options
                   option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
-                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']">
+                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']" @filter-abort="abortFilterFn">
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
@@ -252,7 +252,7 @@ const canRequest = ref({
   patientVisit: false,
 });
 const isView = ref(false);
-
+const userInitialData = ref([]);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
@@ -523,12 +523,12 @@ async function fetchRemaining() {
 async function filterFn(val, update) {
   try {
     setTimeout(async () => {
-      const result = await userManagementService.getUserInitialData({ keyword: val });
-      var returnedData = result.data.datas;
-
       update(() => {
-        if (returnedData) {
-          options.value = returnedData;
+        if (val === '') {
+          options.value = userInitialData.value;
+        }
+        else {
+          options.value = userInitialData.value.filter(v => v.name.includes(val));
         }
       });
     }, 650);
@@ -537,6 +537,9 @@ async function filterFn(val, update) {
   catch (error) {
     Promise.reject(error);
   }
+}
+function abortFilterFn() {
+  // console.log('delayed filter aborted')
 }
 async function submit(actionId) {
   let validate = false;
@@ -724,12 +727,20 @@ async function init() {
       if (!canCreateFor.value) {
         fetchRemaining();
       }
+      else {
+        const result = await userManagementService.getUserInitialData({ keyword: null });
+        userInitialData.value = result.data.datas;
+      }
       fetchDataEdit();
     }
     else {
       if (!canCreateFor.value) {
         fetchRemaining();
         fetchUserData(authStore.id);
+      }
+      else {
+        const result = await userManagementService.getUserInitialData({ keyword: null });
+        userInitialData.value = result.data.datas;
       }
     }
   }
