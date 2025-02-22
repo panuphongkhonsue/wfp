@@ -96,7 +96,7 @@
                   <q-select v-model="model.deceased" :options="options"  :loading="isLoading"
                     :clearable="true" emit-value map-options option-value="id" option-label="name"
                     :rules="[(val) => !!val || '']" dense outlined use-input input-debounce="100" hide-bottom-space
-                    :error="!!isError?.deceased" @filter="filterFn" @filter-abort="abortFilterFn"/>
+                    :error="!!isError?.deceased" @filter="filterFn" @filter-abort="abortFilterFn" />
                 </InputGroup>
               </div>
               <q-card-section class="col-lg-8 col-12 row justify-around q-pt-none">
@@ -533,6 +533,7 @@ async function filterFn(val, update) {
     Promise.reject(error);
   }
 }
+
 function abortFilterFn() {
   // console.log('delayed filter aborted')
 }
@@ -692,6 +693,8 @@ async function init() {
     else if (isEdit.value) {
       if (!canCreateFor.value) {
         fetchRemaining();
+        const result = await userManagementService.getUserInitialData({ keyword: null });
+        userInitialData.value = result.data.datas;
       }
       else {
         const result = await userManagementService.getUserInitialData({ keyword: null });
@@ -703,6 +706,8 @@ async function init() {
       if (!canCreateFor.value) {
         fetchRemaining();
         fetchUserData(authStore.id);
+        const result = await userManagementService.getUserInitialData({ keyword: null });
+        userInitialData.value = result.data.datas;
       }
       else {
         const result = await userManagementService.getUserInitialData({ keyword: null });

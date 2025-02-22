@@ -19,7 +19,7 @@
                 </p>
                 <q-select v-if="canCreateFor && !isView" popup-content-class="font-14 font-regular" :loading="isLoading"
                   id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
-                  v-model="model.createFor" :options="nameOptions" dense option-value="id" emit-value map-options
+                  v-model="model.createFor" :options="options" dense option-value="id" emit-value map-options
                   option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
                   :error="!!isError?.createFor" :rules="[(val) => !!val || '']" @filter-abort="abortFilterFn">
                   <template v-slot:no-option>
@@ -201,7 +201,6 @@ const model = ref({
   categoryId: null,
   createFor: null,
 });
-let nameOptions = ref([]);
 let options = ref([]);
 const categoryOptions =
   [
