@@ -17,19 +17,20 @@
                         </q-select>
                     </InputGroup>
                 </div>
-                    <div class="col-12 col-md content-center q-pt-lg q-pt-md-xs">
-                        <q-btn id="button-search"
-                            class="font-medium bg-blue-10 text-white font-16 q-px-sm q-pt-sm weight-8 q-mt-xs" dense
-                            type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
-                    </div>
-
-                    <div class="col-12 col-md content-left q-pt-lg q-pt-md-xs row justify-end q-mr-md">
-                        <q-btn id="button-export-excel"
-                            class="font-medium bg-blue-10 text-white font-16 q-px-sm q-pt-sm weight-8 q-mt-xs" dense
-                            label="export" icon="search" no-caps :loading="isLoading" @click="exportToExcel()" />
-                    </div>
+                <div class="col-12 col-md content-center q-pt-lg q-pt-md-xs">
+                    <q-btn id="button-search"
+                        class="font-medium bg-blue-10 text-white font-16 q-px-sm q-pt-sm weight-8 q-mt-xs" dense
+                        type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
+                </div>
+                <div class="col-12 text-center text-bold text-grey-8 text-h3 q-pt-xl">
+                    ภาพรวมการเปรียบเทียบค่าใช้จ่ายของปี {{ filters.year }}
+                </div>
             </q-form>
+            <div class="q-ml-md q-mt-md chart-fund-request-per-year">
+                <VueApexCharts type="bar" :options="chartOptions" :series="series" height="500" />
+            </div>
         </template>
+
 
 
 
@@ -37,7 +38,7 @@
 </template>
 
 <script setup>
-import * as XLSX from "xlsx";
+// import * as XLSX from "xlsx";
 import ReportLayout from "src/layouts/ReportLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import { ref, onMounted, watch } from "vue";
@@ -45,6 +46,7 @@ import { toThaiYear, toEngYear } from "src/components/format";
 import { Notify } from "quasar";
 import dashboardService from "src/boot/service/dashboardService";
 import { useRoute, useRouter } from "vue-router";
+import VueApexCharts from "vue3-apexcharts";
 
 const route = useRoute();
 const router = useRouter();
@@ -54,14 +56,25 @@ const filters = ref({
     year: currentYear,
 });
 const optionStartYear = ref([
-    { id: 2, name: currentYear},
+    { id: 2, name: currentYear },
     { id: 2, name: currentYear - 1 },
     { id: 3, name: currentYear - 2 },
     { id: 4, name: currentYear - 3 }
 ]);
 
 const dataFundRequestPerYear = ref([
-
+    { monthNumber: 10, month: "Oct", totalFund: 0 },
+    { monthNumber: 11, month: "Nov", totalFund: 0 },
+    { monthNumber: 12, month: "Dec", totalFund: 0 },
+    { monthNumber: 1, month: "Jan", totalFund: 0 },
+    { monthNumber: 2, month: "Feb", totalFund: 0 },
+    { monthNumber: 3, month: "Mar", totalFund: 0 },
+    { monthNumber: 4, month: "Apr", totalFund: 0 },
+    { monthNumber: 5, month: "May", totalFund: 0 },
+    { monthNumber: 6, month: "Jun", totalFund: 0 },
+    { monthNumber: 7, month: "July", totalFund: 0 },
+    { monthNumber: 8, month: "Aug", totalFund: 0 },
+    { monthNumber: 9, month: "Sep", totalFund: 0 },
 ])
 
 const dataFundRequestPerYearEachType = ref([
@@ -91,8 +104,8 @@ function search() {
 }
 
 async function init() {
-    await fetchDataFundRequestPerYear(filters);
-    await fetchDataFundRequestPerYearEachType(filters);
+    fetchDataFundRequestPerYear(filters);
+    fetchDataFundRequestPerYearEachType(filters);
 }
 
 async function fetchDataFundRequestPerYear(filters) {
@@ -102,8 +115,17 @@ async function fetchDataFundRequestPerYear(filters) {
             page: 1,
             itemPerPage: 10000,
         });
-        dataFundRequestPerYear.value = result.data.docs;
+        for (let y = 0; y < dataFundRequestPerYear.value.length; y++) {
+            for (let i = 0; i < result.data.docs.length; i++) {
+                if (dataFundRequestPerYear.value[y].monthNumber === result.data.docs[i].month) {
+                    dataFundRequestPerYear.value[y].totalFund = result.data.docs[i].total_fund;
+                }
+            }
+        }
+        series.value[0].data = dataFundRequestPerYear.value.map((item) => item.totalFund);
+        console.log("result.data.docs.lenght: ", result.data.docs.length);
         console.log("dataFundRequestPerYear: ", dataFundRequestPerYear.value);
+        console.log("result.data.docs: ", result.data.docs);
         return result.data.docs;
     } catch (error) {
         Notify.create({
@@ -137,27 +159,28 @@ async function fetchDataFundRequestPerYearEachType(filters) {
     }
 }
 
-function exportToExcel() {
-// Ensure 'fundSum' is the last column by repositioning it
-model.value.forEach(item => {
-  const fundSum = item.fundSum;
-  delete item.fundSum; // Remove 'fundSum' from its current position
-  item.fundSum = fundSum; // Add 'fundSum' back at the end
+const chartOptions = ref({
+    chart: {
+        type: "bar",
+    },
+    xaxis: {
+        categories: ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",],
+    },
 });
 
-// Convert the updated model to a sheet
-const ws = XLSX.utils.json_to_sheet(model.value);
-
-// Rename 'fundSum' to 'รวม'
-Object.keys(ws).forEach(key => {
-  if (ws[key] && ws[key].v === 'fundSum') {
-    ws[key].v = 'รวม';
-  }
-});
-
-// Add the worksheet to a workbook and export as Excel
-const wb = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-XLSX.writeFile(wb, "ExportedData.xlsx");
-}
+const series = ref([
+    {
+        name: "Total Fund",
+        data: [],
+    },
+]);
 </script>
+
+<style scoped>
+.chart-fund-request-per-year {
+    width: 100%;
+    /* Default width for larger screens */
+    max-width: 2200px;
+    /* Max width for large screens */
+}
+</style>
