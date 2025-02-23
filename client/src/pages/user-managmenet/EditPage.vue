@@ -79,12 +79,42 @@
                   :rules="[(val) => !!val || 'กรุณาเลือกวันที่เข้าปฏิบัติงาน']" />
               </InputGroup>
             </q-card-section>
-            <q-card-section class="row column wrap font-medium q-pt-none q-pb-sm font-16 text-grey-9">
+            <q-card-section class="row column wrap font-medium q-pt-none font-16 text-grey-9">
               <p class="q-mb-sm require">บทบาท</p>
               <q-option-group v-if="!isView && !isLoading" v-model="model.roleId" :options="optionRole"
                 option-value="id" option-label="name" :color="isError.roleId ? 'red' : 'primary'"
                 :keep-color="isError.roleId ?? false" id="role" />
-              <p v-else> {{ model.roleName }} </p>
+              <p v-else class="font-regular"> {{ model.roleName }} </p>
+            </q-card-section>
+            <q-card-section class="row wrap font-medium q-pb-sm font-16 text-grey-9 q-col-gutter-md">
+              <p class="col-12 q-mb-md require">ที่อยู่</p>
+              <InputGroup for-id="house-number" is-dense v-model="model.houseNumber" :data="model.houseNumber ?? '-'"
+                is-require label="บ้านเลขที่" placeholder="" type="text" :is-view="isView"
+                :error-message="isError?.houseNumber" :error="!!isError?.houseNumber"
+                :rules="[(val) => !!val || 'กรุณากรอกบ้านเลขที่']">
+              </InputGroup>
+              <InputGroup for-id="street" is-dense v-model="model.street" :data="model.street ?? '-'" is-require
+                label="ถนน" placeholder="" type="text" :is-view="isView" :error-message="isError?.street"
+                :error="!!isError?.street" :rules="[(val) => !!val || 'กรุณากรอกถนน']">
+              </InputGroup>
+              <InputGroup for-id="sub-district" is-dense v-model="model.subDistrict" :data="model.subDistrict ?? '-'"
+                is-require label="ตำบล / แขวง" placeholder="" type="text" :is-view="isView"
+                :error-message="isError?.subDistrict" :error="!!isError?.subDistrict"
+                :rules="[(val) => !!val || 'กรุณากรอกตำบล / แขวง']">
+              </InputGroup>
+              <InputGroup for-id="district" is-dense v-model="model.district" :data="model.district ?? '-'" is-require
+                label="อำเภอ / เขต" placeholder="" type="text" :is-view="isView" :error-message="isError?.district"
+                :error="!!isError?.district" :rules="[(val) => !!val || 'กรุณากรอกอำเภอ / เขต']">
+              </InputGroup>
+              <InputGroup for-id="province" is-dense v-model="model.province" :data="model.province ?? '-'" is-require
+                label="จังหวัด" placeholder="" type="text" :is-view="isView" :error-message="isError?.province"
+                :error="!!isError?.province" :rules="[(val) => !!val || 'กรุณากรอกจังหวัด']">
+              </InputGroup>
+              <InputGroup for-id="postal-code" is-dense v-model="model.postalCode" :data="model.postalCode ?? '-'"
+                is-require label="รหัสไปรษณีย์" placeholder="" type="text" :is-view="isView"
+                :error-message="isError?.postalCode" :error="!!isError?.postalCode"
+                :rules="[(val) => !!val || 'กรุณากรอกรหัสไปรษณีย์']">
+              </InputGroup>
             </q-card-section>
           </q-card>
         </div>
@@ -105,13 +135,14 @@
               <InputGroup v-else for-id="child-name" is-dense v-model="item.name" :data="item.name ?? '-'"
                 label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView">
               </InputGroup>
-              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable :data="item.birthday ?? '-'">
+              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable
+                :data="formatDateThaiSlash(item.birthday) ?? '-'">
                 <DatePicker is-dense v-model:model="item.birthday" v-model:dateShow="item.birthday" for-id="birthday"
                   :no-time="true" />
               </InputGroup>
               <div>
-                <q-btn v-if="index > 0 && !isView && !isLoading" color="red" @click="removeChildForm(index)"
-                  class="q-mt-sm">ลบ</q-btn>
+                <q-btn v-if="(index > 0 && !isView && !isLoading) || (isEdit && !isView && item?.id && !isLoading)"
+                  color="red" @click="removeChildForm(index)" class="q-mt-sm">ลบ</q-btn>
               </div>
             </q-card-section>
             <div v-if="!isView && !isLoading">
@@ -148,7 +179,7 @@ import DatePicker from "src/components/DatePicker.vue";
 
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash } from "src/components/format";
+import { formatDateThaiSlash, formatDateSlash } from "src/components/format";
 
 import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -179,15 +210,20 @@ const model = ref({
   firstWorkingDate: null,
   roleId: null,
   roleName: null,
+  houseNumber: null,
+  street: "-",
+  district: null,
+  subDistrict: null,
+  province: null,
+  postalCode: null,
   child: [
     {
       name: null,
       birthday: null,
     },
   ],
+  deleteChild: [],
 });
-
-
 const isLoading = ref();
 const isError = ref({});
 const isView = ref(false);
@@ -202,23 +238,9 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  clearData(model);
+  model.value = null;
 });
 
-const resetObject = (obj) => {
-  for (const key in obj) {
-    if (obj[key] && typeof obj[key] === "object") {
-      // Recursively reset nested objects
-      resetObject(obj[key]);
-    } else {
-      // Set primitive values to null
-      obj[key] = null;
-    }
-  }
-};
-function clearData(model) {
-  resetObject(model.value);
-}
 function addChildForm() {
   model.value.child.push({
     name: null,
@@ -226,6 +248,14 @@ function addChildForm() {
   });
 }
 function removeChildForm(index) {
+  if (isEdit.value && model.value.child[index]?.id) {
+    if (!Array.isArray(model.value.deleteChild)) {
+      model.value.deleteChild = [];
+    }
+    if (model.value && Array.isArray(model.value.deleteChild)) {
+      model.value.deleteChild.push({ id: model.value.child[index].id });
+    }
+  }
   model.value.child.splice(index, 1);
 };
 
@@ -233,11 +263,13 @@ function removeChildForm(index) {
 watch(
   model,
   () => {
-    Object.keys(model.value).forEach((key) => {
-      if (model.value[key] !== null) {
-        delete isError.value[key];
-      }
-    });
+    if (!isView.value) {
+      Object.keys(model.value).forEach((key) => {
+        if (model.value[key] !== null) {
+          delete isError.value[key];
+        }
+      });
+    }
   },
   { deep: true }
 );
@@ -272,6 +304,30 @@ async function submit() {
     isError.value.firstWorkingDate = "กรุณาเลือกวันที่เข้าปฏิบัติงาน";
     validate = true;
   }
+  if (!model.value.houseNumber) {
+    isError.value.houseNumber = "กรุณากรอกบ้านเลขที่";
+    validate = true;
+  }
+  if (!model.value.street) {
+    isError.value.street = "กรุณากรอกถนน";
+    validate = true;
+  }
+  if (!model.value.district) {
+    isError.value.district = "กรุณากรอก อำเภอ/เขต";
+    validate = true;
+  }
+  if (!model.value.subDistrict) {
+    isError.value.subDistrict = "กรุณากรอก ตำบล/แขวง";
+    validate = true;
+  }
+  if (!model.value.province) {
+    isError.value.province = "กรุณากรอกจังหวัด";
+    validate = true;
+  }
+  if (!model.value.postalCode) {
+    isError.value.postalCode = "กรุณากรอกรหัสไปรษณีย์";
+    validate = true;
+  }
   if (!model.value.roleId) {
     isError.value.roleId = true;
     validate = true;
@@ -287,10 +343,10 @@ async function submit() {
     });
     return;
   }
-  const hasNull = model.value.child.some(item =>
-    Object.values(item).some(value => value === null || value === "")
+  model.value.child = model.value.child.filter(item =>
+    !Object.values(item).some(value => value === null || value === "")
   );
-  if (hasNull) {
+  if (model.value.child.length === 0) {
     delete model.value.child;
   }
   let isValid = false;
@@ -338,7 +394,6 @@ async function submit() {
     },
   }).then((result) => {
     if (isValid && result.isConfirmed) {
-      console.log(fetch);
       Swal.fire({
         html: fetch.data?.message ?? `บันทึกข้อมูลสำเร็จ`,
         icon: "success",
@@ -349,10 +404,6 @@ async function submit() {
       }).then(() => {
         router.replace({ name: "user_management_list" });
       });
-    }
-    else {
-      model.value.child = [];
-      addChildForm()
     }
   });
 }
@@ -383,12 +434,14 @@ async function fetchInitialData() {
 async function init() {
   isView.value = route.meta.isView;
   isLoading.value = true;
-  await fetchInitialData();
+  if (!isView.value) {
+    await fetchInitialData();
+  }
   if (isEdit.value) {
     try {
       let res = await userManagementService.dataById(route.params.id);
       const dataBinding = res.data.datas;
-      const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : dataBinding.firstWorkingDate;
+      const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : formatDateSlash(dataBinding.firstWorkingDate);
       const childData = [{
         name: null,
         birthday: null,
@@ -408,9 +461,26 @@ async function init() {
         sectorName: dataBinding.sector.name,
         roleId: dataBinding.role.id,
         roleName: dataBinding.role.name,
-        child: Array.isArray(dataBinding.children) && dataBinding.children.length > 0 ? dataBinding.children : childData,
+        houseNumber: dataBinding.houseNumber,
+        street: dataBinding.street,
+        district: dataBinding.district,
+        subDistrict: dataBinding.subDistrict,
+        province: dataBinding.province,
+        postalCode: dataBinding.postalCode,
       };
+      if (Array.isArray(dataBinding.children) && dataBinding.children.length > 0) {
+        const newChild = dataBinding.children.map((child) => ({
+          id: child?.id,
+          name: child?.name,
+          birthday: formatDateSlash(child?.birthday),
+        }));
 
+        model.value.child = newChild;
+      }
+      else {
+        model.value.child = childData;
+      }
+      model.value.child
       isLoading.value = false;
     } catch (error) {
       console.log(error);

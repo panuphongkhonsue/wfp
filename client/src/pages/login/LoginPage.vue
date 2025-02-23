@@ -99,7 +99,8 @@ async function login() {
             authStore.position = result.data?.user?.position;
             authStore.email = result.data?.user?.email;
             authStore.department = result.data?.user?.department;
-            authStore.roleId = result.data?.user?.roleID;
+            authStore.roleId = result.data?.user?.roleId;
+            authStore.isEditor = result.data?.user?.isEditor;
             menuStore.setPath(result.data?.user?.path);
             menuStore.setPathEditor(result.data?.user?.pathEditor);
             router.push({ name: "home" });
@@ -129,10 +130,9 @@ async function login() {
     } else {
         localStorage.removeItem('rememberedUsername');
     }
-
-};
-
-const isError = ref({
+  
+  };
+  const isError = ref({
     username: null,
     password: null,
 });
@@ -146,4 +146,5 @@ function clearData() {
         model.value[key] = null;
     });
 }
-</script>
+  </script>
+  

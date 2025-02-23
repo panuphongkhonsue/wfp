@@ -5,7 +5,8 @@ module.exports = function (sequelize, DataTypes) {
     welfare_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
-      defaultValue: 0
+      defaultValue: 0,
+      primaryKey: true,
     },
     welfare_name: {
       type: DataTypes.STRING(255),
@@ -57,16 +58,6 @@ module.exports = function (sequelize, DataTypes) {
     sequelize,
     tableName: 'view_category_welfare_sub',
     timestamps: false,
-    indexes: [
-      {
-        name: "PRIMARY",
-        unique: true,
-        using: "BTREE",
-        fields: [
-          { name: "id" },
-        ]
-      },
-    ]
   });
   sequelizePaginate.paginate(model);
   return model;
