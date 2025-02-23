@@ -233,19 +233,19 @@ const routes = [
         component: () => import('pages/IndexPage.vue'),
       },
       {
-        path: '/report/report-compare-expenses',
+        path: 'report/report-compare-expenses',
         name: 'report_compare-expenses',
         meta: { breadcrumbs: [{ name: 'รายงาน' },{ name: 'รายงานเปรียบเทียบการเบิกจ่ายสวัสดิการรายปีงบประมาณ' }] },
         component: () => import('pages/report/ReportCompareExpenses.vue'),
       },
       {
-        path: '/report/report-personal',
+        path: 'report/report-personal',
         name: 'report_personal',
         meta: { breadcrumbs: [{ name: 'รายงาน' },{ name: 'รายงานค่าใช้จ่ายสวัสดิการประจำปีงบประมาณ' }] },
         component: () => import('pages/report/ReportPersonal.vue'),
       },
       {
-        path: '/report/report-fund-request-per-years',
+        path: 'report/report-fund-request-per-years',
         name: 'report_fund_request_per_years',
         meta: { breadcrumbs: [{ name: 'รายงาน' },{ name: 'รายงานภาพรวมค่าใช้จ่ายประจำปีงบประมาณ' }] },
         component: () => import('pages/report/ReportFundRequestPerYears.vue'),
