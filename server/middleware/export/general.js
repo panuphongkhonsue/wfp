@@ -130,7 +130,7 @@ const fetchDataHealthCheckup = async (req, res, next) => {
 
 
 const fetchDataMedical = async (req, res, next) => {
-    const method = 'FetchHealthCheckupData';
+    const method = 'FetchMedicalData';
     const { id } = req.user;
     const dataId = req.params['id'];
     try {
@@ -341,7 +341,7 @@ const fetchDataMedical = async (req, res, next) => {
 };
 
 const fetchDataDental = async (req, res, next) => {
-    const method = 'FetchHealthCheckupData';
+    const method = 'FetchDentalData';
     const { id } = req.user;
     const dataId = req.params['id'];
     try {

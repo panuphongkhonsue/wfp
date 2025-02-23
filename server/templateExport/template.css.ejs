@@ -1,20 +1,35 @@
-body {
-    font-family: 'Roboto', sans-serif !important;
+@font-face {
+    font-family: 'Baijamjuree';
+    src: url('<%= fontPath %>assets/fonts/Baijamjuree-Regular.woff') format('woff');
+}
+@font-face {
+    font-family: 'BaijamjureeBold';
+    src: url('<%= fontPath %>assets/fonts/BaiJamjuree-Bold.woff') format('woff');
+}
+@font-face {
+    font-family: 'BaijamjureeSemiBold';
+    src: url('<%= fontPath %>assets/fonts/BaiJamjuree-SemiBold.woff') format('woff');
+}
+@font-face {
+    font-family: 'BaijamjureeMedium';
+    src: url('<%= fontPath %>assets/fonts/BaiJamjuree-Medium.woff') format('woff');
+}
+.font-regular{
+    font-family: 'Baijamjuree' !important;
+}
+font-bold {
+    font-family: 'BaijamjureeBold' !important; 
+}
+font-medium{
+    font-family: 'BaijamjureeMedium' !important;
+}
+font-semi-bold{
+    font-family: 'BaijamjureeSemiBold' !important;
+    font-weight: 600 !important;
 }
 div{
-    font-family: "Bai Jamjuree", serif !important;
-    font-weight: 400 !important;
-    font-style: normal !important;
-}
-.font-regular {
-    font-family: "Bai Jamjuree", serif !important;
-    font-weight: 400 !important;
-    font-style: normal !important;
-}
-font-bold{
-    font-family: "Bai Jamjuree", serif !important;
-    font-weight: 700 !important;
-    font-style: normal !important;
+    font-family: 'Baijamjuree';
+    font-size : 14px;
 }
 .font-20{
     font-size : 20px !important;
@@ -123,7 +138,7 @@ font-bold{
     color: rgba(255, 255, 255, 0);
 }
 table {
-    font-family: "<%= fontName %>", sans-serif;
+    "baijamjuree" !important;
     border-collapse: collapse;
     width: 100%;
 }

@@ -15,9 +15,9 @@
 
 <body>
   <div class="content">
-    <div class="d-flex justify-end font-14"><b>แบบ มก.๐๒</b></div>
+    <div class="d-flex justify-end font-14"><span class="font-semi-bold">แบบ มก.๐๒</span></div>
     <div class="d-flex justify-center font-20 pt-md">
-      <b>ใบเบิกสวัสดิการทั่วไป กองทุนสวัสดิการมหาวิทยาลัยบูรพา</b>
+      <span class="font-semi-bold">ใบเบิกสวัสดิการทั่วไป กองทุนสวัสดิการมหาวิทยาลัยบูรพา</span>
     </div>
     <div class="d-flex justify-center font-14 pt-sm pb-md">
       โปรดทำเครื่องหมาย / ลงในช่อง
@@ -30,20 +30,20 @@
           <div class="d-flex">
             <div style="width: 60%">
               <div class="row" style="gap: 8px; flex-wrap: wrap">
-                <div class="px-sm">๑.</div>
+                <div class="pl-sm font-semi-bold">๑.</div>
                 <div style="flex: 2; min-width: 200px">
-                  <b>ข้าพเจ้า</b>
+                  <span class="font-semi-bold">ข้าพเจ้า :</span>
                   <%= body?.user?.name %>
                 </div>
                 <div style="flex: 1">
-                  <b>ตำแหน่ง</b>
+                  <span class="font-semi-bold">ตำแหน่ง :</span>
                   <%= body?.user?.position %>
                 </div>
                 <div style="flex-basis: 100%">
                   <div style="display: flex; gap: 8px; align-items: center">
                     <span class="px-sm text-white">---</span>
                     <div style="flex: 1">
-                      <b>สังกัด ภาควิชา / ส่วนงาน</b>
+                      <span class="font-semi-bold">สังกัด ภาควิชา / ส่วนงาน :</span>
                       <%= body?.user?.sector %> / <%= body?.user?.department %>
                     </div>
                   </div>
@@ -73,99 +73,104 @@
       <!-- สวัสดิการ ค่าตรวจสุขภาพประจำปี -->
       <tr>
         <td>
-          <div class="row" style="gap: 10px">
-            <div class="justify-center" style="width: 5%">
-              <div class="px-sm">๒.</div>
-            </div>
-            <div style="width: 90%">
-              <div class="row">
-                <div style="flex: 1">
-                  <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==1 ? "checked" : "" %> />
-                  <b for="cate1">ข้าพเจ้าขอรับเงินสวัสดิการค่าตรวจสุขภาพประจำปี
-                    (เท่าที่จ่ายจริงไม่เกิน ๒,๐๐๐)</b>
+          <div class="row" style="gap: 8px">
+            <div style="width: 100%">
+              <div class="d-flex">
+                <div class=" px-sm  font-semi-bold">
+                  ๒.
                 </div>
+                <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==1 ? "checked" : "" %> />
+                <span class="font-semi-bold" for="cate1">ข้าพเจ้าขอรับเงินสวัสดิการค่าตรวจสุขภาพประจำปี
+                  (เท่าที่จ่ายจริงไม่เกิน ๒,๐๐๐)</span>
               </div>
-              <div class="row py-md px-md" style="gap: 8px">
-                <div style="flex: 1" class="px-sm">
-                  จำนวนเงิน <%= body?.categoryId==1 && body?.fundSumRequest ? body?.fundSumRequest.toLocaleString()
-                    : '..............................' %> บาท
-                    (........................................................)
-                </div>
-              </div>
-              <div class="row px-md" style="gap: 8px">
-                <div style="flex: 1">
-                  <span class="px-sm">๒.๑</span><b>ข้าพเจ้ามีสิทธิได้รับเงิน ดังนี้</b>
-                </div>
-              </div>
-              <div class="row py-sm" style="gap: 8px; padding-left: 24px">
-                <div style="flex: 1" class="pl-md">
-                  <span class="pl-md"></span>
-                  <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==1 && body?.fundDecree
-                    ? "checked" : "" %> />
-                  ได้รับเงินจากสิทธิที่เบิกได้ตามพระราชกฤษฎีกาเงินสวัสดิการเกี่ยวกับการรักษาพยาบาล
-                  เป็นเงิน <%= body?.categoryId==1 ? (body?.fundDecree ?? 0).toLocaleString() : '.......' %> บาท
-                </div>
-              </div>
-              <div class="row" style="gap: 8px; padding-left: 25px">
-                <div style="flex: 1" class="pl-md">
-                  <span class="pl-md"></span>
-                  <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==1 &&
-                    body?.fundUniversity ? "checked" : "" %> />
-                  เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ
-                  มหาวิทยาลัยบูรพา เป็นเงิน <%= body?.categoryId==1 ? (body?.fundUniversity ??
-                    0).toLocaleString(): '.......' %> บาท
-                </div>
-              </div>
-              <div class="row py-sm" style="gap: 8px; padding-left: 25px">
-                <div style="flex: 1" class="pl-md">
-                  <span class="pl-md"></span>
-                  <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==1 && body?.fundEligible
-                    ? "checked" : "" %> />
-                  ได้รับเงินจากสิทธิ <%= body?.categoryId==1 ? body?.fundEligibleName ?? "-" : '.......' %>
-                    เป็นเงิน <%= body?.categoryId==1 ? (body?.fundEligible ?? 0).toLocaleString() : '.......' %>
-                      บาท
-                </div>
-              </div>
-              <div class="row" style="gap: 8px">
-                <span class="px-sm text-white">---</span>
-                <div style="flex: 1">
-                  <b>หลักฐานแนบ</b>
-                </div>
-              </div>
-              <div class="row py-sm" style="gap: 8px">
-                <span class="px-sm text-white">----</span>
-                <div style="flex: 1">
-                  <span class="px-sm text-white">---</span>
-                  <b>๑. </b>ใบเสร็จรับเงิน
-                </div>
-                <div style="flex: 1">
-                  <span class="px-sm text-white">---</span>
-                  <b>๒. </b>ใบรับรองแพทย์
-                </div>
-              </div>
-              <div class="row" style="gap: 8px">
-                <span class="px-sm text-white">---</span>
-                <div style="flex: 0">
-                  <b style="text-decoration: underline">หมายเหตุ</b>
-                </div>
-                <div style="flex: 0">๑.</div>
-                <div style="flex: 5">
-                  ในกรณีผู้ปฏิบัติงานในมหาวิทยาลัยได้รับใบเสร็จรับเงินมากกว่าหนึ่งฉบับให้รวบรวมใบเสร็จรับเงินเพื่อยื่นเรื่องขอเบิกเพียง
-                  ๑ ครั้งต่อปีงบประมาณ
-                  หากมีการยื่นเรื่องขอเบิกแล้วจะไม่สามารถดำเนินการยื่นเรื่องเพื่อขอเพิ่มเติมได้
-                </div>
-              </div>
-              <div class="row" style="gap: 8px">
-                <span class="px-sm text-white">---</span>
-                <div style="flex: 0">
-                  <b class="text-white" style="text-decoration: underline">หมายเหตุ</b>
-                </div>
-                <div style="flex: 0">๒.</div>
-                <div style="flex: 5">
-                  ในกรณีผู้ปฏิบัติงานในส่วนงานสามารถเบิกตามสิทธิอื่นได้
-                  ให้เบิกจ่ายตามสิทธินั้นก่อน
-                  และเบิกส่วนที่ยังขาดจากสิทธิกองทุนสวัสดิการตามประกาศนี้
-                  (ทั้งนี้รวมกันแล้วต้องไม่เกินสิทธิสวัสดิการ)
+              <div class="d-flex">
+                <div style="width: 5%;"></div>
+                <div style="width: 95%;">
+                  <div class="row py-md px-md" style="gap: 8px">
+                    <div style="flex: 1" class="px-sm">
+                      จำนวนเงิน <%= body?.categoryId==1 && body?.fundSumRequest ? body?.fundSumRequest.toLocaleString()
+                        : '..............................' %> บาท
+                        (........................................................)
+                    </div>
+                  </div>
+                  <div class="row px-md" style="gap: 8px">
+                    <div style="flex: 1">
+                      <span class="px-sm font-semi-bold">๒.๑</span><span
+                        class="font-semi-bold">ข้าพเจ้ามีสิทธิได้รับเงิน
+                        ดังนี้</span>
+                    </div>
+                  </div>
+                  <div class="row py-sm" style="gap: 8px; padding-left: 24px">
+                    <div style="flex: 1" class="pl-md">
+                      <span class="pl-md"></span>
+                      <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==1 &&
+                        body?.fundDecree ? "checked" : "" %> />
+                      ได้รับเงินจากสิทธิที่เบิกได้ตามพระราชกฤษฎีกาเงินสวัสดิการเกี่ยวกับการรักษาพยาบาล
+                      เป็นเงิน <%= body?.categoryId==1 ? (body?.fundDecree ?? 0).toLocaleString() : '.......' %> บาท
+                    </div>
+                  </div>
+                  <div class="row" style="gap: 8px; padding-left: 25px">
+                    <div style="flex: 1" class="pl-md">
+                      <span class="pl-md"></span>
+                      <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==1 &&
+                        body?.fundUniversity ? "checked" : "" %> />
+                      เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ
+                      มหาวิทยาลัยบูรพา เป็นเงิน <%= body?.categoryId==1 ? (body?.fundUniversity ??
+                        0).toLocaleString(): '.......' %> บาท
+                    </div>
+                  </div>
+                  <div class="row py-sm" style="gap: 8px; padding-left: 25px">
+                    <div style="flex: 1" class="pl-md">
+                      <span class="pl-md"></span>
+                      <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==1 &&
+                        body?.fundEligible ? "checked" : "" %> />
+                      ได้รับเงินจากสิทธิ <%= body?.categoryId==1 ? body?.fundEligibleName ?? "-" : '.......' %>
+                        เป็นเงิน <%= body?.categoryId==1 ? (body?.fundEligible ?? 0).toLocaleString() : '.......' %>
+                          บาท
+                    </div>
+                  </div>
+                  <div class="row" style="gap: 8px">
+                    <span class="px-sm text-white">---</span>
+                    <div style="flex: 1">
+                      <span class="font-semi-bold">หลักฐานแนบ</span>
+                    </div>
+                  </div>
+                  <div class="row py-sm" style="gap: 8px">
+                    <span class="px-sm text-white">----</span>
+                    <div style="flex: 1">
+                      <span class="px-sm text-white">---</span>
+                      <span class="font-semi-bold">๑. </span>ใบเสร็จรับเงิน
+                    </div>
+                    <div style="flex: 1">
+                      <span class="px-sm text-white">---</span>
+                      <span class="font-semi-bold">๒. </span>ใบรับรองแพทย์
+                    </div>
+                  </div>
+                  <div class="row" style="gap: 8px">
+                    <span class="px-sm text-white">---</span>
+                    <div style="flex: 0">
+                      <span class="font-semi-bold" style="text-decoration: underline">หมายเหตุ</span>
+                    </div>
+                    <div style="flex: 0">๑.</div>
+                    <div style="flex: 5">
+                      ในกรณีผู้ปฏิบัติงานในมหาวิทยาลัยได้รับใบเสร็จรับเงินมากกว่าหนึ่งฉบับให้รวบรวมใบเสร็จรับเงินเพื่อยื่นเรื่องขอเบิกเพียง
+                      ๑ ครั้งต่อปีงบประมาณ
+                      หากมีการยื่นเรื่องขอเบิกแล้วจะไม่สามารถดำเนินการยื่นเรื่องเพื่อขอเพิ่มเติมได้
+                    </div>
+                  </div>
+                  <div class="row" style="gap: 8px">
+                    <span class="px-sm text-white">---</span>
+                    <div style="flex: 0">
+                      <span class="font-semi-bold" class="text-white" style="text-decoration: underline">หมายเหตุ</span>
+                    </div>
+                    <div style="flex: 0">๒.</div>
+                    <div style="flex: 5">
+                      ในกรณีผู้ปฏิบัติงานในส่วนงานสามารถเบิกตามสิทธิอื่นได้
+                      ให้เบิกจ่ายตามสิทธินั้นก่อน
+                      และเบิกส่วนที่ยังขาดจากสิทธิกองทุนสวัสดิการตามประกาศนี้
+                      (ทั้งนี้รวมกันแล้วต้องไม่เกินสิทธิสวัสดิการ)
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -176,82 +181,85 @@
       <tr>
         <td>
           <div class="row" style="gap: 10px">
-            <div class="justify-center" style="width: 5%">
-              <div class="px-sm">๓.</div>
-            </div>
-            <div style="width: 90%">
-              <div class="row">
-                <div style="flex: 1">
-                  <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==3 ? "checked" : "" %> />
-                  <b for="cate1">ข้าพเจ้าขอรับเงินสวัสดิการ (กรณีเจ็บป่วย)</b>
+            <div style="width: 100%">
+              <div class="d-flex">
+                <div class=" px-sm  font-semi-bold">
+                  ๓.
                 </div>
+                <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==3 ? "checked" : "" %> />
+                <span class="font-semi-bold" for="cate1">ข้าพเจ้าขอรับเงินสวัสดิการ (กรณีเจ็บป่วย)</span>
               </div>
-              <div class="row pt-md px-md" style="gap: 8px">
-                <div style="flex: 1" class="px-sm">
-                  <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==3 && body?.fundEligible
-                    ? "checked" : "" %> />
-                  <span>ประสบอุบัติเหตุขณะปฏิบัติหน้าที่ (จ่ายคนละไม่เกิน ๑,๐๐๐
-                    บาท)</span>
-                </div>
-              </div>
-              <div class="row pl-md py-sm" style="gap: 8px">
-                <div style="flex: 1" class="pส-sm">
-                  <span style="padding-left: 32px;"></span><b>หลักฐานแนบ</b>
-                </div>
-              </div>
-              <div class="row" style="gap: 8px; padding-left: 32px">
-                <div style="flex: 1" class="pl-md d-flex">
-                  <div style="flex: 1">๑.ใบสำคัญรับเงิน</div>
-                  <div style="flex: 1">๒.ใบรับรองแพทย์</div>
-                  <div style="flex: 1">๓.หนังสือรับรองของหัวหน้าส่วนงาน</div>
-                </div>
-              </div>
-              <div class="row pt-sm px-md" style="gap: 8px">
-                <div style="flex: 1" class="px-sm">
-                  <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==3 &&
-                    body?.fundSumRequestPatientVisit ? "checked" : "" %> />
-                  <span>ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีเป็นผู้ป่วยใน) คนละไม่เกิน ๑,๐๐๐ บาท ต่อครั้ง ปีละไม่เกิน ๓
-                    ครั้ง</span>
-                </div>
-              </div>
-              <div class="row pt-sm pl-md" style="gap: 8px">
-                <div style="flex: 1" class="pl-md">
-                  <div style="display: flex; flex-direction: column; gap: 10px;" class="pl-md">
-                    <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==3) { %>
-                      <% for (var i=0; i < body.requestData.length; i++) { %>
-                        <div style="width: 100%;">
-                          <input type="checkbox" id="body<%= i + 1 %>" name="body<%= i + 1 %>" value="1"
-                            <%=(body.categoryId===3 && body.requestData[i].id) ? "checked" : "" %>
-                          />
-                          <label for="body<%= i + 1 %>">เบิกครั้งที่ <%= i + 1 %></label>
-                          <span class="mx-sm">เมื่อ (วัน/เดือน/ปี)</span>
-                          <span>
-                            <%= body.requestData[i].startDate + " - " + body.requestData[i].endDate %>
-                          </span>
-                        </div>
-                        <% } %>
-                          <% } else { %>
-                            <% for (var j=1; j <=3; j++) { %>
-                              <div style="width: 100%;">
-                                <input type="checkbox" id="body<%= j %>" name="body<%= j %>" value="1" />
-                                <label for="body<%= j %>">เบิกครั้งที่.........................</label>
-                                <span class="mx-sm">เมื่อ (วัน/เดือน/ปี)</span>
-                                <span>...........................................</span>
-                              </div>
-                              <% } %>
-                                <% } %>
+              <div class="d-flex">
+                <div style="width: 5%;"></div>
+                <div style="width: 95%;">
+                  <div class="row pt-md px-md" style="gap: 8px">
+                    <div style="flex: 1" class="px-sm">
+                      <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==3 &&
+                        body?.fundEligible ? "checked" : "" %> />
+                      <span>ประสบอุบัติเหตุขณะปฏิบัติหน้าที่ (จ่ายคนละไม่เกิน ๑,๐๐๐
+                        บาท)</span>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div class="row pl-md py-sm" style="gap: 8px">
-                <div style="flex: 1" class="pส-sm">
-                  <span style="padding-left: 32px;"></span><b>หลักฐานแนบ</b>
-                </div>
-              </div>
-              <div class="row" style="gap: 8px; padding-left: 32px">
-                <div style="flex: 1" class="pl-md d-flex">
-                  <div style="flex: 1">๑.ใบสำคัญรับเงิน</div>
-                  <div style="flex: 1">๒.ใบรับรองแพทย์</div>
+                  <div class="row pl-md py-sm" style="gap: 8px">
+                    <div style="flex: 1" class="pส-sm">
+                      <span style="padding-left: 32px;"></span><span class="font-semi-bold">หลักฐานแนบ</span>
+                    </div>
+                  </div>
+                  <div class="row" style="gap: 8px; padding-left: 32px">
+                    <div style="flex: 1" class="pl-md d-flex">
+                      <div style="flex: 1">๑.ใบสำคัญรับเงิน</div>
+                      <div style="flex: 1">๒.ใบรับรองแพทย์</div>
+                      <div style="flex: 1">๓.หนังสือรับรองของหัวหน้าส่วนงาน</div>
+                    </div>
+                  </div>
+                  <div class="row pt-sm px-md" style="gap: 8px">
+                    <div style="flex: 1" class="px-sm">
+                      <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==3 &&
+                        body?.fundSumRequestPatientVisit ? "checked" : "" %> />
+                      <span>ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีเป็นผู้ป่วยใน) คนละไม่เกิน ๑,๐๐๐ บาท ต่อครั้ง ปีละไม่เกิน ๓
+                        ครั้ง</span>
+                    </div>
+                  </div>
+                  <div class="row pt-sm pl-md" style="gap: 8px">
+                    <div style="flex: 1" class="pl-md">
+                      <div style="display: flex; flex-direction: column; gap: 10px;" class="pl-md">
+                        <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==3) { %>
+                          <% for (var i=0; i < body.requestData.length; i++) { %>
+                            <div style="width: 100%;">
+                              <input type="checkbox" id="body<%= i + 1 %>" name="body<%= i + 1 %>" value="1"
+                                <%=(body.categoryId===3 && body.requestData[i].id) ? "checked" : "" %>
+                              />
+                              <label for="body<%= i + 1 %>">เบิกครั้งที่ <%= i + 1 %></label>
+                              <span class="mx-sm">เมื่อ (วัน/เดือน/ปี)</span>
+                              <span>
+                                <%= body.requestData[i].startDate + " - " + body.requestData[i].endDate %>
+                              </span>
+                            </div>
+                            <% } %>
+                              <% } else { %>
+                                <% for (var j=1; j <=3; j++) { %>
+                                  <div style="width: 100%;">
+                                    <input type="checkbox" id="body<%= j %>" name="body<%= j %>" value="1" />
+                                    <label for="body<%= j %>">เบิกครั้งที่.........................</label>
+                                    <span class="mx-sm">เมื่อ (วัน/เดือน/ปี)</span>
+                                    <span>...........................................</span>
+                                  </div>
+                                  <% } %>
+                                    <% } %>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row pl-md py-sm" style="gap: 8px">
+                    <div style="flex: 1" class="pส-sm">
+                      <span style="padding-left: 32px;"></span><span class="font-semi-bold">หลักฐานแนบ</span>
+                    </div>
+                  </div>
+                  <div class="row" style="gap: 8px; padding-left: 32px">
+                    <div style="flex: 1" class="pl-md d-flex">
+                      <div style="flex: 1">๑.ใบสำคัญรับเงิน</div>
+                      <div style="flex: 1">๒.ใบรับรองแพทย์</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -262,74 +270,77 @@
       <tr>
         <td>
           <div class="row" style="gap: 10px">
-            <div class="justify-center" style="width: 5%">
-              <div class="px-sm">๓.</div>
-            </div>
-            <div style="width: 90%">
-              <div class="row">
-                <div style="flex: 1">
-                  <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==2 ? "checked" : "" %> />
-                  <b for="cate1">ข้าพเจ้าขอรับเงินสวัสดิการค่าทำฟันเพื่อการรักษา <span
-                      style="text-decoration: underline;">ยกเว้น</span>
-                    ทันตกรรมเพื่อความสวยงาม <span style="font-size: 12px;">(เท่าที่จ่ายจริงไม่เกิน ๑,๐๐๐)</span>
-                  </b>
+            <div style="width: 100%">
+              <div class="d-flex">
+                <div class=" px-sm  font-semi-bold">
+                  ๔.
                 </div>
+                <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==2 ? "checked" : "" %> />
+                <span class="font-semi-bold" for="cate1">ข้าพเจ้าขอรับเงินสวัสดิการค่าทำฟันเพื่อการรักษา <span
+                    style="text-decoration: underline;">ยกเว้น</span>
+                  ทันตกรรมเพื่อความสวยงาม <span style="font-size: 12px;">(เท่าที่จ่ายจริงไม่เกิน ๑,๐๐๐)</span>
+                </span>
               </div>
-              <div class="row py-sm px-md" style="gap: 8px">
-                <div style="flex: 1" class="px-sm">
-                  จำนวนเงิน <%= body?.categoryId==2 && body?.fundSumRequest ? body?.fundSumRequest.toLocaleString()
-                    : ".................." %> บาท
-                    (........................................................)
-                </div>
-              </div>
-              <div class="row pt-sm pl-md" style="gap: 8px">
-                <div style="flex: 1" class="pl-md">
-                  <div style="display: flex; flex-direction: column; gap: 10px;" class="pl-md">
-                    <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==2) { %>
-                      <% for (var i=0; i < body.requestData.length; i++) { %>
-                        <div style="width: 100%;">
-                          <input type="checkbox" id="body<%= i + 1 %>" name="body<%= i + 1 %>" value="1"
-                            <%=(body.categoryId===2 && body.requestData[i].id) ? "checked" : "" %>
-                          />
-                          <label for="body<%= i + 1 %>">เบิกครั้งที่<%= i + 1 %></label>
-                          <span class="mx-sm">เมื่อ (วัน/เดือน/ปี)</span>
-                          <span>
-                            <%= body.requestData[i].dateReceipt %>
-                          </span>
-                          <span class="mx-sm">จำนวนเงิน</span>
-                          <span>
-                            <%= body.requestData[i].fundSumRequest %>
-                          </span>
-                          <span class="mx-sm">บาท</span>
-                        </div>
-                        <% } %>
-                          <% } else { %>
-                            <% for (var j=1; j <=3; j++) { %>
-                              <div style="width: 100%;">
-                                <input type="checkbox" id="body<%= j %>" name="body<%= j %>" value="1" />
-                                <label for="body<%= j %>">เบิกครั้งที่.........................</label>
-                                <span class="mx-sm">เมื่อ (วัน/เดือน/ปี)</span>
-                                <span>...........................................</span>
-                                <span class="ml-sm">จำนวนเงิน</span>
-                                <span>
-                                  .................
-                                </span>
-                                <span>บาท</span>
-                              </div>
-                              <% } %>
-                                <% } %>
+              <div class="d-flex">
+                <div style="width: 5%;"></div>
+                <div style="width: 100%;">
+                  <div class="row py-sm px-md" style="gap: 8px">
+                    <div style="flex: 1" class="px-sm">
+                      จำนวนเงิน <%= body?.categoryId==2 && body?.fundSumRequest ? body?.fundSumRequest.toLocaleString()
+                        : ".................." %> บาท
+                        (........................................................)
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div class="row pl-md py-sm" style="gap: 8px">
-                <div style="flex: 1" class="pส-sm">
-                  <span style="padding-left: 32px;"></span><b>หลักฐานแนบ</b>
-                </div>
-              </div>
-              <div class="row" style="gap: 8px; padding-left: 32px">
-                <div style="flex: 1" class="pl-md d-flex">
-                  <div style="flex: 1">๑.ใบสำคัญรับเงิน</div>
-                  <div style="flex: 1">๒.ใบรับรองแพทย์</div>
+                  <div class="row pt-sm pl-md" style="gap: 8px">
+                    <div style="flex: 1" class="pl-md">
+                      <div style="display: flex; flex-direction: column; gap: 10px;" class="pl-md">
+                        <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==2) { %>
+                          <% for (var i=0; i < body.requestData.length; i++) { %>
+                            <div style="width: 100%;">
+                              <input type="checkbox" id="body<%= i + 1 %>" name="body<%= i + 1 %>" value="1"
+                                <%=(body.categoryId===2 && body.requestData[i].id) ? "checked" : "" %>
+                              />
+                              <label for="body<%= i + 1 %>">เบิกครั้งที่<%= i + 1 %></label>
+                              <span class="mx-sm">เมื่อ (วัน/เดือน/ปี)</span>
+                              <span>
+                                <%= body.requestData[i].dateReceipt %>
+                              </span>
+                              <span class="mx-sm">จำนวนเงิน</span>
+                              <span>
+                                <%= body.requestData[i].fundSumRequest %>
+                              </span>
+                              <span class="mx-sm">บาท</span>
+                            </div>
+                            <% } %>
+                              <% } else { %>
+                                <% for (var j=1; j <=3; j++) { %>
+                                  <div style="width: 100%;">
+                                    <input type="checkbox" id="body<%= j %>" name="body<%= j %>" value="1" />
+                                    <label for="body<%= j %>">เบิกครั้งที่.........................</label>
+                                    <span class="mx-sm">เมื่อ (วัน/เดือน/ปี)</span>
+                                    <span>...........................................</span>
+                                    <span class="ml-sm">จำนวนเงิน</span>
+                                    <span>
+                                      .................
+                                    </span>
+                                    <span>บาท</span>
+                                  </div>
+                                  <% } %>
+                                    <% } %>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row pl-md py-sm" style="gap: 8px">
+                    <div style="flex: 1" class="pส-sm">
+                      <span style="padding-left: 32px;"></span><span class="font-semi-bold">หลักฐานแนบ</span>
+                    </div>
+                  </div>
+                  <div class="row" style="gap: 8px; padding-left: 32px">
+                    <div style="flex: 1" class="pl-md d-flex">
+                      <div style="flex: 1">๑.ใบสำคัญรับเงิน</div>
+                      <div style="flex: 1">๒.ใบรับรองแพทย์</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -348,8 +359,8 @@
           <div class="row" style="gap: 8px">
             <div class="px-sm text-white">--</div>
             <div style="flex: 1">
-              <b>ข้าพเจ้าขอรับรองว่า
-                ข้าพเจ้ามีสิทธิได้รับเงินตามประกาศคณะกรรมการสวัสดิการมหาวิทยาลัยบูรพา</b>
+              <span class="font-semi-bold">ข้าพเจ้าขอรับรองว่า
+                ข้าพเจ้ามีสิทธิได้รับเงินตามประกาศคณะกรรมการสวัสดิการมหาวิทยาลัยบูรพา</span>
             </div>
           </div>
           <div class="row py-md" style="gap: 8px">
@@ -378,24 +389,27 @@
       <tr>
         <td>
           <div class="row" style="gap: 8px">
-            <b class="col-12 px-sm">การตรวจสอบ</b>
-            <div class="col-12 px-sm">
-              <b>เสนอ</b>
+            <span class="font-semi-bold px-md" class="col-12 px-md">การตรวจสอบ</span>
+            <div class="col-12 px-md">
+              <span class="font-semi-bold px-md">เสนอ</span>
               <span>
                 <%= body?.user?.positionId==2 || body?.user?.positionId==3 ? "อธิการบดี" : "คณบดี" %>
               </span>
             </div>
           </div>
-          <div class="row px-md py-sm" style="gap: 8px">
-            <div class="col-12">
-              ๑. ข้าพเจ้า ได้ตรวจสอบใบขอเบิกเงินสวัสดิการฉบับนี้แล้ว
-              ขอรับรองว่าผู้ขอเบิกสวัสดิการฯ มีสิทธิเบิกสวัสดิการฯ
-              ได้ตามประกาศ คณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา
-            </div>
-            <div class="col-12">
-              ๒. ผู้ขับรับสวัสดิการฯ
-              มีสิทธิเบิกตามจำนวนเงินที่ขอเบิก..............................บาท
-              จริง ไม่เกินอัตราที่กำหนดต่อปี
+          <div class="d-flex">
+            <div style="width: 5%;"></div>
+            <div class="row px-md py-sm" style="gap: 8px; width: 95%;">
+              <div class="col-12 pl-sm ml-sm">
+                ๑. ข้าพเจ้า ได้ตรวจสอบใบขอเบิกเงินสวัสดิการฉบับนี้แล้ว
+                ขอรับรองว่าผู้ขอเบิกสวัสดิการฯ มีสิทธิเบิกสวัสดิการฯ
+                ได้ตามประกาศ คณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา
+              </div>
+              <div class="col-12 pl-sm ml-sm">
+                ๒. ผู้ขับรับสวัสดิการฯ
+                มีสิทธิเบิกตามจำนวนเงินที่ขอเบิก..............................บาท
+                จริง ไม่เกินอัตราที่กำหนดต่อปี
+              </div>
             </div>
           </div>
           <div class="row px-md py-sm" style="gap: 8px; align-items: flex-end">
@@ -423,10 +437,13 @@
       <tr>
         <td>
           <div class="row" style="gap: 8px">
-            <b class="col-12 px-sm">คำอนุมัติ</b>
+            <span class="font-semi-bold px-md" class="col-12 px-md">คำอนุมัติ</span>
           </div>
-          <div class="row px-md py-sm" style="gap: 8px">
-            <div class="col-12">อนุมัติเบิกจ่ายได้</div>
+          <div class="d-flex py-sm" style="width: 100%;">
+            <div style="width: 5%;"></div>
+            <div style="width: 95%;" class="pl-md ml-md">
+              <div class="pl-md ml-md"> อนุมัติเบิกจ่ายได้</div>
+            </div>
           </div>
           <div class="row px-md py-sm" style="gap: 8px; align-items: flex-end">
             <div class="col"></div>
@@ -450,18 +467,23 @@
       <tr>
         <td>
           <div class="row" style="gap: 8px">
-            <b class="col-12 px-sm">ใบรับเงิน</b>
+            <span class="font-semi-bold px-md" class="col-12 px-md">ใบรับเงิน</span>
           </div>
-          <div class="row px-md py-sm" style="gap: 8px">
-            <div class="col-12">
-              ข้าพเจ้าได้รับเงินสวัสดิการตามประกาศคณะกรรมการสวัสดิการ
-              มหาวิทยาลัยบูรพา
-            </div>
-          </div>
-          <div class="row px-md" style="gap: 8px">
-            <div style="flex: 1">
-              จำนวนเงิน <%= body?.fundSumRequest.toLocaleString() %> บาท
-                (........................................................)
+          <div class="d-flex" style="width: 100%;">
+            <div style="width: 5%;"></div>
+            <div style="width: 95%;">
+              <div class="row px-md ml-md pt-md" style="gap: 8px">
+                <div class="col-12 pl-md ml-md">
+                  ข้าพเจ้าได้รับเงินสวัสดิการตามประกาศคณะกรรมการสวัสดิการ
+                  มหาวิทยาลัยบูรพา
+                </div>
+              </div>
+              <div class="row px-md ml-md" style="gap: 8px">
+                <div style="flex: 1" class="pl-md ml-md">
+                  จำนวนเงิน <%= body?.fundSumRequest.toLocaleString() %> บาท
+                    (........................................................)
+                </div>
+              </div>
             </div>
           </div>
           <div class="row px-md py-md" style="gap: 8px; align-items: flex-end">
@@ -495,20 +517,20 @@
         </td>
       </tr>
     </table>
-    <div class="row py-sm" style="gap: 8px">
+    <div class="row py-md" style="gap: 8px">
       <span class="px-md text-white">๒.</span>
       <div style="flex: 0" class="px-md">
-        <b>หมายเหตุ</b>
+        <span class="font-semi-bold">หมายเหตุ</span>
       </div>
-      <div style="flex: 1">
+      <div style="flex: 1" class="font-14">
         ๑. ผู้มีสิทธิ หมายถึง ผู้ปฏิบัติงานในมหาวิทยาลัย ตามมาตรา ๔ แห่ง
         พระราชบัญญัติมหาวิทยาลัยบูรพา พ.ศ. ๒๕๕๐
       </div>
     </div>
-    <div class="row py-sm" style="gap: 8px">
+    <div class="row" style="gap: 8px">
       <span class="px-md text-white">๒.</span>
-      <div style="flex: 0" class="px-md text-white">
-        <b>หมายเหตุ</b>
+      <div style="flex: 0" class="px-md text-white font-14">
+        <span class="font-semi-bold">หมายเหตุ</span>
       </div>
       <div style="flex: 1">
         ๒. อัตรา หมายถึง อัตราตามประกาศคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา
