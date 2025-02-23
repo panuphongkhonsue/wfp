@@ -19,9 +19,9 @@
                 </p>
                 <q-select v-if="canCreateFor && !isView" popup-content-class="font-14 font-regular" :loading="isLoading"
                   id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
-                  v-model="model.createFor" :options="nameOptions" dense option-value="id" emit-value map-options
+                  v-model="model.createFor" :options="options" dense option-value="id" emit-value map-options
                   option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
-                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']">
+                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']" @filter-abort="abortFilterFn">
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
@@ -96,7 +96,8 @@
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
               <p class="col-12 q-mb-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
               <div class="col-lg-6 col-12 q-mb-none">
-                <q-option-group class="q-gutter-y-sm" v-model="model.categoryId" type="radio" :options="categoryOptions" :disable="isView" />
+                <q-option-group class="q-gutter-y-sm" v-model="model.categoryId" type="radio" :options="categoryOptions"
+                  :disable="isView" />
               </div>
               <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
                 <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p>
@@ -200,8 +201,8 @@ const model = ref({
   categoryId: null,
   createFor: null,
 });
-let nameOptions  = ref([]);
-const categoryOptions  =
+let options = ref([]);
+const categoryOptions =
   [
     {
       label: 'การเบิกค่าสมรสโดยนิตินัย',
@@ -232,7 +233,7 @@ const isLoading = ref(false);
 const isError = ref({});
 const canRequest = ref(false);
 const isView = ref(false);
-
+const userInitialData = ref([]);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
@@ -294,7 +295,7 @@ async function fetchDataEdit() {
           fundReceipt: returnedData?.fundReceipt,
           fundEligible: returnedData?.fundEligible,
           fundSumRequest: returnedData?.fundSumRequest,
-          categoryId: returnedData?.categoryId, 
+          categoryId: returnedData?.categoryId,
         };
         userData.value = {
           name: returnedData?.user.name,
@@ -360,12 +361,13 @@ async function fetchRemaining() {
 async function filterFn(val, update) {
   try {
     setTimeout(async () => {
-      const result = await userManagementService.getUserInitialData({ keyword: val });
-      var returnedData = result.data.datas;
 
       update(() => {
-        if (returnedData) {
-          nameOptions.value = returnedData;
+        if (val === '') {
+          options.value = userInitialData.value;
+        }
+        else {
+          options.value = userInitialData.value.filter(v => v.name.includes(val));
         }
       });
     }, 650);
@@ -375,6 +377,10 @@ async function filterFn(val, update) {
     Promise.reject(error);
   }
 }
+function abortFilterFn() {
+  // console.log('delayed filter aborted')
+}
+
 async function submit(actionId) {
   let validate = false;
   if (!model.value.fundReceipt) {
@@ -473,6 +479,10 @@ async function init() {
     else if (isEdit.value) {
       if (!canCreateFor.value) {
         fetchRemaining();
+      } 
+      else {
+        const result = await userManagementService.getUserInitialData({ keyword: null });
+        userInitialData.value = result.data.datas;
       }
       fetchDataEdit();
     }
@@ -480,6 +490,10 @@ async function init() {
       if (!canCreateFor.value) {
         fetchRemaining();
         fetchUserData(authStore.id);
+      } 
+      else {
+        const result = await userManagementService.getUserInitialData({ keyword: null });
+        userInitialData.value = result.data.datas;
       }
     }
   }
