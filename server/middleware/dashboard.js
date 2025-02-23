@@ -30,20 +30,29 @@ const authPermission = async (req, res, next) => {
 };
 
 const bindGetDataDashboard = async (req, res, next) => {
-	try {
-		const {startYear, endYear} = req.query;
-		req.query.filter = {};
+    const method = 'BindGetDataDashboard';
+
+    try {
+        const { startYear, endYear } = req.query;
+        const fiscalStartYear = startYear || '2022-10-01';
+        const fiscalEndYear = endYear || '2025-09-30';
+
+        req.query.filter = {};
         req.query.filter[Op.and] = [];
-        const getFiscalYearWhere = betweenFiscalByYear(startYear, endYear);
+        const getFiscalYearWhere  = betweenFiscalByYear(fiscalStartYear, fiscalEndYear);
+
         req.query.filter[Op.and].push(
-            { '$viewDashboard.updated_at$': getFiscalYearWhere, },
+            { '$viewDashboard.updated_at$': getFiscalYearWhere  }
         );
+
+        logger.info(`Fiscal year filter applied: ${fiscalStartYear} to ${fiscalEndYear}`, { method });
         next();
-    }
-    catch (error) {
-        logger.error(`Error ${error.message}`, { method });
+    } catch (error) {
+        logger.error(`Error: ${error.message}`, { method });
         res.status(400).json({ message: error.message });
     }
 };
+
+
 
 module.exports = { authPermission, bindGetDataDashboard };

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.16.16",
+    "apexcharts": "^4.5.0",
     "axios": "^1.7.7",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
