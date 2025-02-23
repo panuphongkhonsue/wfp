@@ -13,7 +13,7 @@ const createPdfGeneral = async (req, res, next) => {
         const puppeteer = require('puppeteer');
         browser = await puppeteer.launch({
             executablePath: '/usr/bin/chromium-browser',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security', '--allow-file-access-from-files']
         });
 
         const cssData = await ejs.renderFile('./templateExport/template.css.ejs', {

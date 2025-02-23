@@ -40,6 +40,7 @@ app.use(
     cors({
         origin: '*',
         exposedHeaders: ['Content-Disposition'],
+        allowedHeaders: ['Content-Type'],
     }),
 );
 app.use(

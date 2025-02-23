@@ -18,7 +18,7 @@ services:
     working_dir: /usr/src/app
     volumes:
       - ./server:/usr/src/app
-    command: sh -c "apk add --no-cache chromium nss freetype harfbuzz ttf-freefont && npm install -g html-pdf-node && npm install -g nodemon && npm install && nodemon app.js"
+    command: sh -c "apk add --no-cache chromium nss freetype harfbuzz ttf-freefont curl && npm install -g html-pdf-node && npm install -g nodemon && npm install && nodemon app.js"
     ports:
       - "8004:3000"
     expose:
