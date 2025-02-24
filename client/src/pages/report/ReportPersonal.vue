@@ -19,14 +19,23 @@
           <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm q-pt-sm weight-8 q-mt-xs"
             dense type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>
-
-        <div class="col-12 col-md content-left q-pt-lg q-pt-md-xs row justify-end q-mr-md">
+        <div class="col-12 col-md-12 row items-center justify-center text-bold text-grey-8 text-h4 q-pt-xl">
+            <div class="col text-center">
+                    รายละเอียดการเบิกจ่ายสวัสดิการรายบุคคลของปีงบประมาณ {{ filters.year }}
+        </div>
+        <div class="col-auto">
           <q-btn id="button-export-excel"
-            class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs" dense label="Export"
+            class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs q-mr-md" dense label="Export"
             no-caps :loading="isLoading" @click="exportToExcel()">
             <q-icon :name="outlinedDownload" size="sm"></q-icon>
           </q-btn>
         </div>
+        </div>
+
+        
+
+
+        
       </q-form>
 
 
