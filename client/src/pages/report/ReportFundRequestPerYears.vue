@@ -153,6 +153,7 @@ async function fetchDataFundRequestPerYear(filters) {
     }
     else {
       for (let y = 0; y < dataFundRequestPerYear.value.length; y++) {
+        dataFundRequestPerYear.value[y].totalFund = 0;
         for (let i = 0; i < result.data.docs.length; i++) {
           if (dataFundRequestPerYear.value[y].monthNumber === result.data.docs[i].month) {
             dataFundRequestPerYear.value[y].totalFund = result.data.docs[i].total_fund;
