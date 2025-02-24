@@ -233,6 +233,12 @@ const routes = [
         component: () => import('pages/IndexPage.vue'),
       },
       {
+        path: '/report/report-compare-expenses',
+        name: 'report_compare-expenses',
+        meta: { breadcrumbs: [{ name: 'รายงาน' }, { name: 'รายงานเปรียบเทียบการเบิกจ่ายสวัสดิการรายปีงบประมาณ' }] },
+        component: () => import('pages/report/ReportCompareExpenses.vue'),
+      },
+      {
         path: 'financial-health-check-up-welfare-edit/:id',
         name: 'financial_health_check_up_welfare_edit',
         meta: { breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าตรวจสุขภาพ' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
@@ -241,7 +247,7 @@ const routes = [
       {
         path: 'financial-health-check-up-welfare-view/:id',
         name: 'financial_health_check_up_welfare_view',
-        meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าตรวจสุขภาพ' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าตรวจสุขภาพ' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
         component: () => import('pages/welfare-management/EditHealthCheckUpPage.vue'),
       },
       {
@@ -253,7 +259,7 @@ const routes = [
       {
         path: 'financial-medical-welfare-view/:id',
         name: 'financial_medical_welfare_view',
-        meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'กรณีเจ็บป่วย' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'กรณีเจ็บป่วย' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
         component: () => import('pages/welfare-management/EditMedicalPage.vue'),
       },
       {
@@ -265,7 +271,7 @@ const routes = [
       {
         path: 'financial-dental-welfare-view/:id',
         name: 'financial_dental_welfare_view',
-        meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าทำฟัน' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการทั่วไป' }, { name: 'ค่าทำฟัน' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
         component: () => import('pages/welfare-management/EditDentalPage.vue'),
       },
       {
@@ -277,7 +283,7 @@ const routes = [
       {
         path: 'financial-various-welfare-view/:id',
         name: 'financial_various_welfare_view',
-        meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' }, { name: 'ค่าสงเคราะห์ต่าง ๆ' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' }, { name: 'ค่าสงเคราะห์ต่าง ๆ' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
         component: () => import('pages/welfare-management/EditVariousPage.vue'),
       },
       {
@@ -289,7 +295,7 @@ const routes = [
       {
         path: 'financial-family-funeral-welfare-view/:id',
         name: 'financial_family_funeral_welfare_view',
-        meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' }, { name: 'ค่าสงเคราะห์การเสียชีวิตครอบครัว' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์ต่าง ๆ' }, { name: 'ค่าสงเคราะห์การเสียชีวิตครอบครัว' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
         component: () => import('pages/welfare-management/EditFamilyFuneralPage.vue'),
       },
       {
@@ -301,7 +307,7 @@ const routes = [
       {
         path: 'financial-funeral-welfare-view/:id',
         name: 'financial_funeral_welfare_view',
-        meta: {isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
         component: () => import('pages/welfare-management/EditFuneralPage.vue'),
       },
     ],

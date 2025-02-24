@@ -2,7 +2,6 @@
   <ListLayout title="จัดการข้อมูลการเบิกสวัสดิการ">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
-
         <div class="col-12 col-md ">
           <InputGroup more-class="font-16 font-medium" for-id="requesId" is-dense v-model="filter.keyword" label="ค้นหา"
             placeholder="ค้นหาจากเลขที่ใบเบิก">

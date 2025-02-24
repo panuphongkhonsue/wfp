@@ -25,6 +25,7 @@ const postitionRouter = require('./routes/position');
 const sectorRouter = require('./routes/sector');
 const roleRouter = require('./routes/role');
 const childrenEducationRouter = require('./routes/childrenEducation');
+const dashboardRouter = require('./routes/dashboard');
 const reimbursementWelfareRouter = require('./routes/reimburesmentWelfare');
 const healthCheckUpWelfareRouter = require('./routes/healthCheckUpWelfare');
 const dentalWelfareRouter = require('./routes/dentalWelfare');
@@ -41,7 +42,7 @@ app.use(
     cors({
         origin: '*',
         exposedHeaders: ['Content-Disposition'],
-        allowedHeaders: ['Content-Type'],
+        // allowedHeaders: ['Content-Type'],
     }),
 );
 app.use(
@@ -84,7 +85,7 @@ app.use('/position', auth, postitionRouter);
 app.use('/sector', auth, sectorRouter);
 app.use('/role', auth, roleRouter);
 app.use('/reimbursement-children-education', auth, childrenEducationRouter);
-
+app.use('/dashboard', auth, dashboardRouter);
 app.use('/reimbursement-welfare', auth, reimbursementWelfareRouter);
 app.use('/health-check-up-welfare', auth, healthCheckUpWelfareRouter);
 app.use('/dental-welfare', auth, dentalWelfareRouter);

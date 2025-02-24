@@ -63,3 +63,10 @@ export function formatNumber(val) {
   return `${val}`; // If conversion fails, return a fallback value
 }
 
+export function toThaiYear(year){
+  return year+543;
+}
+
+export function toEngYear(year){
+  return year-543;
+}
