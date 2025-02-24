@@ -262,26 +262,23 @@ class Controller extends BaseController {
         var itemsReturned = null;
         dataUpdate.fund_receipt = isNaN(dataUpdate.fund_receipt) ? 0 : parseFloat(dataUpdate.fund_receipt);
         dataUpdate.fund_eligible = isNaN(dataUpdate.fund_eligible) ? 0 : parseFloat(dataUpdate.fund_eligible);
-
+    
         try {
-
-
             const result = await sequelize.transaction(async t => {
-
+    
                 const [updated] = await reimbursementsChildrenEducation.update(dataUpdate, {
                     where: { id: dataId },
                     transaction: t,
                 });
-                console.log("🔍 Update result:", updated);
 
+    
                 if (updated === 0 && isNullOrEmpty(child)) {
                     return { updated: false };
                 }
-
-
+    
                 if (!isNullOrEmpty(deletedChild)) {
                     const idsToDelete = deletedChild.map(child => child.id);
-
+    
                     var childIds = await reimbursementsChildrenEducationHasChildrenInfomation.findAll({
                         attributes: ['children_infomation_id'],
                         where: {
@@ -291,14 +288,14 @@ class Controller extends BaseController {
                         raw: true
                     });
                     const childIdArray = childIds.map(item => item.children_infomation_id);
-
+    
                     var deleteItemSub = await reimbursementsChildrenEducationHasChildrenInfomation.destroy(
                         {
                             where: { reimbursements_children_education_id: dataId, children_infomation_id: childIdArray },
                             transaction: t,
                         }
                     );
-
+    
                     var deleteItemChild = await childrenInfomation.destroy(
                         {
                             where: { id: childIdArray },
@@ -306,7 +303,7 @@ class Controller extends BaseController {
                         }
                     );
                 }
-
+    
                 if (!isNullOrEmpty(child)) {
                     var childData = child.map((childObj) => {
                         let data = {
@@ -326,17 +323,17 @@ class Controller extends BaseController {
                             province: childObj.province,
                             sub_categories_id: childObj.subCategoriesId,
                         };
-
+    
                         if (childObj.childPassedAway) {
                             data.delegate_name = childObj.delegateName ?? null;
                             data.delegate_number = childObj.delegateNumber ?? null;
                             data.delegate_birth_day = childObj.delegateBirthDay ?? null;
                             data.delegate_death_day = childObj.delegateDeathDay ?? null;
                         }
-
+    
                         return data;
                     });
-
+    
                     const existingChildren = await childrenInfomation.findAll({
                         attributes: ['id', 'fund_receipt', 'fund_other',
                             'fund_eligible', 'fund_university', 'fund_sum_request', 'child_name',
@@ -359,14 +356,11 @@ class Controller extends BaseController {
                                     }
                                 ]
                             }
-
-
                         ],
                         raw: true,
                     });
-                    console.log("ค่าที่ถูกส่งไปยังฐานข้อมูล:", JSON.stringify(childData, null, 2));
-
-                    var updateItemChild = await childrenInfomation.bulkCreate(childData, {
+    
+                    const updatedChildren = await childrenInfomation.bulkCreate(childData, {
                         updateOnDuplicate: ['fund_receipt', 'fund_other',
                             'fund_eligible', 'fund_university', 'fund_sum_request', 'child_name',
                             'child_birth_day', 'child_father_number', 'child_mother_number',
@@ -374,74 +368,53 @@ class Controller extends BaseController {
                             'delegate_name', 'delegate_number', 'delegate_birth_day', 'delegate_death_day'],
                         transaction: t,
                         returning: true,
-                        individualHooks: true, // ✅ ลองเพิ่มตัวนี้
+                        individualHooks: true,
                     });
-                    // Fetch updated child data after bulkCreate
-                    const updatedChildren = await childrenInfomation.findAll({
-                        attributes: ['id', 'fund_receipt', 'fund_other',
-                            'fund_eligible', 'fund_university', 'fund_sum_request', 'child_name',
-                            'child_birth_day', 'child_father_number', 'child_mother_number',
-                            'child_type', 'school_name', 'district', 'province', 'sub_categories_id',
-                            'delegate_name', 'delegate_number', 'delegate_birth_day', 'delegate_death_day'],
-                        include: [
-                            {
-                                model: reimbursementsChildrenEducationHasChildrenInfomation,
-                                as: "reimbursements_children_education_has_children_infomations",
-                                required: true,
-                                attributes: [],
-                                include: [
-                                    {
-                                        model: reimbursementsChildrenEducation,
-                                        as: "reimbursements_children_education",
-                                        required: true,
-                                        attributes: [],
-                                        where: { created_by: id }
-                                    }
-                                ]
-                            }
-
-
-                        ],
-                        raw: true,
+    
+                    // Check if there are any updates on the children data
+                    const hasChildUpdated = existingChildren.some((existingChild, index) => {
+                        const updatedChild = updatedChildren[index];
+                        return (
+                            existingChild.fund_receipt !== updatedChild.fund_receipt ||
+                            existingChild.fund_eligible !== updatedChild.fund_eligible ||
+                            existingChild.child_name !== updatedChild.child_name ||
+                            existingChild.child_birth_day !== updatedChild.child_birth_day ||
+                            existingChild.school_name !== updatedChild.school_name ||
+                            existingChild.delegate_name !== updatedChild.delegate_name
+                        );
                     });
-                    var hasChildUpdated = JSON.stringify(existingChildren) !== JSON.stringify(updatedChildren);
-
-                    // 🔹 อัปเดตตารางสัมพันธ์
-                    const childrenInfoData = updateItemChild.map((childItem) => ({
+    
+                    // 🔹 Update relationship table
+                    const childrenInfoData = updatedChildren.map((childItem) => ({
                         reimbursements_children_education_id: dataId,
                         children_infomation_id: childItem.id
                     }));
-
-                    console.log("🔍 Children Info Data for bulkCreate:", JSON.stringify(childrenInfoData, null, 2));
-
+    
                     await reimbursementsChildrenEducationHasChildrenInfomation.bulkCreate(childrenInfoData, {
                         updateOnDuplicate: ['reimbursements_children_education_id', "children_infomation_id"],
                         transaction: t,
                     });
-
-
+    
+                    if (updated > 0 || hasChildUpdated || deleteItemChild || deleteItemSub) {
+                        itemsReturned = {
+                            ...updated,
+                            child: updatedChildren,
+                            delete: deleteItemSub,
+                            deleteChild: deleteItemChild,
+                        };
+                    } else {
+                        itemsReturned = null;
+                    }
+                    return itemsReturned;
                 }
-
-                if (updated > 0 || hasChildUpdated || deleteItemSub || deleteItemChild) {
-                    itemsReturned = {
-                        ...updated,
-                        child: updateItemChild,
-                        delete: deleteItemSub,
-                        deleteChild: deleteItemChild,
-                    };
-                }
-                else {
-                    itemsReturned = null;
-                }
-                return itemsReturned;
-
+    
             });
-
+    
             if (result) {
                 logger.info('Complete', { method, data: { id } });
                 return res.status(201).json({ newItem: result, message: "บันทึกข้อมูลสำเร็จ" });
             }
-
+    
             res.status(400).json({ message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
         }
         catch (error) {
@@ -449,10 +422,10 @@ class Controller extends BaseController {
                 method,
                 data: { id },
             });
-            console.error("❌ Error in bulkCreate:", error);
             next(error);
         }
     };
+    
 
 
     getById = async (req, res, next) => {
@@ -531,8 +504,6 @@ class Controller extends BaseController {
                     }
                 ],
             });
-
-            console.log("childrenData : ", JSON.stringify(childrenData, null, 2));
             if (ChildrenEducationData) {
                 const datas = JSON.parse(JSON.stringify(ChildrenEducationData));
                 var reimChildrenEducation = {};
@@ -600,7 +571,6 @@ class Controller extends BaseController {
             });
 
             const childIdList = childIds.map(item => item.children_infomation_id);
-            console.log("id child : " + childIdList)
 
             // 2️⃣ ลบข้อมูลจากตารางกลาง (Unlink children from reimbursement)
             await reimbursementsChildrenEducationHasChildrenInfomation.destroy({
