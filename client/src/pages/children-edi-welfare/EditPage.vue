@@ -111,8 +111,9 @@
                 </div>
 
                 <div v-if="!isView" class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none">
-                  <InputGroup for-id="marriageRegistration" more-class="font-14 font-medium" label="จดทะเบียนสมรส"
-                    compclass="col-6" is-require clearable :data="model.marryRegis ?? '-'" :is-view="isView">
+                  <InputGroup for-id="marriageRegistration" more-class="font-16 font-medium text-grey-9"
+                    label="จดทะเบียนสมรส" compclass="col-6" is-require clearable :data="model.marryRegis ?? '-'"
+                    :is-view="isView">
                     <q-select popup-content-class="font-14 " v-model="model.marryRegis"
                       class="font-16 font-medium text-grey-9" is-dense :loading="isLoading" id="selected-status"
                       outlined :options="optionsMarry" dense clearable option-value="value" emit-value map-options
@@ -232,7 +233,7 @@
 
                     <div class="row">
                       <div class="col-md-4 col-12 q-mr-xl">
-                        <InputGroup for-id="name" more-class="font-16 font-medium" label="ชื่อ-นามสกุล"
+                        <InputGroup for-id="name" more-class="font-16 font-medium text-grey-9" label="ชื่อ-นามสกุล"
                           compclass="col-6" is-require clearable :data="child.childName ?? '-'" :is-view="isView">
                           <q-select is-dense v-model="child.childName" is-require :loading="isLoading"
                             id="selected-status" popup-content-class="font-14 font-regular" class="font-14 font-regular"
@@ -244,8 +245,8 @@
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none">
                         <InputGroup for-id="birthday" is-dense v-model="child.childBirthDay"
-                          :data="child.childBirthDay ?? '-'" label="เกิดเมื่อ" placeholder="" type="text"
-                          :is-view="isView" disable color="dark">
+                          more-class="font-16 font-medium text-grey-9" :data="child.childBirthDay ?? '-'"
+                          label="เกิดเมื่อ" placeholder="" type="text" :is-view="isView" disable color="dark">
                         </InputGroup>
 
                       </div>
@@ -254,81 +255,92 @@
                     <div class="row">
                       <div class="col-md-4 col-12 q-mr-xl">
                         <InputGroup for-id="fatherNumberChilden" is-dense v-model="child.childFatherNumber"
-                          :data="child.childFatherNumber ?? '-'" is-require label="บุตรลำดับที่ (ของบิดา)"
-                          placeholder="" type="text" class="" :is-view="isView" :error="!!isError?.childFatherNumber">
+                          more-class="font-16 font-medium text-grey-9" :data="child.childFatherNumber ?? '-'" is-require
+                          label="บุตรลำดับที่ (ของบิดา)" placeholder="" type="text" class="" :is-view="isView"
+                          :error="!!isError?.childFatherNumber">
                         </InputGroup>
                       </div>
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
                         <InputGroup for-id="motherNumberChilden" is-dense v-model="child.childMotherNumber"
-                          :data="child.childMotherNumber ?? '-'" is-require label="บุตรลำดับที่ (ของมารดา)"
-                          placeholder="" type="text" class="" :is-view="isView" :error="!!isError?.childMotherNumber">
+                          more-class="font-16 font-medium text-grey-9" :data="child.childMotherNumber ?? '-'" is-require
+                          label="บุตรลำดับที่ (ของมารดา)" placeholder="" type="text" class="" :is-view="isView"
+                          :error="!!isError?.childMotherNumber">
                         </InputGroup>
                       </div>
                     </div>
 
-                    <div class="row q-pl-none  items-center">
-                      <q-checkbox v-model="child.childPassedAway" color="green-6 q-pl-none" />
-                      <p class="q-mb-none ">กรณีเป็นบุตรแทนที่บุตรซึ่งถึงแก่กรรมแล้ว</p>
+                    <div v-if="isView">
+                      <p class="q-mb-none font-16 font-medium text-grey-9">
+                        กรณีเป็นบุตรแทนที่บุตรซึ่งถึงแก่กรรมแล้ว
+                      </p>
                     </div>
 
-                    <div v-if="child.childPassedAway">
-                      <div class="row q-mt-lg">
-                        <div class="col-md-4 col-12 q-mr-xl ">
-                          <InputGroup for-id="delegateNumber" is-dense v-model="child.delegateNumber"
-                            :data="child.delegateNumber ?? '-'" is-require label="แทนที่บุตรลำดับที่" placeholder=""
-                            type="text" class="font-14" :is-view="isView">
-                          </InputGroup>
-                        </div>
-
-                        <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
-                          <InputGroup for-id="delegateName" more-class="font-14 font-medium" label="ชื่อ - นามสุกล"
-                            compclass="col-6" is-require clearable :is-view="isView" :data="child.delegateName ?? '-'">
-                            <q-select is-dense v-model="child.delegateName" :loading="isLoading" id="selected-status"
-                              popup-content-class="font-14 font-regular" class="font-14 font-regular" outlined
-                              :options="optionsChildName" dense clearable option-value="name" emit-value map-options
-                              option-label="name">
-                            </q-select>
-                          </InputGroup>
-                        </div>
+                    <div v-else>
+                      <div class="row q-pl-none items-center">
+                        <q-checkbox v-model="child.childPassedAway" color="green-6 q-pl-none" />
+                        <p class="q-mb-none font-16 font-medium text-grey-9">
+                          กรณีเป็นบุตรแทนที่บุตรซึ่งถึงแก่กรรมแล้ว
+                        </p>
                       </div>
 
-                      <div class="row">
-                        <div class="col-12 col-md-4 q-mr-xl">
-                          <InputGroup for-id="delegateBirthDay" more-class="font-16 font-medium" label="เกิดเมื่อ"
-                            compclass="col-6 q-pr-none" clearable :is-view="isView"
-                            :data="child.delegateBirthDay ?? '-'">
-                            <DatePicker is-dense v-model:model="child.delegateBirthDay"
-                              v-model:dateShow="child.delegateBirthDay" for-id="date" :no-time="true" range-time />
-                          </InputGroup>
+                      <div v-if="child.childPassedAway">
+                        <div class="row q-mt-lg">
+                          <div class="col-md-4 col-12 q-mr-xl">
+                            <InputGroup for-id="delegateNumber" is-dense v-model="child.delegateNumber"
+                              more-class="font-16 font-medium text-grey-9" :data="child.delegateNumber ?? '-'"
+                              is-require label="แทนที่บุตรลำดับที่" type="text" class="font-14" :is-view="isView" />
+                          </div>
+
+                          <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none">
+                            <InputGroup for-id="delegateName" more-class="font-16 font-medium text-grey-9"
+                              label="ชื่อ - นามสกุล" compclass="col-6" is-require clearable :is-view="isView"
+                              :data="child.delegateName ?? '-'">
+                              <q-select is-dense v-model="child.delegateName" :loading="isLoading" id="selected-status"
+                                popup-content-class="font-14 font-regular" class="font-14 font-regular" outlined
+                                :options="optionsChildName" dense clearable option-value="name" emit-value map-options
+                                option-label="name" />
+                            </InputGroup>
+                          </div>
                         </div>
 
-                        <div class="col-12 col-md-4 q-ml-lg-xl q-ml-sm-none">
-                          <InputGroup for-id="delegateDeathDay" more-class="font-16 font-medium" label="ถึงแก่กรรมเมื่อ"
-                            compclass="col-6 q-pr-none" clearable :is-view="isView"
-                            :data="child.delegateDeathDay ?? '-'">
-                            <DatePicker is-dense v-model:model="child.delegateDeathDay"
-                              v-model:dateShow="child.delegateDeathDay" for-id="date" :no-time="true" range-time />
-                          </InputGroup>
-                        </div>
+                        <div class="row">
+                          <div class="col-12 col-md-4 q-mr-xl">
+                            <InputGroup for-id="delegateBirthDay" more-class="font-16 font-medium text-grey-9"
+                              label="เกิดเมื่อ" compclass="col-6 q-pr-none" clearable :is-view="isView"
+                              :data="child.delegateBirthDay ?? '-'">
+                              <DatePicker is-dense v-model:model="child.delegateBirthDay"
+                                v-model:dateShow="child.delegateBirthDay" for-id="date" :no-time="true" range-time />
+                            </InputGroup>
+                          </div>
 
+                          <div class="col-12 col-md-4 q-ml-lg-xl q-ml-sm-none">
+                            <InputGroup for-id="delegateDeathDay" more-class="font-16 font-medium text-grey-9"
+                              label="ถึงแก่กรรมเมื่อ" compclass="col-6 q-pr-none" clearable :is-view="isView"
+                              :data="child.delegateDeathDay ?? '-'">
+                              <DatePicker is-dense v-model:model="child.delegateDeathDay"
+                                v-model:dateShow="child.delegateDeathDay" for-id="date" :no-time="true" range-time />
+                            </InputGroup>
+                          </div>
+                        </div>
                       </div>
                     </div>
+
 
 
                     <div class="row items-center">
 
                       <div class="col-md-4 col-12 q-mr-xl q-mt-md">
                         <InputGroup for-id="fund" is-dense v-model="child.schoolName" :data="child.schoolName ?? '-'"
-                          is-require label="สถานศึกษา" placeholder="" type="text" class="" :is-view="isView"
-                          :error="!!isError?.schoolName">
+                          more-class="font-16 font-medium text-grey-9" is-require label="สถานศึกษา" placeholder=""
+                          type="text" class="" :is-view="isView" :error="!!isError?.schoolName">
                         </InputGroup>
                       </div>
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
-                        <InputGroup more-class="font-14 font-medium" label="ระดับชั้นที่ศึกษา" compclass="col-6"
-                          is-require clearable :data="isView ? child.subCategoriesName : child.subCategoriesId"
-                          :is-view="isView">
+                        <InputGroup more-class="font-16 font-medium text-grey-9" label="ระดับชั้นที่ศึกษา"
+                          compclass="col-6" is-require clearable
+                          :data="isView ? child.subCategoriesName : child.subCategoriesId" :is-view="isView">
                           <q-select v-model="child.subCategoriesId" :loading="isLoading" id="selected-status"
                             popup-content-class="font-14 font-regular" class="font-14 font-regular" outlined
                             :options="optionsSubCategory" dense clearable option-value="value" emit-value map-options
@@ -341,15 +353,15 @@
                     <div class="row q-mt-lg">
                       <div class="col-md-4 col-12 q-mr-xl">
                         <InputGroup for-id="district" is-dense v-model="child.district" :data="child.district ?? '-'"
-                          is-require label="อำเภอ" placeholder="" type="text" class="" :is-view="isView"
-                          :error="!!isError?.district">
+                          more-class="font-16 font-medium text-grey-9" is-require label="อำเภอ" placeholder=""
+                          type="text" class="" :is-view="isView" :error="!!isError?.district">
                         </InputGroup>
                       </div>
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none">
                         <InputGroup for-id="province" is-dense v-model="child.province" :data="child.province ?? '-'"
-                          is-require label="จังหวัด" placeholder="" type="text" class="" :is-view="isView"
-                          :error="!!isError?.province">
+                          more-class="font-16 font-medium text-grey-9" is-require label="จังหวัด" placeholder=""
+                          type="text" class="" :is-view="isView" :error="!!isError?.province">
                         </InputGroup>
                       </div>
                     </div>
@@ -357,14 +369,16 @@
                     <div class="row">
                       <div class="col-md-4 col-12 q-mr-xl">
                         <InputGroup for-id="fundReceipt" is-dense v-model="child.fundReceipt"
-                          :data="child.fundReceipt ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ" placeholder=""
-                          type="text" class="" :is-view="isView" :error="!!isError?.fundReceipt">
+                          more-class="font-16 font-medium text-grey-9" :data="child.fundReceipt ?? '-'" is-require
+                          label="จำนวนเงินตามใบเสร็จ" placeholder="" type="text" class="" :is-view="isView"
+                          :error="!!isError?.fundReceipt">
                         </InputGroup>
                       </div>
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
                         <InputGroup for-id="fundOther" is-dense v-model="child.fundOther" :data="child.fundOther ?? '-'"
-                          is-require label="เบิกจากหน่วยงานอื่นแล้ว เป็นจำนวนเงิน" placeholder="" type="text" class=""
+                          more-class="font-16 font-medium text-grey-9" is-require
+                          label="เบิกจากหน่วยงานอื่นแล้ว เป็นจำนวนเงิน" placeholder="" type="text" class=""
                           :is-view="isView">
                         </InputGroup>
                       </div>
@@ -373,15 +387,16 @@
                     <div class="row">
                       <div class="col-md-4 col-12 q-mr-xl">
                         <InputGroup for-id="fundUniversity" is-dense v-model="child.fundUniversity"
-                          :data="child.fundUniversity ?? '-'" is-require label="ขอเบิกจากสวัสดิการมหาวิทยาลัย จำนวนเงิน"
-                          placeholder="" type="text" class="" :is-view="isView" :error="!!isError?.fundUniversity">
+                          more-class="font-16 font-medium text-grey-9" :data="child.fundUniversity ?? '-'" is-require
+                          label="ขอเบิกจากสวัสดิการมหาวิทยาลัย จำนวนเงิน" placeholder="" type="text" class=""
+                          :is-view="isView" :error="!!isError?.fundUniversity">
                         </InputGroup>
                       </div>
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
                         <InputGroup for-id="fundSumRequest" is-dense v-model="child.fundSumRequest"
-                          :data="child.fundSumRequest ?? '-'" is-require label="รวมเป็นจำนวนเงิน" placeholder=""
-                          type="text" class="" :is-view="isView" disable>
+                          more-class="font-16 font-medium text-grey-9" :data="child.fundSumRequest ?? '-'" is-require
+                          label="รวมเป็นจำนวนเงิน" placeholder="" type="text" class="" :is-view="isView" disable>
                         </InputGroup>
                       </div>
                     </div>
