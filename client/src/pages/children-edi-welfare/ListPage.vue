@@ -126,10 +126,6 @@ const filter = ref({
   dateSelected: null,
   status: null,
 });
-// const remaining = ref({
-//   accident: {},
-//   patientVisit: {},
-// });
 const pagination = ref({
   sortBy: "desc",
   descending: false,
