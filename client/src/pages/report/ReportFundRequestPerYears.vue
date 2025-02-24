@@ -27,7 +27,7 @@
         <div class="col-12 col-md-8">
           <q-card>
             <q-card-section>
-              <VueApexCharts type="donut" :labels="chartDonut.labels" :options="chartDonut" :series="donutSeries"
+              <VueApexCharts type="donut" :options="chartDonut" :series="donutSeries" :labels="chartDonut.labels"
                 height="300" />
             </q-card-section>
           </q-card>
@@ -185,9 +185,16 @@ async function fetchDataFundRequestPerYearEachType(filters) {
     });
     dataFundRequestPerYearEachType.value = result.data.docs;
     if (Array.isArray(result.data.docs)) {
-      result.data.docs.forEach((doc) => {
-        donutSeries.value.push(doc.total_fund);
-      });
+      donutSeries.value[0] = result.data.docs[0]?.total_fund ?? 0;
+      donutSeries.value[1] = result.data.docs[1]?.total_fund ?? 0;
+      donutSeries.value[2] = result.data.docs[2]?.total_fund ?? 0;
+      donutSeries.value[3] = result.data.docs[3]?.total_fund ?? 0;
+    }
+    else {
+      donutSeries.value[0] = 0;
+      donutSeries.value[1] = 0;
+      donutSeries.value[2] = 0;
+      donutSeries.value[3] = 0;
     }
     return result.data.docs;
   } catch (error) {
