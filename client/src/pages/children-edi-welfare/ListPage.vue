@@ -235,7 +235,6 @@ function goto(requestId) {
 }
 
 function downloadData(requestId) {
-  console.log(requestId);
   // router.push({
   //   name: "",
   //   params: { id: requestId },

@@ -99,10 +99,9 @@ const getRemaining = async (req, res, next) => {
 
 const checkRemaining = async (req, res, next) => {
     const method = 'CheckRemainingMiddleware';
-    const { child } = req.body;
+    const { child, status } = req.body;
 
     try {
-        console.log("Request Body:", req.body);
 
         const userId = req.user?.id;
         const { filter } = req.query;
@@ -170,9 +169,10 @@ const checkRemaining = async (req, res, next) => {
             if (results && !isNullOrEmpty(resultsSub)) {
                 const datas = JSON.parse(JSON.stringify(resultsSub));
                 const fundRemaining = datas[0]?.fundRemaining || 0;
-                console.log("perTimes : ", fundRemaining);
                 const perTimes = datas[0]?.perTimes || 0;
-                console.log("perTimes : ", perTimes);
+                if (status === 1) {
+                    return next();
+                }
 
 
                 // ตรวจสอบว่าจำนวนที่ขอเบิกเกินจำนวนครั้งที่สามารถขอได้หรือไม่
@@ -193,12 +193,14 @@ const checkRemaining = async (req, res, next) => {
 
             if (!isNullOrEmpty(results)) {
                 const datas = JSON.parse(JSON.stringify(results));  // ตรวจสอบ fundRemaining จากผลลัพธ์
-                console.log("Fund Sum Request: ", currentFundSumRequest);
 
                 const fundRemaining = datas[0]?.fundRemaining || 0;
-                console.log("Fund Remaining1: ", fundRemaining); 
                 const requestsRemaining = datas[0]?.requestsRemaining || 0;
                 const perTimes = datas[0]?.perTimes || 0;
+
+                if (status === 1) {
+                    return next();
+                }
 
                 // ตรวจสอบว่าค่าคงเหลือเป็น 0 หรือไม่
                 if (fundRemaining === 0 || requestsRemaining === 0) {
@@ -332,7 +334,6 @@ const bindCreate = async (req, res, next) => {
         req.body = dataBinding;
         next();
     } catch (error) {
-        console.error("🚨 Error in bindCreate:", error);  // Log error
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
@@ -442,19 +443,15 @@ const bindUpdate = async (req, res, next) => {
                 );
             }
             if (hasNull) {
-                console.log("🔴 Some child fields are null, deleting child field");
                 delete dataBinding.child;
             }
         }
-
-        console.log("🟢 Final payload sent to DB:", req.body);
 
 
         req.body = dataBinding;
 
         next();
     } catch (error) {
-        console.error("🚨 Error in bindCreate:", error);  // Log error
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
@@ -668,7 +665,7 @@ const checkNullValue = async (req, res, next) => {
 
 
             });
-        } console.log("Error Object:", errorObj);
+        } 
 
         if ((isNullOrEmpty(actionId) || (actionId != status.draft && actionId != status.waitApprove)) && !req.access) {
             return res.status(400).json({
