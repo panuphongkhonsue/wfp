@@ -88,14 +88,6 @@ const chartOptions = ref({
   xaxis: {
     categories: [],
     show: true,
-    title: {
-      text: "ปีงบประมาณ",
-      style: {
-        fontSize: '16px',
-        fontFamily: 'BaiJamjureeMedium',
-      },
-      offsetY: -10,
-    },
     labels: {
       style: {
         fontFamily: 'BaiJamjureeMedium',
@@ -121,24 +113,18 @@ const chartOptions = ref({
         fontWeight: 400,
         fontFamily: 'BaiJamjureeMedium',
       },
-    }, title: {
-      text: "ปีงบประมาณ",
-      style: {
-        fontSize: '16px',
-        fontFamily: 'BaiJamjureeMedium',
-      },
-      offsetX: -10,
+    }, 
+    // 
+  },
+  title: {
+    text: "จำนวนเงิน",
+    align: 'left',
+    style: {
+      fontSize: '16px',
+      fontWeight: 'bold',
+      fontFamily: "BaiJamjureeMedium",
     },
   },
-  // title: {
-  //   text: "จำนวนเงิน",
-  //   align: 'left',
-  //   style: {
-  //     fontSize: '16px',
-  //     fontWeight: 'bold',
-  //     fontFamily: "BaiJamjureeMedium",
-  //   },
-  // },
   dataLabels: {
     enabled: false,
     style: {
