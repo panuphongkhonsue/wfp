@@ -8,6 +8,9 @@ export default {
       params: options,
     });
   },
+  dataById(id) {
+    return api.get(`${path}/${id}`);
+  },
   delete(id) {
     try {
       return api.delete(`${path}/${id}`);
@@ -16,9 +19,22 @@ export default {
       Promise.reject(error);
     }
   },
+  getRemaining(options) {
+    return api.get(`${path}/remaining`, {
+      params: options,
+    });
+  },
   create(payload) {
     try {
       return api.post(`${path}/`, payload);
+    }
+    catch (error) {
+      Promise.reject(error);
+    }
+  },
+  update(id, options) {
+    try {
+      return api.put(`${path}/${id}`, options);
     }
     catch (error) {
       Promise.reject(error);

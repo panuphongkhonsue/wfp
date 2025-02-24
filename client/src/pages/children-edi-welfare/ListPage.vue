@@ -31,15 +31,12 @@
       </q-form>
     </template>
     <template v-slot:toolbar>
-      <div class="col-12 col-md-6 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none">สิทธิ์คงเหลือ : -</p>
-        <p class="col q-ma-none">จำนวนเงินคงเหลือ : - </p>
-      </div>
-      <div class="col-12 col-md-6 flex justify-end">
+      <div class="col-12 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
           icon="add" :to="{ name: 'children_edu_welfare_new' }" />
       </div>
     </template>
+
     <template v-slot:table>
       <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
         row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
@@ -58,7 +55,7 @@
             </span>
           </div>
         </template>
-        <template v-slot:body-cell-statusName="props">
+        <template v-slot:body-cell-status="props">
           <q-td :props="props" class="text-center">
             <q-badge class="font-regular font-remark weight-5 q-py-xs full-width"
               :color="statusColor(props.row?.status)">

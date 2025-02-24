@@ -11,7 +11,7 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold"
               :class="canCreateFor && !isView ? 'items-center' : ''">
-              <div class="col-lg-5 col-12 row q-gutter-y-md q-pr-sm"
+              <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm"
                 :class="canCreateFor && !isView ? 'items-center' : ''">
                 <p class="col-auto q-mb-none">
                   ชื่อ-นามสกุล : <span v-show="!canCreateFor || isView" class="font-medium font-16 text-grey-7">{{
@@ -21,7 +21,7 @@
                   id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
                   v-model="model.createFor" :options="optionsUserName" dense option-value="id" emit-value map-options
                   option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
-                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']">
+                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']" @filter-abort="abortFilterFn">
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
@@ -51,15 +51,16 @@
         <div class="col-md-3 col-12">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md q-py-md font-18 font-bold">
-              <p class="q-mb-none">สิทธิ์คงเหลือ</p>
+              <p class="q-mb-none">จำนวนเงินคงเหลือ</p>
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">บุตรคนที่ 1 :</p>
-              <p class="col-12 q-mb-none">บุตรคนที่ 2 :</p>
-              <p class="col-12 q-mb-none">บุตรคนที่ 3 :</p>
+              <p v-for="(child, index) in remaining" :key="index" class="col-12 q-mb-none">
+                บุตรคนที่ {{ index + 1 }}: {{ child.fundRemaining ?? 0 }}
+              </p>
             </q-card-section>
           </q-card>
+
         </div>
       </div>
       <!-- Request Section -->
@@ -68,81 +69,151 @@
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md q-pt-md q-pb-none font-18 font-bold">
               <p class="q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
+              <q-card-section v-show="isView || isEdit"
+                class="row wrap font-medium q-pb-xs q-pl-none font-16 text-grey-9">
+                <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
+                <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
+                </p>
+                <p class="col-md-4 col-12 q-mb-none q-pl-sm">สถานะ : {{ model.status ?? "-" }}</p>
+              </q-card-section>
+
               <div class="row q-mt-lg q-mb-none">
-                <div class="col-md-4 col-12 q-mr-xl  ">
+                <div v-if="isView" class="col-md-4 col-12 q-mb-none">
                   <InputGroup for-id="spouse" is-dense v-model="model.spouse" :data="model.spouse ?? '-'" is-require
-                    label="คู่สมรส" placeholder="ชื่อ-สกุล" type="text" class="font-14 font-regular" :is-view="isView">
+                    label="คู่สมรส" placeholder="ชื่อ-สกุล" type="text" class="font-16 font-regular" :is-view="isView">
                   </InputGroup>
                 </div>
-                <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none">
+
+                <div v-if="isView" class="col-md-4 col-12 q-mb-none">
+                  <p class="font-16 require font-medium text-grey-9">จดทะเบียนสมรส</p>
+                  <div class="font-16 font-regular">
+                    {{ selectedMarryLabel || '-' }}
+                  </div>
+                </div>
+
+                <div v-if="isView" class="col-md-4 col-12 q-mb-none">
+                  <p class="font-16 require font-medium text-grey-9 ">ประเภทบุคลากรคู่สมรส</p>
+                  <div class="font-16 font-regular text-grey-9">
+                    {{ selectedRoleLabel }}
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="isView" class="row q-mt-lg q-mb-none">
+
+                <div v-if="!isView" class="col-md-3 col-12 q-mr-xl  ">
+                  <InputGroup for-id="spouse" is-dense v-model="model.spouse" :data="model.spouse ?? '-'" is-require
+                    label="คู่สมรส" placeholder="ชื่อ-สกุล" type="text" class="font-16 font-regular" :is-view="isView">
+                  </InputGroup>
+                </div>
+
+                <div v-if="!isView" class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none">
                   <InputGroup for-id="marriageRegistration" more-class="font-14 font-medium" label="จดทะเบียนสมรส"
-                    compclass="col-6" is-require clearable :is-view="isView">
-                    <q-select popup-content-class="font-14 font-regular" v-model="model.marry_regis"
-                      class="font-14 font-regular" is-dense :loading="isLoading" id="selected-status" outlined
-                      :options="optionsMarry" dense clearable option-value="value" emit-value map-options
+                    compclass="col-6" is-require clearable :data="model.marryRegis ?? '-'" :is-view="isView">
+                    <q-select popup-content-class="font-14 " v-model="model.marryRegis"
+                      class="font-16 font-medium text-grey-9" is-dense :loading="isLoading" id="selected-status"
+                      outlined :options="optionsMarry" dense clearable option-value="value" emit-value map-options
                       option-label="name">
                     </q-select>
                   </InputGroup>
                 </div>
               </div>
             </q-card-section>
-            <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
+
+
+            <q-card-section v-if="!isView"
+              class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
               <div class="col q-mb-none font-14 q-gutter-md">
                 <div>
-                  <q-radio v-model="model.role" val="redio1" label="ไม่เป็นข้าราชการประจำหรือลูกจ้างประจำ" />
+                  <q-radio v-model="model.role" val="ไม่เป็นข้าราชการประจำหรือลูกจ้างประจำ"
+                    label="ไม่เป็นข้าราชการประจำหรือลูกจ้างประจำ" />
                 </div>
 
                 <div class="row q-col-gutter-y-md ">
-                  <q-radio v-model="model.role" val="redio2" label="ข้าราชการ" />
+                  <q-radio v-model="model.role" val="ข้าราชการ" label="ข้าราชการ" />
 
                   <div class="col-lg-4 col-12 row items-center ">
                     <p class="q-mb-none q-mx-md col-md-1 col-12">ตำแหน่ง</p>
                     <q-input for="officer-position" v-model="spouseData.officer.position" outlined dense
-                      :disable="model.role !== 'redio2'" class="col-md-8 col-12 q-mx-md" :is-view="isView" />
+                      :disable="model.role !== 'ข้าราชการ'" class="col-md-8 col-12 q-mx-md" :is-view="isView" />
                   </div>
 
                   <div class="col-lg-4 col-12 row items-center q-col-gutter-y-md">
                     <p class="q-mb-none q-mx-md q-mt-xs-md q-mt-lg-none col-md-1 col-12">สังกัด</p>
-                    <q-input for="officer-belongTo" v-model="spouseData.officer.belongTo" outlined dense
-                      :disable="model.role !== 'redio2'" class="col-md-8 col-12 q-mx-md" :is-view="isView" />
+                    <q-input for="officer-belongTo" v-model="spouseData.officer.department" outlined dense
+                      :disable="model.role !== 'ข้าราชการ'" class="col-md-8 col-12 q-mx-md" :is-view="isView" />
                   </div>
 
 
                 </div>
 
                 <div>
-                  <q-radio v-model="model.role" val="redio3" label="ลูกจ้างประจำ" />
+                  <q-radio v-model="model.role" val="ลูกจ้างประจำ" label="ลูกจ้างประจำ" />
                 </div>
 
                 <div class="row items-center q-col-gutter-y-md">
-                  <q-radio v-model="model.role" val="redio4"
+                  <q-radio v-model="model.role" val="พนักงานหรือลูกจ้างในรัฐวิสาหกิจ"
                     label="พนักงานหรือลูกจ้างในรัฐวิสาหกิจ / หน่วงานของทางราชการ ราชการส่วนท้องถิ่น กรุงเทพมหานคร องค์กรอิสระ องค์กรมหาชน หรือหน่วยงานอื่นใด" />
 
                   <div class="col-lg-4 col-12 row items-center ">
                     <p class="q-mb-none q-mx-md col-md-1 col-12">ตำแหน่ง</p>
                     <q-input for="enterprises-position" v-model="spouseData.enterprises.position" outlined dense
-                      :disable="model.role !== 'redio4'" class="col-md-8 col-12 q-mx-md" :is-view="isView" />
+                      :disable="model.role !== 'พนักงานหรือลูกจ้างในรัฐวิสาหกิจ'" class="col-md-8 col-12 q-mx-md"
+                      :is-view="isView" />
                   </div>
 
                   <div class="col-lg-4 col-12 row items-center q-col-gutter-y-md">
                     <p class="q-mb-none q-mx-md q-mt-xs-md q-mt-lg-none col-md-1 col-12">สังกัด</p>
-                    <q-input for="enterprises-belongTo" v-model="spouseData.enterprises.belongTo" outlined dense
-                      :disable="model.role !== 'redio4'" class="col-md-8 col-12 q-mx-md" :is-view="isView" />
+                    <q-input for="enterprises-belongTo" v-model="spouseData.enterprises.department" outlined dense
+                      :disable="model.role !== 'พนักงานหรือลูกจ้างในรัฐวิสาหกิจ'" class="col-md-8 col-12 q-mx-md"
+                      :is-view="isView" />
                   </div>
 
                 </div>
               </div>
             </q-card-section>
+
             <q-card-section>
+              <div v-if="isView" class="row q-mt-sm">
+                <div class="col-md-4 col-12 q-mb-none">
+                  <div>
+                    <p class="font-16 require font-medium text-grey-9">ขอรับเงินสวัสดิการ</p>
+                  </div>
+                  <div v-if="isView" class="text-grey-9 q-gutter-y-md q-my-md">
+                    {{ selectedEligible }}
+                  </div>
+                </div>
+
+                <div class="col-md-8 col-12 q-mb-none">
+                  <div>
+                    <p class="font-16 require font-medium text-grey-9">ขอใช้สิทธิ</p>
+                  </div>
+                  <div v-if="isView" class="text-grey-9 q-gutter-y-md q-my-md">
+                    {{ selectedCategoryLabel }}
+                  </div>
+                </div>
+              </div>
+
+
+
               <div>
+                <p v-if="!isView" class="require">ขอรับเงินสวัสดิการ</p>
+              </div>
+              <q-option-group v-if="!isView" v-model="model.eligible" type="radio" :options="optionsEligible"
+                class="q-mt-md " />
+            </q-card-section>
+
+
+            <q-card-section>
+              <div v-if="!isView">
                 <p class="require">ขอใช้สิทธิ</p>
               </div>
-              <div>
-                <q-option-group v-model="model.categories_id" type="radio" :options="options"
-                  class="q-gutter-y-md q-my-md" />
 
-              </div>
+              <q-option-group v-if="!isView" v-model="model.categoriesId" type="radio" :options="options"
+                class="q-gutter-y-md q-my-md" />
               <q-separator />
+
+
               <q-card-section class="q-px-md q-pt-md q-pb-sm font-18 font-bold">
                 <p class="q-mb-none">ข้อมูลบุตร</p>
               </q-card-section>
@@ -151,14 +222,16 @@
                   <div v-for="(child, index) in model.child" :key="index">
                     <div class="row items-center justify-between">
                       <p class="q-mb-lg">บุตรคนที่ {{ index + 1 }}</p>
-                      <q-btn v-if="index > 0" color="red" @click="removeChildForm(index)" class="q-ml-md">ลบ</q-btn>
+                      <q-btn v-if="(index > 0 && !isView && !isLoading) ||
+                        (isEdit && !isView && child?.id && !isLoading && model.child.length > 1)" color="red"
+                        @click="removeChildForm(index)" class="q-ml-md">ลบ</q-btn>
                     </div>
 
                     <div class="row">
                       <div class="col-md-4 col-12 q-mr-xl">
                         <InputGroup for-id="name" more-class="font-16 font-medium" label="ชื่อ-นามสกุล"
-                          compclass="col-6" is-require clearable :data="child.child_name ?? '-'" :is-view="isView">
-                          <q-select is-dense v-model="child.child_name" is-require :loading="isLoading"
+                          compclass="col-6" is-require clearable :data="child.childName ?? '-'" :is-view="isView">
+                          <q-select is-dense v-model="child.childName" is-require :loading="isLoading"
                             id="selected-status" popup-content-class="font-14 font-regular" class="font-14 font-regular"
                             outlined :options="optionsChildName" dense clearable option-value="name" emit-value
                             map-options option-label="name">
@@ -167,8 +240,9 @@
                       </div>
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none">
-                        <InputGroup for-id="birthday" is-dense v-model="child.child_birth_day" label="เกิดเมื่อ"
-                          placeholder="" type="text" :is-view="isView" disable color="dark">
+                        <InputGroup for-id="birthday" is-dense v-model="child.childBirthDay"
+                          :data="child.childBirthDay ?? '-'" label="เกิดเมื่อ" placeholder="" type="text"
+                          :is-view="isView" disable color="dark">
                         </InputGroup>
 
                       </div>
@@ -176,15 +250,15 @@
 
                     <div class="row">
                       <div class="col-md-4 col-12 q-mr-xl">
-                        <InputGroup for-id="fatherNumberChilden" is-dense v-model="child.child_father_number"
-                          :data="child.child_father_number ?? '-'" is-require label="บุตรลำดับที่ (ของบิดา)"
+                        <InputGroup for-id="fatherNumberChilden" is-dense v-model="child.childFatherNumber"
+                          :data="child.childFatherNumber ?? '-'" is-require label="บุตรลำดับที่ (ของบิดา)"
                           placeholder="" type="text" class="" :is-view="isView">
                         </InputGroup>
                       </div>
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
-                        <InputGroup for-id="motherNumberChilden" is-dense v-model="child.child_mother_number"
-                          :data="child.child_mother_number ?? '-'" is-require label="บุตรลำดับที่ (ของมารดา)"
+                        <InputGroup for-id="motherNumberChilden" is-dense v-model="child.childMotherNumber"
+                          :data="child.childMotherNumber ?? '-'" is-require label="บุตรลำดับที่ (ของมารดา)"
                           placeholder="" type="text" class="" :is-view="isView">
                         </InputGroup>
                       </div>
@@ -198,16 +272,16 @@
                     <div v-if="child.childPassedAway">
                       <div class="row q-mt-lg">
                         <div class="col-md-4 col-12 q-mr-xl ">
-                          <InputGroup for-id="educationalInstitutio" is-dense v-model="child.delegate_number"
-                            :data="model.delegate_number ?? '-'" is-require label="แทนที่บุตรลำดับที่" placeholder=""
+                          <InputGroup for-id="delegateNumber" is-dense v-model="child.delegateNumber"
+                            :data="child.delegateNumber ?? '-'" is-require label="แทนที่บุตรลำดับที่" placeholder=""
                             type="text" class="font-14" :is-view="isView">
                           </InputGroup>
                         </div>
 
                         <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
-                          <InputGroup for-id="studyLevel" more-class="font-14 font-medium" label="ชื่อ - นามสุกล"
-                            compclass="col-6" is-require clearable :is-view="isView" :data="model.delegate_name ?? '-'">
-                            <q-select is-dense v-model="child.delegate_name" :loading="isLoading" id="selected-status"
+                          <InputGroup for-id="delegateName" more-class="font-14 font-medium" label="ชื่อ - นามสุกล"
+                            compclass="col-6" is-require clearable :is-view="isView" :data="child.delegateName ?? '-'">
+                            <q-select is-dense v-model="child.delegateName" :loading="isLoading" id="selected-status"
                               popup-content-class="font-14 font-regular" class="font-14 font-regular" outlined
                               :options="optionsChildName" dense clearable option-value="name" emit-value map-options
                               option-label="name">
@@ -218,20 +292,20 @@
 
                       <div class="row">
                         <div class="col-12 col-md-4 q-mr-xl">
-                          <InputGroup for-id="dateSelected" more-class="font-16 font-medium" label="เกิดเมื่อ"
+                          <InputGroup for-id="delegateBirthDay" more-class="font-16 font-medium" label="เกิดเมื่อ"
                             compclass="col-6 q-pr-none" clearable :is-view="isView"
-                            :data="model.delegate_birth_day ?? '-'">
-                            <DatePicker is-dense v-model:model="child.delegate_birth_day" v-model:dateShow="modelDate"
-                              for-id="date" :no-time="true" range-time />
+                            :data="child.delegateBirthDay ?? '-'">
+                            <DatePicker is-dense v-model:model="child.delegateBirthDay"
+                              v-model:dateShow="child.delegateBirthDay" for-id="date" :no-time="true" range-time />
                           </InputGroup>
                         </div>
 
                         <div class="col-12 col-md-4 q-ml-lg-xl q-ml-sm-none">
-                          <InputGroup more-class="font-16 font-medium" label="ถึงแก่กรรมเมื่อ"
+                          <InputGroup for-id="delegateDeathDay" more-class="font-16 font-medium" label="ถึงแก่กรรมเมื่อ"
                             compclass="col-6 q-pr-none" clearable :is-view="isView"
-                            :data="model.delegate_death_day ?? '-'">
-                            <DatePicker is-dense v-model:model="child.delegate_death_day" v-model:dateShow="modelDate"
-                              for-id="date" :no-time="true" range-time />
+                            :data="child.delegateDeathDay ?? '-'">
+                            <DatePicker is-dense v-model:model="child.delegateDeathDay"
+                              v-model:dateShow="child.delegateDeathDay" for-id="date" :no-time="true" range-time />
                           </InputGroup>
                         </div>
 
@@ -242,33 +316,33 @@
                     <div class="row items-center">
 
                       <div class="col-md-4 col-12 q-mr-xl q-mt-md">
-                        <InputGroup for-id="fund" is-dense v-model="child.school_name" :data="child.school_name ?? '-'"
+                        <InputGroup for-id="fund" is-dense v-model="child.schoolName" :data="child.schoolName ?? '-'"
                           is-require label="สถานศึกษา" placeholder="" type="text" class="" :is-view="isView">
                         </InputGroup>
                       </div>
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
                         <InputGroup more-class="font-14 font-medium" label="ระดับชั้นที่ศึกษา" compclass="col-6"
-                          is-require clearable :data="child.sub_categories_id ?? '-'" :is-view="isView">
-                          <q-select v-model="child.sub_categories_id" :loading="isLoading" id="selected-status"
+                          is-require clearable :data="isView ? child.subCategoriesName : child.subCategoriesId"
+                          :is-view="isView">
+                          <q-select v-model="child.subCategoriesId" :loading="isLoading" id="selected-status"
                             popup-content-class="font-14 font-regular" class="font-14 font-regular" outlined
                             :options="optionsSubCategory" dense clearable option-value="value" emit-value map-options
-                            option-label="label">
-                          </q-select>
-
+                            option-label="label" v-if="!isView" />
                         </InputGroup>
+
                       </div>
                     </div>
 
                     <div class="row q-mt-lg">
                       <div class="col-md-4 col-12 q-mr-xl">
-                        <InputGroup for-id="fund" is-dense v-model="child.district" :data="child.district ?? '-'"
+                        <InputGroup for-id="district" is-dense v-model="child.district" :data="child.district ?? '-'"
                           is-require label="อำเภอ" placeholder="" type="text" class="" :is-view="isView">
                         </InputGroup>
                       </div>
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none">
-                        <InputGroup for-id="fund" is-dense v-model="child.province" :data="child.province ?? '-'"
+                        <InputGroup for-id="province" is-dense v-model="child.province" :data="child.province ?? '-'"
                           is-require label="จังหวัด" placeholder="" type="text" class="" :is-view="isView">
                         </InputGroup>
                       </div>
@@ -276,33 +350,32 @@
 
                     <div class="row">
                       <div class="col-md-4 col-12 q-mr-xl">
-                        <InputGroup for-id="fund" is-dense v-model="child.fund_receipt"
-                          :data="child.fund_receipt ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ" placeholder=""
+                        <InputGroup for-id="fundReceipt" is-dense v-model="child.fundReceipt"
+                          :data="child.fundReceipt ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ" placeholder=""
                           type="text" class="" :is-view="isView">
                         </InputGroup>
                       </div>
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
-                        <InputGroup for-id="fund" is-dense v-model="child.fund_eligible"
-                          :data="child.fund_eligible ?? '-'" is-require label="เบิกจากหน่วยงานอื่นแล้ว เป็นจำนวนเงิน"
-                          placeholder="" type="text" class="" :is-view="isView">
+                        <InputGroup for-id="fundOther" is-dense v-model="child.fundOther" :data="child.fundOther ?? '-'"
+                          is-require label="เบิกจากหน่วยงานอื่นแล้ว เป็นจำนวนเงิน" placeholder="" type="text" class=""
+                          :is-view="isView">
                         </InputGroup>
                       </div>
                     </div>
 
                     <div class="row">
                       <div class="col-md-4 col-12 q-mr-xl">
-                        <InputGroup for-id="fund" is-dense v-model="child.fund_university"
-                          :data="child.fund_university ?? '-'" is-require
-                          label="ขอเบิกจากสวัสดิการมหาวิทยาลัย จำนวนเงิน" placeholder="" type="text" class=""
-                          :is-view="isView">
+                        <InputGroup for-id="fundUniversity" is-dense v-model="child.fundUniversity"
+                          :data="child.fundUniversity ?? '-'" is-require label="ขอเบิกจากสวัสดิการมหาวิทยาลัย จำนวนเงิน"
+                          placeholder="" type="text" class="" :is-view="isView">
                         </InputGroup>
                       </div>
 
                       <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
-                        <InputGroup for-id="fund" is-dense v-model="child.fund_sum_request"
-                          :data="child.fund_sum_request ?? '-'" is-require label="รวมเป็นจำนวนเงิน" placeholder=""
-                          type="text" class="" :is-view="isView">
+                        <InputGroup for-id="fundSumRequest" is-dense v-model="child.fundSumRequest"
+                          :data="child.fundSumRequest ?? '-'" is-require label="รวมเป็นจำนวนเงิน" placeholder=""
+                          type="text" class="" :is-view="isView" disable>
                         </InputGroup>
                       </div>
                     </div>
@@ -310,7 +383,8 @@
                     <q-separator class="q-mb-md" />
                   </div>
                   <div class="row justify-end">
-                    <q-btn @click="addChildForm" class="q-my-md bg-blue-10 text-white" icon="add"> เพิ่ม</q-btn>
+                    <q-btn v-if="!isView" @click="addChildForm" class="q-my-md bg-blue-10 text-white" icon="add">
+                      เพิ่ม</q-btn>
                   </div>
                 </q-card-section>
               </q-card>
@@ -319,18 +393,6 @@
           </q-card>
         </div>
         <div class="col-md-3 col-12">
-
-          <q-card flat bordered class="q-mb-md ">
-            <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
-              <p class="q-mb-none">จำนวนเงินคงเหลือ</p>
-            </q-card-section>
-            <q-separator />
-            <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">บุตรคนที่ 1 :</p>
-              <p class="col-12 q-mb-none">บุตรคนที่ 2 :</p>
-              <p class="col-12 q-mb-none">บุตรคนที่ 3 :</p>
-            </q-card-section>
-          </q-card>
 
 
           <q-card flat bordered class="">
@@ -367,10 +429,10 @@
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'children_edu_welfare_list' }" />
 
         <q-btn id="button-reject" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(4)" v-if="!isView && !isLoadings" />
+          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoadings" />
 
         <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
-          style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(3)"
+          style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
           v-if="!isView && !isLoadings" />
       </div>
     </template>
@@ -381,15 +443,16 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
+import { formatDateThaiSlash, formatNumber  } from "src/components/format";
 import DatePicker from "src/components/DatePicker.vue";
-import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import userManagementService from "src/boot/service/userManagementService";
 import { useAuthStore } from "src/stores/authStore";
 import reimbursementChildrenEducationService from "src/boot/service/reimbursementChildrenEducationService";
 
 defineOptions({
-  name: "children_edu_welfare_edit",
+  name: "childrenEduWelfareEdit",
 });
 const isLoading = ref(false);
 const authStore = useAuthStore();
@@ -397,11 +460,14 @@ const isError = ref({});
 const isView = ref(false);
 const isLoadings = ref(false);
 const router = useRouter();
+const userInitialData = ref([]);
 const route = useRoute();
 const userData = ref({});
+const canRequest = ref(false);
 let optionsUserName = ref([]);
 let optionsChildName = ref([]);
 let optionsSubCategory = ref([]);
+const remaining = ref([]);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
@@ -419,47 +485,118 @@ onBeforeUnmount(() => {
 
 const model = ref({
   createFor: null,
-  fund_sum_receipt: 0,
-  fund_other: 0,
+  fundSumReceipt: 0,
+  fundEligible: 0,
   spouse: null,
-  marry_regis: null,
+  marryRegis: null,
   role: null,
-  categories_id: null,
+  eligible: null,
+  categoriesId: null,
+  deleteChild: [
+    {
+      id: null,
+    }
+  ],
   child: [
     {
-      fund_receipt: null,
-      fund_eligible: null,
-      fund_sum_request: null,
-      fund_university: null,
-      child_name: null,
-      child_birth_day: null,
-      child_father_number: null,
-      child_mother_number: null,
-      school_name: null,
+      fundReceipt: null,
+      fundEligible: 0,
+      fundSumRequest: null,
+      fundUniversity: null,
+      fundOther: null,
+      childName: null,
+      childBirthDay: null,
+      childFatherNumber: null,
+      childMotherNumber: null,
+      schoolName: null,
       district: null,
       province: null,
-      sub_categories_id: null,
+      subCategoriesId: null,
       childPassedAway: false,
-      delegate_name: null,
-      delegate_number: null,
-      delegate_birth_day: null,
-      delegate_death_day: null
+      delegateName: null,
+      delegateNumber: null,
+      delegateBirthDay: null,
+      delegateDeathDay: null
     }
   ]
 });
 
+function addChildForm() {
+  model.value.child.push({
+    fundReceipt: null,
+    fundEligible: 0,
+    fundSumRequest: null,
+    fundUniversity: null,
+    fundOther: null,
+    childName: null,
+    childBirthDay: null,
+    childFatherNumber: null,
+    childMotherNumber: null,
+    schoolName: null,
+    district: null,
+    province: null,
+    subCategoriesId: null,
+    childPassedAway: false,
+    delegateName: null,
+    delegateNumber: null,
+    delegateBirthDay: null,
+    delegateDeathDay: null
+  });
+}
 
 
 const spouseData = ref({
   officer: {
     position: null,
-    belongTo: null
+    department: null
   },
   enterprises: {
     position: null,
-    belongTo: null
+    department: null
   }
 });
+
+let optionsEligible = [
+  { label: "ตามสิทธิ", value: "ตามสิทธิ" },
+  { label: "เฉพาะส่วนที่ยังขาดจากสิทธิ", value: "เฉพาะส่วนที่ยังขาดจากสิทธิ" },
+
+];
+const selectedEligible = computed(() => {
+  const selectedOption = optionsEligible.find(opt => opt.value === model.value.eligible);
+
+  if (selectedOption) {
+    return selectedOption.label;
+  } else {
+    return "ไม่พบข้อมูล";
+  }
+});
+
+async function fetchRemaining() {
+  try {
+    const fetchRemaining = await reimbursementChildrenEducationService.getRemaining({ createFor: model.value.createFor });
+
+    if (fetchRemaining.data?.datas && Array.isArray(fetchRemaining.data.datas)) {
+      // เก็บข้อมูลบุตรทั้งหมดในอาเรย์
+      remaining.value = fetchRemaining.data.datas.map(item => {
+        const { childName, fundRemaining, requestsRemaining } = item;
+
+        return {
+          childName, 
+          fundRemaining: formatNumber(fundRemaining),
+          requestsRemaining: formatNumber(requestsRemaining)
+        };
+      });
+
+      // ตรวจสอบว่าทุกบุตรสามารถขอเงินได้หรือไม่
+      canRequest.value = fetchRemaining.data.canRequest;
+    }
+  } catch (error) {
+    Promise.reject(error);
+  }
+}
+
+
+
 
 async function fetchUserData(id) {
   try {
@@ -483,10 +620,10 @@ async function fetchUserData(id) {
   }
 }
 
-import { nextTick } from "vue";
+
 
 watch(
-  () => model.value.child.map(child => child.child_name),
+  () => model.value.child.map(child => child.childName),
   async (newNames) => {
     newNames.forEach((newName, index) => {
       if (newName) {
@@ -497,11 +634,7 @@ watch(
         console.log(`🔍 Matched Child Data for index ${index}:`, selectedChild);
 
         if (selectedChild) {
-          console.log(`✅ ก่อนอัปเดต:`, model.value.child[index].child_birth_day);
-          model.value.child[index].child_birth_day = selectedChild.birthday || "-";
-          console.log(`✅ หลังอัปเดต:`, model.value.child[index].child_birth_day);
-        } else {
-          model.value.child[index].child_birth_day = "-";
+          model.value.child[index].childBirthDay = selectedChild.birthday || "-";
         }
       }
     });
@@ -511,32 +644,43 @@ watch(
   { deep: true }
 );
 
+watch(
+  () => model.value.child.map(child => child.fundUniversity - child.fundOther),
+  async (newValues) => {
+    newValues.forEach((newValue, index) => {
+      model.value.child[index].fundSumRequest = newValue || 0;
+    });
+
+    await nextTick(); // อัปเดต UI หลังจากการคำนวณ
+  },
+  { deep: true }
+);
+
 
 async function filterFn(val, update) {
   try {
     setTimeout(async () => {
-      const result = await userManagementService.getUserInitialData({ keyword: val });
-      var returnedData = result.data.datas;
       update(() => {
-        if (returnedData) {
-          optionsUserName.value = returnedData;
+        if (val === '') {
+          optionsUserName.value = userInitialData.value;
+        } else {
+          optionsUserName.value = userInitialData.value.filter(v => v.name && v.name.includes(val));
         }
       });
     }, 650);
-
-  }
-  catch (error) {
-    Promise.reject(error);
+  } catch (error) {
+    console.error("Error in filterFn:", error);
   }
 }
 
+function abortFilterFn() {
+  // console.log('delayed filter aborted')
+}
 const getSubCategory = async () => {
-  console.log('getSubCategory called with categoriesId:', model.value.categories_id);
   try {
     const result = await reimbursementChildrenEducationService.getSubCategories({
-      categories_id: model.value.categories_id
+      categories_id: model.value.categoriesId
     });
-    console.log('API call result:', result);
 
     // แปลงข้อมูลให้ตรงกับรูปแบบที่ q-select ต้องการ
     const returnedData = result.data.map(item => ({
@@ -546,59 +690,90 @@ const getSubCategory = async () => {
 
     optionsSubCategory.value = returnedData;  // อัปเดต optionsSubCategory
   } catch (error) {
-    console.error('Error fetching subcategories:', error);
     const errorMessage = error?.response?.data?.message ?? "กรุณาเลือกสิทธิ";
     alert(errorMessage);
   }
 };
 
 
-watch(() => model.value.categories_id, (newValue) => {
+watch(() => model.value.categoriesId, (newValue) => {
   if (newValue) {
-    console.log('Selected categories_id changed to:', newValue); // ตรวจสอบค่าที่เลือก
     getSubCategory(); // เรียกฟังก์ชัน getSubCategory เมื่อ categories_id เปลี่ยน
   }
 });
 
+async function fetchDataEdit() {
+  setTimeout(async () => {
+    try {
+      const result = await reimbursementChildrenEducationService.dataById(route.params.id);
+      var returnedData = result.data.datas;
 
+      if (returnedData) {
+        model.value = {
+          ...model.value,
+          createFor: null,
+          reimNumber: returnedData?.reimNumber,
+          requestDate: returnedData?.requestDate,
+          status: returnedData?.status,
+          eligible: returnedData?.eligible,
+          spouse: returnedData?.spouse,
+          marryRegis: returnedData?.marryRegis,
+          role: returnedData?.role,
+          position: returnedData?.position,
+          department: returnedData?.department,
+          categoriesId: returnedData?.category?.id,
+          child: returnedData.children.map(child => ({
+            ...child,
+            childBirthDay: child.childBirthDay ?? "-",
+            subCategoriesId: child.sub_category?.id ?? null,
+            subCategoriesName: child.sub_category?.name ?? "-",
+            childPassedAway: child.childType === "DELEGATE" ? true : false,
+            delegateName: child.delegateName ?? "ข้อมูลไม่พบ",  // ค่าเริ่มต้นกรณีเป็น null
+            delegateNumber: child.delegateNumber ?? "ข้อมูลไม่พบ",  // ค่าเริ่มต้นกรณีเป็น null
+            delegateBirthDay: child.delegateBirthDay ?? "ข้อมูลไม่พบ",  // ค่าเริ่มต้นกรณีเป็น null
+            delegateDeathDay: child.delegateDeathDay ?? "ข้อมูลไม่พบ"  // ค่าเริ่มต้นกรณีเป็น null
+          }))
+        };
+
+      }
+      console.log("returnedData : ", JSON.stringify(model.value.child, null, 2));
+
+    } catch (error) {
+      router.replace({ name: "children_edu_welfare_list" });
+      Notify.create({
+        message: error?.response?.data?.message ?? "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
+        position: "bottom-left",
+        type: "negative",
+      });
+    }
+    isLoading.value = false;
+  }, 100);
+}
 
 function removeChildForm(index) {
+  if (isEdit.value && model.value.child[index]?.id) {
+    if (!Array.isArray(model.value.deleteChild)) {
+      model.value.deleteChild = [];
+    }
+    if (model.value && Array.isArray(model.value.deleteChild)) {
+      model.value.deleteChild.push({ id: model.value.child[index].id });
+    }
+  }
   model.value.child.splice(index, 1);
 };
 
-function addChildForm() {
-  model.value.child.push({
-    fund_receipt: null,
-    fund_eligible: null,
-    fund_sum_request: null,
-    fund_university: null,
-    child_name: null,
-    child_birth_day: null,
-    child_father_number: null,
-    child_mother_number: null,
-    school_name: null,
-    district: null,
-    province: null,
-    sub_categories_id: null,
-    childPassedAway: false,
-    delegate_name: null,
-    delegate_number: null,
-    delegate_birth_day: null,
-    delegate_death_day: null
-  });
-}
 
 watch(
-  () => model.value.spouseRole,
+  () => model.value.role,
   async () => {
     spouseData.value = {
       officer: {
         position: null,
-        belongTo: null
+        department: null
       },
       enterprises: {
         position: null,
-        belongTo: null
+        department: null
       }
     };
   }
@@ -610,7 +785,7 @@ watch(
     try {
       if (canCreateFor.value) {
         if ((newValue !== null && newValue !== undefined) && !isView.value) {
-          // fetchRemaining();
+          fetchRemaining();
           fetchUserData(newValue);
         }
       }
@@ -653,28 +828,60 @@ const options = [
 
 ]
 
+
+const selectedCategoryLabel = computed(() => {
+  const selectedOption = options.find(opt => opt.value === model.value.categoriesId);
+
+  if (selectedOption) {
+    return selectedOption.label;
+  } else {
+    return "ไม่พบข้อมูล";
+  }
+});
+
+
 let optionsMarry = [
   { name: "จดทะเบียน", value: "YES" },
   { name: "ไม่จดทะเบียน", value: "NO" },
 
 ];
 
+const selectedMarryLabel = computed(() => {
+  if (!model.value.marryRegis) return "ไม่พบข้อมูล"; // ✅ ตรวจสอบค่าก่อน
+
+  const selectedOption = optionsMarry.find(opt => opt.value === model.value.marryRegis);
+  console.log('selectedOption' + selectedOption.value)
+  return selectedOption ? selectedOption.name : "ไม่พบข้อมูล";
+});
+
+const selectedRoleLabel = computed(() => {
+  if (!model.value.role) return "ไม่พบข้อมูล"; // กรณีไม่มีค่า role
+
+  switch (model.value.role) {
+    case "ข้าราชการ":
+      return `ข้าราชการ (ตำแหน่ง: ${model.value.position || "-"}, สังกัด: ${model.value.department || "-"})`;
+
+    case "พนักงานหรือลูกจ้างในรัฐวิสาหกิจ":
+      return `พนักงานรัฐวิสาหกิจ (ตำแหน่ง: ${model.value.position || "-"}, สังกัด: ${model.value.department || "-"})`;
+
+    default:
+      return model.value.role; // ใช้ค่า role ตรงๆ ถ้าไม่ใช่เคสพิเศษ
+  }
+});
+
+
 
 
 async function submit(actionId) {
   let validate = false;
-  console.log("ตรวจสอบค่าก่อน validate:", model.value, canCreateFor.value, "actionId:", actionId);
-
   // ตรวจสอบว่า createFor ต้องมีค่าหรือไม่
   if (!model.value.createFor && canCreateFor.value) {
-    console.log("createFor ไม่ถูกต้อง:", model.value.createFor);
     isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
     document.getElementById("selected-user").scrollIntoView(false);
     validate = true;
   }
 
   if (validate) {
-    console.log("validate = true, แสดงแจ้งเตือน");
     Notify.create({
       message: "กรุณากรอกข้อมูลให้ครบถ้วน",
       position: "bottom-left",
@@ -685,35 +892,51 @@ async function submit(actionId) {
 
 
   let isValid = false;
+
   let payload = {
-    fund_sum_receipt: model.value.fund_sum_receipt,
-    fund_other: model.value.fund_other,
+    createFor: model.value.createFor,
+    fundSumReceipt: model.value.fundSumReceipt,
+    fundEligible: model.value.fundEligible,
     actionId: actionId ?? null, // ป้องกัน actionId เป็น undefined
     spouse: model.value.spouse,
-    marry_regis: model.value.marry_regis,
+    eligible: model.value.eligible,
+    marryRegis: model.value.marryRegis,
     role: model.value.role,
-    categories_id: model.value.categories_id,
-    child: model.value.child.map(c => ({
-      fund_receipt: c.fund_receipt,
-      fund_eligible: c.fund_eligible,
-      fund_sum_request: c.fund_sum_request,
-      childName: c.child_name,
-      childBirthDay: c.child_birth_day,
-      childFatherNumber: c.child_father_number,
-      childMotherNumber: c.child_mother_number,
-      schoolName: c.school_name,
-      district: c.district,
-      province: c.province,
-      subCategoriesId: c.sub_categories_id
-    }))
+    position: spouseData.value.officer.position || spouseData.value.enterprises.position,
+    department: spouseData.value.officer.department || spouseData.value.enterprises.department,
+    categoriesId: model.value.categoriesId,
+    deleteChild: model.value.deleteChild,
+    child: model.value.child.map(c => {
+      let childData = {
+        id: c.id,
+        fundReceipt: c.fundReceipt,
+        fundEligible: c.fundEligible,
+        fundOther: c.fundOther,
+        childName: c.childName,
+        fundUniversity: c.fundUniversity,
+        childBirthDay: c.childBirthDay,
+        childFatherNumber: c.childFatherNumber,
+        childMotherNumber: c.childMotherNumber,
+        schoolName: c.schoolName,
+        district: c.district,
+        province: c.province,
+        subCategoriesId: c.subCategoriesId,
+        childPassedAway: c.childPassedAway
+      };
 
+      // ✅ ถ้า childPassedAway เป็น true ให้เพิ่ม delegate เข้าไป
+      if (c.childPassedAway) {
+        childData.delegateName = c.delegateName;
+        childData.delegateNumber = c.delegateNumber;
+        childData.delegateBirthDay = c.delegateBirthDay;
+        childData.delegateDeathDay = c.delegateDeathDay;
+      }
 
-}
-
-
-  console.log("ค่า marryRegis:", model.value.marry_regis);
-  console.log("ค่า categoriesId:", model.value.categories_id);
+      return childData;
+    })
+  };
   console.log("Payload:", payload);
+
 
   let fetch; // เปลี่ยนจาก var เป็น let
   Swal.fire({
@@ -732,9 +955,9 @@ async function submit(actionId) {
     preConfirm: async () => {
       try {
         if (isEdit.value) {
-          // fetch = await healthCheckUpWelfareService.update(route.params.id, payload);
+          fetch = await reimbursementChildrenEducationService.update(route.params.id, payload);
         } else {
-          console.log("Payload ที่ส่งไป:", JSON.stringify(payload, null, 2));
+
 
           fetch = await reimbursementChildrenEducationService.create(payload);
         }
@@ -768,7 +991,7 @@ async function submit(actionId) {
           confirmButton: "save-button",
         },
       }).then(() => {
-        router.replace({ name: "health_check_up_welfare_list" });
+        router.replace({ name: "children_edu_welfare_list" });
       });
     }
   });
@@ -780,18 +1003,29 @@ async function init() {
   isLoading.value = true;
   try {
     if (isView.value) {
-      // fetchDataEdit();
+      fetchDataEdit();
+      fetchRemaining();
+      fetchUserData(authStore.id);
     }
     else if (isEdit.value) {
       if (!canCreateFor.value) {
-        // fetchRemaining();
+        fetchRemaining();
+        fetchUserData(authStore.id);
       }
-      // fetchDataEdit();
+      else {
+        const result = await userManagementService.getUserInitialData({ keyword: null });
+        userInitialData.value = result.data.datas;
+      }
+      fetchDataEdit();
     }
     else {
       if (!canCreateFor.value) {
-        // fetchRemaining();
+        fetchRemaining();
         fetchUserData(authStore.id);
+      }
+      else {
+        const result = await userManagementService.getUserInitialData({ keyword: null });
+        userInitialData.value = result.data.datas;
       }
     }
   }

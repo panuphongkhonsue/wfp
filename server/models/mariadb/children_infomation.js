@@ -52,10 +52,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: false
     },
-    eligible: {
-      type: DataTypes.ENUM('ตามสิทธิ', 'เฉพาะส่วนที่ยังขาดจากสิทธิ'),
-      allowNull: true
-    },
     delegate_name: {
       type: DataTypes.STRING(255),
       allowNull: true
@@ -73,6 +69,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     fund_university: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
+    fund_other: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },
