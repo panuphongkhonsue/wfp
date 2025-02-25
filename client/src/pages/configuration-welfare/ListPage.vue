@@ -176,7 +176,7 @@ const columns = [
   { name: "welfareType", label: "ประเภทสวัสดิการ", align: "left", field: "welfareType" },
   { name: "subCategory", label: "ประเภทย่อย", align: "left", field: "subCategory" },
   { name: "description", label: "รายละเอียดเพิ่มเติม", align: "left", field: "description" },
-  { name: "fund", label: "เพดานเงิน", align: "right", field: (row) => row.fund ?? "-" },
+  { name: "fund", label: "เพดานเงิน", align: "right", field: (row) => row.fund ?? '-' },
   { name: "perYears", label: "จำนวนครั้ง (ต่อปี)", align: "right", field: "perYears" },
   { name: "perTimes", label: "ครั้งละไม่เกิน", align: "right", field: "perTimes" },
   { name: "tools", label: "จัดการ", align: "center", field: "tools" },
@@ -344,26 +344,28 @@ async function updateConfigWelfare(propsRowData) {
           //Validate
           let validateMessage = "";
 
+          console.log(propsRowData);
           if (payload.value.fund == null && payload.value.perYears == null && payload.value.perTimes == null) {
             validateMessage = "ข้อมูลไม่ได้ถูกแก้ไข";
           }
           else {
             if (payload.value.fund != null) {
-              if (payload.value.fund <= 0) {
+              if (payload.value.fund < 0) {
                 validateMessage = "ข้อมูลเพดานเงินไม่ถูกต้อง";
-              }
-              payloadCurrentFund = payload.value.fund;
-              
+              } 
+              else if(payload.value.fund == 0){
+                payload.value.fund = null;
+              }           
             }
             else {
-              if (propsRowData.categoryFund) {
+              if (!propsRowData.subCategoryName) {
                 payload.value.fund = propsRowData.categoryFund;
               }
               else {
                 payload.value.fund = propsRowData.subCategoryFund;
               }
+              payloadCurrentFund = payload.value.fund;
             }
-
             if (payload.value.perYears != null) {
               if (payload.value.perYears < 0) {
                 validateMessage = "ข้อมูลจำนวนครั้ง(ต่อปี)ไม่ถูกต้อง";
@@ -373,7 +375,7 @@ async function updateConfigWelfare(propsRowData) {
               }
             }
             else {
-              if (propsRowData.categoryFund) {
+              if (!propsRowData.subCategoryName) {
                 payload.value.perYears = propsRowData.category_per_years;
               }
               else {
@@ -387,14 +389,16 @@ async function updateConfigWelfare(propsRowData) {
               else if (payload.value.perTimes == 0) {
                 payload.value.perTimes = null;
               }
-              else if (payload.value.perTimes > payloadCurrentFund) {
+              else if (propsRowData.fund != '-'){
+                if (payload.value.perTimes > payloadCurrentFund) {
                 console.log("pT : ", payload.value.perTimes);
                 console.log("pCF : ", payloadCurrentFund);
                 validateMessage = "ข้อมูลครั้งละไม่เกินสูงกว่าเพดานเงิน";
               }
+              }
             }
             else {
-              if (propsRowData.categoryFund) {
+              if (!propsRowData.subCategoryName) {
                 payload.value.perTimes = propsRowData.category_perTimes;
               }
               else {
@@ -440,7 +444,7 @@ async function updateConfigWelfare(propsRowData) {
           }
           // Code
           //Api
-          if (propsRowData.categoryFund) {
+          if (!propsRowData.subCategoryName) {
             await categoryService.updateCategory(propsRowData.categoryId, payload.value);
             await logCategoryService.addLogCategory(payloadLogCategory.value);
           }
