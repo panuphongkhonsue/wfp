@@ -22,7 +22,7 @@ const bindFilter = async (req, res, next) => {
 	}
 	catch (error) {
 		logger.error(`Error ${error.message}`, { method });
-		res.status(401).json({ error: error.message });
+		res.status(401).json({ message: error.message });
 	}
 };
 
@@ -48,7 +48,7 @@ const bindUpdate = async (req, res, next) => {
 		}
 		if (Object.keys(errorObj).length > 0){
 			return res.status(400).json({
-				message: 'Validation Error',
+				message: 'ข้อมูลไม่ถูกต้อง',
 				errors: errorObj,
 			  }); 
 		}
@@ -70,7 +70,6 @@ const authPermission = async (req, res, next) => {
 	const method = 'AuthPermission';
 	const { roleId } = req.user;
 	try {
-		console.log("reg: " , req)
 		const isAccess = await permissionsHasRoles.count({
 			where: {
 				[Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.configWelfare }],
@@ -83,7 +82,7 @@ const authPermission = async (req, res, next) => {
 	}
 	catch (error) {
 		logger.error(`Error ${error.message}`, { method });
-		res.status(401).json({ error: error.message });
+		res.status(401).json({ message: error.message });
 	}
 };
 

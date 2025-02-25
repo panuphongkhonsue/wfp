@@ -1,12 +1,13 @@
 <template>
   <div :class="compclass ? compclass : 'col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 text-grey-9'">
-    <p :class="[isRequire ? 'require' : '', moreClass ? moreClass : 'font-semi-bold font-16']" class="q-mb-sm">{{ label
+    <p :class="[isRequire ? 'require' : '', moreClass ? moreClass : 'font-medium font-16']" class="q-mb-sm">{{ label
       }} </p>
     <div v-if="!isView">
       <slot v-if="model === undefined"></slot>
       <q-input v-else class="font-14 font-regular" :dense="isDense" v-model="model" outlined :placeholder="placeholder"
         autocomplete="off" color="dark" :prefix="prefix" :suffix="suffix" :type="type" :mask="mask" :min="min"
-        :rules="rules" :error="error" :disable="disable" :readonly="readonly" bottom-slots :for="forId" >
+        :rules="rules" :error="error" :disable="disable" :readonly="readonly" bottom-slots :for="forId"
+        :clearable="clearable">
         <template v-slot:error>
           <div>
             {{ errorMessage }}
@@ -15,7 +16,8 @@
       </q-input>
     </div>
     <div v-else class="q-my-sm font-regular text-req-info">
-      <p style="margin: 0px">{{ model ?? data }}</p>
+      <p style="margin: 0px"> {{ model ? (typeof model === 'number' ? model.toLocaleString() : model) : (typeof data ===
+        'number' ? data.toLocaleString() : data) }}</p>
     </div>
   </div>
 </template>
@@ -58,7 +60,7 @@ defineProps({
   mask: String,
   min: Number,
   isView: Boolean,
-  data: String,
+  data: [String, Number],
   rules: Array,
   error: Boolean,
   refInput: String,
@@ -71,6 +73,9 @@ defineProps({
     },
   },
   isDense: {
+    type: Boolean
+  },
+  clearable: {
     type: Boolean
   }
 });

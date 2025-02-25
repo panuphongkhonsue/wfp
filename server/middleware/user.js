@@ -1,10 +1,11 @@
-const { isNullOrEmpty } = require('../controllers/utility');
+const { isNullOrEmpty } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('UserValidator');
 const { Op } = require('sequelize')
 const permissionType = require('../enum/permission')
 const roleType = require('../enum/role')
 const { permissionsHasRoles, sequelize, users } = require('../models/mariadb')
+const { formatDateSlash } = require('../enum/formatDate');
 
 const authPermission = async (req, res, next) => {
 	const method = 'AuthPermission';
@@ -22,14 +23,31 @@ const authPermission = async (req, res, next) => {
 	}
 	catch (error) {
 		logger.error(`Error ${error.message}`, { method });
-		res.status(401).json({ error: error.message });
+		res.status(401).json({ message: error.message });
 	}
 };
 
 const bindCreate = async (req, res, next) => {
 	try {
-		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId } = req.body;
+		const {
+			prefix,
+			username,
+			name,
+			positionId,
+			employeeTypeId,
+			departmentId,
+			sectorId,
+			firstWorkingDate,
+			roleId,
+			houseNumber,
+			street,
+			district,
+			subDistrict,
+			province,
+			postalCode,
+		} = req.body;
 		const errorObj = {};
+		if (isNullOrEmpty(prefix)) errorObj['prefix'] = 'กรุณากรอกคำนำหน้าชื่อ';
 		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
 		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
 		if (isNullOrEmpty(positionId)) errorObj['positionId'] = 'กรุณากรอกตำแหน่ง';
@@ -38,11 +56,23 @@ const bindCreate = async (req, res, next) => {
 		if (isNullOrEmpty(sectorId)) errorObj['sectorId'] = 'กรุณากรอกภาควิชา';
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
 		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
-		if (Object.keys(errorObj).length) res.status(400).json({ errors: errorObj });
+		if (isNullOrEmpty(houseNumber)) errorObj['houseNumber'] = 'กรุณากรอกบ้านเลขที่';
+		if (isNullOrEmpty(district)) errorObj['district'] = 'กรุณากรอก อำเภอ/เขต';
+		if (isNullOrEmpty(subDistrict)) errorObj['subDistrict'] = 'กรุณากรอก ตำบล/แขวง';
+		if (isNullOrEmpty(province)) errorObj['province'] = 'กรุณากรอกจังหวัด';
+		if (isNullOrEmpty(postalCode)) errorObj['postalCode'] = 'กรุณากรอกรหัสไปรษณีย์';
+		const inputDate = new Date(firstWorkingDate);
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		inputDate.setHours(0, 0, 0, 0);
+		if (inputDate > today) {
+			errorObj['firstWorkingDate'] = 'วันที่เริ่มเข้าปฏิบัติงานไม่สามารถมากกว่าวันนี้ได้';
+		}
+		if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
 		const { id } = req.user;
 		const dataBinding = {
 			username: username,
-			name: name,
+			name: prefix + ' ' + name,
 			email: username + "@buu.ac.th",
 			positions_id: positionId,
 			employee_types_id: employeeTypeId,
@@ -51,20 +81,37 @@ const bindCreate = async (req, res, next) => {
 			first_working_date: firstWorkingDate,
 			roles_id: roleId,
 			child: req.body.child,
-			created_by : id,
-			updated_by : id,
+			created_by: id,
+			updated_by: id,
+			house_number: houseNumber,
+			street: street ?? "-",
+			district: district,
+			sub_district: subDistrict,
+			province: province,
+			postal_code: postalCode,
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
 		}
 		else {
-			var hasNull = false;
 			if (!isNullOrEmpty(dataBinding.child)) {
-				hasNull = req.body.child.some(item =>
-					Object.values(item).some(value => value === null || value === "")
+				dataBinding.child = dataBinding.child.filter(item =>
+					!Object.values(item).some(value => value === null || value === "")
 				);
+				if (dataBinding.child.length === 0) {
+					delete dataBinding.child;
+				}
+				else {
+					const newChild = dataBinding.child.map((child) => {
+						const childName = child.prefix + ' ' + child.name;
+						return {
+							name: childName,
+							birthday: formatDateSlash(child?.birthday),
+						};
+					});
+					dataBinding.child = newChild;
+				}
 			}
-			if (hasNull) delete dataBinding.child;
 		}
 		req.body = dataBinding;
 		next();
@@ -76,8 +123,18 @@ const bindCreate = async (req, res, next) => {
 };
 const bindUpdate = async (req, res, next) => {
 	try {
-		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId } = req.body;
+		const {
+			prefix,
+			username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId, deleteChild,
+			houseNumber,
+			street,
+			district,
+			subDistrict,
+			province,
+			postalCode,
+		} = req.body;
 		const errorObj = {};
+		if (isNullOrEmpty(prefix)) errorObj['prefix'] = 'กรุณากรอกคำนำหน้าชื่อ';
 		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
 		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
 		if (isNullOrEmpty(positionId)) errorObj['positionId'] = 'กรุณากรอกตำแหน่ง';
@@ -86,11 +143,23 @@ const bindUpdate = async (req, res, next) => {
 		if (isNullOrEmpty(sectorId)) errorObj['sectorId'] = 'กรุณากรอกภาควิชา';
 		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
 		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
-		if (Object.keys(errorObj).length) res.status(400).json({ errors: errorObj });
+		if (isNullOrEmpty(houseNumber)) errorObj['houseNumber'] = 'กรุณากรอกบ้านเลขที่';
+		if (isNullOrEmpty(district)) errorObj['district'] = 'กรุณากรอก อำเภอ/เขต';
+		if (isNullOrEmpty(subDistrict)) errorObj['subDistrict'] = 'กรุณากรอก ตำบล/แขวง';
+		if (isNullOrEmpty(province)) errorObj['province'] = 'กรุณากรอกจังหวัด';
+		if (isNullOrEmpty(postalCode)) errorObj['postalCode'] = 'กรุณากรอกรหัสไปรษณีย์';
+		const inputDate = new Date(firstWorkingDate);
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		inputDate.setHours(0, 0, 0, 0);
+		if (inputDate > today) {
+			errorObj['firstWorkingDate'] = 'วันที่เริ่มเข้าปฏิบัติงานไม่สามารถมากกว่าวันนี้ได้';
+		}
+		if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
 		const { id } = req.user;
 		const dataBinding = {
 			username: username,
-			name: name,
+			name: prefix + ' ' + name,
 			email: username + "@buu.ac.th",
 			positions_id: positionId,
 			employee_types_id: employeeTypeId,
@@ -99,19 +168,47 @@ const bindUpdate = async (req, res, next) => {
 			first_working_date: firstWorkingDate,
 			roles_id: roleId,
 			child: req.body.child,
-			updated_by : id,
+			updated_by: id,
+			house_number: houseNumber,
+			street: street ?? "-",
+			district: district,
+			sub_district: subDistrict,
+			province: province,
+			postal_code: postalCode,
 		}
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
 		}
+		if (!isNullOrEmpty(deleteChild)) {
+			req.deleteChild = deleteChild;
+		}
 		else {
-			var hasNull = false;
 			if (!isNullOrEmpty(dataBinding.child)) {
-				hasNull = req.body.child.some(item =>
-					Object.values(item).some(value => value.name === null || value.name === "" || value.birthday === null || value.birthday === "")
+				dataBinding.child = dataBinding.child.filter(item =>
+					!Object.values(item).some(value => value.name === null || value.name === "" || value.birthday === null || value.birthday === "" || value.prefix === null || value.prefix === "")
 				);
+				if (dataBinding.child.length === 0) {
+					delete dataBinding.child;
+				}
+				else {
+					const newChild = dataBinding.child.map((child) => {
+						const childId = child.id;
+						const childName = child.prefix + ' ' + child.name;
+
+						const result = {
+							name: childName,
+							birthday: formatDateSlash(child?.birthday),
+						};
+
+						if (childId) {
+							result.id = childId;
+						}
+
+						return result;
+					});
+					dataBinding.child = newChild;
+				}
 			}
-			if (hasNull) delete dataBinding.child;
 		}
 		req.body = dataBinding;
 		next();
@@ -140,7 +237,7 @@ const validateDuplicate = async (req, res, next) => {
 		}
 		const isDuplicate = await users.count({ where: filter });
 
-		if (isDuplicate) return res.status(400).json({ errors: "บัญชีผู้ใช้นี้มีอยู่แล้ว" });
+		if (isDuplicate) res.status(400).json({ message: "บัญชีผู้ใช้นี้มีอยู่แล้ว" });
 		next();
 	} catch (error) {
 		logger.error(error);
@@ -173,8 +270,9 @@ const bindFilter = async (req, res, next) => {
 	}
 	catch (error) {
 		logger.error(`Error ${error.message}`, { method });
-		res.status(400).json({ error: error.message });
+		res.status(400).json({ message: error.message });
 	}
 };
+
 
 module.exports = { authPermission, bindCreate, bindUpdate, validateDuplicate, bindFilter };

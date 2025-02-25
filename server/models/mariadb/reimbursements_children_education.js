@@ -24,6 +24,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
+    fund_sum_receipt: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: false
+    },
     fund_university: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
@@ -33,7 +37,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     status: {
-      type: DataTypes.ENUM('DRAFT','WAIT_VERIFY','APPROVED'),
+      type: DataTypes.ENUM('บันทึกฉบับร่าง','รอตรวจสอบ','อนุมัติ'),
       allowNull: false
     },
     spouse: {
@@ -56,10 +60,6 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    welfare_type: {
-      type: DataTypes.STRING(255),
-      allowNull: false
-    },
     request_date: {
       type: DataTypes.DATEONLY,
       allowNull: true
@@ -68,6 +68,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: Sequelize.Sequelize.fn('current_timestamp')
+    },
+    eligible: {
+      type: DataTypes.ENUM('ตามสิทธิ', 'เฉพาะส่วนที่ยังขาดจากสิทธิ'),
+      allowNull: true
     },
     updated_at: {
       type: DataTypes.DATE,
@@ -86,11 +90,11 @@ module.exports = function(sequelize, DataTypes) {
         key: 'id'
       }
     },
-    sub_categories_id: {
+    categories_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
       references: {
-        model: 'sub_categories',
+        model: 'categories',
         key: 'id'
       }
     }
@@ -108,17 +112,17 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "fk_reimbursements_children_education_sub_categories1_idx",
-        using: "BTREE",
-        fields: [
-          { name: "sub_categories_id" },
-        ]
-      },
-      {
         name: "fk_reimbursements_children_education_users1_idx",
         using: "BTREE",
         fields: [
           { name: "created_by" },
+        ]
+      },
+      {
+        name: "fk_reimbursements_children_education_categories1_idx",
+        using: "BTREE",
+        fields: [
+          { name: "categories_id" },
         ]
       },
     ]

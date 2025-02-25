@@ -16,13 +16,21 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
-    fund_eligible: {
+    fund_request: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
     },
     fund_sum_request: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: false
+    },
+    fund_sum_receipt: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: false
+    },
+    fund_receipt_wreath: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
     },
     fund_wreath_university: {
       type: DataTypes.DECIMAL(10,0),
@@ -32,12 +40,16 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },
+    fund_receipt_vehicle: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
     fund_vehicle: {
       type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },
     status: {
-      type: DataTypes.ENUM('DRAFT','WAIT_VERIFY','APPROVED'),
+      type: DataTypes.ENUM('บันทึกฉบับร่าง','รอตรวจสอบ','อนุมัติ'),
       allowNull: false
     },
     organizer: {

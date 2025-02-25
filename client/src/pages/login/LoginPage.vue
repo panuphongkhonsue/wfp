@@ -29,9 +29,6 @@
                                     @click="isPwd = !isPwd" />
                             </template>
                         </q-input>
-                        <!-- Remember Me -->
-                        <q-checkbox size="sm" v-model="remember" label="Remember Me" />
-                        <!-- Login Button -->
 
                         <q-btn :loading="isLoading" class="full-width" type="submit" color="primary" label="Login" />
                     </q-form>
@@ -54,7 +51,6 @@ const model = ref({
     password: null,
 });
 
-const remember = ref(false);
 const authStore = useAuthStore();
 const isLoading = ref(false);
 const isPwd = ref(true);
@@ -63,11 +59,6 @@ const router = useRouter();
 // โหลด Username จาก localStorage
 onMounted(() => {
     authStore.clearToken();
-    const savedUsername = localStorage.getItem('rememberedUsername');
-    if (savedUsername) {
-        model.value.username = savedUsername;
-        remember.value = true;
-    }
 });
 
 // Login
@@ -99,7 +90,9 @@ async function login() {
             authStore.position = result.data?.user?.position;
             authStore.email = result.data?.user?.email;
             authStore.department = result.data?.user?.department;
-            authStore.roleId = result.data?.user?.roleID;
+            authStore.roleId = result.data?.user?.roleId;
+            authStore.isEditor = result.data?.user?.isEditor;
+            authStore.roleName = result.data?.user?.roleName;
             menuStore.setPath(result.data?.user?.path);
             menuStore.setPathEditor(result.data?.user?.pathEditor);
             router.push({ name: "home" });
@@ -124,15 +117,9 @@ async function login() {
             type: "negative",
         });
     }
-    if (remember.value) {
-        localStorage.setItem('rememberedUsername', model.value.username);
-    } else {
-        localStorage.removeItem('rememberedUsername');
-    }
 
-};
-
-const isError = ref({
+  };
+  const isError = ref({
     username: null,
     password: null,
 });
@@ -146,4 +133,5 @@ function clearData() {
         model.value[key] = null;
     });
 }
-</script>
+  </script>
+

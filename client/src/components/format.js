@@ -7,8 +7,8 @@ export function formatDate(d) {
 }
 
 export function formatDateSlash(d) {
-  if (d) return format(d, "yyyy/MM/dd");
-  return "-";
+  if (d) return format(d, "dd/MMM/yyyy");
+  return null;
 }
 
 export function formatDateServer(d) {
@@ -40,7 +40,7 @@ export function formatCurrency(n) {
   return n ? new Intl.NumberFormat().format(n) : "-";
 }
 export function formatDateThaiSlash(d) {
-  if (!d) return "-"; 
+  if (!d) return "-";
 
   const dateObj = new Date(d);
 
@@ -60,6 +60,13 @@ export function formatNumber(val) {
   if (!isNaN(number)) {
     return number.toLocaleString("en-US"); // Format as '3,000'
   }
-  return `${val}`; // If conversion fails, return a fallback value
+  return `0`; // If conversion fails, return a fallback value
 }
 
+export function toThaiYear(year){
+  return year+543;
+}
+
+export function toEngYear(year){
+  return year-543;
+}

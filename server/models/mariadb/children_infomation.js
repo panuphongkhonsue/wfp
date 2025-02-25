@@ -40,15 +40,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.ENUM('DELEGATE','COMMON'),
       allowNull: false
     },
-    school_type: {
-      type: DataTypes.ENUM('SATIT','GENERAL'),
-      allowNull: false
-    },
     school_name: {
-      type: DataTypes.STRING(255),
-      allowNull: false
-    },
-    education_level: {
       type: DataTypes.STRING(255),
       allowNull: false
     },
@@ -59,7 +51,40 @@ module.exports = function(sequelize, DataTypes) {
     province: {
       type: DataTypes.STRING(255),
       allowNull: false
-    }
+    },
+    delegate_name: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    delegate_number: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    delegate_birth_day: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    delegate_death_day: {
+      type: DataTypes.DATEONLY,
+      allowNull: true
+    },
+    fund_university: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
+    fund_other: {
+      type: DataTypes.DECIMAL(10,0),
+      allowNull: true
+    },
+    sub_categories_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: 'sub_categories',
+        key: 'id'
+      }
+    },
+    
   }, {
     sequelize,
     tableName: 'children_infomation',
@@ -71,6 +96,13 @@ module.exports = function(sequelize, DataTypes) {
         using: "BTREE",
         fields: [
           { name: "id" },
+        ]
+      },
+      {
+        name: "fk_children_infomation_sub_categories1_idx",
+        using: "BTREE",
+        fields: [
+          { name: "sub_categories_id" },
         ]
       },
     ]
