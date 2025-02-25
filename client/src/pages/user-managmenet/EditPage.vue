@@ -12,19 +12,32 @@
               class="row wrap q-col-gutter-y-sm q-col-gutter-x-md font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="username" is-dense v-model="model.username" :data="model.username ?? '-'" is-require
                 label="บัญชีผู้ใช้งาน" placeholder="" type="text" :is-view="isView" :error-message="isError?.username"
-                :error="!!isError?.username" :rules="[(val) => !!val || 'กรุณากรอกบัญชีผู้ใช้งาน']">
+                :error="!!isError?.username" :rules="[(val) => !!val || 'กรุณากรอกบัญชีผู้ใช้งาน']" lazy-rules>
+              </InputGroup>
+              <InputGroup for-id="prefix" is-dense :data="model.prefix ?? '-'" is-require label="คำนำหน้า"
+                placeholder="" type="text" :is-view="isView">
+                <q-select use-input hide-selected hide-dropdown-icon clearable new-value-mode="add-unique" fill-input
+                  input-debounce="0" popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                  :loading="isLoading" id="selected-prefix" outlined v-model="model.prefix" :options="optionPrefix"
+                  dense map-options :error-message="isError?.prefix" :error="!!isError?.prefix"
+                  :rules="[(val) => !!val || 'กรุณากรอกคำนำหน้า']" lazy-rules>
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
               </InputGroup>
               <InputGroup for-id="name" is-dense v-model="model.name" :data="model.name ?? '-'" is-require
-                label="ชื่อ - นามสกุล (ไม่ต้องมีคำนำหน้า)" placeholder="" type="text" :is-view="isView"
-                :error-message="isError?.name" :error="!!isError?.name"
-                :rules="[(val) => !!val || 'กรุณากรอกชื่อ - นามสกุล']">
+                label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView" :error-message="isError?.name"
+                :error="!!isError?.name" :rules="[(val) => !!val || 'กรุณากรอกชื่อ - นามสกุล']" lazy-rules>
               </InputGroup>
               <InputGroup for-id="position" :data="model.positionsName ?? '-'" is-require label="ตำแหน่ง"
                 :is-view="isView">
                 <q-select popup-content-class="font-14 font-regular" class="font-14 font-regular" :loading="isLoading"
                   for="selected-status" outlined v-model="model.positionId" :options="optionsPosition" dense clearable
                   option-value="id" emit-value map-options option-label="name" :error-message="isError?.positionId"
-                  :error="!!isError?.positionId" :rules="[(val) => !!val || 'กรุณาเลือกตำแหน่ง']">
+                  :error="!!isError?.positionId" :rules="[(val) => !!val || 'กรุณาเลือกตำแหน่ง']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
@@ -38,7 +51,7 @@
                   for="selected-employee-type" outlined v-model="model.employeeTypeId" :options="optionsemployeeType"
                   dense clearable option-value="id" emit-value map-options option-label="name"
                   :error-message="isError?.employeeTypeId" :error="!!isError?.employeeTypeId"
-                  :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']">
+                  :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
@@ -52,7 +65,7 @@
                   id="selected-department" outlined v-model="model.departmentId" :options="optionsDepartment" dense
                   clearable option-value="id" emit-value map-options option-label="name"
                   :error-message="isError?.departmentId" :error="!!isError?.departmentId"
-                  :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']">
+                  :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
@@ -64,7 +77,7 @@
                 <q-select popup-content-class="font-14 font-regular" class="font-14 font-regular" :loading="isLoading"
                   id="selected-sector" outlined v-model="model.sectorId" :options="optionsSection" dense clearable
                   option-value="id" emit-value map-options option-label="name" :error-message="isError?.sectorId"
-                  :error="!!isError?.sectorId" :rules="[(val) => !!val || 'กรุณาเลือกภาควิชา']">
+                  :error="!!isError?.sectorId" :rules="[(val) => !!val || 'กรุณาเลือกภาควิชา']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
@@ -75,8 +88,8 @@
               <InputGroup for-id="first-working-date" label="วันที่เข้าปฏิบัติงาน" is-require :is-view="isView"
                 clearable :data="model.firstWorkingDate ?? '-'">
                 <DatePicker is-dense v-model:model="model.firstWorkingDate" v-model:dateShow="model.firstWorkingDate"
-                  for-id="first-working-date" :no-time="true" :err="isError?.firstWorkingDate"
-                  :rules="[(val) => !!val || 'กรุณาเลือกวันที่เข้าปฏิบัติงาน']" />
+                  for-id="first-working-date" :no-time="true" :err="isError?.firstWorkingDate" :rules="[ageRule]"
+                  lazy-rules />
               </InputGroup>
             </q-card-section>
             <q-card-section class="row column wrap font-medium q-pt-none font-16 text-grey-9">
@@ -91,35 +104,68 @@
               <InputGroup for-id="house-number" is-dense v-model="model.houseNumber" :data="model.houseNumber ?? '-'"
                 is-require label="บ้านเลขที่" placeholder="" type="text" :is-view="isView"
                 :error-message="isError?.houseNumber" :error="!!isError?.houseNumber"
-                :rules="[(val) => !!val || 'กรุณากรอกบ้านเลขที่']">
+                :rules="[(val) => !!val || 'กรุณากรอกบ้านเลขที่']" lazy-rules>
               </InputGroup>
               <InputGroup for-id="street" is-dense v-model="model.street" :data="model.street ?? '-'" is-require
                 label="ถนน" placeholder="" type="text" :is-view="isView" :error-message="isError?.street"
-                :error="!!isError?.street" :rules="[(val) => !!val || 'กรุณากรอกถนน']">
+                :error="!!isError?.street" :rules="[(val) => !!val || 'กรุณากรอกถนน']" lazy-rules>
               </InputGroup>
-              <InputGroup for-id="sub-district" is-dense v-model="model.subDistrict" :data="model.subDistrict ?? '-'"
-                is-require label="ตำบล / แขวง" placeholder="" type="text" :is-view="isView"
-                :error-message="isError?.subDistrict" :error="!!isError?.subDistrict"
-                :rules="[(val) => !!val || 'กรุณากรอกตำบล / แขวง']">
+              <InputGroup for-id="province" is-dense :data="model.province ?? '-'" is-require label="จังหวัด"
+                placeholder="" type="text" :is-view="isView">
+                <q-select @filter="filterFn" @filter-abort="abortFilterFn" use-input input-debounce="100" clearable
+                  popup-content-class="font-14 font-regular" class="font-14 font-regular" :loading="isLoading"
+                  id="selected-province" outlined v-model="model.province" :options="optionProvinceSelected" dense
+                  option-value="name_th" emit-value map-options option-label="name_th" :error="!!isError?.province"
+                  :rules="[(val) => !!val || 'กรุณากรอกจังหวัด']" lazy-rules>
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
               </InputGroup>
-              <InputGroup for-id="district" is-dense v-model="model.district" :data="model.district ?? '-'" is-require
-                label="อำเภอ / เขต" placeholder="" type="text" :is-view="isView" :error-message="isError?.district"
-                :error="!!isError?.district" :rules="[(val) => !!val || 'กรุณากรอกอำเภอ / เขต']">
+              <InputGroup for-id="district" is-dense :data="model.district ?? '-'" is-require label="อำเภอ / เขต"
+                placeholder="" type="text" :is-view="isView">
+                <q-select @filter="filterFnDistrict" @filter-abort="abortFilterFnDistrict" use-input
+                  input-debounce="100" clearable popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                  :loading="isLoading" id="selected-district" outlined v-model="model.district"
+                  :options="optionsDistrict" dense option-value="name_th" emit-value map-options option-label="name_th"
+                  :error="!!isError?.district" :error-message="isError?.district"
+                  :rules="[(val) => !!val || 'กรุณากรอกอำเภอ / เขต']" lazy-rules>
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
               </InputGroup>
-              <InputGroup for-id="province" is-dense v-model="model.province" :data="model.province ?? '-'" is-require
-                label="จังหวัด" placeholder="" type="text" :is-view="isView" :error-message="isError?.province"
-                :error="!!isError?.province" :rules="[(val) => !!val || 'กรุณากรอกจังหวัด']">
+              <InputGroup for-id="sub-district" is-dense :data="model.subDistrict ?? '-'" is-require label="ตำบล / แขวง"
+                placeholder="" type="text" :is-view="isView">
+                <q-select @filter="filterFnSubDistrict" @filter-abort="abortFilterFnSubDistrict" use-input
+                  input-debounce="100" clearable popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                  :loading="isLoading" id="selected-sub-district" outlined v-model="model.subDistrict"
+                  :options="optionsSubDistrict" dense option-value="name_th" emit-value map-options
+                  option-label="name_th" :error-message="isError?.subDistrict" :error="!!isError?.subDistrict"
+                  :rules="[(val) => !!val || 'กรุณากรอกตำบล / แขวง']" lazy-rules>
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
               </InputGroup>
               <InputGroup for-id="postal-code" is-dense v-model="model.postalCode" :data="model.postalCode ?? '-'"
                 is-require label="รหัสไปรษณีย์" placeholder="" type="text" :is-view="isView"
                 :error-message="isError?.postalCode" :error="!!isError?.postalCode"
-                :rules="[(val) => !!val || 'กรุณากรอกรหัสไปรษณีย์']">
+                :rules="[(val) => !!val || 'กรุณากรอกรหัสไปรษณีย์']" lazy-rules>
               </InputGroup>
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-12 font-18 font-bold">
+        <div class="col-12 row justify-between font-18 font-bold">
           <p class="q-mb-none">จัดการข้อมูลบุตร</p>
+          <q-btn v-if="!isView && !isLoading" icon="add" id="add-req" @click="addChildForm"
+            class=" bg-blue-10 text-white">เพิ่ม</q-btn>
         </div>
         <!-- Child Section -->
         <div class="col-12">
@@ -128,9 +174,21 @@
               class="row items-center wrap q-col-gutter-md wrap font-medium q-pt-sm q-pb-none font-16 text-grey-9"
               v-for="(item, index) in model.child" :key="index">
               <p class="col-12 q-mb-none">บุตรคนที่ {{ index + 1 }}</p>
+              <InputGroup for-id="prefix-child" is-dense :data="item.prefix ?? '-'" is-require label="คำนำหน้า"
+                placeholder="" type="text" :is-view="isView" :class="!isView ? 'q-pt-md q-pt-sm-none q-pb-xs' : ''">
+                <q-select use-input hide-selected hide-dropdown-icon clearable new-value-mode="add-unique" fill-input
+                  input-debounce="0" popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                  :loading="isLoading" id="selected-prefix" outlined v-model="item.prefix"
+                  :options="optionPrefixChild" dense map-options>
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </InputGroup>
               <InputGroup v-if="!isView && !isLoading" for-id="child-name" is-dense v-model="item.name"
-                :data="item.name ?? '-'" label="ชื่อ - นามสกุล (ไม่ต้องมีคำนำหน้า)" placeholder="" type="text"
-                :is-view="isView">
+                :data="item.name ?? '-'" label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView">
               </InputGroup>
               <InputGroup v-else for-id="child-name" is-dense v-model="item.name" :data="item.name ?? '-'"
                 label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView">
@@ -145,12 +203,6 @@
                   color="red" @click="removeChildForm(index)" class="q-mt-sm">ลบ</q-btn>
               </div>
             </q-card-section>
-            <div v-if="!isView && !isLoading">
-              <q-separator inset class="q-mt-md" />
-              <q-card-section class="row justify-end">
-                <q-btn icon="add" id="add-req" @click="addChildForm" class=" bg-blue-10 text-white">เพิ่ม</q-btn>
-              </q-card-section>
-            </div>
           </q-card>
         </div>
       </div>
@@ -189,6 +241,7 @@ import sectorService from "src/boot/service/sectorService";
 import positionService from "src/boot/service/positionService";
 import employeeTypeService from "src/boot/service/employeeTypeService";
 import roleService from "src/boot/service/roleService";
+import data from 'src/components/api_province_with_amphure_tambon.json';
 
 defineOptions({
   name: "MedicalfareEdit",
@@ -197,6 +250,7 @@ const router = useRouter();
 const route = useRoute();
 const model = ref({
   id: null,
+  prefix: null,
   username: null,
   name: null,
   positionId: null,
@@ -218,6 +272,7 @@ const model = ref({
   postalCode: null,
   child: [
     {
+      prefix: null,
       name: null,
       birthday: null,
     },
@@ -227,6 +282,107 @@ const model = ref({
 const isLoading = ref();
 const isError = ref({});
 const isView = ref(false);
+const optionPrefix = ref([
+  "นาย",
+  "นาง",
+  "นางสาว",
+])
+const optionPrefixChild = ref([
+  "นาย",
+  "นาง",
+  "นางสาว",
+  "ด.ช",
+  "ด.ญ"
+])
+
+const optionsProvince = computed(() => {
+  if (!isView.value) return data;
+  else return [];
+});
+const optionProvinceSelected = ref([]);
+const optionsDistrict = ref([]);
+const optionsSubDistrict = ref([]);
+const getDistrict = computed(() => {
+  if (!isView.value) {
+    const findData = optionsProvince.value.filter((province) => province.name_th == model.value.province);
+    return findData[0] ? findData[0].amphure : [];
+  }
+  return [];
+});
+const getSubDistrict = computed(() => {
+  if (!isView.value) {
+    const findData = getDistrict.value.filter((district) => district.name_th == model.value.district);
+    return findData[0] ? findData[0].tambon : [];
+  }
+  return [];
+});
+
+
+async function filterFn(val, update) {
+  try {
+    setTimeout(async () => {
+
+      update(() => {
+        if (val === '') {
+          optionProvinceSelected.value = optionsProvince.value;
+        }
+        else {
+          optionProvinceSelected.value = optionsProvince.value.filter(v => v.name_th.includes(val));
+        }
+      });
+    }, 650);
+
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+}
+function abortFilterFn() {
+  // console.log('delayed filter aborted')
+}
+async function filterFnDistrict(val, update) {
+  try {
+    setTimeout(async () => {
+      update(() => {
+        if (val === '') {
+          optionsDistrict.value = getDistrict.value;
+        }
+        else {
+          optionsDistrict.value = getDistrict.value.filter(v => v.name_th.includes(val));
+        }
+      });
+    }, 650);
+
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+}
+function abortFilterFnDistrict() {
+  // console.log('delayed filter aborted')
+}
+async function filterFnSubDistrict(val, update) {
+  try {
+    setTimeout(async () => {
+
+      update(() => {
+        if (val === '') {
+          optionsSubDistrict.value = getSubDistrict.value;
+        }
+        else {
+          optionsSubDistrict.value = getSubDistrict.value.filter(v => v.name_th.includes(val));
+        }
+      });
+    }, 650);
+
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+}
+function abortFilterFnSubDistrict() {
+  // console.log('delayed filter aborted')
+}
 
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
@@ -243,11 +399,13 @@ onBeforeUnmount(() => {
 
 function addChildForm() {
   model.value.child.push({
+    prefix: null,
     name: null,
     birthday: null,
   });
 }
 function removeChildForm(index) {
+  model.value.child.splice(index, 1);
   if (isEdit.value && model.value.child[index]?.id) {
     if (!Array.isArray(model.value.deleteChild)) {
       model.value.deleteChild = [];
@@ -256,7 +414,9 @@ function removeChildForm(index) {
       model.value.deleteChild.push({ id: model.value.child[index].id });
     }
   }
-  model.value.child.splice(index, 1);
+  if (model.value.child.length == 0) {
+    addChildForm();
+  }
 };
 
 
@@ -269,15 +429,48 @@ watch(
           delete isError.value[key];
         }
       });
+      if (model.value.firstWorkingDate != null) {
+        const inputDate = new Date(model.value.firstWorkingDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        inputDate.setHours(0, 0, 0, 0);
+        if (inputDate > today) {
+          isError.value.firstWorkingDate = 'วันที่เริ่มเข้าปฏิบัติงานไม่สามารถมากกว่าวันนี้ได้';
+        }
+      }
     }
   },
   { deep: true }
 );
+function ageRule(val) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // call
+      //  resolve(true)
+      //     --> content is valid
+      //  resolve(false)
+      //     --> content is NOT valid, no error message
+      //  resolve(error_message)
+      //     --> content is NOT valid, we have error message
+      resolve(!!val || 'กรุณาเลือกวันที่เข้าปฏิบัติงาน')
+
+      // calling reject(...) will also mark the input
+      // as having an error, but there will not be any
+      // error message displayed below the input
+      // (only in browser console)
+    }, 1000)
+  })
+}
+
 
 async function submit() {
   let validate = false;
   if (!model.value.username) {
     isError.value.username = "กรุณากรอกข้อมูลบัญชีผู้ใช้";
+    validate = true;
+  }
+  if (!model.value.prefix) {
+    isError.value.prefix = "กรุณากรอกคำนำหน้าชื่อ";
     validate = true;
   }
   if (!model.value.name) {
@@ -443,12 +636,16 @@ async function init() {
       const dataBinding = res.data.datas;
       const convertDate = isView.value === true ? formatDateThaiSlash(dataBinding.firstWorkingDate) : formatDateSlash(dataBinding.firstWorkingDate);
       const childData = [{
+        prefix: null,
         name: null,
         birthday: null,
       }]
+      const prefix = dataBinding.name.split(" ")[0];
+      const name = dataBinding.name.split(" ").slice(1).join(" ");
       model.value = {
         id: dataBinding.id,
-        name: dataBinding.name,
+        prefix: prefix,
+        name: name,
         username: dataBinding.username,
         firstWorkingDate: convertDate,
         positionId: dataBinding.position.id,
@@ -469,12 +666,16 @@ async function init() {
         postalCode: dataBinding.postalCode,
       };
       if (Array.isArray(dataBinding.children) && dataBinding.children.length > 0) {
-        const newChild = dataBinding.children.map((child) => ({
-          id: child?.id,
-          name: child?.name,
-          birthday: formatDateSlash(child?.birthday),
-        }));
-
+        const newChild = dataBinding.children.map((child) => {
+          const childPrefix = child?.name.split(" ")[0];
+          const childName = child?.name.split(" ").slice(1).join(" ");
+          return {
+            id: child?.id,
+            prefix: childPrefix,
+            name: childName,
+            birthday: formatDateSlash(child?.birthday),
+          };
+        });
         model.value.child = newChild;
       }
       else {
