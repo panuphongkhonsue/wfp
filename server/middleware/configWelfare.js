@@ -31,7 +31,7 @@ const bindUpdate = async (req, res, next) => {
 		const { fund, perYears, perTimes  } = req.body;
 		const errorObj = {};
 
-		if(fund <= 0){
+		if(fund < 0){
 			errorObj['fund'] = 'ข้อมูลไม่ถูกต้อง';
 		}
 		if(perYears == 0){
