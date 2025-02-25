@@ -288,7 +288,6 @@
       fundUniversity: model.value.claimByEligible[1].fundEligible,
       fundEligible: model.value.claimByEligible[2].fundEligible,
       fundEligibleName: model.value.claimByEligible[2].fundEligibleName,
-      createFor: model.value.createFor,
       actionId: actionId ?? null,
     }
     var fetch;
@@ -351,7 +350,6 @@
 
   async function fetchRemaining() {
   try {
-    console.log("model.value.createFor: ", model.value)
     const fetchRemaining = await healthCheckUpWelfareService.getRemaining({ createFor: model.value.createFor });
     if (fetchRemaining.data?.datas?.requestsRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.requestsRemaining))) {
       remaining.value.requestsRemaining = Number(fetchRemaining.data?.datas?.requestsRemaining).toLocaleString();

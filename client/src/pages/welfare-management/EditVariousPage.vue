@@ -334,7 +334,6 @@
     let payload = {
       fundReceipt: model.value.fundReceipt,
       fundEligible: model.value.fundEligible,
-      createFor: model.value.createFor,
       categoryId: model.value.categoryId,
       actionId: actionId,
     }

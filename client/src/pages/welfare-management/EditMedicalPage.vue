@@ -529,7 +529,6 @@ async function submit(actionId) {
     fundSumRequestPatientVisit: model.value.fundSumRequestPatientVisit,
     startDate: model.value.startDate ? formatDateServer(model.value.startDate) : null,
     endDate: model.value.endDate ? formatDateServer(model.value.endDate) : null,
-    createFor: model.value.createFor,
     actionId: actionId
   }
   var fetch;

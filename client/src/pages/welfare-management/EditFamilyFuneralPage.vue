@@ -504,7 +504,6 @@
       fundWreathArrange: model.value.fundWreathArrange,
       fundReceiptVechicle: model.value.fundReceiptVechicle,
       fundVechicle: model.value.fundVechicle,
-      createFor: model.value.createFor,
       actionId: actionId
     }
     var fetch;

@@ -588,7 +588,6 @@ if (!model.value.fundReceipt || !model.value.fundRequest) {
     fundWreathArrange: model.value.fundWreathArrange,
     fundReceiptVehicle: model.value.fundReceiptVehicle,
     fundVehicle: model.value.fundVehicle,
-    createFor: model.value.createFor,
     actionId: actionId
   }
   console.log(payload)
