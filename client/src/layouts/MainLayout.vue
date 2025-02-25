@@ -8,10 +8,10 @@
           <div class="row q-btn--actionable items-center">
             <div class="row text-right q-mt-xs q-mr-sm">
               <div class="col-12 text-body2 text-grey-9 text-weight-bold">
-                {{ user.name }}
+                {{ userName }}
               </div>
-              <div style="margin-top: -4px" class="col-12 text-body2 text-grey-5 q-mt-md">
-                <small> {{ user.position }} </small>
+              <div style="margin-top: -1px" class="col-12 text-body2 text-grey-5 q-mt-md">
+                <small> {{ user.position }} ( {{ user.roleName }}) </small>
               </div>
             </div>
             <q-icon name="account_circle" size="md" />
@@ -32,7 +32,7 @@
     <q-drawer :width="250" v-model="leftDrawerOpen" show-if-above bordered
       class="bg-blue-9 text-white font-medium font-remark custom-scroll">
       <q-list>
-        <q-item-label header class="bg-white q-px-lg q-pb-none" style="padding-top: 13px;">
+        <q-item-label header class="bg-white q-px-lg q-pb-none" style="padding-top: 16px;">
           <div class="flex column text-blue-9 font-bold">
             <p class=" q-mb-xs font-24">ระบบเบิกสวัสดิการ</p>
             <div class="flex row q-col-gutter-x-sm items-center ">
@@ -94,6 +94,7 @@ const router = useRouter();
 const user = ref({
   name: authStore.name,
   position: authStore.position,
+  roleName: authStore.roleName,
 });
 
 onMounted(async () => {
@@ -123,6 +124,11 @@ const essentialLinksUser = computed(() => {
       icon: iconMap[child.icon] ?? null
     })) || null,
   }));
+});
+
+const userName = computed(() => {
+  const name = authStore.name.split(" ").slice(1).join(" ");
+  return name;
 });
 
 const essentialLinksEditor = computed(() => {
