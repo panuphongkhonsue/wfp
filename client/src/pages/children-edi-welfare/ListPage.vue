@@ -234,13 +234,12 @@ function goto(requestId) {
   });
 }
 
-function downloadData(requestId) {
-  console.log(requestId);
+// function downloadData(requestId) {
   // router.push({
   //   name: "",
   //   params: { id: requestId },
   // });
-}
+// }
 
 async function deleteData(id, reimNumber) {
   Swal.fire({
