@@ -14,7 +14,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     fund: {
       type: DataTypes.DECIMAL(10,0),
-      allowNull: false
+      allowNull: true
     },
     per_times: {
       type: DataTypes.DECIMAL(10,0),

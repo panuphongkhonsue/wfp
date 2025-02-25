@@ -11,7 +11,7 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold"
               :class="canCreateFor && !isView ? 'items-center' : ''">
-              <div class="col-lg-5 col-12 row q-gutter-y-md q-pr-sm"
+              <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm"
                 :class="canCreateFor && !isView ? 'items-center' : ''">
                 <p class="col-auto q-mb-none">
                   ชื่อ-นามสกุล : <span v-show="!canCreateFor || isView" class="font-medium font-16 text-grey-7">{{
@@ -19,9 +19,9 @@
                 </p>
                 <q-select v-if="canCreateFor && !isView" popup-content-class="font-14 font-regular" :loading="isLoading"
                   id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
-                  v-model="model.createFor" :options="options" dense clearable option-value="id" emit-value map-options
+                  v-model="model.createFor" :options="options" dense option-value="id" emit-value map-options
                   option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
-                  :error="!!isError?.createFor">
+                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']" @filter-abort="abortFilterFn">
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
@@ -55,8 +55,10 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-mb-none">คงเหลือ {{ remaining?.fundRemaining ?? "-" }} บาท</p>
-              <p class="col-12 q-mb-none">คงเหลือจำนวน {{ remaining?.requestsRemaining ?? "-" }} ครั้ง</p>
+              <p class="col q-ma-none">ตรวจสุขภาพ : {{ remaining?.fundRemaining ?? remaining?.perTimesRemaining ?? "-"
+                }}
+                {{ "บาท ( " }}
+                {{ remaining?.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
             </q-card-section>
           </q-card>
         </div>
@@ -67,10 +69,12 @@
           <q-card flat bordered class="full-height">
             <q-card-section class="flex justify-between q-px-md q-pt-md q-pb-md font-18 font-bold">
               <p class="q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
-              <p class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
-                v-if="isView && (model.status == 'รอตรวจสอบ')"><q-icon :name="outlinedDownload" />
+              <a class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
+                v-if="isView && (model.status == 'รอตรวจสอบ')" @click.stop.prevent="
+                  downloadData()">
+                <q-icon :name="outlinedDownload" />
                 <span> Export</span>
-              </p>
+              </a>
             </q-card-section>
             <q-card-section v-show="isView || isEdit" class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
@@ -81,10 +85,12 @@
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'" is-require
                 label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" compclass="col-xs-12 col-lg-4 col-xl-2"
-                :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
+                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ']" :is-view="isView"
+                :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
-              <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require label="จำนวนที่ต้องการเบิก"
-                type="number" compclass="col-xs-12 col-lg-3 col-xl-2" :is-view="isView" v-if="isView">
+              <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require
+                label="จำนวนที่ต้องการเบิก" type="number" compclass="col-xs-12 col-lg-3 col-xl-2" :is-view="isView"
+                v-if="isView">
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-sm font-medium font-16">
@@ -140,8 +146,8 @@
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'health_check_up_welfare_list' }" />
         <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
           type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
-        <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
-          style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
+        <q-btn :disable="!canRequest" id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense
+          type="submit" style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
           v-if="!isView && !isLoading" />
       </div>
     </template>
@@ -157,9 +163,9 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { getRoleCanCreateFor } from "src/components/role"
 import { formatDateThaiSlash, formatNumber } from "src/components/format";
 import healthCheckUpWelfareService from "src/boot/service/healthCheckUpWelfareService";
+import exportService from "src/boot/service/exportService";
 import userManagementService from "src/boot/service/userManagementService";
 import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
@@ -171,7 +177,6 @@ defineOptions({
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
-const roleType = getRoleCanCreateFor();
 const model = ref({
   createFor: null,
   fundReceipt: null,
@@ -195,14 +200,14 @@ const remaining = ref({});
 let options = ref([]);
 const isLoading = ref(false);
 const isError = ref({});
-
+const canRequest = ref(false);
 const isView = ref(false);
-
+const userInitialData = ref([]);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
 const canCreateFor = computed(() => {
-  return authStore.roleId === roleType;
+  return authStore.isEditor;
 });
 
 onMounted(async () => {
@@ -231,15 +236,6 @@ watch(
           fetchRemaining();
           fetchUserData(newValue);
         }
-        else if (!isView.value) {
-          remaining.value = {};
-          userData.value = {
-            position: null,
-            employeeType: null,
-            sector: null,
-            department: null
-          };
-        }
       }
     }
     catch (error) {
@@ -261,7 +257,7 @@ async function fetchDataEdit() {
       if (returnedData) {
         model.value = {
           ...model,
-          createFor: returnedData?.userId,
+          createFor: null,
           reimNumber: returnedData?.reimNumber,
           requestDate: returnedData?.requestDate,
           status: returnedData?.status,
@@ -329,28 +325,71 @@ async function fetchRemaining() {
     if (fetchRemaining.data?.datas?.requestsRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.requestsRemaining))) {
       remaining.value.requestsRemaining = formatNumber(fetchRemaining.data?.datas?.requestsRemaining);
     }
-    else {
-      remaining.value.requestsRemaining = null;
-    }
     if (fetchRemaining.data?.datas?.fundRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.fundRemaining))) {
       remaining.value.fundRemaining = formatNumber(fetchRemaining.data?.datas?.fundRemaining);
     }
-    else {
-      remaining.value.fundRemaining = null;
+    if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
+      remaining.value.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
     }
+    canRequest.value = fetchRemaining.data?.canRequest;
   } catch (error) {
     Promise.reject(error);
+  }
+}
+async function downloadData() {
+  const notify = Notify.create({
+    message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",
+    position: "top-right",
+    spinner: true,
+    type: 'info',
+  });
+  try {
+    const result = await exportService.healthCheckup(route.params.id);
+    let filename = null;
+    const contentDisposition = result.headers["content-disposition"];
+    if (contentDisposition) {
+      const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (matches && matches[1]) {
+        filename = decodeURIComponent(matches[1]);
+      }
+    }
+
+    const blob = new Blob([result.data], { type: "application/pdf" });
+
+    const a = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  catch (error) {
+    console.log(error);
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "ดาวน์โหลดไม่สำเร็จกรุณาลองอีกครั้ง",
+      position: "top-right",
+      type: "primary",
+    });
+  }
+  finally {
+    notify();
   }
 }
 async function filterFn(val, update) {
   try {
     setTimeout(async () => {
-      const result = await userManagementService.getUserInitialData({ keyword: val });
-      var returnedData = result.data.datas;
 
       update(() => {
-        if (returnedData) {
-          options.value = returnedData;
+        if (val === '') {
+          options.value = userInitialData.value;
+        }
+        else {
+          options.value = userInitialData.value.filter(v => v.name.includes(val));
         }
       });
     }, 650);
@@ -359,6 +398,9 @@ async function filterFn(val, update) {
   catch (error) {
     Promise.reject(error);
   }
+}
+function abortFilterFn() {
+  // console.log('delayed filter aborted')
 }
 
 async function submit(actionId) {
@@ -370,7 +412,7 @@ async function submit(actionId) {
     navigate.scrollIntoView(false);
     validate = true;
   } if (!model.value.createFor && canCreateFor.value) {
-    isError.value.createFor = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
+    isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
     let navigate = document.getElementById("selected-user");
     window.location.hash = "selected-user";
     navigate.scrollIntoView(false);
@@ -462,12 +504,20 @@ async function init() {
       if (!canCreateFor.value) {
         fetchRemaining();
       }
+      else {
+        const result = await userManagementService.getUserInitialData({ keyword: null });
+        userInitialData.value = result.data.datas;
+      }
       fetchDataEdit();
     }
     else {
       if (!canCreateFor.value) {
         fetchRemaining();
         fetchUserData(authStore.id);
+      }
+      else {
+        const result = await userManagementService.getUserInitialData({ keyword: null });
+        userInitialData.value = result.data.datas;
       }
     }
   }

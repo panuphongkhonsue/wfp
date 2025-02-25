@@ -4,7 +4,7 @@
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
           <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense v-model="filter.keyword"
-            label="ค้นหา" placeholder="ค้นหาจากเลขที่ใบเบิก" clearable>
+            label="ค้นหา" placeholder="ค้นหาจากเลขที่ใบเบิก">
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-3">
@@ -32,11 +32,12 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-9 row font-bold font-16  q-col-gutter-md">
+        <p class="col-md col-12 q-ma-none">จำนวนเงินการเบิกคงเหลือ :
+          {{ remaining?.fundRemaining ?? remaining?.perTimesRemaining ?? "-" }} บาท</p>
         <p class="col-md col-12 q-ma-none">
           สิทธิ์คงเหลือ :
           {{ remaining?.requestsRemaining ?? "-" }} ครั้ง
         </p>
-        <p class="col-md col-12 q-ma-none">จำนวนเงินการเบิกคงเหลือ : {{ remaining?.fundRemaining ?? "-" }} บาท</p>
       </div>
       <div class="col-12 col-md-3 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -110,6 +111,7 @@ import { Notify } from "quasar";
 import Swal from "sweetalert2";
 
 import healthCheckUpWelfareService from "src/boot/service/healthCheckUpWelfareService";
+import exportService from "src/boot/service/exportService";
 
 import { useListStore } from "src/stores/listStore";
 import { useRoute, useRouter } from "vue-router";
@@ -203,6 +205,12 @@ async function init() {
     else {
       remaining.value.fundRemaining = null;
     }
+    if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
+      remaining.value.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
+    }
+    else {
+      remaining.value.perTimesRemaining = null;
+    }
   }
   catch (error) {
     Promise.reject(error);
@@ -266,11 +274,49 @@ function goto(requestId) {
   });
 }
 
-function downloadData(requestId) {
-  router.push({
-    name: "",
-    params: { id: requestId },
+async function downloadData(requestId) {
+  const notify = Notify.create({
+    message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",
+    position: "top-right",
+    spinner: true,
+    type: 'info',
   });
+  try {
+    const result = await exportService.healthCheckup(requestId);
+    let filename = null;
+    const contentDisposition = result.headers["content-disposition"];
+    if (contentDisposition) {
+      const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (matches && matches[1]) {
+        filename = decodeURIComponent(matches[1]);
+      }
+    }
+
+    const blob = new Blob([result.data], { type: "application/pdf" });
+
+    const a = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  catch (error) {
+    console.log(error);
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "ดาวน์โหลดไม่สำเร็จกรุณาลองอีกครั้ง",
+      position: "top-right",
+      type: "primary",
+    });
+  }
+  finally {
+    notify();
+  }
 }
 
 async function deleteData(id, reimNumber) {
@@ -363,7 +409,7 @@ const columns = ref([
   },
   {
     name: "fundReceipt",
-    label: "จำนวนเงินที่เบิกตามใบเสร็จ",
+    label: "จำนวนเงินที่เบิกตามใบเสร็จ / ใบสำคัญรับเงิน",
     align: "right",
     field: (row) => row?.fundReceipt ?? "-",
     format: (val) => {
@@ -391,7 +437,7 @@ const columns = ref([
   },
   {
     name: "fundSumRequest",
-    label: "จำนวนเงินที่เบิกได้",
+    label: "จำนวนเงินที่เบิกทั้งหมด",
     align: "right",
     field: (row) => row?.fundSumRequest ?? "-",
     format: (val) => {

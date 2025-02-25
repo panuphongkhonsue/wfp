@@ -1,6 +1,6 @@
 const BaseController = require('./BaseControllers');
 const { users, positions, sector, employeeTypes, roles, departments, children, sequelize } = require('../models/mariadb');
-const { Op } = require('sequelize')
+const { Op, col } = require('sequelize')
 const { initLogger } = require('../logger');
 const logger = initLogger('UserController');
 const { isNullOrEmpty } = require('../controllers/utility');
@@ -94,6 +94,12 @@ class Controller extends BaseController {
                     'name',
                     'username',
                     'first_working_date',
+                    [col("house_number"), "houseNumber"],
+                    [col("street"), "street"],
+                    [col("district"), "district"],
+                    [col("sub_district"), "subDistrict"],
+                    [col("province"), "province"],
+                    [col("postal_code"), "postalCode"],
                 ],
                 include: [
                     {
@@ -278,6 +284,7 @@ class Controller extends BaseController {
         const { id } = req.user;
         const child = req.body.child ?? null;
         delete req.body.child;
+        const deleteChild = req.deleteChild ?? null;
         const dataUpdate = req.body;
         const dataId = req.params['id'];
         var itemsReturned = null;
@@ -318,10 +325,24 @@ class Controller extends BaseController {
                     });
                     var hasChildUpdated = JSON.stringify(existingChildren) !== JSON.stringify(updatedChildren);
                 }
-                if (updated > 0 || hasChildUpdated) {
+                if (!isNullOrEmpty(deleteChild)) {
+                    const idsToDelete = deleteChild.map(child => child.id);
+                    var deleted = await children.update(
+                        { deleted_at: new Date() },
+                        {
+                            where: {
+                                id: idsToDelete,
+                                users_id: dataId
+                            },
+                            transaction: t
+                        }
+                    );
+                }
+                if (updated > 0 || hasChildUpdated || deleted) {
                     itemsReturned = {
                         ...updated,
                         child: updateItemChild,
+                        deleted: deleted,
                     };
                 }
                 else {

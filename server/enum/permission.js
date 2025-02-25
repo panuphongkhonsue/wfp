@@ -1,4 +1,3 @@
-
 module.exports = {
     generalWelfare: 1,
     variousWelfare: 2,

@@ -24,9 +24,16 @@ const employeeTypeRouter = require('./routes/employeeType');
 const postitionRouter = require('./routes/position');
 const sectorRouter = require('./routes/sector');
 const roleRouter = require('./routes/role');
-const healthCheckUpWelfare = require('./routes/healthCheckUpWelfare');
+const childrenEducationRouter = require('./routes/childrenEducation');
 const dashboardRouter = require('./routes/dashboard');
 const reimbursementWelfareRouter = require('./routes/reimburesmentWelfare');
+const healthCheckUpWelfareRouter = require('./routes/healthCheckUpWelfare');
+const dentalWelfareRouter = require('./routes/dentalWelfare');
+const medicalWelfareRouter = require('./routes/medicalWelfare');
+const exportRouter = require('./routes/export');
+const variousWelfare = require('./routes/variousWelfare');
+const variousFuneralFamilyWelfare = require('./routes/variousFamilyFuneralWelfare');
+const funeralWelfareEmployeeDeceased = require('./routes/funeralWelfareEmployeeDeceased');
 
 
 var app = express();
@@ -35,6 +42,7 @@ app.use(
     cors({
         origin: '*',
         exposedHeaders: ['Content-Disposition'],
+        allowedHeaders: ['Content-Type'],
     }),
 );
 app.use(
@@ -58,7 +66,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-
+app.use("/assets", express.static(__dirname + "/public"));
 // --- Map router ---
 app.use('/', indexRouter);
 app.use('/account', accountRouter);
@@ -76,9 +84,16 @@ app.use('/employee-type', auth, employeeTypeRouter);
 app.use('/position', auth, postitionRouter);
 app.use('/sector', auth, sectorRouter);
 app.use('/role', auth, roleRouter);
-app.use('/reimbursement-welfare', auth, reimbursementWelfareRouter);
-app.use('/health-check-up-welfare', auth, healthCheckUpWelfare);
+app.use('/reimbursement-children-education', auth, childrenEducationRouter);
 app.use('/dashboard', auth, dashboardRouter);
+app.use('/reimbursement-welfare', auth, reimbursementWelfareRouter);
+app.use('/health-check-up-welfare', auth, healthCheckUpWelfareRouter);
+app.use('/dental-welfare', auth, dentalWelfareRouter);
+app.use('/medical-welfare', auth, medicalWelfareRouter);
+app.use('/various-welfare', auth, variousWelfare);
+app.use('/various-welfare-funeral-family', auth, variousFuneralFamilyWelfare);
+app.use('/funeral-welfare', auth, funeralWelfareEmployeeDeceased);
+app.use('/export', auth, exportRouter);
 // error handling
 app.use((error, req, res, next) => {
     logger.error(`Internal Server Error: ${error.message}`);

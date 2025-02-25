@@ -1,13 +1,12 @@
 const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
 const { initLogger } = require('../logger');
-const logger = initLogger('UserValidator');
+const logger = initLogger('HealthCheckupValidator');
 const { Op, literal, col } = require('sequelize')
 const permissionType = require('../enum/permission')
 const statusText = require('../enum/statusText')
 const status = require('../enum/status')
 const category = require('../enum/category');
 const welfareType = require('../enum/welfareType');
-const roleType = require('../enum/role')
 const { permissionsHasRoles, reimbursementsGeneral, categories, sequelize } = require('../models/mariadb')
 
 const authPermission = async (req, res, next) => {
@@ -21,6 +20,14 @@ const authPermission = async (req, res, next) => {
         });
         if (!isAccess) {
             throw Error("You don't have access to this API");
+        }
+        else {
+            const isEditor = await permissionsHasRoles.count({
+                where: {
+                    [Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.welfareManagement }],
+                },
+            });
+            if (isEditor) req.isEditor = true;
         }
         next();
     }
@@ -78,6 +85,7 @@ const bindFilter = async (req, res, next) => {
         }
         req.query.filter[Op.and].push({
             '$reimbursementsGeneral.created_by$': { [Op.eq]: id },
+            '$reimbursementsGeneral.categories_id$': { [Op.eq]: category.healthCheckup },
         });
         next();
     }
@@ -104,6 +112,11 @@ const byIdMiddleWare = async (req, res, next) => {
                 { '$reimbursementsGeneral.created_by$': { [Op.eq]: id }, }
             );
         }
+        req.query.filter[Op.and].push(
+            {
+                '$reimbursementsGeneral.categories_id$': { [Op.eq]: category.healthCheckup },
+            }
+        );
         next();
     }
     catch (error) {
@@ -119,13 +132,13 @@ const checkNullValue = async (req, res, next) => {
             errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
         } else if (isInvalidNumber(fundReceipt)) {
             errorObj["fundReceipt"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-        } else if (fundReceipt < 0) {
+        } else if (fundReceipt <= 0) {
             return res.status(400).json({
-                message: "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้",
+                message: "จำนวนเงินตามใบเสร็จน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
         }
 
-        if (isInvalidNumber(fundDecree) && fundDecree) {
+        if (isInvalidNumber(fundDecree) && !isNullOrEmpty(fundDecree)) {
             errorObj["fundDecree"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundDecree < 0) {
             return res.status(400).json({
@@ -133,14 +146,14 @@ const checkNullValue = async (req, res, next) => {
             });
         }
 
-        if (isInvalidNumber(fundUniversity) && fundUniversity) {
+        if (isInvalidNumber(fundUniversity) && !isNullOrEmpty(fundUniversity)) {
             errorObj["fundUniversity"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundUniversity < 0) {
             return res.status(400).json({
                 message: "เงินที่เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพาน้อยกว่า 0 ไม่ได้",
             });
         }
-        if (isInvalidNumber(fundEligible) && fundEligible) {
+        if (isInvalidNumber(fundEligible) && !isNullOrEmpty(fundEligible)) {
             errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundEligible < 0) {
             errorObj["fundEligible"] = "ค่าสิทธิอื่น ๆ น้อยกว่า 0 ไม่ได้";
@@ -162,7 +175,7 @@ const checkNullValue = async (req, res, next) => {
         const fundSumRequest = Number(fundReceipt) - Number(fundEligibleSum);
         if (fundSumRequest <= 0) {
             return res.status(400).json({
-                message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ได้รับจากสิทธิอื่น ๆ",
+                message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าหรือเท่ากับเงินที่ได้รับจากสิทธิอื่น ๆ",
             });
         }
         if ((isNullOrEmpty(actionId) || (actionId != status.draft && actionId != status.waitApprove)) && !req.access) {
@@ -188,20 +201,20 @@ const checkNullValue = async (req, res, next) => {
 const bindCreate = async (req, res, next) => {
     try {
         const { fundReceipt, fundDecree, fundUniversity, fundEligible, fundEligibleName, fundEligibleSum, fundSumRequest, createFor, actionId } = req.body;
-        const { id, roleId } = req.user;
-        if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
+        const { id } = req.user;
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
             });
         }
-        if (!isNullOrEmpty(createFor) && actionId == status.draft) {
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
             return res.status(400).json({
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
         }
         const results = await reimbursementsGeneral.findOne({
             attributes: ["id"],
-            order: [["id", "DESC"]] // Order by id in descending order
+            order: [["id", "DESC"]]
         });
         var reimNumber;
         if (results) {
@@ -234,16 +247,21 @@ const bindCreate = async (req, res, next) => {
 const bindUpdate = async (req, res, next) => {
     try {
         const { fundReceipt, fundDecree, fundUniversity, fundEligible, fundEligibleName, fundEligibleSum, fundSumRequest, createFor, actionId } = req.body;
-        const { id, roleId } = req.user;
-        if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
+        const { id } = req.user;
+        if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+            });
+        }
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
+            return res.status(400).json({
+                message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
         }
         const dataId = req.params['id'];
         const results = await reimbursementsGeneral.findOne({
             attributes: ["status", "created_by"],
-            where: { id: dataId },
+            where: { id: dataId, categories_id: category.healthCheckup },
         });
         var createByData;
         if (results) {
@@ -259,11 +277,16 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if (req.access && (datas.status == statusText.draft || datas.status == statusText.approve)) {
+            if (req.access && (datas.status != statusText.waitApprove)) {
                 return res.status(400).json({
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
+        }
+        else {
+            return res.status(400).json({
+                message: "ไม่พบข้อมูล",
+            });
         }
         const dataBinding = {
             fund_receipt: fundReceipt,
@@ -304,7 +327,7 @@ const bindUpdate = async (req, res, next) => {
 const getRemaining = async (req, res, next) => {
     const method = 'RemainingMiddleware';
     try {
-        const { id, roleId } = req.user;
+        const { id } = req.user;
         const { createFor } = req.query;
         const { created_by, createByData } = req.body;
         req.query.filter = {};
@@ -315,12 +338,12 @@ const getRemaining = async (req, res, next) => {
                 { '$reimbursementsGeneral.created_by$': createByData },
             );
         }
-        else if (!isNullOrEmpty(created_by) && roleId == roleType.financialUser) {
+        else if (!isNullOrEmpty(created_by) && req.isEditor) {
             req.query.filter[Op.and].push(
                 { '$reimbursementsGeneral.created_by$': created_by },
             );
         }
-        else if (!isNullOrEmpty(createFor) && roleId == roleType.financialUser) {
+        else if (!isNullOrEmpty(createFor) && req.isEditor) {
             req.query.filter[Op.and].push(
                 { '$reimbursementsGeneral.created_by$': createFor },
             );
@@ -332,7 +355,7 @@ const getRemaining = async (req, res, next) => {
         }
         req.query.filter[Op.and].push(
             { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
-            { '$category.id$': category.healthCheckup }
+            { '$reimbursementsGeneral.categories_id$': category.healthCheckup }
         );
         next();
     }
@@ -372,15 +395,20 @@ const checkUpdateRemaining = async (req, res, next) => {
         });
         const welfareCheckData = await reimbursementsGeneral.findOne({
             attributes: ["fund_sum_request"],
-            where: { id: dataId },
+            where: { id: dataId, categories_id: category.healthCheckup },
         });
+        if (!welfareCheckData) {
+            return res.status(400).json({
+                message: "ไม่พบข้อมูล",
+            });
+        }
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
             const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
             if (fund_sum_request < oldWelfareData.fund_sum_request) {
                 return next();
             }
-            else if (fund_sum_request > datas.perTimes) {
+            else if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
@@ -414,12 +442,12 @@ const checkFullPerTimes = async (req, res, next) => {
         })
         if (getFund) {
             const datas = JSON.parse(JSON.stringify(getFund));
-            if (fund_sum_request > datas.perTimes) {
+            if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request > datas.fundRemaining) {
+            if (fund_sum_request > datas.fundRemaining && !isNullOrEmpty(datas.fundRemaining)) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
@@ -473,12 +501,12 @@ const checkRemaining = async (req, res, next) => {
                     message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
                 });
             };
-            if (fund_sum_request > datas.perTimes) {
+            if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request > datas.fundRemaining) {
+            if (fund_sum_request > datas.fundRemaining && !isNullOrEmpty(datas.fundRemaining)) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
@@ -498,8 +526,8 @@ const deletedMiddleware = async (req, res, next) => {
         const dataId = req.params['id'];
         const { id } = req.user;
         const results = await reimbursementsGeneral.findOne({
-            attributes: ["status", "created_by"],
-            where: { id: dataId, created_by: id },
+            attributes: ["status"],
+            where: { id: dataId, created_by: id, categories_id: category.healthCheckup },
         });
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));

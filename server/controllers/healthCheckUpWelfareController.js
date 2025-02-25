@@ -2,8 +2,8 @@ const BaseController = require('./BaseControllers');
 const { reimbursementsGeneral, categories, users, positions, sector, employeeTypes, departments, sequelize } = require('../models/mariadb');
 const { fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
-const roleType = require('../enum/role')
-const logger = initLogger('ReimbursementsGeneralController');
+const category = require('../enum/category');
+const logger = initLogger('healthCheckUpWelfareController');
 
 class Controller extends BaseController {
     constructor() {
@@ -11,7 +11,7 @@ class Controller extends BaseController {
     }
 
     list = async (req, res, next) => {
-        const method = 'GetListUser';
+        const method = 'GetListHealthCheckupWelfare';
         const { id } = req.user;
         try {
             const { filter, page, itemPerPage } = req.query;
@@ -58,7 +58,7 @@ class Controller extends BaseController {
         }
     }
     getRemaining = async (req, res, next) => {
-        const method = 'GetRemaining';
+        const method = 'GetRemainingHealthCheckupWelfare';
         const { id } = req.user;
         try {
             const { filter } = req.query;
@@ -77,7 +77,8 @@ class Controller extends BaseController {
                     [
                         literal("category.per_years - COUNT(reimbursementsGeneral.fund_sum_request)"),
                         "requestsRemaining"
-                    ]
+                    ],
+                    [col("category.per_times"), "perTimesRemaining"],
                 ],
                 include: [
                     {
@@ -102,8 +103,9 @@ class Controller extends BaseController {
                 attributes: [
                     [col("fund"), "fundRemaining"],
                     [col("per_years"), "requestsRemaining"],
+                    [col("per_times"), "perTimesRemaining"],
                 ],
-                where: { id: 1 }
+                where: { id: category.healthCheckup }
             })
             if (getFund) {
                 const datas = JSON.parse(JSON.stringify(getFund));
