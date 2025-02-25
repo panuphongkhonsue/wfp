@@ -41,7 +41,26 @@ const betweenFiscalByYear = (startYear, endYear) => {
     ]
   };
 };
-
+const getFiscalYearDynamic = (date) => {
+  return {
+    [Op.between]: [
+      literal(
+        `CASE 
+          WHEN MONTH(STR_TO_DATE('${date}', '%Y-%m-%d')) >= 10 
+          THEN DATE_FORMAT(STR_TO_DATE('${date}', '%Y-%m-%d'), '%Y-10-01') 
+          ELSE DATE_FORMAT(DATE_SUB(STR_TO_DATE('${date}', '%Y-%m-%d'), INTERVAL 1 YEAR), '%Y-10-01') 
+        END`
+      ),
+      literal(
+        `CASE 
+          WHEN MONTH(STR_TO_DATE('${date}', '%Y-%m-%d')) >= 10 
+          THEN DATE_FORMAT(DATE_ADD(STR_TO_DATE('${date}', '%Y-%m-%d'), INTERVAL 1 YEAR), '%Y-09-30') 
+          ELSE DATE_FORMAT(STR_TO_DATE('${date}', '%Y-%m-%d'), '%Y-09-30') 
+        END`
+      )
+    ]
+  }
+}
 
 const getYear2Digits = () => {
 const getThaiYear = (year) => (year + 543).toString().slice(-2);
@@ -52,4 +71,4 @@ const thaiYearShort = getThaiYear(thisYear); // "68"
 }
 const formatNumber = (num) => num.toString().padStart(2, "0");
 const isInvalidNumber = (value) => isNaN(value) || value === "" || value === null;
-module.exports = { isNullOrEmpty, checkRequire, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber, betweenFiscalByYear };
+module.exports = { isNullOrEmpty, checkRequire, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber, betweenFiscalByYear,getFiscalYearDynamic };
