@@ -127,8 +127,11 @@ const essentialLinksUser = computed(() => {
 });
 
 const userName = computed(() => {
-  const name = authStore.name.split(" ").slice(1).join(" ");
-  return name;
+  if (authStore.name) {
+    const name = authStore.name.split(" ").slice(1).join(" ");
+    return name;
+  }
+  return '';
 });
 
 const essentialLinksEditor = computed(() => {
