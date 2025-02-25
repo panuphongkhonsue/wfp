@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', {
     roleId: null,
     email: null,
     department: null,
+    roleName: null,
     id: null,
     isEditor: null,
   }),
@@ -23,6 +24,7 @@ export const useAuthStore = defineStore('auth', {
       this.email = null;
       this.department = null;
       this.id = null;
+      this.RoleName = null;
       this.isEditor = null;
     },
   },
