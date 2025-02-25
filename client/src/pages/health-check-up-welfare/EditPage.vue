@@ -55,10 +55,11 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col q-ma-none">ตรวจสุขภาพ : {{ remaining?.fundRemaining ?? remaining?.perTimesRemaining ?? "-"
+              <p class="col q-ma-none">ตรวจสุขภาพ : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาท" :
+                remaining?.perTimesRemaining ? remaining?.perTimesRemaining + " บาท" : "ไม่จำกัดจำนวนเงิน"
                 }}
-                {{ "บาท ( " }}
-                {{ remaining?.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
+                {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : '(ไม่จำกัดครั้ง)' }}
+              </p>
             </q-card-section>
           </q-card>
         </div>
@@ -84,13 +85,14 @@
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'" is-require
-                label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" compclass="col-xs-12 col-lg-4 col-xl-2"
-                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ']" :is-view="isView"
-                :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
+                label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number"
+                compclass="col-xs-12 col-lg-4 col-xl-2"
+                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ', (val) => !isOver || 'จำนวนตามใบเสร็จไม่สามารถมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ']"
+                :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
               <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require
-                label="จำนวนที่ต้องการเบิก" type="number" compclass="col-xs-12 col-lg-3 col-xl-2" :is-view="isView"
-                v-if="isView">
+                label="จำนวนที่ต้องการเบิก (บาท)" type="number" compclass="col-xs-12 col-lg-3 col-xl-2"
+                :is-view="isView" v-if="isView">
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-sm font-medium font-16">
@@ -100,13 +102,14 @@
                   <q-inner-loading showing color="primary" />
                 </template>
                 <template v-slot:body-cell-fundEligibleName="props">
-                  <q-td v-if="props.row.fundEligibleName || isView" :props="props" class="text-center text-grey-9">
+                  <q-td v-if="!props.row.isInput || isView" :props="props" class="text-center text-grey-9">
                     {{ props.row.fundEligibleName ?? "-" }}
                   </q-td>
                   <q-td v-else :props="props" class="text-grey-9">
                     <q-input class="font-14 font-regular" dense
                       v-model="model.claimByEligible[props.row.id - 1].fundEligibleName" outlined autocomplete="off"
-                      color="dark" type="text" :for="'input-fundEligibleName' + props.row.id" placeholder="">
+                      hide-bottom-space :bottom-slots="false" color="dark" type="text"
+                      :for="'input-fundEligibleName' + props.row.id" placeholder="">
                     </q-input>
                   </q-td>
                 </template>
@@ -117,7 +120,8 @@
                   <q-td v-else :props="props" class="text-grey-9">
                     <q-input class="font-14 font-regular" dense
                       v-model="model.claimByEligible[props.row.id - 1].fundEligible" outlined autocomplete="off"
-                      color="dark" type="number" :forId="'input-fundEligible' + props.row.id" placeholder="0">
+                      hide-bottom-space color="dark" type="number" :forId="'input-fundEligible' + props.row.id"
+                      placeholder="0">
                     </q-input>
                   </q-td>
                 </template>
@@ -144,11 +148,12 @@
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'health_check_up_welfare_list' }" />
-        <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
-        <q-btn :disable="!canRequest" id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense
-          type="submit" style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
-          v-if="!isView && !isLoading" />
+        <q-btn :disable="isValidate" id="button-draft"
+          class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
+          label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
+        <q-btn :disable="!canRequest || isValidate" id="button-approve"
+          class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
+          label="ส่งคำร้องขอ" no-caps @click="submit(2)" v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -218,7 +223,57 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   model.value = null;
 });
+const isValidate = computed(() => {
+  let validate = false;
+  if (!model.value.fundReceipt) {
+    validate = true;
+  }
+  if (!/^[A-Za-zก-ฮ0-9]+$/.test(model.value.claimByEligible[2].fundEligibleName)) {
+    validate = true;
+  }
+  if (!model.value.createFor && canCreateFor.value) {
+    validate = true;
+  }
+  if (model.value.claimByEligible[2].fundEligible && !model.value.claimByEligible[2].fundEligibleName) {
+    validate = true;
+  }
+  if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
+    validate = true;
+  }
+  const fundEligibleSum = Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[1].fundEligible) + Number(model.value.claimByEligible[2].fundEligible);
+  const fundSumRequest = Number(model.value.fundReceipt) - Number(fundEligibleSum);
+  if (fundSumRequest <= 0) {
+    validate = true;
+  }
+  return validate;
+});
 
+const isOver = computed(() => {
+  const fundEligibleSum = Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[1].fundEligible) + Number(model.value.claimByEligible[2].fundEligible);
+  const fundSumRequest = Number(model.value.fundReceipt) - Number(fundEligibleSum);
+  return fundSumRequest <= 0;
+});
+watch(
+  () => model.value.fundReceipt,
+  () => {
+    if (model.value.claimByEligible[2].fundEligible && !model.value.claimByEligible[2].fundEligibleName) {
+      Notify.create({
+        message:
+          "กรุณากรอกชื่อสิทธิ อื่น ๆ",
+        position: "bottom-left",
+        type: "negative",
+      });
+    }
+    if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
+      Notify.create({
+        message:
+          "กรุณากรอกจำนวนเงินที่เบิกตามสิทธิอื่น ๆ",
+        position: "bottom-left",
+        type: "negative",
+      });
+    }
+  }
+);
 watch(
   () => model.value.fundReceipt,
   (newValue) => {
@@ -257,7 +312,7 @@ async function fetchDataEdit() {
       if (returnedData) {
         model.value = {
           ...model,
-          createFor: null,
+          createFor: returnedData?.user.userId,
           reimNumber: returnedData?.reimNumber,
           requestDate: returnedData?.requestDate,
           status: returnedData?.status,
@@ -284,7 +339,10 @@ async function fetchDataEdit() {
           department: returnedData?.user.department,
         };
         row.value[0].fundEligible = returnedData?.fundDecree;
+        row.value[0].isInput = false;
         row.value[1].fundEligible = returnedData?.fundUniversity;
+        row.value[1].isInput = false;
+        row.value[2].isInput = true;
         row.value[2].fundEligible = returnedData?.fundEligible;
         row.value[2].fundEligibleName = returnedData?.fundEligibleName;
       }
@@ -411,11 +469,25 @@ async function submit(actionId) {
     window.location.hash = "fund";
     navigate.scrollIntoView(false);
     validate = true;
-  } if (!model.value.createFor && canCreateFor.value) {
+  }
+  if (!/^[A-Za-zก-ฮ0-9]+$/.test(model.value.claimByEligible[2].fundEligibleName)) {
+    validate = true;
+  }
+  if (!model.value.createFor && canCreateFor.value) {
     isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
     let navigate = document.getElementById("selected-user");
     window.location.hash = "selected-user";
     navigate.scrollIntoView(false);
+    validate = true;
+  }
+  if (model.value.claimByEligible[2].fundEligible && !model.value.claimByEligible[2].fundEligibleName) {
+    validate = true;
+  }
+  if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
+    validate = true;
+  }
+  if (isOver.value) {
+    isError.value.fundReceipt = "จำนวนตามใบเสร็จไม่สามารถมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
     validate = true;
   }
   if (validate === true) {
@@ -504,10 +576,9 @@ async function init() {
       if (!canCreateFor.value) {
         fetchRemaining();
       }
-      else {
-        const result = await userManagementService.getUserInitialData({ keyword: null });
-        userInitialData.value = result.data.datas;
-      }
+      const result = await userManagementService.getUserInitialData({ keyword: null });
+      userInitialData.value = result.data.datas;
+      options.value = result.data.datas;
       fetchDataEdit();
     }
     else {
@@ -553,16 +624,19 @@ const columns = ref([
 const row = ref([
   {
     id: 1,
+    isInput: false,
     fundEligibleName: 'ได้รับเงินจากสิทธิที่เบิกได้ตามพระราชกฤษฎีกาเงินสวัสดิการเกี่ยวกับการรักษาพยาบาล',
     fundEligible: null,
   },
   {
     id: 2,
+    isInput: false,
     fundEligibleName: 'เบิกได้ตามประกาศสวัสดิการคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา',
     fundEligible: null,
   },
   {
     id: 3,
+    isInput: true,
     fundEligibleName: null,
     fundEligible: null,
   },
