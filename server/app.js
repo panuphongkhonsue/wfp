@@ -94,9 +94,6 @@ app.use('/various-welfare', auth, variousWelfare);
 app.use('/various-welfare-funeral-family', auth, variousFuneralFamilyWelfare);
 app.use('/funeral-welfare', auth, funeralWelfareEmployeeDeceased);
 app.use('/export', auth, exportRouter);
-
-
-
 // error handling
 app.use((error, req, res, next) => {
     logger.error(`Internal Server Error: ${error.message}`);

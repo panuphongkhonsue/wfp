@@ -8,4 +8,19 @@ export default {
       params: options,
     });
   },
+  getDashboardDataPersonal(options) {
+    return api.get(`${path}/report/report-personal`, {
+      params: options,
+    });
+  },
+  getDashboardDataFundRequestPerYear(options) {
+    return api.get(`${path}/report/report-fund-request-per-year`, {
+      params: options,
+    });
+  },
+  getDashboardDataFundRequestPerYearEachType(options) {
+    return api.get(`${path}/report/report-fund-request-per-year-each-type`, {
+      params: options,
+    });
+  },
 };

@@ -60,7 +60,7 @@ export function formatNumber(val) {
   if (!isNaN(number)) {
     return number.toLocaleString("en-US"); // Format as '3,000'
   }
-  return `${val}`; // If conversion fails, return a fallback value
+  return `0`; // If conversion fails, return a fallback value
 }
 
 export function toThaiYear(year){

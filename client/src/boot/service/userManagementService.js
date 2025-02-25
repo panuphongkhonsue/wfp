@@ -8,6 +8,11 @@ export default {
       params: options,
     });
   },
+  listOrderName(options) {
+    return api.get(`${path}/order/name`, {
+      params: options,
+    });
+  },
   dataById(id) {
     return api.get(`${path}/${id}`);
   },

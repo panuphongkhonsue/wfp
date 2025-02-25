@@ -78,6 +78,7 @@ class Controller extends BaseController {
             next(error);
         }
     }
+
     getById = async (req, res, next) => {
         const method = 'GetUserbyId';
         const { id } = req.user;
@@ -435,6 +436,76 @@ class Controller extends BaseController {
             next(error);
         }
     }
+
+    listOrderByName = async (req, res, next) => {
+        const method = 'GetListUser';
+        const { id } = req.user;
+        try {
+            const { filter, page, itemPerPage } = req.query;
+            var whereObj = { ...filter }
+            const userDataList = await users.paginate({
+                attributes: [
+                    'id',
+                    'name',
+                ],
+                page: page && !isNaN(page) ? Number(page) : 1,
+                paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 0,
+                include: [
+                    {
+                        model: positions, as: 'position',
+                        attributes: ['name'], required: false
+                    },
+                    {
+                        model: employeeTypes, as: 'employee_type',
+                        attributes: ['name'], required: false
+                    },
+                    {
+                        model: sector, as: 'sector',
+                        attributes: ['name'], required: false
+                    },
+                    {
+                        model: departments, as: 'department',
+                        attributes: ['name'], required: false
+                    },
+                ],
+                where: whereObj,
+                order: [['name', 'ASC']]
+            });
+
+            if (userDataList) {
+                var userList = {};
+                userList.pagination = {
+                    page: page && !isNaN(page) ? Number(page) : 1,
+                    total: userDataList.total
+                }
+                userList.datas = userDataList.docs.map((listObj) => {
+                    const plainObj = listObj.toJSON();
+                    var position = plainObj.position?.name;
+                    var employeeType = plainObj.employee_type?.name;
+                    var sector = plainObj.sector?.name;
+                    var department = plainObj.department?.name;
+                    delete plainObj.employee_type;
+                    return {
+                        ...plainObj,
+                        position: position,
+                        employeeType: employeeType,
+                        sector: sector,
+                        department: department,
+                    }
+                });
+                logger.info('Complete', { method, data: { id } });
+                res.status(200).json(userList);
+            }
+        }
+        catch (error) {
+            logger.error(`Error ${error.message}`, {
+                method,
+                data: { id },
+            });
+            next(error);
+        }
+    }
+
 }
 
 module.exports = new Controller();
