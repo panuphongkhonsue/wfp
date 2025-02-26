@@ -1,5 +1,4 @@
 export function statusColor(e) {
-  // console.log("statusColor : " + e);
   switch (e) {
     case "บันทึกฉบับร่าง":
       return "grey-4";
@@ -13,7 +12,6 @@ export function statusColor(e) {
 }
 
 export function textStatusColor(e) {
-  // console.log("textStatusColor : " + e);
   switch (e) {
     case "บันทึกฉบับร่าง":
       return "text-grey-8";

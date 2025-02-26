@@ -228,9 +228,6 @@ const isValidate = computed(() => {
   if (!model.value.fundReceipt) {
     validate = true;
   }
-  if (!/^[A-Za-zก-ฮ0-9]+$/.test(model.value.claimByEligible[2].fundEligibleName)) {
-    validate = true;
-  }
   if (!model.value.createFor && canCreateFor.value) {
     validate = true;
   }
@@ -470,9 +467,6 @@ async function submit(actionId) {
     navigate.scrollIntoView(false);
     validate = true;
   }
-  if (!/^[A-Za-zก-ฮ0-9]+$/.test(model.value.claimByEligible[2].fundEligibleName)) {
-    validate = true;
-  }
   if (!model.value.createFor && canCreateFor.value) {
     isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
     let navigate = document.getElementById("selected-user");
@@ -505,7 +499,7 @@ async function submit(actionId) {
     fundUniversity: model.value.claimByEligible[1].fundEligible,
     fundEligible: model.value.claimByEligible[2].fundEligible,
     fundEligibleName: model.value.claimByEligible[2].fundEligibleName,
-    createFor: model.value.createFor,
+    createFor: canCreateFor.value ? model.value.createFor : null,
     actionId: actionId
   }
   var fetch;

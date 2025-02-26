@@ -540,7 +540,7 @@ async function submit(actionId) {
     fundReceipt: model.value.fundReceipt,
     dateReceipt: formatDateServer(model.value.dateReceipt),
     fundSumRequest: model.value.fundSumRequest,
-    createFor: model.value.createFor,
+    createFor: canCreateFor.value ? model.value.createFor : null,
     actionId: actionId
   }
   var fetch;
