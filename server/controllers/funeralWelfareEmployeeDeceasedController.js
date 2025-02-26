@@ -458,32 +458,6 @@ class Controller extends BaseController {
                     { '$reimbursements_employee_deceased.id$': { [Op.lte]: datas.id } },
                     { '$category.id$': { [Op.in]: [9, 10, 11, 12] } },
                 );
-                const getRequestData = await reimbursementsEmployeeDeceasedHasCategories.findAll({
-                    attributes: [
-                        [col("reimbursements_employee_deceased.id"), "id"],
-                        [col("reimbursements_employee_deceased.fund_vehicle"), "fundVehicle"],
-                    ],
-                    include: [
-                        {
-                            model: categories,
-                            as: "category",
-                            attributes: []
-                        },
-                        {
-                            model: reimbursementsEmployeeDeceased,
-                            as: "reimbursements_employee_deceased",
-                            attributes: [],
-                            include: [
-                                {
-                                    model: users,
-                                    as: 'created_by_user',
-                                    attributes: ['id', 'name'],
-                                },
-                            ]
-                        },
-                    ],
-                    where: whereObj,
-                })
                 var welfareData = {
                     ...datas,
                     user: {
@@ -494,7 +468,6 @@ class Controller extends BaseController {
                         sector: datas.sector,
                         department: datas.department,
                     },
-                    requestData: JSON.parse(JSON.stringify(getRequestData))
                 }
                 delete welfareData.userId;
                 delete welfareData.name;
