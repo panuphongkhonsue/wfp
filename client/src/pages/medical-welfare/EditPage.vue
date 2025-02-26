@@ -153,7 +153,7 @@
                 :error-message="isError?.fundSumRequestPatientVisit" :error="!!isError?.fundSumRequestPatientVisit">
               </InputGroup>
             </q-card-section>
-            <q-card-section class="q-pt-none font-medium font-16">
+            <q-card-section class="q-pt-md font-medium font-16">
               <q-table flat bordered :rows="row ?? []" :columns="columns" row-key="index" :wrap-cells="$q.screen.gt.lg"
                 table-header-class="font-bold bg-blue-10 text-white" separator="cell" hide-bottom :loading="isLoading">
                 <template v-slot:body-cell-index="props">

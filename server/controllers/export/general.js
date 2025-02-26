@@ -3,6 +3,7 @@ const logger = initLogger('ExportHealthCreate');
 var htmlToPdf = require("html-pdf-node");
 const ejs = require("ejs");
 const path = require('path');
+const { bahttext } = require('bahttext');
 require('dotenv').config();
 const createPdfGeneral = async (req, res, next) => {
     const method = 'CreateGeneralData';
@@ -25,6 +26,7 @@ const createPdfGeneral = async (req, res, next) => {
         const receipt = await ejs.renderFile('./templateExport/receiptExport.html.ejs', {
             body: req.body.datas,
             async: true,
+            bahttext,
             path: process.env.fileAccess,
         });
 
@@ -32,6 +34,7 @@ const createPdfGeneral = async (req, res, next) => {
             body: req.body.datas,
             receipt: receipt,
             async: true,
+            bahttext,
             cssStyles: `<style>${cssData}</style>`,
         });
 
