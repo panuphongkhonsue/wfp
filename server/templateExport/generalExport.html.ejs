@@ -380,7 +380,7 @@
               <span class="px-md text-white">๒.</span>
               <div style="flex: 1">
                 จำนวนเงิน <%= toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US')) %> บาท
-                  <%= bahttext(Number(body?.fundSumRequest)) %> จริง
+                  (<%= bahttext(Number(body?.fundSumRequest)) %>) จริง
               </div>
             </div>
             <div class="row px-md py-sm" style="gap: 8px; align-items: flex-end">
@@ -494,7 +494,7 @@
                 <div class="row px-md ml-md" style="gap: 8px">
                   <div style="flex: 1" class="pl-md ml-md">
                     จำนวนเงิน <%= toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US')) %> บาท
-                    <%= bahttext(Number(body?.fundSumRequest)) %> ไว้ถูกต้องแล้ว/ครบถ้วนแล้ว
+                    (<%= bahttext(Number(body?.fundSumRequest)) %>) ไว้ถูกต้องแล้ว/ครบถ้วนแล้ว
                   </div>
                 </div>
               </div>
