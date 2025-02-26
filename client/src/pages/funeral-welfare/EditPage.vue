@@ -1,5 +1,5 @@
 <template>
-  <PageLayout title="เบิกสวัสดิการค่าสงเคราะห์ต่าง ๆ">
+  <PageLayout title="เบิกสวัสดิการค่าสงเคราะห์การเสียชีวิต">
     <template v-slot:page>
       <!--General Information Section -->
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
@@ -61,9 +61,6 @@
                 {{ remaining[9]?.perTimesRemaining ?? "-" }}
                 บาท 
               </p>
-
-
-
             </q-card-section>
           </q-card>
         </div>
@@ -95,8 +92,9 @@
                 <InputGroup label="ชื่อ - นามสกุล" is-require :is-view="isView" :data="isView ? deceasedName : null">
                   <q-select v-model="model.deceased" :options="options"  :loading="isLoading"
                     :clearable="true" emit-value map-options option-value="id" option-label="name"
-                    :rules="[(val) => !!val || '']" dense outlined use-input input-debounce="100" hide-bottom-space
-                    :error="!!isError?.deceased" @filter="filterFn" @filter-abort="abortFilterFn" />
+                    :rules="[(val) => !!val || '']" dense outlined use-input hide-selected fill-input  
+                    input-debounce="100" hide-bottom-space :error="!!isError?.deceased" 
+                    @filter="filterFn" @filter-abort="abortFilterFn" />
                 </InputGroup>
               </div>
               <q-card-section class="col-lg-8 col-12 row justify-around q-pt-none">
@@ -118,22 +116,22 @@
                   </div>
                 </q-card-section>
               </q-card-section>
-              <q-card-section class="col-lg-4 col-12 q-mb-none q-px-none q-pb-none">
+            </q-card-section>
+            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund" is-dense v-model="model.organizer" :data="model.organizer ?? '-'" is-require
                   label="จ่ายให้กับผู้จัดการงานศพ" placeholder="ชื่อ-นามสกุล" type="text" class="" :is-view="isView">
                 </InputGroup>
-              </q-card-section>
-            </q-card-section>
-            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
-              <div class="col-lg-4 col-12 ">
+              </div>
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl  ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fund ?? '-'" is-require
-                  label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
+                  label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
-              <div class="col-lg-2"></div>
-              <div class="col-lg-4 col-12 ">
+              
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundRequest" :data="model.fund ?? '-'" is-require
-                  label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView">
+                  label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
             </q-card-section>
@@ -151,17 +149,17 @@
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceiptWreath" :data="model.fund ?? '-'"
                   is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
-              </div>
-              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
-                <InputGroup for-id="fund" is-dense v-model="model.fundWreathUniversity" :data="model.fund ?? '-'"
-                   label="จำนวนเงินที่ต้องการเบิก (ในนามมหาวิทยาลัย)" placeholder="บาท" type="number" class=""
+              </div>             
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
+                <InputGroup for-id="fund" is-dense v-model="model.fundWreathArrange" :data="model.fund ?? '-'"
+                   label="จำนวนเงินที่ต้องการเบิก (บาท) (ในนามส่วนงาน)" placeholder="บาท" type="number" class=""
                   :is-view="isView">
                 </InputGroup>
               </div>
-              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
-                <InputGroup for-id="fund" is-dense v-model="model.fundWreathArrange" :data="model.fund ?? '-'"
-                   label="จำนวนเงินที่ต้องการเบิก (ในนามส่วนงาน)" placeholder="บาท" type="number" class=""
-                  :is-view="isView">
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
+                <InputGroup for-id="fund" is-dense v-model="model.fundWreathUniversity" :data="model.fund ?? '-'"
+                   label="จำนวนเงินที่ต้องการเบิก (บาท) (ในนามมหาวิทยาลัย)" placeholder="บาท" type="number" class=""
+                  :is-view="isView" style="white-space: nowrap;">
                 </InputGroup>
               </div>
             </q-card-section>
@@ -177,12 +175,12 @@
               class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceiptVehicle" :data="model.fund ?? '-'"
-                  is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
+                  is-require label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund" is-dense v-model="model.fundVehicle" :data="model.fund ?? '-'" is-require
-                  label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView">
+                  label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
             </q-card-section>
@@ -264,7 +262,6 @@ const model = ref({
   selectedWreath: false,
   selectedVehicle: false,
 });
-
 const options = ref([]);
 const deceasedName = computed(() => {
   if (isView.value && model.value.deceased) {
@@ -313,20 +310,14 @@ const isEdit = computed(() => {
 const canCreateFor = computed(() => {
   return authStore.isEditor;
 });
-
-
-
 onMounted(async () => {
   await init();
   isLoading.value = false;
 });
-
 onBeforeUnmount(() => {
   model.value = null;
 
 });
-
-
 watch(
   model,
   () => {
@@ -362,7 +353,6 @@ watch(
     }
   }
 );
-
 watch(
   () => model.value.selectedWreath,
   (newValue) => {
@@ -391,14 +381,9 @@ async function fetchDeceasedName() {
   }
 
   try {
-    console.log("Fetching deceased name for ID:", model.value.deceased);
-
     const response = await userManagementService.dataById(model.value.deceased);
     const deceasedData = response.data.datas;
-
     if (deceasedData) {
-      console.log("Deceased data:", deceasedData);
-
       const newDeceased = {
         id: deceasedData.id,
         name: deceasedData.name,
@@ -408,14 +393,12 @@ async function fetchDeceasedName() {
       };
 
       options.value = [newDeceased, ...options.value];
-
       model.value.deceased = deceasedData.id;
     }
   } catch (error) {
     console.error("Error fetching deceased name:", error);
   }
 }
-
 async function fetchDataEdit() {
   setTimeout(async () => {
     try {
@@ -517,22 +500,24 @@ async function fetchRemaining() {
 async function filterFn(val, update) {
   try {
     setTimeout(async () => {
-    
+      if (userInitialData.value.length === 0) { // โหลดข้อมูลเฉพาะครั้งแรก
+        const result = await userManagementService.getUserInitialData({ keyword: null });
+        userInitialData.value = result.data.datas;
+      }
 
       update(() => {
         if (val === '') {
           options.value = userInitialData.value;
-        }
-        else {
+        } else {
           options.value = userInitialData.value.filter(v => v.name.includes(val));
-      }
-    });
+        }
+      });
     }, 650);
-  }
-  catch (error) {
+  } catch (error) {
     Promise.reject(error);
   }
 }
+
 
 function abortFilterFn() {
   // console.log('delayed filter aborted')
@@ -624,7 +609,6 @@ if (!model.value.fundReceipt || !model.value.fundRequest) {
     createFor: model.value.createFor,
     actionId: actionId
   }
-  console.log(payload)
   var fetch;
   Swal.fire({
     title: "ยืนยันการทำรายการหรือไม่ ???",
@@ -693,12 +677,6 @@ async function init() {
     else if (isEdit.value) {
       if (!canCreateFor.value) {
         fetchRemaining();
-        const result = await userManagementService.getUserInitialData({ keyword: null });
-        userInitialData.value = result.data.datas;
-      }
-      else {
-        const result = await userManagementService.getUserInitialData({ keyword: null });
-        userInitialData.value = result.data.datas;
       }
       fetchDataEdit();
     }
@@ -706,12 +684,6 @@ async function init() {
       if (!canCreateFor.value) {
         fetchRemaining();
         fetchUserData(authStore.id);
-        const result = await userManagementService.getUserInitialData({ keyword: null });
-        userInitialData.value = result.data.datas;
-      }
-      else {
-        const result = await userManagementService.getUserInitialData({ keyword: null });
-        userInitialData.value = result.data.datas;
       }
     }
   }

@@ -109,13 +109,13 @@
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
               <div class="col-lg-4 col-12 ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'"
-                  is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
+                  is-require label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
               <div class="col-lg-2"></div>
               <div class="col-lg-4 col-12 ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundEligible" :data="model.fundEligible ?? '-'"
-                  is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท" type="number" class="" :is-view="isView">
+                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class="" :is-view="isView">
                 </InputGroup>
               </div>
             </q-card-section>
@@ -283,7 +283,6 @@ async function fetchDataEdit() {
   setTimeout(async () => {
     try {
       const result = await variousWelfareService.dataById(route.params.id);
-      console.log("API Response:", result.data?.datas);
       var returnedData = result.data.datas;
       if (returnedData) {
         model.value = {
@@ -305,7 +304,6 @@ async function fetchDataEdit() {
           department: returnedData?.user.department,
         };
       }
-      console.log("Category ID after fetch:", model.value.categoryId);
     } catch (error) {
       router.replace({ name: "various_welfare_list" });
       Notify.create({
@@ -352,7 +350,6 @@ async function fetchRemaining() {
         };
       });
     }
-    console.log("Updated Remaining Value:", remaining.value);
     canRequest.value = fetchRemaining.data?.canRequest;
   } catch (error) {
     Promise.reject(error);
