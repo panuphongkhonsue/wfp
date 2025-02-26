@@ -55,9 +55,11 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col q-ma-none">ทำฟัน : {{ remaining?.fundRemaining ?? remaining?.perTimesRemaining ?? "-" }}
-                {{ "บาท ( " }}
-                {{ remaining?.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
+              <p class="col q-ma-none">สิทธิ์คงเหลือ : {{ remaining?.fundRemaining ? remaining?.fundRemaining :
+                remaining?.perTimesRemaining ?
+                  remaining?.perTimesRemaining + "บาท" : "ไม่จำกัดจำนวนเงิน" }}
+                {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : "(ไม่จำกัดครั้ง)" }}
+              </p>
             </q-card-section>
           </q-card>
         </div>
@@ -87,16 +89,16 @@
             <q-card-section class="row wrap q-col-gutter-x-md font-medium q-pb-xs font-16 text-grey-9">
               <div class="col-12 col-lg">
                 <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'"
-                  is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ']"
+                  is-require label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" class=""
+                  :is-view="isView" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ']"
                   :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
                 </InputGroup>
               </div>
               <div class="col-12 col-lg">
                 <InputGroup for-id="fund-claim" is-dense v-model="model.fundSumRequest"
-                  :data="model.fundSumRequest ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท"
+                  :data="model.fundSumRequest ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท"
                   type="number" class="" :is-view="isView"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก']"
+                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ']"
                   :error-message="isError?.fundSumRequest" :error="!!isError?.fundSumRequest">
                 </InputGroup>
               </div>
@@ -152,11 +154,12 @@
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'dental_care_welfare_list' }" />
-        <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
-        <q-btn :disable="!canRequest" id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense
-          type="submit" style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
-          v-if="!isView && !isLoading" />
+        <q-btn :disable="isValidate" id="button-draft"
+          class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
+          label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
+        <q-btn :disable="!canRequest || isValidate" id="button-approve"
+          class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
+          label="ส่งคำร้องขอ" no-caps @click="submit(2)" v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -206,6 +209,30 @@ const isView = ref(false);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
+const isValidate = computed(() => {
+  let validate = false;
+  if (!model.value.fundReceipt) {
+    validate = true;
+  }
+  if (!model.value.dateReceipt) {
+    validate = true;
+  }
+  if (!model.value.fundSumRequest) {
+    validate = true;
+  }
+  if (!model.value.createFor && canCreateFor.value) {
+    validate = true;
+  }
+  if (isOver.value) {
+    validate = true;
+  }
+  return validate;
+});
+
+const isOver = computed(() => {
+  return Number(model.value.fundSumRequest) > Number(model.value.fundReceipt);
+});
+
 const canCreateFor = computed(() => {
   return authStore.isEditor;
 });
@@ -260,7 +287,7 @@ async function fetchDataEdit() {
       var returnedData = result.data.datas;
       if (returnedData) {
         model.value = {
-          createFor: null,
+          createFor: returnedData?.user.userId,
           reimNumber: returnedData?.reimNumber,
           requestDate: returnedData?.requestDate,
           status: returnedData?.status,
@@ -496,6 +523,10 @@ async function submit(actionId) {
     navigate.scrollIntoView(false);
     validate = true;
   }
+  if (isOver.value) {
+    isError.value.fundSumRequest = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิกให้น้อยกว่าหรือเท่ากับจำนวนเงินตามใบเสร็จ";
+    validate = true;
+  }
   if (validate === true) {
     Notify.create({
       message: "กรุณากรอกข้อมูลให้ครบถ้วน",
@@ -629,10 +660,9 @@ async function init() {
       if (!canCreateFor.value) {
         fetchRemaining();
       }
-      else {
-        const result = await userManagementService.getUserInitialData({ keyword: null });
-        userInitialData.value = result.data.datas;
-      }
+      const result = await userManagementService.getUserInitialData({ keyword: null });
+      userInitialData.value = result.data.datas;
+      options.value = result.data.datas;
       fetchDataEdit();
     }
     else {

@@ -56,13 +56,21 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
               <p class="col-12 q-ma-none">ประสบอุบัติเหตุ :
-                {{ remaining?.accident.fundRemaining ?? remaining?.accident.perTimesRemaining ?? "-" }}
-                {{ "บาท ( " }}
-                {{ remaining?.accident.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
+                {{ remaining?.accident.fundRemaining ? remaining?.accident.fundRemaining + " บาท" :
+                  remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาท" :
+                    "ไม่จำกัดจำนวนเงิน"
+                }}
+                {{ remaining?.accident.requestsRemaining ? "( " + remaining?.accident.requestsRemaining + " ครั้ง)" :
+                  '(ไม่จำกัดครั้ง)' }}</p>
               <p class="col-12 q-ma-none">เยี่ยมไข้ :
-                {{ remaining?.patientVisit.fundRemaining ?? remaining?.patientVisit.perTimesRemaining ?? "-" }}
-                {{ "บาท ( " }}
-                {{ remaining?.patientVisit.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
+                {{ remaining?.patientVisit.fundRemaining
+                  ? remaining?.patientVisit.fundRemaining + " บาท" :
+                  remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาท" :
+                    "ไม่จำกัดจำนวนเงิน" }}
+                {{ remaining?.patientVisit.requestsRemaining ? "( " + remaining?.patientVisit.requestsRemaining +
+                  " ครั้ง) " :
+                  'ไม่จำกัดครั้ง' }}
+              </p>
             </q-card-section>
           </q-card>
         </div>
@@ -93,16 +101,17 @@
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund-receipt-accident" is-dense v-model="model.fundReceipt"
-                :data="model.fundReceipt ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน"
+                :data="model.fundReceipt ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
                 :disable="!model.selectedAccident" placeholder="บาท" type="number" :is-view="isView"
                 compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl"
                 :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
                 :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
               <InputGroup for-id="fund-claim-accident" is-dense v-model="model.fundEligible"
-                :data="model.fundEligible ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก" placeholder="บาท"
+                :data="model.fundEligible ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท"
                 type="number" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl"
-                :disable="!model.selectedAccident" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก']"
+                :disable="!model.selectedAccident"
+                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => model.selectedAccident && !isOverAccident || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ']"
                 :error-message="isError?.fundEligible" :error="!!isError?.fundEligible">
               </InputGroup>
             </q-card-section>
@@ -130,17 +139,17 @@
             </q-card-section>
             <q-card-section class="q-pt-none row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund-receipt-visit" is-dense v-model="model.fundReceiptPatientVisit"
-                :data="model.fundReceiptPatientVisit ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน"
+                :data="model.fundReceiptPatientVisit ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
                 :disable="!model.selectedPatientVisit" placeholder="บาท" type="number" :is-view="isView"
                 compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl"
                 :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
                 :error-message="isError?.fundReceiptPatientVisit" :error="!!isError?.fundReceiptPatientVisit">
               </InputGroup>
               <InputGroup for-id="fund-claim-visit" is-dense v-model="model.fundSumRequestPatientVisit"
-                :data="model.fundSumRequestPatientVisit ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก"
+                :data="model.fundSumRequestPatientVisit ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก (บาท)"
                 placeholder="บาท" type="number" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl"
                 :disable="!model.selectedPatientVisit"
-                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
+                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก', (val) => model.selectedPatientVisit && !isOverPatientVisit || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ']"
                 :error-message="isError?.fundSumRequestPatientVisit" :error="!!isError?.fundSumRequestPatientVisit">
               </InputGroup>
             </q-card-section>
@@ -196,9 +205,10 @@
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'medical_welfare_list' }" />
-        <q-btn id="button-draft" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
-        <q-btn :disable="!canRequest.accident && !canRequest.patientVisit" id="button-approve"
+        <q-btn :disable="isValidate" id="button-draft"
+          class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
+          label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
+        <q-btn :disable="(!canRequest.accident && !canRequest.patientVisit) || isValidate" id="button-approve"
           class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
           label="ส่งคำร้องขอ" no-caps @click="submit(2)" v-if="!isView && !isLoading" />
       </div>
@@ -271,7 +281,51 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   model.value = null;
 });
+const isValidate = computed(() => {
+  let validate = false;
+  if (!model.value.selectedAccident && !model.value.selectedPatientVisit) {
+    validate = true;
+  }
+  if (model.value.selectedAccident) {
+    if (!model.value.fundReceipt) {
+      validate = true;
+    }
+    if (!model.value.fundEligible) {
+      validate = true;
+    }
+    if (isOverAccident.value) {
+      validate = true;
+    }
+  }
+  if (model.value.selectedPatientVisit) {
+    if (!model.value.fundReceiptPatientVisit) {
+      validate = true;
+    }
+    if (!model.value.fundSumRequestPatientVisit) {
+      validate = true;
+    }
+    if (!model.value.startDate) {
+      validate = true;
+    }
+    if (!model.value.endDate) {
+      validate = true;
+    }
+    if (isOverPatientVisit.value) {
+      validate = true;
+    }
+  }
+  if (!model.value.createFor && canCreateFor.value) {
+    validate = true;
+  }
+  return validate;
+});
 
+const isOverAccident = computed(() => {
+  return Number(model.value.fundEligible) > Number(model.value.fundReceipt);
+});
+const isOverPatientVisit = computed(() => {
+  return Number(model.value.fundSumRequestPatientVisit) > Number(model.value.fundReceiptPatientVisit);
+});
 watch(
   model,
   () => {
@@ -352,7 +406,7 @@ async function fetchDataEdit() {
       if (returnedData) {
         model.value = {
           ...model,
-          createFor: null,
+          createFor: returnedData?.user.userId,
           reimNumber: returnedData?.reimNumber,
           requestDate: returnedData?.requestDate,
           selectedAccident: returnedData?.fundEligible ? true : false,
@@ -633,6 +687,14 @@ async function submit(actionId) {
     navigate.scrollIntoView(false);
     validate = true;
   }
+  if (isOverAccident.value) {
+    isError.value.fundEligible = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ";
+    validate = true;
+  }
+  if (isOverPatientVisit.value) {
+    isError.value.fundSumRequestPatientVisit = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ";
+    validate = true;
+  }
   if (validate === true) {
     Notify.create({
       message: "กรุณากรอกข้อมูลให้ครบถ้วน",
@@ -774,10 +836,9 @@ async function init() {
       if (!canCreateFor.value) {
         fetchRemaining();
       }
-      else {
-        const result = await userManagementService.getUserInitialData({ keyword: null });
-        userInitialData.value = result.data.datas;
-      }
+      const result = await userManagementService.getUserInitialData({ keyword: null });
+      userInitialData.value = result.data.datas;
+      options.value = result.data.datas;
       fetchDataEdit();
     }
     else {

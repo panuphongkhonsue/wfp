@@ -133,7 +133,7 @@ const routes = [
       {
         path: 'children-edu-welfare',
         name: 'children_edu_welfare_list',
-        meta: { breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' },{name: 'เบิกสวัสดิการ'}] },
+        meta: { breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' }, { name: 'เบิกสวัสดิการ' }] },
         component: () => import('pages/children-edi-welfare/ListPage.vue'),
       },
       {
@@ -241,13 +241,13 @@ const routes = [
       {
         path: 'report/report-personal',
         name: 'report_personal',
-        meta: { breadcrumbs: [{ name: 'รายงาน' },{ name: 'รายละเอียดการเบิกจ่ายสวัสดิการรายบุคคลของปีงบประมาณ' }] },
+        meta: { breadcrumbs: [{ name: 'รายงาน' }, { name: 'รายละเอียดการเบิกจ่ายสวัสดิการรายบุคคลของปีงบประมาณ' }] },
         component: () => import('pages/report/ReportPersonal.vue'),
       },
       {
         path: 'report/report-fund-request-per-years',
         name: 'report_fund_request_per_years',
-        meta: { breadcrumbs: [{ name: 'รายงาน' },{ name: 'รายงานภาพรวมค่าใช้จ่ายประจำปีงบประมาณ' }] },
+        meta: { breadcrumbs: [{ name: 'รายงาน' }, { name: 'รายงานภาพรวมค่าใช้จ่ายประจำปีงบประมาณ' }] },
         component: () => import('pages/report/ReportFundRequestPerYears.vue'),
       },
       {

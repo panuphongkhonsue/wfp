@@ -33,10 +33,11 @@
     <template v-slot:toolbar>
       <div class="col-12 col-md-9 row font-bold font-16  q-col-gutter-md">
         <p class="col-md col-12 q-ma-none">จำนวนเงินการเบิกคงเหลือ :
-          {{ remaining?.fundRemaining ?? remaining?.perTimesRemaining ?? "-" }} บาท</p>
+          {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาท" : remaining?.perTimesRemaining ?
+            remaining?.perTimesRemaining + " บาท" : "ไม่จำกัดจำนวนเงิน" }}</p>
         <p class="col-md col-12 q-ma-none">
           สิทธิ์คงเหลือ :
-          {{ remaining?.requestsRemaining ?? "-" }} ครั้ง
+          {{ remaining?.requestsRemaining ? + remaining?.requestsRemaining + " ครั้ง" : "ไม่จำกัดครั้ง" }}
         </p>
       </div>
       <div class="col-12 col-md-3 flex justify-end">

@@ -30,14 +30,18 @@
               </InputGroup>
               <InputGroup for-id="name" is-dense v-model="model.name" :data="model.name ?? '-'" is-require
                 label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView" :error-message="isError?.name"
-                :error="!!isError?.name" :rules="[(val) => !!val || 'กรุณากรอกชื่อ - นามสกุล']" lazy-rules>
+                :error="!!isError?.name"
+                :rules="[(val) => !!val || 'กรุณากรอกชื่อ - นามสกุล']"
+                lazy-rules>
               </InputGroup>
               <InputGroup for-id="position" :data="model.positionsName ?? '-'" is-require label="ตำแหน่ง"
                 :is-view="isView">
                 <q-select popup-content-class="font-14 font-regular" class="font-14 font-regular" :loading="isLoading"
                   for="selected-status" outlined v-model="model.positionId" :options="optionsPosition" dense clearable
                   option-value="id" emit-value map-options option-label="name" :error-message="isError?.positionId"
-                  :error="!!isError?.positionId" :rules="[(val) => !!val || 'กรุณาเลือกตำแหน่ง']" lazy-rules>
+                  :error="!!isError?.positionId"
+                  :rules="[(val) => !!val || 'กรุณาเลือกตำแหน่ง']"
+                  lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
@@ -51,7 +55,8 @@
                   for="selected-employee-type" outlined v-model="model.employeeTypeId" :options="optionsemployeeType"
                   dense clearable option-value="id" emit-value map-options option-label="name"
                   :error-message="isError?.employeeTypeId" :error="!!isError?.employeeTypeId"
-                  :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']" lazy-rules>
+                  :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']"
+                  lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
@@ -65,7 +70,8 @@
                   id="selected-department" outlined v-model="model.departmentId" :options="optionsDepartment" dense
                   clearable option-value="id" emit-value map-options option-label="name"
                   :error-message="isError?.departmentId" :error="!!isError?.departmentId"
-                  :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']" lazy-rules>
+                  :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']"
+                  lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
@@ -178,8 +184,8 @@
                 placeholder="" type="text" :is-view="isView" :class="!isView ? 'q-pt-md q-pt-sm-none q-pb-xs' : ''">
                 <q-select use-input hide-selected hide-dropdown-icon clearable new-value-mode="add-unique" fill-input
                   input-debounce="0" popup-content-class="font-14 font-regular" class="font-14 font-regular"
-                  :loading="isLoading" id="selected-prefix" outlined v-model="item.prefix"
-                  :options="optionPrefixChild" dense map-options>
+                  :loading="isLoading" id="selected-prefix" outlined v-model="item.prefix" :options="optionPrefixChild"
+                  dense map-options>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>

@@ -32,9 +32,10 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-6 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none">สิทธิ์คงเหลือ : {{ remaining?.fundRemaining ?? remaining?.perTimesRemaining ?? "-" }}
-          {{ "บาท ( " }}
-          {{ remaining?.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
+        <p class="col q-ma-none">สิทธิ์คงเหลือ : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาท" :
+          remaining?.perTimesRemaining ?
+            remaining?.perTimesRemaining + " บาท" : "ไม่จำกัดจำนวนเงิน" }}
+          {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : "(ไม่จำกัดครั้ง)" }}</p>
       </div>
       <div class="col-12 col-md-6 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
