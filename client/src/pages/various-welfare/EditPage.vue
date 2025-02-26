@@ -56,22 +56,45 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
-                ค่าสมรส : {{ remaining[4]?.fundRemaining ?? "-" }} บาท
-                ({{ remaining[4]?.requestsRemaining ?? "-" }} ครั้ง)
+                ค่าสมรส :
+                {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาท" :
+                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาท" :
+                    remaining[4]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+                }}
+                {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
+                  remaining[4]?.requestsRemaining === null
+                    ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
               </p>
               <p class="col-12 q-mb-none">
-                ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ : {{ remaining[5]?.fundRemaining ?? "-" }} บาท
-                ({{ remaining[5]?.requestsRemaining ?? "-" }} ครั้ง)
+                ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ :
+                {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาท" :
+                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาท" :
+                    remaining[5]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+                }}
+                {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
+                  remaining[5]?.requestsRemaining === null
+                    ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
               </p>
               <p class="col-12 q-mb-none">
-                ค่ารับขวัญบุตร : {{ remaining[6]?.fundRemaining ?? "-" }} บาท
-                ({{ remaining[6]?.requestsRemaining ?? "-" }} ครั้ง)
+                ค่ารับขวัญบุตร :
+                {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
+                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาท" :
+                    remaining[6]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+                }}
+                {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
+                  remaining[6]?.requestsRemaining === null
+                    ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
               </p>
               <p class="col-12 q-mb-none">
-                กรณีประสบภัยพิบัติ : {{ remaining[7]?.fundRemaining ?? "-" }} บาท
-                ({{ remaining[7]?.requestsRemaining ?? "-" }} ครั้ง)
+                กรณีประสบภัยพิบัติ :
+                {{ remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาท" :
+                  remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาท" :
+                    remaining[7]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+                }}
+                {{ remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
+                  remaining[7]?.requestsRemaining === null
+                    ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
               </p>
-
             </q-card-section>
           </q-card>
         </div>
@@ -97,7 +120,7 @@
               <p class="col-12 q-mb-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
               <div class="col-lg-6 col-12 q-mb-none">
                 <q-option-group class="q-gutter-y-sm" v-model="model.categoryId" type="radio" :options="categoryOptions"
-                  :disable="isView" />
+                  :disable="isView" :rules="[(val) => !!val || '']" />
               </div>
               <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
                 <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p>
@@ -109,34 +132,24 @@
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
               <div class="col-lg-4 col-12 ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'"
-                  is-require label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" class="" :is-view="isView">
+                  is-require label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" class=""
+                  :is-view="isView" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
+                  :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
                 </InputGroup>
               </div>
               <div class="col-lg-2"></div>
               <div class="col-lg-4 col-12 ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundEligible" :data="model.fundEligible ?? '-'"
-                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class="" :is-view="isView">
+                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
+                  :is-view="isView"
+                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOverVarious || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ']"
+                  :error-message="isError?.fundEligible" :error="!!isError?.fundEligible">
                 </InputGroup>
               </div>
             </q-card-section>
           </q-card>
         </div>
         <div class="col-md-3 col-12">
-          <!-- <div class="q-pb-md" v-if="!isView && !isLoading">
-            <q-card flat bordered>
-              <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
-                <p class="q-mb-none">จำนวนเงินคงเหลือ</p>
-              </q-card-section>
-              <q-separator />
-              <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
-                <p class="col-12 q-mb-none">ค่าสมรส : 2,000</p>
-                <p class="col-12 q-mb-none">ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ : 2,000</p>
-                <p class="col-12 q-mb-none">ค่ารับขวัญบุตร : 1,000</p>
-                <p class="col-12 q-mb-none">กรณีประสบภัยพิบัติ : 10,000</p>
-              </q-card-section>
-            </q-card>
-          </div> -->
-
           <q-card flat bordered>
             <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
               <p class="q-mb-none">หลักฐานที่ต้องแนบ</p>
@@ -168,10 +181,11 @@
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'various_welfare_list' }" />
-        <q-btn id="button-reject" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
-          type="submit" label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
-        <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
-          style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
+        <q-btn :disable="isValidate" id="button-draft"
+          class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
+          label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
+        <q-btn :disable="isValidate" id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense
+          type="submit" style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
           v-if="!isView && !isLoading" />
       </div>
     </template>
@@ -182,7 +196,7 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash, formatNumber } from "src/components/format";
+import { formatDateThaiSlash, } from "src/components/format";
 import userManagementService from "src/boot/service/userManagementService";
 import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
@@ -223,12 +237,7 @@ const categoryOptions =
   ]
 
 const userData = ref({});
-const remaining = ref({
-  4: { fundRemaining: "-", requestsRemaining: "-" },
-  5: { fundRemaining: "-", requestsRemaining: "-" },
-  6: { fundRemaining: "-", requestsRemaining: "-" },
-  7: { fundRemaining: "-", requestsRemaining: "-" }
-});
+const remaining = ref({});
 const isLoading = ref(false);
 const isError = ref({});
 const canRequest = ref(false);
@@ -256,6 +265,10 @@ watch(
     }
   }
 );
+const isOverVarious = computed(() => {
+  return Number(model.value.fundEligible) > Number(model.value.fundReceipt);
+});
+
 watch(
   () => model.value.createFor,
   (newValue) => {
@@ -278,6 +291,22 @@ watch(
     }
   }
 );
+const isValidate = computed(() => {
+  let validate = false;
+  if (!model.value.categoryId) {
+    validate = true;
+  }
+  if (!model.value.fundReceipt) {
+    validate = true;
+  }
+  if (!model.value.fundEligible) {
+    validate = true;
+  }
+  if (!model.value.createFor && canCreateFor.value) {
+    validate = true;
+  }
+  return validate;
+});
 
 async function fetchDataEdit() {
   setTimeout(async () => {
@@ -287,7 +316,7 @@ async function fetchDataEdit() {
       if (returnedData) {
         model.value = {
           ...model.value,
-          createFor: null,
+          createFor: returnedData?.user.userId,
           reimNumber: returnedData?.reimNumber,
           requestDate: returnedData?.requestDate,
           status: returnedData?.status,
@@ -340,14 +369,7 @@ async function fetchRemaining() {
     const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
     if (Array.isArray(fetchRemaining.data?.datas)) {
       fetchRemaining.data.datas.forEach((item) => {
-        remaining.value[item.categoryId] = {
-          requestsRemaining: item.requestsRemaining != null && !isNaN(Number(item.requestsRemaining))
-            ? formatNumber(item.requestsRemaining)
-            : "-",
-          fundRemaining: item.fundRemaining != null && !isNaN(Number(item.fundRemaining))
-            ? formatNumber(item.fundRemaining)
-            : "-",
-        };
+        remaining.value[item.categoryId] = item;
       });
     }
     canRequest.value = fetchRemaining.data?.canRequest;
@@ -355,6 +377,7 @@ async function fetchRemaining() {
     Promise.reject(error);
   }
 }
+
 async function filterFn(val, update) {
   try {
     setTimeout(async () => {
@@ -393,6 +416,10 @@ async function submit(actionId) {
     navigate.scrollIntoView(false);
     validate = true;
   }
+  if (isOverVarious.value) {
+    isError.value.fundEligible = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ";
+    validate = true;
+  }
   if (validate === true) {
     Notify.create({
       message: "กรุณากรอกข้อมูลให้ครบถ้วน",
@@ -405,7 +432,7 @@ async function submit(actionId) {
   let payload = {
     fundReceipt: model.value.fundReceipt,
     fundEligible: model.value.fundEligible,
-    createFor: model.value.createFor,
+    createFor: canCreateFor.value ? model.value.createFor : null,
     categoryId: model.value.categoryId,
     actionId: actionId,
   }
@@ -476,18 +503,17 @@ async function init() {
     else if (isEdit.value) {
       if (!canCreateFor.value) {
         fetchRemaining();
-      } 
-      else {
-        const result = await userManagementService.getUserInitialData({ keyword: null });
-        userInitialData.value = result.data.datas;
       }
+      const result = await userManagementService.getUserInitialData({ keyword: null });
+      userInitialData.value = result.data.datas;
+      options.value = result.data.datas;
       fetchDataEdit();
     }
     else {
       if (!canCreateFor.value) {
         fetchRemaining();
         fetchUserData(authStore.id);
-      } 
+      }
       else {
         const result = await userManagementService.getUserInitialData({ keyword: null });
         userInitialData.value = result.data.datas;

@@ -32,14 +32,30 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-10 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none"> บิดา : {{ remaining[3]?.fundRemaining ?? "-" }} {{ "บาท ( " }}
-          {{ remaining[3]?.requestsRemaining ?? "-" }} {{ " ครั้ง )" }}</p>
-        <p class="col q-ma-none"> มารดา : {{ remaining[4]?.fundRemaining ?? "-" }} {{ "บาท ( " }}
-          {{ remaining[4]?.requestsRemaining ?? "-" }} {{ " ครั้ง )" }}</p>
-        <p class="col q-ma-none"> คู่สมรส : {{ remaining[4]?.fundRemaining ?? "-" }} {{ "บาท ( " }}
-          {{ remaining[5]?.requestsRemaining ?? "-" }} {{ " ครั้ง )" }}</p>
-        <p class="col q-ma-none"> บุตร : {{ remaining[4]?.fundRemaining ?? "-" }} {{ "บาท ( " }}
-          {{ remaining[6]?.requestsRemaining ?? "-" }} {{ " ครั้ง )" }}</p>
+        <p class="col q-ma-none"> บิดา : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาท" :
+          remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาท" :
+            "ไม่จำกัดจำนวนเงิน"
+        }}
+          {{ remaining[3]?.requestsRemaining ? "( " + remaining[3]?.requestsRemaining + " ครั้ง)" :
+            '(ไม่จำกัดครั้ง)' }}</p>
+        <p class="col q-ma-none"> มารดา : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาท" :
+          remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาท" :
+            "ไม่จำกัดจำนวนเงิน"
+        }}
+          {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
+            '(ไม่จำกัดครั้ง)' }}</p>
+        <p class="col q-ma-none"> คู่สมรส : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาท" :
+          remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาท" :
+            "ไม่จำกัดจำนวนเงิน"
+        }}
+          {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
+            '(ไม่จำกัดครั้ง)' }}</p>
+        <p class="col q-ma-none"> บุตร : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
+          remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาท" :
+            "ไม่จำกัดจำนวนเงิน"
+        }}
+          {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
+            '(ไม่จำกัดครั้ง)' }}</p>
       </div>
       <div class="col-12 col-md-2 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -128,12 +144,7 @@ let options = [
   { status: "รอตรวจสอบ", name: "รอตรวจสอบ" },
   { status: "อนุมัติ", name: "อนุมัติ" },
 ];;
-const remaining = ref({
-  3: { fundRemaining: "-", requestsRemaining: "-" },
-  4: { fundRemaining: "-", requestsRemaining: "-" },
-  5: { fundRemaining: "-", requestsRemaining: "-" },
-  6: { fundRemaining: "-", requestsRemaining: "-" }
-});
+const remaining = ref({});
 const deceaseOptions = [
   {
     label: 'บิดา',
@@ -219,13 +230,13 @@ async function init() {
           remaining.value[matchedOption.value] = {
             requestsRemaining: item.requestsRemaining != null && !isNaN(Number(item.requestsRemaining))
               ? formatNumber(item.requestsRemaining)
-              : "-",
+              : null,
             fundRemaining: item.fundRemaining != null && !isNaN(Number(item.fundRemaining))
               ? formatNumber(item.fundRemaining)
-              : "-",
+              : null,
             perTimesRemaining: item.perTimesRemaining != null && !isNaN(Number(item.perTimesRemaining))
               ? formatNumber(item.perTimesRemaining)
-              : "-",
+              : null,
           };
         }
       });
@@ -356,7 +367,7 @@ function search() {
 
 const isLoading = ref(false);
 const columns = ref([
-{
+  {
     name: "index",
     label: "ลำดับ",
     align: "center",
