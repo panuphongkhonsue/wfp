@@ -57,7 +57,7 @@
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
               <p class="col q-ma-none">ตรวจสุขภาพ : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาท" :
                 remaining?.perTimesRemaining ? remaining?.perTimesRemaining + " บาท" : "ไม่จำกัดจำนวนเงิน"
-                }}
+              }}
                 {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : '(ไม่จำกัดครั้ง)' }}
               </p>
             </q-card-section>
@@ -87,7 +87,7 @@
               <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'" is-require
                 label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number"
                 compclass="col-xs-12 col-lg-4 col-xl-2"
-                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ', (val) => !isOver || 'จำนวนตามใบเสร็จไม่สามารถมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ']"
+                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ', (val) => !isOver || 'จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ']"
                 :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
               <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require
@@ -254,25 +254,42 @@ const isOver = computed(() => {
   return fundSumRequest <= 0;
 });
 watch(
-  () => model.value.fundReceipt,
+  () => model.value.claimByEligible,
   () => {
-    if (model.value.claimByEligible[2].fundEligible && !model.value.claimByEligible[2].fundEligibleName) {
-      Notify.create({
-        message:
-          "กรุณากรอกชื่อสิทธิ อื่น ๆ",
-        position: "bottom-left",
-        type: "negative",
-      });
+    setTimeout(async () => {
+      try {
+        if (model.value.claimByEligible[2].fundEligible && !model.value.claimByEligible[2].fundEligibleName) {
+          Notify.create({
+            message:
+              "กรุณากรอกชื่อสิทธิ อื่น ๆ",
+            position: "bottom-left",
+            type: "negative",
+          });
+        }
+        if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
+          Notify.create({
+            message:
+              "กรุณากรอกจำนวนเงินที่เบิกตามสิทธิอื่น ๆ",
+            position: "bottom-left",
+            type: "negative",
+          });
+        }
+      } catch (error) {
+        Notify.create({
+          message:
+            error?.response?.data?.message ??
+            "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
+          position: "bottom-left",
+          type: "negative",
+        });
+      }
+      isLoading.value = false;
+    }, 2000);
+    if (isOver.value) {
+      isError.value.fundReceipt = "จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
     }
-    if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
-      Notify.create({
-        message:
-          "กรุณากรอกจำนวนเงินที่เบิกตามสิทธิอื่น ๆ",
-        position: "bottom-left",
-        type: "negative",
-      });
-    }
-  }
+  },
+  { deep: true }
 );
 watch(
   () => model.value.fundReceipt,
@@ -487,7 +504,7 @@ async function submit(actionId) {
     validate = true;
   }
   if (isOver.value) {
-    isError.value.fundReceipt = "จำนวนตามใบเสร็จไม่สามารถมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
+    isError.value.fundReceipt = "จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
     validate = true;
   }
   if (validate === true) {
