@@ -98,7 +98,8 @@
                 <InputGroup for-id="fund-claim" is-dense v-model="model.fundSumRequest"
                   :data="model.fundSumRequest ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท"
                   type="number" class="" :is-view="isView"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ']"
+                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ'
+                  , (val) => !isOverfundRemaining || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้']"
                   :error-message="isError?.fundSumRequest" :error="!!isError?.fundSumRequest">
                 </InputGroup>
               </div>
@@ -220,6 +221,9 @@ const isValidate = computed(() => {
   if (!model.value.fundSumRequest) {
     validate = true;
   }
+  if (isOverfundRemaining.value) {
+    validate = true;
+  }
   if (!model.value.createFor && canCreateFor.value) {
     validate = true;
   }
@@ -231,6 +235,16 @@ const isValidate = computed(() => {
 
 const isOver = computed(() => {
   return Number(model.value.fundSumRequest) > Number(model.value.fundReceipt);
+});
+
+const isOverfundRemaining = computed(() => {
+
+  const fundSumRequest = Number(model.value.fundSumRequest ?? 0);
+
+  const perTimes = remaining.value.perTimesRemaining ? parseFloat(remaining.value.perTimesRemaining.replace(/,/g, "")) : null;
+  const fundRemaining = remaining.value.fundRemaining ? parseFloat(remaining.value.fundRemaining.replace(/,/g, "")) : null;
+
+  return (fundSumRequest > perTimes && remaining.value.perTimesRemaining) || (fundSumRequest > fundRemaining && remaining.value.fundRemaining);
 });
 
 const canCreateFor = computed(() => {
@@ -521,6 +535,10 @@ async function submit(actionId) {
     let navigate = document.getElementById("fund-receipt");
     window.location.hash = "fund-receipt";
     navigate.scrollIntoView(false);
+    validate = true;
+  }
+  if (isOverfundRemaining.value) {
+    isError.value.fundSumRequest = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
     validate = true;
   }
   if (isOver.value) {

@@ -86,9 +86,9 @@
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'" is-require
                 label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number"
-                compclass="col-xs-12 col-lg-4 col-xl-2"
-                :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ', (val) => !isOver || 'จำนวนตามใบเสร็จไม่สามารถมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ']"
-                :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
+                compclass="col-xs-12 col-lg-4 col-xl-2" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ', (val) => !isOver || 'จำนวนตามใบเสร็จไม่สามารถมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ'
+                  , (val) => !isOverfundRemaining || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้'
+                ]" :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
               <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require
                 label="จำนวนที่ต้องการเบิก (บาท)" type="number" compclass="col-xs-12 col-lg-3 col-xl-2"
@@ -237,9 +237,10 @@ const isValidate = computed(() => {
   if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
     validate = true;
   }
-  const fundEligibleSum = Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[1].fundEligible) + Number(model.value.claimByEligible[2].fundEligible);
-  const fundSumRequest = Number(model.value.fundReceipt) - Number(fundEligibleSum);
-  if (fundSumRequest <= 0) {
+  if (isOver.value) {
+    validate = true;
+  }
+  if (isOverfundRemaining.value) {
     validate = true;
   }
   return validate;
@@ -250,6 +251,24 @@ const isOver = computed(() => {
   const fundSumRequest = Number(model.value.fundReceipt) - Number(fundEligibleSum);
   return fundSumRequest <= 0;
 });
+
+
+const isOverfundRemaining = computed(() => {
+
+  const fundEligibleSum =
+    Number(model.value.claimByEligible?.[0]?.fundEligible ?? 0) +
+    Number(model.value.claimByEligible?.[1]?.fundEligible ?? 0) +
+    Number(model.value.claimByEligible?.[2]?.fundEligible ?? 0);
+
+  const fundSumRequest = Number(model.value.fundReceipt ?? 0) - fundEligibleSum;
+
+  const perTimes = remaining.value.perTimesRemaining ? parseFloat(remaining.value.perTimesRemaining.replace(/,/g, "")) : null;
+  const fundRemaining = remaining.value.fundRemaining ? parseFloat(remaining.value.fundRemaining.replace(/,/g, "")) : null;
+
+  return (fundSumRequest > perTimes && remaining.value.perTimesRemaining) || (fundSumRequest > fundRemaining && remaining.value.fundRemaining);
+});
+
+
 watch(
   () => model.value.fundReceipt,
   () => {
@@ -278,6 +297,15 @@ watch(
       delete isError.value.fundReceipt;
     }
   }
+);
+watch(
+  () => model.value.claimByEligible,
+  () => {
+    if (isOver.value) {
+      isError.value.fundReceipt = "จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";;
+    }
+  },
+  { deep: true }
 );
 watch(
   () => model.value.createFor,
@@ -480,8 +508,12 @@ async function submit(actionId) {
   if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
     validate = true;
   }
+  if (isOverfundRemaining.value) {
+    validate = true;
+    isError.value.fundReceipt = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+  }
   if (isOver.value) {
-    isError.value.fundReceipt = "จำนวนตามใบเสร็จไม่สามารถมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
+    isError.value.fundReceipt = "จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
     validate = true;
   }
   if (validate === true) {
