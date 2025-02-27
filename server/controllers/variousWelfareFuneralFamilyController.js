@@ -481,7 +481,6 @@ class Controller extends BaseController {
         const deceasedType = req.body.deceased_type ?? null;
         delete req.body.selected_wreath;
         delete req.body.selected_vechicle;
-        delete req.body.deceased_type;
         const dataCreate = {
             ...req.body,
             fund_eligible: fundEligible
@@ -567,7 +566,6 @@ class Controller extends BaseController {
         const deceasedType = req.body.deceased_type ?? null; 
         delete req.body.selected_wreath;
         delete req.body.selected_vechicle
-        delete req.body.deceased_type;
         const dataUpdate = req.body;
         const dataId = req.params['id'];
         var itemsReturned = null;

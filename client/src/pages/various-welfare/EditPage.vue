@@ -196,7 +196,7 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash, } from "src/components/format";
+import { formatDateThaiSlash, formatNumber } from "src/components/format";
 import userManagementService from "src/boot/service/userManagementService";
 import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
@@ -370,6 +370,16 @@ async function fetchRemaining() {
     if (Array.isArray(fetchRemaining.data?.datas)) {
       fetchRemaining.data.datas.forEach((item) => {
         remaining.value[item.categoryId] = item;
+        
+        if (item.fundRemaining !== null) {
+          item.fundRemaining = formatNumber(item.fundRemaining);
+        }
+        if (item.perTimesRemaining !== null) {
+          item.perTimesRemaining = formatNumber(item.perTimesRemaining);
+        }
+        if (item.requestsRemaining !== null) {
+          item.requestsRemaining = formatNumber(item.requestsRemaining);
+        }
       });
     }
     canRequest.value = fetchRemaining.data?.canRequest;
@@ -377,6 +387,7 @@ async function fetchRemaining() {
     Promise.reject(error);
   }
 }
+
 
 async function filterFn(val, update) {
   try {

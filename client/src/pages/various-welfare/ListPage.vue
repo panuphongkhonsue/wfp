@@ -139,7 +139,7 @@ import ListLayout from "src/layouts/ListLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import DatePicker from "src/components/DatePicker.vue";
 
-import { formatDateThaiSlash, formatDateServer } from "src/components/format";
+import { formatDateThaiSlash, formatDateServer, formatNumber } from "src/components/format";
 import { statusColor, textStatusColor } from "src/components/status";
 import { Notify } from "quasar";
 import Swal from "sweetalert2";
@@ -233,6 +233,16 @@ async function init() {
     if (Array.isArray(fetchRemaining.data?.datas)) {
       fetchRemaining.data.datas.forEach((item) => {
         remaining.value[item.categoryId] = item;
+        
+        if (item.fundRemaining !== null) {
+          item.fundRemaining = formatNumber(item.fundRemaining);
+        }
+        if (item.perTimesRemaining !== null) {
+          item.perTimesRemaining = formatNumber(item.perTimesRemaining);
+        }
+        if (item.requestsRemaining !== null) {
+          item.requestsRemaining = formatNumber(item.requestsRemaining);
+        }
       });
     }
   } catch (error) {

@@ -73,8 +73,7 @@
             <q-card-section class="col row flex justify-between q-pb-none">
               <div class="row">
                 <p class="q-pb-md font-18 font-bold q-pb-md">ข้อมูลการเบิกสวัสดิการ</p>
-                <p class="q-pl-md q-pb-md font-16 q-mb-none">(จ่ายจริงคนละไม่เกิน {{ remaining[9]?.perTimesRemaining ??
-                  "-" }}
+                <p class="q-pl-md q-pb-md font-16 q-mb-none">(จ่ายจริงคนละไม่เกิน 10,000
                   บาท)</p>
               </div>
 
@@ -127,7 +126,7 @@
               </div>
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl  ">
                 <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fund ?? '-'"
-                  is-require label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" class=""
+                  is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)" placeholder="บาท" type="number" class=""
                   :is-view="isView" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
                   :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
                 </InputGroup>
@@ -136,7 +135,7 @@
                 <InputGroup for-id="fund-request" is-dense v-model="model.fundRequest" :data="model.fund ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
                   :is-view="isView"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOverRequest || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ']"
+                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOverRequest || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบสำคัญรับเงิน']"
                   :error-message="isError?.fundRequest" :error="!!isError?.fundRequest">
                 </InputGroup>
               </div>
@@ -151,7 +150,7 @@
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
-                  :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท"
+                  :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน" placeholder="บาท"
                   type="number" class="" :is-view="isView" :disable="!model.selectedWreath"
                   :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
                   :error-message="isError?.fundReceiptWreath" :error="!!isError?.fundReceiptWreath">
@@ -161,7 +160,7 @@
                 <InputGroup for-id="fund-wreath-arrange" is-dense v-model="model.fundWreathArrange"
                   :data="model.fundWreathArrange ?? '-'" label="จำนวนเงินที่ต้องการเบิก (บาท) (ในนามส่วนงาน)"
                   placeholder="บาท" type="number" class="" :is-view="isView" :disable="!model.selectedWreath"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก', (val) => model.selectedWreath && !isOverWreathArrange || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ']"
+                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก', (val) => model.selectedWreath && !isOverWreathArrange || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบสำคัญรับเงิน']"
                   :error-message="isError?.fundWreathArrange" :error="!!isError?.fundWreathArrange">
                 </InputGroup>
               </div>
@@ -170,7 +169,7 @@
                   :data="model.fundWreathUniversity ?? '-'" label="จำนวนเงินที่ต้องการเบิก (บาท) (ในนามมหาวิทยาลัย)"
                   placeholder="บาท" type="number" class="" :is-view="isView" style="white-space: nowrap;"
                   :disable="!model.selectedWreath"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก', (val) => model.selectedWreath && !isOverWreathUniversity || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ']"
+                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก', (val) => model.selectedWreath && !isOverWreathUniversity || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบสำคัญรับเงิน']"
                   :error-message="isError?.fundWreathUniversity" :error="!!isError?.fundWreathUniversity">
                 </InputGroup>
               </div>
@@ -186,7 +185,7 @@
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceiptVehicle"
-                  :data="model.fundReceiptVehicle ?? '-'" is-require label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท"
+                  :data="model.fundReceiptVehicle ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)" placeholder="บาท"
                   type="number" class="" :is-view="isView" :disable="!model.selectedVehicle"
                   :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
                   :error-message="isError?.fundReceiptVehicle" :error="!!isError?.fundReceiptVehicle">
@@ -196,7 +195,7 @@
                 <InputGroup for-id="fund" is-dense v-model="model.fundVehicle" :data="model.fundVehicle ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
                   :is-view="isView" :disable="!model.selectedVehicle"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก', (val) => model.selectedVehicle && !isOverVehicle || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ']"
+                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก', (val) => model.selectedVehicle && !isOverVehicle || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบสำคัญรับเงิน']"
                   :error-message="isError?.fundVehicle" :error="!!isError?.fundVehicle">
                 </InputGroup>
               </div>
@@ -217,15 +216,15 @@
               <p class="col-12 q-mb-none font-bold text-black font-18">ค่าสนับสนุนค่าพวงหรีด</p>
               <p class="col-12 q-mb-none">1. ใบเสร็จรับเงิน</p>
               <p class="col-12 q-mb-none">2. ใบสำคัญรับเงิน
-                <br>(โดยเจ้าหน้าที่ผู้รับผิดชอบ
-                <br>ด้านบุคคล ลงนามรับเงิน)
+                (โดยเจ้าหน้าที่ผู้รับผิดชอบ
+                ด้านบุคคล ลงนามรับเงิน)
               </p>
               <p class="col-12 q-mb-none font-bold text-black font-18">ค่าสนับสนุนค่าพาหนะเหมาจ่าย</p>
               <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน
-                <br>(โดยเจ้าหน้าที่ผู้รับผิดชอบ
-                <br>ด้านบุคคล ลงนามรับเงิน)
+                (โดยเจ้าหน้าที่ผู้รับผิดชอบ
+                ด้านบุคคล ลงนามรับเงิน)
               </p>
-              <p class="col-12 q-mb-none">2.ใบเสร็จรับเงินหรือหลักฐานการจ่ายเงินอื่น</p>
+              <p class="col-12 q-mb-none">2.ใบสำคัญรับเงินรับเงินหรือหลักฐานการจ่ายเงินอื่น</p>
             </q-card-section>
           </q-card>
         </div>
@@ -251,7 +250,7 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash, } from "src/components/format";
+import { formatDateThaiSlash, formatNumber } from "src/components/format";
 import userManagementService from "src/boot/service/userManagementService";
 import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
@@ -579,7 +578,7 @@ async function fetchRemaining(deceasedId) {
     if (Array.isArray(deceaseData)) {
       deceaseData.forEach((item) => {
         remaining.value[item.categoriesId] = {
-          perTimesRemaining: item.perTimesRemaining ?? null,  
+          perTimesRemaining: formatNumber(item.perTimesRemaining) ?? null,  
         };
       });
     }
@@ -664,7 +663,7 @@ async function submit(actionId) {
     isError.value.fundRequest = "กรุณากรอกจำนวนเงินให้ครบถ้วน";
     validate = true;
   } else if (Number(model.value.fundReceipt) < Number(model.value.fundRequest)) {
-    isError.value.fundRequest = "จำนวนเงินที่ต้องการเบิกต้องไม่เกินจำนวนเงินตามใบเสร็จ";
+    isError.value.fundRequest = "จำนวนเงินที่ต้องการเบิกต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน";
   }
 
   if (!model.value.createFor && canCreateFor.value) {
@@ -675,26 +674,26 @@ async function submit(actionId) {
     validate = true;
   }
   if (!model.value.fundReceipt) {
-    isError.value.fundReceipt = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
+    isError.value.fundReceipt = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน";
     let navigate = document.getElementById("fund");
     window.location.hash = "fund";
     navigate.scrollIntoView(false);
     validate = true;
   }
   if (isOverRequest.value) {
-    isError.value.fundDecease = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ";
+    isError.value.fundDecease = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
     validate = true;
   }
   if (isOverWreathArrange.value) {
-    isError.value.fundWreathArrange = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ";
+    isError.value.fundWreathArrange = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
     validate = true;
   }
   if (isOverWreathUniversity.value) {
-    isError.value.fundWreathUniversity = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ";
+    isError.value.fundWreathUniversity = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใใบสำคัญรับเงิน";
     validate = true;
   }
   if (isOverVehicle.value) {
-    isError.value.fundVechicle = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ";
+    isError.value.fundVechicle = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
     validate = true;
   }
   if (isDeceasedClaimed.value) {

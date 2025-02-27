@@ -60,32 +60,24 @@
                   remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาท" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
-                {{ remaining[3]?.requestsRemaining ? "( " + remaining[3]?.requestsRemaining + " ครั้ง)" :
-                  '(ไม่จำกัดครั้ง)' }}
               </p>
               <p class="col-12 q-mb-none">
                 มารดา : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาท" :
                   remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาท" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
-                {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
-                  '(ไม่จำกัดครั้ง)' }}
               </p>
               <p class="col-12 q-mb-none">
                 คู่สมรส : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาท" :
                   remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาท" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
-                {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
-                  '(ไม่จำกัดครั้ง)' }}
               </p>
               <p class="col-12 q-mb-none">
                 บุตร : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
                   remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาท" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
-                {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
-                  '(ไม่จำกัดครั้ง)' }}
               </p>
             </q-card-section>
           </q-card>
@@ -146,7 +138,7 @@
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
             :class="isView ? '' : 'q-pl-sm'">
                 <q-checkbox v-if="!isView" v-model="model.selectedWreath"  />
-              <p class="q-pb-md q-mb-none">ค่าสนับสนุนค่าพวงหรีด (จ่ายไม่เกิน 2,000 บาท
+              <p class="q-mb-none">ค่าสนับสนุนค่าพวงหรีด (จ่ายไม่เกิน 2,000 บาท
                 ในนามมหาวิทยาลัย และไม่เกิน
                 2,000 บาท ในนามส่วนงาน)</p>
             </q-card-section>
@@ -181,7 +173,7 @@
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
             :class="isView ? '' : 'q-pl-sm'">
                 <q-checkbox v-if="!isView" v-model="model.selectedVechicle" />
-              <p class="q-pb-md q-mb-none ">ค่าสนับสนุนค่าพาหนะเหมาจ่าย (จ่ายจริงคนละไม่เกิน
+              <p class="q-mb-none ">ค่าสนับสนุนค่าพาหนะเหมาจ่าย (จ่ายจริงคนละไม่เกิน
                 10,000
                 บาท)</p>
             </q-card-section>
@@ -222,13 +214,13 @@
               <p class="col-12 q-mb-none font-18 font-bold text-black ">ค่าสนับสนุนค่าพวงหรีด</p>
               <p class="col-12 q-mb-none">1. ใบเสร็จรับเงิน</p>
               <p class="col-12 q-mb-none">2. ใบสำคัญรับเงิน
-                <br>(โดยเจ้าหน้าที่ผู้รับผิดชอบ
-                <br>ด้านบุคคล ลงนามรับเงิน)
+                (โดยเจ้าหน้าที่ผู้รับผิดชอบ
+                ด้านบุคคล ลงนามรับเงิน)
               </p>
               <p class="col-12 q-mb-none font-18 font-bold text-black ">ค่าสนับสนุนค่าพาหนะเหมาจ่าย</p>
               <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน
-                <br>(โดยเจ้าหน้าที่ผู้รับผิดชอบ
-                <br>ด้านบุคคล ลงนามรับเงิน)
+                (โดยเจ้าหน้าที่ผู้รับผิดชอบ
+                ด้านบุคคล ลงนามรับเงิน)
               </p>
               <p class="col-12 q-mb-none">2.ใบเสร็จรับเงินหรือหลักฐานการจ่ายเงินอื่น</p>
             </q-card-section>
@@ -259,7 +251,7 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash } from "src/components/format";
+import { formatDateThaiSlash, formatNumber } from "src/components/format";
 import userManagementService from "src/boot/service/userManagementService";
 import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
@@ -526,17 +518,17 @@ async function fetchRemaining() {
       if (Array.isArray(item)) {
         item.forEach((subItem) => {
           remaining.value[subItem.subCategoriesId] = {
-            requestsRemaining: subItem.requestsRemaining,
-            fundRemaining: subItem.fundRemaining,
-            perTimesRemaining: subItem.perTimesRemaining,
+            requestsRemaining: formatNumber(subItem.requestsRemaining),
+            fundRemaining: formatNumber(subItem.fundRemaining),
+            perTimesRemaining: formatNumber(subItem.perTimesRemaining),
           };
           canRequest.value[subItem.subCategoriesId] = subItem.canRequest;
         });
       } else {
         remaining.value[item.subCategoriesId] = {
-          requestsRemaining: item.requestsRemaining,
-          fundRemaining: item.fundRemaining,
-          perTimesRemaining: item.perTimesRemaining,
+          requestsRemaining: formatNumber(item.requestsRemaining),
+          fundRemaining: formatNumber(item.fundRemaining),
+          perTimesRemaining: formatNumber(item.perTimesRemaining),
         };
         canRequest.value[item.subCategoriesId] = item.canRequest;
       }
@@ -547,6 +539,7 @@ async function fetchRemaining() {
     isLoading.value = false;
   }
 }
+
 async function filterFn(val, update) {
   try {
     setTimeout(async () => {

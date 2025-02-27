@@ -36,26 +36,22 @@
           remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาท" :
             "ไม่จำกัดจำนวนเงิน"
         }}
-          {{ remaining[3]?.requestsRemaining ? "( " + remaining[3]?.requestsRemaining + " ครั้ง)" :
-            '(ไม่จำกัดครั้ง)' }}</p>
+         </p>
         <p class="col q-ma-none"> มารดา : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาท" :
           remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาท" :
             "ไม่จำกัดจำนวนเงิน"
         }}
-          {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
-            '(ไม่จำกัดครั้ง)' }}</p>
+          </p>
         <p class="col q-ma-none"> คู่สมรส : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาท" :
           remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาท" :
             "ไม่จำกัดจำนวนเงิน"
         }}
-          {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
-            '(ไม่จำกัดครั้ง)' }}</p>
+          </p>
         <p class="col q-ma-none"> บุตร : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
           remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาท" :
             "ไม่จำกัดจำนวนเงิน"
         }}
-          {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
-            '(ไม่จำกัดครั้ง)' }}</p>
+          </p>
       </div>
       <div class="col-12 col-md-2 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
