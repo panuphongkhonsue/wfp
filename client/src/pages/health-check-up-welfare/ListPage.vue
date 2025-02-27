@@ -394,7 +394,7 @@ const columns = ref([
   },
   {
     name: "requestDate",
-    label: "วันที่ร้องขอ",
+    label: "วันที่ส่งใบเบิก",
     align: "left",
     field: (row) => row?.requestDate ?? "-",
     format: (val) => formatDateThaiSlash(val),

@@ -403,7 +403,7 @@ const columns = ref([
   },
   {
     name: "requestDate",
-    label: "วันที่ร้องขอ",
+    label: "วันที่ส่งใบเบิก",
     align: "left",
     field: (row) => row?.requestDate ?? "-",
     format: (val) => formatDateThaiSlash(val),
@@ -421,7 +421,7 @@ const columns = ref([
     name: "fundEligibleSum",
     label: "จำนวนเงินที่เบิกตามใบเสร็จ / ใบสำคัญรับเงิน",
     align: "right",
-    field: (row) => row?.fundReceipt ?? "-",
+    field: (row) => row?.fundEligibleSum ?? "-",
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
@@ -435,7 +435,7 @@ const columns = ref([
     name: "fundSumRequest",
     label: "จำนวนเงินที่ขอเบิกทั้งหมด",
     align: "right",
-    field: (row) => row?.fundReceipt ?? "-",
+    field: (row) => row?.fundSumRequest ?? "-",
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
