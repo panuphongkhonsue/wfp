@@ -28,10 +28,10 @@ class Controller extends BaseController {
                     [col("fund_sum_request"), "fundSumRequest"],
                     'status',
                 ],
+                page: page && !isNaN(page) ? Number(page) : 1,
+                paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 0,
                 where: whereObj,
-                order: [['updated_at', 'DESC'], ['created_at', 'DESC']],
-                limit: itemPerPage,
-                offset: (page - 1) * itemPerPage
+                order: [['updated_at', 'DESC'], ['created_at', 'DESC']]
             });
 
             if (listData) {
@@ -64,23 +64,20 @@ class Controller extends BaseController {
         try {
             const { filter } = req.query;
             var whereObj = { ...filter }
-            whereObj[Op.and].push(
-                { '$sub_category.id$': { [Op.in]: [3, 4, 5, 6] } }
-            );
             const decreaseRemaining = await reimbursementsAssistHasSubCategories.findAll({
                 attributes: [
                     [col("sub_category.id"), "subCategoriesId"],
                     [col("sub_category.name"), "subCategoriesName"],
-                    [fn("SUM", col("reimbursements_assist.fund_decease")), "totalSumRequested"],
+                    [fn("SUM", literal("IFNULL(reimbursements_assist.fund_decease, 0)")), "totalSumRequested"],
                     [col("sub_category.fund"), "fund"],
                     [
-                        literal("sub_category.fund - SUM(reimbursements_assist.fund_decease)"),
+                        literal("IFNULL(sub_category.fund - SUM(IFNULL(reimbursements_assist.fund_decease, 0)), sub_category.fund)"),
                         "fundRemaining"
                     ],
-                    [fn("COUNT", col("reimbursements_assist.fund_decease")), "totalCountRequested"],
+                    [fn("COUNT", literal("IFNULL(reimbursements_assist.fund_decease, 0)")), "totalCountRequested"],
                     [col("sub_category.per_years"), "perYears"],
                     [
-                        literal("sub_category.per_years - COUNT(reimbursements_assist.fund_decease)"),
+                        literal("IFNULL(sub_category.per_years - COUNT(IFNULL(reimbursements_assist.fund_decease, 0)), sub_category.per_years)"),
                         "requestsRemaining"
                     ],
                     [col("sub_category.per_times"), "perTimesRemaining"],
@@ -94,11 +91,16 @@ class Controller extends BaseController {
                     {
                         model: reimbursementsAssist,
                         as: "reimbursements_assist",
-                        attributes: []
+                        attributes: [],
+                        required: false
                     }
                 ],
-                where: whereObj,
-                group: ["sub_category.id"],
+                where: {
+                    '$sub_category.id$': {
+                        [Op.in]: [3, 4, 5, 6]
+                    }
+                },
+                group: ["sub_category.id", "sub_category.name", "sub_category.fund", "sub_category.per_years", "sub_category.per_times"]
             });
             whereObj[Op.and].push(
                 { '$sub_category.id$': { [Op.in]: [7, 8] } }
@@ -199,19 +201,15 @@ class Controller extends BaseController {
                 where: whereObj,
                 group: ["sub_category.id"],
             });
+
             if (!isNullOrEmpty(decreaseRemaining) || !isNullOrEmpty(wreathRemaining) || !isNullOrEmpty(vechicleRemaining)) {
                 let bindData = [];
                 if (!isNullOrEmpty(decreaseRemaining)) {
-                    const datas = JSON.parse(JSON.stringify(decreaseRemaining[0]));
-                    if (datas.fundRemaining == null) {
-                        datas.fundRemaining = datas.fund;
-                    }
-                    if (datas.requestsRemaining == null) {
-                        datas.requestsRemaining = datas.perYears;
-                    }
-                    if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
-                    else datas.canRequest = true;
-                    bindData.push(datas);
+                    const datas = JSON.parse(JSON.stringify(decreaseRemaining));
+                    datas.forEach(item => {
+                        item.canRequest = (item.fundRemaining !== 0 && item.requestsRemaining !== 0);
+                    });
+                    bindData.push(...datas);
                 }
                 else {
                     const getFund = await subCategories.findAll({
@@ -229,21 +227,21 @@ class Controller extends BaseController {
                         if (item.fundRemaining === 0 || item.requestsRemaining === 0) item.canRequest = false;
                         else item.canRequest = true;
                     });
-                    bindData.push(datas);
+                    bindData.push(...datas);
+
                 }
 
 
                 if (!isNullOrEmpty(wreathRemaining)) {
-                    const datas = JSON.parse(JSON.stringify(wreathRemaining[0]));
-                    if (datas.fundRemaining == null) {
-                        datas.fundRemaining = datas.fund;
-                    }
-                    if (datas.requestsRemaining == null) {
-                        datas.requestsRemaining = datas.perYears;
-                    }
-                    if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
-                    else datas.canRequest = true;
-                    bindData.push(datas);
+                    const datas = JSON.parse(JSON.stringify(wreathRemaining));
+                    datas.forEach(item => {
+                        item.canRequest = (item.fundRemaining !== 0 && item.requestsRemaining !== 0);
+                    });
+                    delete datas.totalSumRequested;
+                    delete datas.fund;
+                    delete datas.totalCountRequested;
+                    delete datas.perYears;
+                    bindData.push(...datas);
                 }
                 else {
                     const getFund = await subCategories.findAll({
@@ -413,25 +411,7 @@ class Controller extends BaseController {
                     { '$reimbursements_assist.id$': { [Op.lte]: datas.id } },
                     { '$sub_category.id$': { [Op.in]: [7, 8, 9] } },
                 );
-                const getRequestData = await reimbursementsAssistHasSubCategories.findAll({
-                    attributes: [
-                        [col("reimbursements_assist.id"), "id"],
-                        [col("reimbursements_assist.fund_vechicle"), "fundVecicle"],
-                    ],
-                    include: [
-                        {
-                            model: subCategories,
-                            as: "sub_category",
-                            attributes: []
-                        },
-                        {
-                            model: reimbursementsAssist,
-                            as: "reimbursements_assist",
-                            attributes: []
-                        }
-                    ],
-                    where: whereObj,
-                })
+
                 var welfareData = {
                     ...datas,
                     user: {
@@ -442,7 +422,6 @@ class Controller extends BaseController {
                         sector: datas.sector,
                         department: datas.department,
                     },
-                    requestData: JSON.parse(JSON.stringify(getRequestData))
                 }
                 delete welfareData.userId;
                 delete welfareData.name;
@@ -481,7 +460,6 @@ class Controller extends BaseController {
         const deceasedType = req.body.deceased_type ?? null;
         delete req.body.selected_wreath;
         delete req.body.selected_vechicle;
-        delete req.body.deceased_type;
         const dataCreate = {
             ...req.body,
             fund_eligible: fundEligible
@@ -525,9 +503,7 @@ class Controller extends BaseController {
                         newItemVechicle: newItemSub,
                     }
                 }
-
                 if (deceasedType && [3, 4, 5, 6].includes(deceasedType)) {
-                    console.log("Selected DeceasedType:", deceasedType);
                     const newItemSub = await reimbursementsAssistHasSubCategories.create(
                         {
                             reimbursements_assist_id: newItem.id,
@@ -539,7 +515,6 @@ class Controller extends BaseController {
                         ...itemsReturned,
                         newItemDeceasedType: newItemSub,
                     };
-                    console.log("New Item Sub (DeceasedType):", newItemSub);
                 } else if (deceasedType) {
                     console.log("Invalid DeceasedType:", deceasedType);
                 }
@@ -564,13 +539,11 @@ class Controller extends BaseController {
         const { id } = req.user;
         const selectedWreath = req.body.selected_wreath ?? false;
         const selectedVechicle = req.body.selected_vechicle ?? false;
-        const deceasedType = req.body.deceased_type ?? null; 
+        const deceasedType = req.body.deceased_type ?? null;
         delete req.body.selected_wreath;
         delete req.body.selected_vechicle
-        delete req.body.deceased_type;
         const dataUpdate = req.body;
         const dataId = req.params['id'];
-        var itemsReturned = null;
         try {
             const result = await sequelize.transaction(async t => {
                 const [updated] = await reimbursementsAssist.update(dataUpdate, {
@@ -578,7 +551,6 @@ class Controller extends BaseController {
                     transaction: t,
                 });
 
-                let checkingEdit = false;
                 let itemsReturned = { updated };
 
                 if (selectedWreath) {
@@ -594,7 +566,6 @@ class Controller extends BaseController {
                         ], { transaction: t });
 
                         itemsReturned = { ...itemsReturned, newItemWreath: newWreathItems };
-                        checkingEdit = true;
                     }
                 } else {
                     const deletedWreath = await reimbursementsAssistHasSubCategories.destroy({
@@ -604,7 +575,6 @@ class Controller extends BaseController {
 
                     if (deletedWreath) {
                         itemsReturned = { ...itemsReturned, deleteItemWreath: deletedWreath };
-                        checkingEdit = true;
                     }
                 }
 
@@ -615,16 +585,14 @@ class Controller extends BaseController {
                     });
 
                     if (!existingVechicle) {
-                        const newItemSub = await reimbursementsAssistHasSubCategories.create(
+                        const newVechicleItem = await reimbursementsAssistHasSubCategories.create(
                             {
-                                reimbursements_assist_id: dataId,
-                                sub_categories_id: 9,
+                                reimbursements_assist_id: dataId, sub_categories_id: 9,
                             },
                             { transaction: t }
                         );
 
-                        itemsReturned = { ...itemsReturned, newItemVechicle: newItemSub };
-                        checkingEdit = true;
+                        itemsReturned.newItemVechicle = newVechicleItem;
                     }
                 } else {
                     const deletedVechicle = await reimbursementsAssistHasSubCategories.destroy({
@@ -632,28 +600,23 @@ class Controller extends BaseController {
                         transaction: t,
                     });
 
-                    if (deletedVechicle) {
-                        itemsReturned = { ...itemsReturned, deleteItemVechicle: deletedVechicle };
-                        checkingEdit = true;
-                    }
+                    if (deletedVechicle) itemsReturned.deleteItemVechicle = deletedVechicle;
                 }
                 if (deceasedType && [3, 4, 5, 6].includes(deceasedType)) {
                     const deletedDeceased = await reimbursementsAssistHasSubCategories.destroy({
                         where: { reimbursements_assist_id: dataId, sub_categories_id: { [Op.in]: [3, 4, 5, 6] } },
                         transaction: t,
                     });
-    
+
                     if (deletedDeceased) {
-                        console.log("Deleted old DeceasedType:", deletedDeceased);  
                         itemsReturned = { ...itemsReturned, deleteItemDeceasedType: deletedDeceased };
-                        checkingEdit = true;
                     }
-    
+
                     const existingDeceased = await reimbursementsAssistHasSubCategories.count({
                         where: { reimbursements_assist_id: dataId, sub_categories_id: deceasedType },
                         transaction: t,
                     });
-    
+
                     if (!existingDeceased) {
                         const newDeceasedSub = await reimbursementsAssistHasSubCategories.create(
                             {
@@ -662,31 +625,28 @@ class Controller extends BaseController {
                             },
                             { transaction: t }
                         );
-    
+
                         itemsReturned = { ...itemsReturned, newItemDeceasedType: newDeceasedSub };
-                        checkingEdit = true;
                     }
                 } else if (deceasedType) {
                     const deletedDeceased = await reimbursementsAssistHasSubCategories.destroy({
                         where: { reimbursements_assist_id: dataId, sub_categories_id: { [Op.in]: [3, 4, 5, 6] } },
                         transaction: t,
                     });
-    
+
                     if (deletedDeceased) {
                         itemsReturned = { ...itemsReturned, deleteItemDeceasedType: deletedDeceased };
-                        checkingEdit = true;
                     }
                 }
-                return checkingEdit || updated > 0 ? itemsReturned : null;
+                return updated > 0 ? itemsReturned : null;
             });
 
             if (result) {
                 logger.info('Complete', { method, data: { id } });
-                return res.status(201).json({ newItem: result, message: "อัปเดตข้อมูลสำเร็จ" });
+                return res.status(200).json({ newItem: result, message: "อัปเดตข้อมูลสำเร็จ" });
+            } else {
+                res.status(400).json({ message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
             }
-
-            res.status(400).json({ message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
-
         } catch (error) {
             logger.error(`Error ${error.message}`, { method, data: { id } });
             next(error);

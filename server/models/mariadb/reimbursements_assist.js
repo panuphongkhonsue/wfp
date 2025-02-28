@@ -14,7 +14,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     fund_receipt: {
       type: DataTypes.DECIMAL(10,2),
-      allowNull: false
+      allowNull: true
     },
     fund_sum_request: {
       type: DataTypes.DECIMAL(10,2),
@@ -26,7 +26,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     fund_eligible: {
       type: DataTypes.DECIMAL(10,2),
-      allowNull: false
+      allowNull: true
     },
     fund_decease: {
       type: DataTypes.DECIMAL(10,2),
