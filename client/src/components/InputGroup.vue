@@ -7,7 +7,7 @@
       <q-input v-else class="font-14 font-regular" :dense="isDense" v-model="model" outlined :placeholder="placeholder"
         autocomplete="off" color="dark" :prefix="prefix" :suffix="suffix" :type="type" :mask="mask" :min="min"
         :rules="rules" :error="error" :disable="disable" :readonly="readonly" bottom-slots :for="forId"
-        :clearable="clearable">
+        :clearable="clearable" hide-bottom-space>
         <template v-slot:error>
           <div>
             {{ errorMessage }}

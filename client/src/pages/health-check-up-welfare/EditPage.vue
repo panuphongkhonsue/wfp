@@ -86,7 +86,7 @@
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'" is-require
                 label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number"
-                compclass="col-xs-12 col-lg-4 col-xl-2" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ', (val) => !isOver || 'จำนวนตามใบเสร็จไม่สามารถมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ'
+                compclass="col-xs-12 col-lg-5 col-xl-2" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ', (val) => !isOver || 'จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ'
                   , (val) => !isOverfundRemaining || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้'
                 ]" :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
@@ -301,8 +301,13 @@ watch(
 watch(
   () => model.value.claimByEligible,
   () => {
-    if (isOver.value) {
-      isError.value.fundReceipt = "จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";;
+    const fundEligibleSum = Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[1].fundEligible) + Number(model.value.claimByEligible[2].fundEligible);
+    const fundSumRequest = Number(model.value.fundReceipt) - Number(fundEligibleSum);
+    if (fundSumRequest <= 0) {
+      isError.value.fundReceipt = "จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
+    }
+    else {
+      isError.value.fundReceipt = null;
     }
   },
   { deep: true }
@@ -513,7 +518,7 @@ async function submit(actionId) {
     isError.value.fundReceipt = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
   }
   if (isOver.value) {
-    isError.value.fundReceipt = "จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
+    isError.value.fundReceipt = "จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
     validate = true;
   }
   if (validate === true) {
