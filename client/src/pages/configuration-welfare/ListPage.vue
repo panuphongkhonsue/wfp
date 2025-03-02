@@ -406,7 +406,6 @@ async function updateConfigWelfare(propsRowData) {
               }
             }
           }
-
           validateText = validateMessage;
           payloadLogCategory.value = (
             {
@@ -465,7 +464,7 @@ async function updateConfigWelfare(propsRowData) {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        if (validateText == null) {
+        if (validateText == "") {
           Swal.fire({
             html: `ข้อมูลสวัสดิการถูกแก้ไข`,
             icon: "success",
