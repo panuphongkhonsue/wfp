@@ -28,10 +28,10 @@ class Controller extends BaseController {
                     [col("fund_sum_request"), "fundSumRequest"],
                     'status',
                 ],
+                page: page && !isNaN(page) ? Number(page) : 1,
+                paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 0,
                 where: whereObj,
-                order: [['updated_at', 'DESC'], ['created_at', 'DESC']],
-                limit: itemPerPage,
-                offset: (page - 1) * itemPerPage
+                order: [['updated_at', 'DESC'], ['created_at', 'DESC']]
             });
 
             if (listData) {
@@ -458,32 +458,6 @@ class Controller extends BaseController {
                     { '$reimbursements_employee_deceased.id$': { [Op.lte]: datas.id } },
                     { '$category.id$': { [Op.in]: [9, 10, 11, 12] } },
                 );
-                const getRequestData = await reimbursementsEmployeeDeceasedHasCategories.findAll({
-                    attributes: [
-                        [col("reimbursements_employee_deceased.id"), "id"],
-                        [col("reimbursements_employee_deceased.fund_vehicle"), "fundVehicle"],
-                    ],
-                    include: [
-                        {
-                            model: categories,
-                            as: "category",
-                            attributes: []
-                        },
-                        {
-                            model: reimbursementsEmployeeDeceased,
-                            as: "reimbursements_employee_deceased",
-                            attributes: [],
-                            include: [
-                                {
-                                    model: users,
-                                    as: 'created_by_user',
-                                    attributes: ['id', 'name'],
-                                },
-                            ]
-                        },
-                    ],
-                    where: whereObj,
-                })
                 var welfareData = {
                     ...datas,
                     user: {
@@ -494,7 +468,6 @@ class Controller extends BaseController {
                         sector: datas.sector,
                         department: datas.department,
                     },
-                    requestData: JSON.parse(JSON.stringify(getRequestData))
                 }
                 delete welfareData.userId;
                 delete welfareData.name;

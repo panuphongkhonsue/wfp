@@ -5,6 +5,7 @@ const { Op } = require('sequelize')
 const permissionType = require('../enum/permission')
 const roleType = require('../enum/role')
 const { permissionsHasRoles, sequelize, users } = require('../models/mariadb')
+const { formatDateSlash } = require('../enum/formatDate');
 
 const authPermission = async (req, res, next) => {
 	const method = 'AuthPermission';
@@ -29,6 +30,7 @@ const authPermission = async (req, res, next) => {
 const bindCreate = async (req, res, next) => {
 	try {
 		const {
+			prefix,
 			username,
 			name,
 			positionId,
@@ -45,6 +47,7 @@ const bindCreate = async (req, res, next) => {
 			postalCode,
 		} = req.body;
 		const errorObj = {};
+		if (isNullOrEmpty(prefix)) errorObj['prefix'] = 'กรุณากรอกคำนำหน้าชื่อ';
 		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
 		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
 		if (isNullOrEmpty(positionId)) errorObj['positionId'] = 'กรุณากรอกตำแหน่ง';
@@ -58,11 +61,18 @@ const bindCreate = async (req, res, next) => {
 		if (isNullOrEmpty(subDistrict)) errorObj['subDistrict'] = 'กรุณากรอก ตำบล/แขวง';
 		if (isNullOrEmpty(province)) errorObj['province'] = 'กรุณากรอกจังหวัด';
 		if (isNullOrEmpty(postalCode)) errorObj['postalCode'] = 'กรุณากรอกรหัสไปรษณีย์';
+		const inputDate = new Date(firstWorkingDate);
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		inputDate.setHours(0, 0, 0, 0);
+		if (inputDate > today) {
+			errorObj['firstWorkingDate'] = 'วันที่เริ่มเข้าปฏิบัติงานไม่สามารถมากกว่าวันนี้ได้';
+		}
 		if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
 		const { id } = req.user;
 		const dataBinding = {
 			username: username,
-			name: name,
+			name: prefix + ' ' + name,
 			email: username + "@buu.ac.th",
 			positions_id: positionId,
 			employee_types_id: employeeTypeId,
@@ -91,6 +101,16 @@ const bindCreate = async (req, res, next) => {
 				if (dataBinding.child.length === 0) {
 					delete dataBinding.child;
 				}
+				else {
+					const newChild = dataBinding.child.map((child) => {
+						const childName = child.prefix + ' ' + child.name;
+						return {
+							name: childName,
+							birthday: formatDateSlash(child?.birthday),
+						};
+					});
+					dataBinding.child = newChild;
+				}
 			}
 		}
 		req.body = dataBinding;
@@ -103,7 +123,9 @@ const bindCreate = async (req, res, next) => {
 };
 const bindUpdate = async (req, res, next) => {
 	try {
-		const { username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId, deleteChild,
+		const {
+			prefix,
+			username, name, positionId, employeeTypeId, departmentId, sectorId, firstWorkingDate, roleId, deleteChild,
 			houseNumber,
 			street,
 			district,
@@ -112,6 +134,7 @@ const bindUpdate = async (req, res, next) => {
 			postalCode,
 		} = req.body;
 		const errorObj = {};
+		if (isNullOrEmpty(prefix)) errorObj['prefix'] = 'กรุณากรอกคำนำหน้าชื่อ';
 		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
 		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
 		if (isNullOrEmpty(positionId)) errorObj['positionId'] = 'กรุณากรอกตำแหน่ง';
@@ -125,11 +148,18 @@ const bindUpdate = async (req, res, next) => {
 		if (isNullOrEmpty(subDistrict)) errorObj['subDistrict'] = 'กรุณากรอก ตำบล/แขวง';
 		if (isNullOrEmpty(province)) errorObj['province'] = 'กรุณากรอกจังหวัด';
 		if (isNullOrEmpty(postalCode)) errorObj['postalCode'] = 'กรุณากรอกรหัสไปรษณีย์';
+		const inputDate = new Date(firstWorkingDate);
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		inputDate.setHours(0, 0, 0, 0);
+		if (inputDate > today) {
+			errorObj['firstWorkingDate'] = 'วันที่เริ่มเข้าปฏิบัติงานไม่สามารถมากกว่าวันนี้ได้';
+		}
 		if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
 		const { id } = req.user;
 		const dataBinding = {
 			username: username,
-			name: name,
+			name: prefix + ' ' + name,
 			email: username + "@buu.ac.th",
 			positions_id: positionId,
 			employee_types_id: employeeTypeId,
@@ -153,13 +183,32 @@ const bindUpdate = async (req, res, next) => {
 			req.deleteChild = deleteChild;
 		}
 		else {
-			var hasNull = false;
 			if (!isNullOrEmpty(dataBinding.child)) {
-				hasNull = req.body.child.some(item =>
-					Object.values(item).some(value => value.name === null || value.name === "" || value.birthday === null || value.birthday === "")
+				dataBinding.child = dataBinding.child.filter(item =>
+					!Object.values(item).some(value => value.name === null || value.name === "" || value.birthday === null || value.birthday === "" || value.prefix === null || value.prefix === "")
 				);
+				if (dataBinding.child.length === 0) {
+					delete dataBinding.child;
+				}
+				else {
+					const newChild = dataBinding.child.map((child) => {
+						const childId = child.id;
+						const childName = child.prefix + ' ' + child.name;
+
+						const result = {
+							name: childName,
+							birthday: formatDateSlash(child?.birthday),
+						};
+
+						if (childId) {
+							result.id = childId;
+						}
+
+						return result;
+					});
+					dataBinding.child = newChild;
+				}
 			}
-			if (hasNull) delete dataBinding.child;
 		}
 		req.body = dataBinding;
 		next();

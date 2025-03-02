@@ -215,7 +215,7 @@ const checkNullValue = async (req, res, next) => {
                     message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });
             }
-            if (Number(fundVechicle) > Number(fundReceiptVehicle)) {
+            if (Number(fundVechicle) > Number(fundReceiptVechicle)) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
                 });
@@ -299,7 +299,7 @@ const bindCreate = async (req, res, next) => {
         req.body = dataBinding;
         next();
     } catch (error) {
-        console.error('Error in bindCreate middleware:', error);  // เพิ่ม log ข้อผิดพลาด
+        console.error('Error in bindCreate middleware:', error);  
         res.status(500).json({
             message: 'Internal Server Error',
             error: error.message,
@@ -726,12 +726,12 @@ const checkFullPerTimes = async (req, res, next) => {
                     message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว ค่าพาหนะเหมาจ่าย" + datasVechicle.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_vechicle > datasVechicle.fundRemaining && datasVechicle.fundRemaining) {
-                logger.info('Request Over', { method });
-                return res.status(400).json({
-                    message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว ค่าพาหนะเหมาจ่าย เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
-                });
-            }
+            // if (fund_vechicle > datasVechicle.fundRemaining && datasVechicle.fundRemaining) {
+            //     logger.info('Request Over', { method });
+            //     return res.status(400).json({
+            //         message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว ค่าพาหนะเหมาจ่าย เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
+            //     });
+            // }
         }
         next();
     }

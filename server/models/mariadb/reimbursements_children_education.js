@@ -69,6 +69,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: Sequelize.Sequelize.fn('current_timestamp')
     },
+    eligible: {
+      type: DataTypes.ENUM('ตามสิทธิ', 'เฉพาะส่วนที่ยังขาดจากสิทธิ'),
+      allowNull: true
+    },
     updated_at: {
       type: DataTypes.DATE,
       allowNull: false,

@@ -32,46 +32,79 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-10 row font-bold font-14 q-col-gutter-x-md ">
-        <p class="col-12 col-md-3 q-ma-none"> ค่าสมรส : {{ remaining[4]?.fundRemaining ?? "-" }} บาท
-          ({{ remaining[4]?.requestsRemaining ?? "-" }} ครั้ง)</p>
-        <p class="col-12 col-md-3 q-ma-none"> ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ : {{ remaining[5]?.fundRemaining ?? "-" }}
-          บาท
-          ({{ remaining[5]?.requestsRemaining ?? "-" }} ครั้ง)</p>
-        <p class="col-12 col-md-3 q-ma-none">ค่ารับขวัญบุตร : {{ remaining[6]?.fundRemaining ?? "-" }} บาท
-          ({{ remaining[6]?.requestsRemaining ?? "-" }} ครั้ง)</p>
-        <p class="col-12 col-md-3 q-ma-none"> กรณีประสบภัยพิบัติ : {{ remaining[7]?.fundRemaining ?? "-" }} บาท
-          ({{ remaining[7]?.requestsRemaining ?? "-" }} ครั้ง)</p>
+        <p class="col-12 col-md-2 q-ma-none ">
+          ค่าสมรส :
+          {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาท" :
+            remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาท" :
+              remaining[4]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+          }}
+          {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
+            remaining[4]?.requestsRemaining === null
+              ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
+        </p>
+        <p class="col-12 col-md-3 col-xl-4 q-ma-none q-px-xl-xl">
+          ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ :
+          {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาท" :
+            remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาท" :
+              remaining[5]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+          }}
+          {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
+            remaining[5]?.requestsRemaining === null
+              ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
+        </p>
+        <p class="col-12 col-md-3 q-ma-none q-pl-lg-lg">
+          ค่ารับขวัญบุตร :
+          {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
+            remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาท" :
+              remaining[6]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+          }}
+          {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
+            remaining[6]?.requestsRemaining === null
+              ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
+        </p>
+        <p class="col-12 col-md-3 q-ma-none ">
+          กรณีประสบภัยพิบัติ :
+          {{ remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาท" :
+            remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาท" :
+              remaining[7]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+          }}
+          {{ remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
+            remaining[7]?.requestsRemaining === null
+              ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
+        </p>
       </div>
       <div class="col-12 col-md-2 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
           icon="add" :to="{ name: 'various_welfare_new' }" />
       </div>
     </template>
+
     <template v-slot:table>
       <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
         row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
         table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
         @request="onRequest" @row-click="(evt, row, index) => viewData(row.id)">
-        <q-inner-loading showing color="primary" />
         <template v-slot:body-cell-index="props">
           <q-td :props="props">
             {{ props.rowIndex + 1 }}
           </q-td>
         </template>
+        <template v-slot:loading>
+          <q-inner-loading showing color="primary" />
+        </template>
         <template v-slot:no-data="{ icon }">
           <div class="full-width row flex-center text-negative q-gutter-sm">
             <q-icon size="2em" :name="icon" />
-            <span class="font-remark font-regular ">
+            <span class="font-14 font-regular ">
               ไม่พบข้อมูล
             </span>
           </div>
         </template>
         <template v-slot:body-cell-status="props">
           <q-td :props="props" class="text-center">
-            <q-badge class="font-regular font-remark weight-5 q-py-xs full-width"
-              :color="statusColor(props.row.status)">
-              <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.status)">
-                {{ props.row.status }}
+            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width" :color="statusColor(props.row?.status)">
+              <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row?.status)">
+                {{ props.row?.status }}
               </p>
             </q-badge>
           </q-td>
@@ -140,14 +173,9 @@ const modelDate = ref(null);
 const filter = ref({
   keyword: null,
   dateSelected: null,
-  statusId: null,
+  status: null,
 });
-const remaining = ref({
-  4: { fundRemaining: "-", requestsRemaining: "-" },
-  5: { fundRemaining: "-", requestsRemaining: "-" },
-  6: { fundRemaining: "-", requestsRemaining: "-" },
-  7: { fundRemaining: "-", requestsRemaining: "-" }
-});
+const remaining = ref({});
 const pagination = ref({
   sortBy: "desc",
   descending: false,
@@ -202,21 +230,23 @@ async function init() {
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
   try {
-    const fetchRemaining = await variousWelfareService.getRemaining();
+    const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
     if (Array.isArray(fetchRemaining.data?.datas)) {
       fetchRemaining.data.datas.forEach((item) => {
-        remaining.value[item.categoryId] = {
-          requestsRemaining: item.requestsRemaining != null && !isNaN(Number(item.requestsRemaining))
-            ? formatNumber(item.requestsRemaining)
-            : "-",
-          fundRemaining: item.fundRemaining != null && !isNaN(Number(item.fundRemaining))
-            ? formatNumber(item.fundRemaining)
-            : "-",
-        };
+        remaining.value[item.categoryId] = item;
+        
+        if (item.fundRemaining !== null) {
+          item.fundRemaining = formatNumber(item.fundRemaining);
+        }
+        if (item.perTimesRemaining !== null) {
+          item.perTimesRemaining = formatNumber(item.perTimesRemaining);
+        }
+        if (item.requestsRemaining !== null) {
+          item.requestsRemaining = formatNumber(item.requestsRemaining);
+        }
       });
     }
-  }
-  catch (error) {
+  } catch (error) {
     Promise.reject(error);
   }
 }
@@ -360,7 +390,7 @@ const columns = ref([
   },
   {
     name: "requestDate",
-    label: "วันที่ร้องขอ",
+    label: "วันที่ส่งใบเบิก",
     align: "left",
     field: (row) => row.requestDate ?? "-",
     format: (val) => formatDateThaiSlash(val),
@@ -388,20 +418,6 @@ const columns = ref([
     },
     classes: "ellipsis",
   },
-  // {
-  //   name: "otherWelfare",
-  //   label: "จำนวนเงินที่เบิกได้ตามสิทธิ์",
-  //   align: "right",
-  //   field: (row) => row.otherWelfare ?? "-",
-  //   format: (val) => {
-  //     const number = Number(val); // Convert to number
-  //     if (!isNaN(number)) {
-  //       return number.toLocaleString("en-US"); // Format as '3,000'
-  //     }
-  //     return `${val}`; // If conversion fails, return a fallback value
-  //   },
-  //   classes: "ellipsis",
-  // },
   {
     name: "fundSumRequest",
     label: "จำนวนเงินที่ขอเบิกทั้งหมด",

@@ -1,5 +1,5 @@
 <template>
-  <ListLayout title="สวัสดิการทั่วไป (ค่าตรวจสุขภาพ)">
+  <ListLayout title="เบิกสวัสดิการค่าสงเคราะห์การเสียชีวิต">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
@@ -24,23 +24,17 @@
             </template>
           </q-select>
         </div>
-        <div class="content-center q-pt-md-xs col-2 q-pt-xs-md q-pt-md-none">
+        <div class="content-center q-pt-md-xs col-1 q-pt-xs-md q-pt-md-none">
           <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs" dense
             type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>
+        <div class="content-center flex justify-end q-pt-md-xs col-2 q-pt-xs-md q-pt-md-none">
+          <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
+          icon="add" :to="{ name: 'funeral_welfare_new' }"/>
+        </div>
       </q-form>
     </template>
-    <template v-slot:toolbar>
-      <div class="col-12 col-md-6 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none">ผู้ปฏิบัติงานเสียชีวิตเบิกได้สูงสุดไม่เกิน :
-                {{ remaining[9]?.perTimesRemaining ?? "-" }}
-                บาท </p>
-      </div>
-      <div class="col-12 col-md-6 flex justify-end">
-        <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
-          icon="add" :to="{ name: 'funeral_welfare_new' }"/>
-      </div>
-    </template>
+    
     <template v-slot:table>
       <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
         row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
@@ -123,12 +117,6 @@ let options = [
   { status: "รอตรวจสอบ", name: "รอตรวจสอบ" },
   { status: "อนุมัติ", name: "อนุมัติ" },
 ];;
-const remaining = ref({
-  9: { fundRemaining: "-", requestsRemaining: "-" },
-  10: { fundRemaining: "-", requestsRemaining: "-" },
-  11: { fundRemaining: "-", requestsRemaining: "-" },
-  12: { fundRemaining: "-", requestsRemaining: "-" }
-});
 
 const modelDate = ref(null);
 const filter = ref({
@@ -184,30 +172,7 @@ async function init() {
   }
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
-  try {
-    const fetchedData = await funeralWelfareEmployeeDeceasedService.getRemaining({
-      createFor: model.value.createFor
-    });
-
-    const deceaseData = fetchedData.data?.datas;
-
-    if (Array.isArray(deceaseData)) {
-      deceaseData.forEach((item) => {
-        remaining.value[item.categoriesId] = {
-          fundRemaining: item.fundRemaining != null ? item.fundRemaining : "-",
-          requestsRemaining: item.requestsRemaining != null ? item.requestsRemaining : "-",
-          perTimesRemaining: item.perTimesRemaining != null ? item.perTimesRemaining : "-",
-        };
-      });
-    }
-  } catch (error) {
-    console.error("fetchRemaining error:", error);
-    Notify.create({
-      message: error?.message || "เกิดข้อผิดพลาดในการดึงข้อมูลสิทธิ์คงเหลือ",
-      position: "bottom-left",
-      type: "negative",
-    });
-  }
+ 
 }
 
 async function fetchFromServer(page, itemPerPage, filter) {
@@ -348,7 +313,7 @@ const columns = ref([
   },
   {
     name: "requestDate",
-    label: "วันที่ร้องขอ",
+    label: "วันที่ส่งใบเบิก",
     align: "left",
     field: (row) => row.requestDate ?? "-",
     format: (val) => formatDateThaiSlash(val),

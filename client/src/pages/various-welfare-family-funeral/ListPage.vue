@@ -32,14 +32,26 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-10 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none"> บิดา : {{ remaining[3]?.fundRemaining ?? "-" }} {{ "บาท ( " }}
-          {{ remaining[3]?.requestsRemaining ?? "-" }} {{ " ครั้ง )" }}</p>
-        <p class="col q-ma-none"> มารดา : {{ remaining[4]?.fundRemaining ?? "-" }} {{ "บาท ( " }}
-          {{ remaining[4]?.requestsRemaining ?? "-" }} {{ " ครั้ง )" }}</p>
-        <p class="col q-ma-none"> คู่สมรส : {{ remaining[4]?.fundRemaining ?? "-" }} {{ "บาท ( " }}
-          {{ remaining[5]?.requestsRemaining ?? "-" }} {{ " ครั้ง )" }}</p>
-        <p class="col q-ma-none"> บุตร : {{ remaining[4]?.fundRemaining ?? "-" }} {{ "บาท ( " }}
-          {{ remaining[6]?.requestsRemaining ?? "-" }} {{ " ครั้ง )" }}</p>
+        <p class="col q-ma-none"> บิดา : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาท" :
+          remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาท" :
+            "ไม่จำกัดจำนวนเงิน"
+        }}
+         </p>
+        <p class="col q-ma-none"> มารดา : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาท" :
+          remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาท" :
+            "ไม่จำกัดจำนวนเงิน"
+        }}
+          </p>
+        <p class="col q-ma-none"> คู่สมรส : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาท" :
+          remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาท" :
+            "ไม่จำกัดจำนวนเงิน"
+        }}
+          </p>
+        <p class="col q-ma-none"> บุตร : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
+          remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาท" :
+            "ไม่จำกัดจำนวนเงิน"
+        }}
+          </p>
       </div>
       <div class="col-12 col-md-2 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -128,30 +140,8 @@ let options = [
   { status: "รอตรวจสอบ", name: "รอตรวจสอบ" },
   { status: "อนุมัติ", name: "อนุมัติ" },
 ];;
-const remaining = ref({
-  3: { fundRemaining: "-", requestsRemaining: "-" },
-  4: { fundRemaining: "-", requestsRemaining: "-" },
-  5: { fundRemaining: "-", requestsRemaining: "-" },
-  6: { fundRemaining: "-", requestsRemaining: "-" }
-});
-const deceaseOptions = [
-  {
-    label: 'บิดา',
-    value: '3'
-  },
-  {
-    label: 'มารดา',
-    value: '4'
-  },
-  {
-    label: 'คู่สมรส',
-    value: '5'
-  },
-  {
-    label: 'บุตร',
-    value: '6'
-  }
-]
+const remaining = ref({});
+
 const modelDate = ref(null);
 const filter = ref({
   keyword: null,
@@ -207,31 +197,42 @@ async function init() {
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
   try {
-    const fetchRemaining = await variousWelfareFuneralFamilyService.getRemaining({ createFor: model.value.createFor });
+    const fetchRemainingData = await variousWelfareFuneralFamilyService.getRemaining({ createFor: model.value.createFor });
+    const deceaseData = fetchRemainingData.data?.datas ?? [];
+    remaining.value = {};
+    const allCategories = [3, 4, 5, 6, 7, 8, 9]; 
 
-    const deceaseData = fetchRemaining.data?.datas[0];
-
-    if (Array.isArray(deceaseData)) {
-      deceaseData.forEach((item) => {
-        const matchedOption = deceaseOptions.find(option => option.value === String(item.subCategoriesId));
-
-        if (matchedOption) {
-          remaining.value[matchedOption.value] = {
-            requestsRemaining: item.requestsRemaining != null && !isNaN(Number(item.requestsRemaining))
-              ? formatNumber(item.requestsRemaining)
-              : "-",
-            fundRemaining: item.fundRemaining != null && !isNaN(Number(item.fundRemaining))
-              ? formatNumber(item.fundRemaining)
-              : "-",
-            perTimesRemaining: item.perTimesRemaining != null && !isNaN(Number(item.perTimesRemaining))
-              ? formatNumber(item.perTimesRemaining)
-              : "-",
+    deceaseData.forEach((item) => {
+      if (Array.isArray(item)) {
+        item.forEach((subItem) => {
+          remaining.value[subItem.subCategoriesId] = {
+            requestsRemaining: formatNumber(subItem.requestsRemaining ),
+            fundRemaining: formatNumber(subItem.fundRemaining ),
+            perTimesRemaining: formatNumber(subItem.perTimesRemaining ),
           };
-        }
-      });
-    }
+        });
+      } else {
+        remaining.value[item.subCategoriesId] = {
+          requestsRemaining: formatNumber(item.requestsRemaining ),
+          fundRemaining: formatNumber(item.fundRemaining ),
+          perTimesRemaining: formatNumber(item.perTimesRemaining ),
+        };
+      }
+    });
+
+    allCategories.forEach((id) => {
+      if (!remaining.value[id]) {
+        remaining.value[id] = {
+          requestsRemaining: "",
+          fundRemaining: "",
+          perTimesRemaining: "",
+        };
+      }
+    });
+    isLoading.value = false;
   } catch (error) {
-    Promise.reject(error);
+    console.error("❌ Error fetching remaining data:", error);
+    isLoading.value = false;
   }
 }
 
@@ -356,7 +357,7 @@ function search() {
 
 const isLoading = ref(false);
 const columns = ref([
-{
+  {
     name: "index",
     label: "ลำดับ",
     align: "center",

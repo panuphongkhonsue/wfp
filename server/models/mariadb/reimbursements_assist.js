@@ -13,43 +13,43 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     fund_receipt: {
-      type: DataTypes.DECIMAL(10,0),
-      allowNull: false
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: true
     },
     fund_sum_request: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: false
     },
     fund_sum_receipt: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: false
     },
     fund_eligible: {
-      type: DataTypes.DECIMAL(10,0),
-      allowNull: false
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: true
     },
     fund_decease: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: true
     },
     fund_wreath_university: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: true
     },
     fund_wreath_arrange: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: true
     },
     fund_receipt_wreath: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: true
     },
     fund_receipt_vechicle: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: true
     },
     fund_vechicle: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: true
     },
     status: {

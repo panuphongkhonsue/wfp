@@ -14,11 +14,11 @@ module.exports = function(sequelize, DataTypes) {
     },
     fund_old: {
       type: DataTypes.DECIMAL(10,0),
-      allowNull: false
+      allowNull: true
     },
     fund_new: {
       type: DataTypes.DECIMAL(10,0),
-      allowNull: false
+      allowNull: true
     },
     per_times_old: {
       type: DataTypes.DECIMAL(10,0),

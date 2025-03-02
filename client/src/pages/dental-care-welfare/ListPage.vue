@@ -15,8 +15,8 @@
         </div>
         <div class="col-12 col-md-4 col-lg-3 q-pt-lg">
           <q-select popup-content-class="font-14 font-regular" :loading="isLoading" id="selected-status" class="q-pt-sm"
-            outlined v-model="filter.status" :options="options" label="สถานะ" dense clearable
-            option-value="status" emit-value map-options option-label="name">
+            outlined v-model="filter.status" :options="options" label="สถานะ" dense clearable option-value="status"
+            emit-value map-options option-label="name">
             <template v-slot:no-option>
               <q-item>
                 <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
@@ -32,9 +32,10 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-6 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none">สิทธิ์คงเหลือ : {{ remaining?.fundRemaining ?? remaining?.perTimesRemaining ?? "-" }}
-          {{ "บาท ( " }}
-          {{ remaining?.requestsRemaining ?? '-' }} {{ " ครั้ง )" }}</p>
+        <p class="col q-ma-none">สิทธิ์คงเหลือ : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาท" :
+          remaining?.perTimesRemaining ?
+            remaining?.perTimesRemaining + " บาท" : "ไม่จำกัดจำนวนเงิน" }}
+          {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : "(ไม่จำกัดครั้ง)" }}</p>
       </div>
       <div class="col-12 col-md-6 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -104,6 +105,7 @@ import { Notify } from "quasar";
 import Swal from "sweetalert2";
 
 import dentalWelfareService from "src/boot/service/dentalWelfareService";
+import exportService from "src/boot/service/exportService";
 
 import { useListStore } from "src/stores/listStore";
 import { useRoute, useRouter } from "vue-router";
@@ -260,12 +262,49 @@ function goto(requestId) {
   });
 }
 
-function downloadData(requestId) {
-  console.log(requestId);
-  // router.push({
-  //   name: "",
-  //   params: { id: requestId },
-  // });
+async function downloadData(requestId) {
+  const notify = Notify.create({
+    message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",
+    position: "top-right",
+    spinner: true,
+    type: 'info',
+  });
+  try {
+    const result = await exportService.dental(requestId);
+    let filename = null;
+    const contentDisposition = result.headers["content-disposition"];
+    if (contentDisposition) {
+      const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (matches && matches[1]) {
+        filename = decodeURIComponent(matches[1]);
+      }
+    }
+
+    const blob = new Blob([result.data], { type: "application/pdf" });
+
+    const a = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  catch (error) {
+    console.log(error);
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "ดาวน์โหลดไม่สำเร็จกรุณาลองอีกครั้ง",
+      position: "top-right",
+      type: "primary",
+    });
+  }
+  finally {
+    notify();
+  }
 }
 
 async function deleteData(id, reimNumber) {
@@ -342,7 +381,7 @@ const columns = ref([
   },
   {
     name: "requestDate",
-    label: "วันที่ร้องขอ",
+    label: "วันที่ส่งใบเบิก",
     align: "left",
     field: (row) => row?.requestDate ?? "-",
     format: (val) => formatDateThaiSlash(val),

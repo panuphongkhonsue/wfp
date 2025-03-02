@@ -70,6 +70,7 @@ exports.login = async (req, res, next) => {
                 const positions = user?.position?.name;
                 const department = user?.department?.name;
                 const sector = user?.sector.name;
+                user.roleName = role?.name ? role?.name : null;
                 user.roleId = role?.id ? role.id : null;
                 user.position = positions;
                 user.department = department;

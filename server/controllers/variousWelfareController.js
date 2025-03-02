@@ -26,10 +26,10 @@ class Controller extends BaseController {
                     [col("fund_sum_request"), "fundSumRequest"],
                     'status',
                 ],
+                page: page && !isNaN(page) ? Number(page) : 1,
+                paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 0,
                 where: whereObj,
-                order: [['updated_at', 'DESC'], ['created_at', 'DESC']],
-                limit: itemPerPage,
-                offset: (page - 1) * itemPerPage
+                order: [['updated_at', 'DESC'], ['created_at', 'DESC']]
             });
 
             if (listData) {
