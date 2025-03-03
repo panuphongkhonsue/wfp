@@ -138,7 +138,8 @@ const checkNullValue = async (req, res, next) => {
             return res.status(400).json({
                 message: "จำนวนเงินตามใบเสร็จน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
-        }
+        } 
+        const fundSumReceipt = Number(fundReceipt);
         if (isInvalidNumber(fundEligible) && fundEligible) {
             errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
 
@@ -159,7 +160,6 @@ const checkNullValue = async (req, res, next) => {
                 message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ต้องการเบิกได้",
             });
         }
-        
         if ((isNullOrEmpty(actionId) || (actionId !== status.draft && actionId !== status.waitApprove)) && !req.access) {
             return res.status(400).json({
                 message: "ไม่มีการกระทำที่ต้องการ",
@@ -169,6 +169,7 @@ const checkNullValue = async (req, res, next) => {
         req.body = {
             ...req.body,
             fundSumRequest: fundSumRequest,
+            fundSumReceipt: fundSumReceipt,
         };
         next();
     }
@@ -208,6 +209,7 @@ const bindCreate = async (req, res, next) => {
             fund_sum_receipt: fundReceipt,
             fund_eligible: fundEligible,
             fund_sum_request: fundSumRequest,
+            fund_sum_receipt: fundSumReceipt,
             created_by: createFor ?? id,
             updated_by: id,
             status: actionId,

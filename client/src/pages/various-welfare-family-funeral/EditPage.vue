@@ -609,7 +609,6 @@ async function fetchRemaining() {
         canRequest.value[item.subCategoriesId] = item.canRequest ?? false;
       }
     });
-
     allSubCategories.forEach((id) => {
       if (!remaining.value[id]) {
         remaining.value[id] = {
@@ -620,7 +619,7 @@ async function fetchRemaining() {
         canRequest.value[id] = false;
       }
     });
-
+    console.log(remaining.value)
     canRequest.value.wreath = deceaseData.some(item => item.subCategoriesId === 7 || item.subCategoriesId === 8) ? true : false;
     canRequest.value.vechicle = deceaseData.some(item => item.subCategoriesId === 9) ? true : false;
 

@@ -33,4 +33,34 @@ export default {
       return Promise.reject(error);
     }
   },
+  async various(id) {
+    try {
+      const response = await api.get(`${path}/various/${id}`, {
+        responseType: "blob",
+      });
+      return response;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  },
+  async variousFuneralFamily(id) {
+    try {
+      const response = await api.get(`${path}/various-Funeral-Family/${id}`, {
+        responseType: "blob",
+      });
+      return response;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  },
+  async funeralDeceaseEmployee(id) {
+    try {
+      const response = await api.get(`${path}/funeral-Decease-Employee/${id}`, {
+        responseType: "blob",
+      });
+      return response;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  },
 };

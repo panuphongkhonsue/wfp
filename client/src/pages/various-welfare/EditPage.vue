@@ -314,13 +314,33 @@ const isOver = computed(() => {
 });
 
 const isOverfundRemaining = computed(() => {
-
   const fundSumRequest = Number(model.value.fundEligible ?? 0);
-
-  const perTimes = remaining.value.perTimesRemaining ? parseFloat(remaining.value.perTimesRemaining.replace(/,/g, "")) : null;
-  const fundRemaining = remaining.value.fundRemaining ? parseFloat(remaining.value.fundRemaining.replace(/,/g, "")) : null;
-
-  return (fundSumRequest > perTimes && remaining.value.perTimesRemaining) || (fundSumRequest > fundRemaining && remaining.value.fundRemaining);
+  let perTimes = 0;
+  let fundRemaining = 0;
+  if (model.value.categoryId) {
+    switch (model.value.categoryId) {
+      case 4: // บิดา
+        perTimes = remaining.value[4]?.perTimesRemaining ? parseFloat(remaining.value[4]?.perTimesRemaining.replace(/,/g, "")) : null;
+        fundRemaining = remaining.value[4]?.fundRemaining ? parseFloat(remaining.value[4]?.fundRemaining.replace(/,/g, "")) : null;
+        break;
+      case 5: // มารดา
+        perTimes = remaining.value[5]?.perTimesRemaining ? parseFloat(remaining.value[5]?.perTimesRemaining.replace(/,/g, "")) : null;
+        fundRemaining = remaining.value[5]?.fundRemaining ? parseFloat(remaining.value[5]?.fundRemaining.replace(/,/g, "")) : null;
+        break;
+      case 6: // คู่สมรส
+        perTimes = remaining.value[6]?.perTimesRemaining ? parseFloat(remaining.value[6]?.perTimesRemaining.replace(/,/g, "")) : null;
+        fundRemaining = remaining.value[6]?.fundRemaining ? parseFloat(remaining.value[6]?.fundRemaining.replace(/,/g, "")) : null;
+        break;
+      case 7: // บุตร
+        perTimes = remaining.value[7]?.perTimesRemaining ? parseFloat(remaining.value[7]?.perTimesRemaining.replace(/,/g, "")) : null;
+        fundRemaining = remaining.value[7]?.fundRemaining ? parseFloat(remaining.value[7]?.fundRemaining.replace(/,/g, "")) : null;
+        break;
+      default:
+        perTimes = 0;
+        fundRemaining = 0;
+    }
+  }
+  return (fundSumRequest > perTimes &&  remaining.value[4,5,6,7].perTimes) || (fundSumRequest > fundRemaining &&  remaining.value[4,5,6,7].fundRemaining );
 });
 
 async function fetchDataEdit() {
