@@ -160,7 +160,7 @@ const checkNullValue = async (req, res, next) => {
                 message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ต้องการเบิกได้",
             });
         }
-        if ((isNullOrEmpty(actionId) || (actionId !== status.draft && actionId !== status.waitApprove)) && !req.access) {
+        if ((isNullOrEmpty(actionId) || (actionId != status.draft && actionId != status.waitApprove)) && !req.access) {
             return res.status(400).json({
                 message: "ไม่มีการกระทำที่ต้องการ",
             });
@@ -230,7 +230,6 @@ const bindUpdate = async (req, res, next) => {
         const { fundReceipt, fundEligible, fundSumRequest, createFor, actionId, categoryId } = req.body;
         const { id, } = req.user;
         if (!isNullOrEmpty(createFor) && !req.isEditor) {
-            console.log(createFor);
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
             });
@@ -286,9 +285,8 @@ const bindUpdate = async (req, res, next) => {
             categories_id: categoryId,
             updated_by: id,
         }
-        console.log(dataBinding);
         if (!isNullOrEmpty(actionId)) {
-            if (req.access && actionId != 3) {
+            if (req.access && actionId != status.approve) {
                 return res.status(400).json({
                     message: "ไม่มีการกระทำที่ต้องการ",
                 });
@@ -306,9 +304,6 @@ const bindUpdate = async (req, res, next) => {
             dataBinding.createByData = createByData;
         }
 
-        if (!isNullOrEmpty(reimNumber) && !req.access) {
-            dataBinding.reimNumber = reimNumber;
-        }
         req.body = dataBinding;
         next();
     } catch (error) {
@@ -351,9 +346,11 @@ const getRemaining = async (req, res, next) => {
                 { '$category.id$': categories_id }
             );
         } else {
-            req.query.filter[Op.and].push(
-                { '$category.id$': { [Op.ne]: category.variousFuneralFamily } }
-            );
+            req.query.filter[Op.and].push({
+                '$category.id$': { [Op.in]: [4, 5, 6, 7] }
+            });
+            
+            
         }
 
         req.query.filter[Op.and].push(
@@ -469,8 +466,12 @@ const checkRemaining = async (req, res, next) => {
         }
         const { filter } = req.query;
         let whereObj = { ...filter };
-        whereObj["$category.id$"] = categories_id;
-        const results = await reimbursementsAssist.findOne({
+        if (!isNullOrEmpty(categories_id)) {
+            whereObj['$category.id$'] = { [Op.in]: [3, 4, 5, 6] };
+        }
+        whereObj['$reimbursementsAssist.created_by$'] = id;
+        
+        const results = await reimbursementsAssist.findAll({
             attributes: [
                 [literal("category.fund - SUM(reimbursementsAssist.fund_sum_request)"), "fundRemaining"],
                 [col("category.per_times"), "perTimes"],

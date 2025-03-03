@@ -315,33 +315,15 @@ const isOver = computed(() => {
 
 const isOverfundRemaining = computed(() => {
   const fundSumRequest = Number(model.value.fundEligible ?? 0);
-  let perTimes = 0;
-  let fundRemaining = 0;
-  if (model.value.categoryId) {
-    switch (model.value.categoryId) {
-      case 4: // บิดา
-        perTimes = remaining.value[4]?.perTimesRemaining ? parseFloat(remaining.value[4]?.perTimesRemaining.replace(/,/g, "")) : null;
-        fundRemaining = remaining.value[4]?.fundRemaining ? parseFloat(remaining.value[4]?.fundRemaining.replace(/,/g, "")) : null;
-        break;
-      case 5: // มารดา
-        perTimes = remaining.value[5]?.perTimesRemaining ? parseFloat(remaining.value[5]?.perTimesRemaining.replace(/,/g, "")) : null;
-        fundRemaining = remaining.value[5]?.fundRemaining ? parseFloat(remaining.value[5]?.fundRemaining.replace(/,/g, "")) : null;
-        break;
-      case 6: // คู่สมรส
-        perTimes = remaining.value[6]?.perTimesRemaining ? parseFloat(remaining.value[6]?.perTimesRemaining.replace(/,/g, "")) : null;
-        fundRemaining = remaining.value[6]?.fundRemaining ? parseFloat(remaining.value[6]?.fundRemaining.replace(/,/g, "")) : null;
-        break;
-      case 7: // บุตร
-        perTimes = remaining.value[7]?.perTimesRemaining ? parseFloat(remaining.value[7]?.perTimesRemaining.replace(/,/g, "")) : null;
-        fundRemaining = remaining.value[7]?.fundRemaining ? parseFloat(remaining.value[7]?.fundRemaining.replace(/,/g, "")) : null;
-        break;
-      default:
-        perTimes = 0;
-        fundRemaining = 0;
-    }
-  }
-  return (fundSumRequest > perTimes &&  remaining.value[4,5,6,7].perTimes) || (fundSumRequest > fundRemaining &&  remaining.value[4,5,6,7].fundRemaining );
+  const categoryData = remaining.value[model.value.categoryId] || {};
+
+  const perTimes = categoryData.perTimesRemaining ? parseFloat(categoryData.perTimesRemaining.replace(/,/g, "")) : null;
+  const fundRemaining = categoryData.fundRemaining ? parseFloat(categoryData.fundRemaining.replace(/,/g, "")) : null;
+
+  return (fundSumRequest > perTimes && perTimes !== null) || 
+         (fundSumRequest > fundRemaining && fundRemaining !== null);
 });
+
 
 async function fetchDataEdit() {
   setTimeout(async () => {
@@ -406,13 +388,13 @@ async function fetchRemaining() {
       fetchRemaining.data.datas.forEach((item) => {
         remaining.value[item.categoryId] = item;
         
-        if (item.fundRemaining !== null) {
+        if (item.fundRemaining !== null && !isNaN(Number(item.fundRemaining))) {
           item.fundRemaining = formatNumber(item.fundRemaining);
         }
-        if (item.perTimesRemaining !== null) {
+        if (item.perTimesRemaining !== null && !isNaN(Number(item.perTimesRemaining))) {
           item.perTimesRemaining = formatNumber(item.perTimesRemaining);
         }
-        if (item.requestsRemaining !== null) {
+        if (item.requestsRemaining !== null && !isNaN(Number(item.requestsRemaining))) {
           item.requestsRemaining = formatNumber(item.requestsRemaining);
         }
       });
@@ -422,7 +404,6 @@ async function fetchRemaining() {
     Promise.reject(error);
   }
 }
-
 
 async function filterFn(val, update) {
   try {

@@ -106,7 +106,6 @@
               <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md  font-medium font-16 text-grey-9">
-              <p class="col-12 q-mb-none q-pt-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
               <div v-for="option in deceaseOptions" :key="option.value" class="col-12 row q-mb-none">
                 <div class="col-md-2">
                   <q-radio v-model="model.deceasedType" :val="option.value" :label="option.label" class="q-mr-md"
@@ -191,7 +190,7 @@
                 <InputGroup for-id="fund" is-dense v-model="model.fundVechicle" :data="model.fundVechicle ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
                   :is-view="isView" :disable="!model.selectedVechicle" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
-                  (val) => model.selectedWreath && !isOverVechicle || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน',
+                  (val) => model.selectedVechicle && !isOverVechicle || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน',
                   (val) => !isOverfundRemainingVechicle || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้'
                   ]" :error-message="isError?.fundVechicle" :error="!!isError?.fundVechicle">
                 </InputGroup>
@@ -431,6 +430,7 @@ const isOverfundRemainingWreathUniversity = computed(() => {
   const fundRemaining = remaining.value[8]?.fundRemaining && remaining.value[8]?.fundRemaining !== "0" 
                         ? parseFloat(remaining.value[8]?.fundRemaining.replace(/,/g, "")) : 0;
   return (fundSumRequest > perTimes && perTimes > 0) || (fundSumRequest > fundRemaining && fundRemaining > 0);});
+
 
 const isOverfundRemainingVechicle = computed(() => {
   const fundSumRequest = Number(model.value.fundVechicle ?? 0);

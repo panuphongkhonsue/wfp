@@ -127,14 +127,14 @@
                 </InputGroup>
               </div>
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl  ">
-                <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fund ?? '-'"
+                <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'"
                   is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)" placeholder="บาท" type="number" class=""
                   :is-view="isView" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
                   :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
                 </InputGroup>
               </div>
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
-                <InputGroup for-id="fund-request" is-dense v-model="model.fundRequest" :data="model.fund ?? '-'"
+                <InputGroup for-id="fund-request" is-dense v-model="model.fundRequest" :data="model.fundRequest ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
                   :is-view="isView" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOverRequest || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบสำคัญรับเงิน',
                   (val) => !isOverfundRemaining || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้']"
@@ -152,8 +152,8 @@
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
-                  :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน" placeholder="บาท"
-                  type="number" class="" :is-view="isView" :disable="!model.selectedWreath"
+                  :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
+                  placeholder="บาท" type="number" class="" :is-view="isView" :disable="!model.selectedWreath"
                   :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
                   :error-message="isError?.fundReceiptWreath" :error="!!isError?.fundReceiptWreath">
                 </InputGroup>
@@ -198,7 +198,7 @@
                 <InputGroup for-id="fund" is-dense v-model="model.fundVehicle" :data="model.fundVehicle ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
                   :is-view="isView" :disable="!model.selectedVehicle" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
-                  (val) => model.selectedWreath && !isOverVehicle || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน',
+                  (val) => model.selectedVehicle && !isOverVehicle || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน',
                   (val) => !isOverfundRemainingVehicle || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้'
                   ]" :error-message="isError?.fundVehicle" :error="!!isError?.fundVehicle">
                 </InputGroup>
@@ -362,13 +362,12 @@ const isValidate = computed(() => {
     if (!model.value.fundRequest) {
       validate = true;
     }
-    if (isOverfundRemaining.value) {
-      validate = true;
-    }
-    if (isOverRequest.value) {
-      validate = true;
-    }
-    
+  }
+  if (isOverfundRemaining.value) {
+    validate = true;
+  }
+  if (isOverRequest.value) {
+    validate = true;
   }
   if (model.value.selectedWreath) {
     if (!model.value.fundReceiptWreath) {
@@ -444,7 +443,7 @@ const isOverfundRemainingVehicle = computed(() => {
 });
 
 const isOverRequest = computed(() => {
-  return Number(model.value.fundDecease) > Number(model.value.fundReceipt);
+  return Number(model.value.fundRequest) > Number(model.value.fundReceipt);
 });
 const isOverWreathArrange = computed(() => {
   return Number(model.value.fundWreathArrange) > Number(model.value.fundReceiptWreath);
@@ -634,7 +633,7 @@ async function fetchRemaining(deceasedId) {
     if (Array.isArray(deceaseData)) {
       deceaseData.forEach((item) => {
         remaining.value[item.categoriesId] = {
-          perTimesRemaining: formatNumber(item.perTimesRemaining) ?? null,  
+          perTimesRemaining: formatNumber(item.perTimesRemaining) ?? null,
         };
       });
     }
@@ -733,13 +732,7 @@ async function submit(actionId) {
       validate = true;
     }
   }
-  if (!model.value.fundReceipt || !model.value.fundRequest) {
-    isError.value.fundRequest = "กรุณากรอกจำนวนเงินให้ครบถ้วน";
-    validate = true;
-  } else if (Number(model.value.fundReceipt) < Number(model.value.fundRequest)) {
-    isError.value.fundRequest = "จำนวนเงินที่ต้องการเบิกต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน";
-  }
-
+  
   if (!model.value.createFor && canCreateFor.value) {
     isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
     let navigate = document.getElementById("fund-receipt");
