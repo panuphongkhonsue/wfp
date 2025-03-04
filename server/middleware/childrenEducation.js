@@ -155,14 +155,14 @@ const checkRemaining = async (req, res, next) => {
             });
 
             const resultsSub = await subCategories.findAll({
-                attributes : [
+                attributes: [
                     'id',
                     [col("fund"), "fundRemaining"],
                     [col("per_times"), "perTimes"],
 
 
                 ],
-                where : { id: { [Op.in]: subCategoriesIds } } // แก้ไขเงื่อนไขนี้   
+                where: { id: { [Op.in]: subCategoriesIds } } // แก้ไขเงื่อนไขนี้   
 
             })
 
@@ -234,11 +234,6 @@ const checkRemaining = async (req, res, next) => {
     }
 };
 
-
-
-
-
-
 const bindCreate = async (req, res, next) => {
     try {
         const {
@@ -260,8 +255,10 @@ const bindCreate = async (req, res, next) => {
         if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
             return res.status(400).json({ message: "ไม่มีสิทธิ์สร้างให้คนอื่นได้" });
         }
-        if (!isNullOrEmpty(createFor) && actionId == status.draft) {
-            return res.status(400).json({ message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้" });
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
+            return res.status(400).json({
+                message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
+            });
         }
 
         const results = await reimbursementsChildrenEducation.findOne({
@@ -360,6 +357,11 @@ const bindUpdate = async (req, res, next) => {
         if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+            });
+        }
+        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
+            return res.status(400).json({
+                message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
         }
         const dataId = req.params['id'];
@@ -516,6 +518,9 @@ const byIdMiddleWare = async (req, res, next) => {
     }
 };
 
+
+
+
 const authPermissionEditor = async (req, res, next) => {
     const method = 'AuthPermissionEditor';
     const { roleId } = req.user;
@@ -665,7 +670,7 @@ const checkNullValue = async (req, res, next) => {
 
 
             });
-        } 
+        }
 
         if ((isNullOrEmpty(actionId) || (actionId != status.draft && actionId != status.waitApprove)) && !req.access) {
             return res.status(400).json({

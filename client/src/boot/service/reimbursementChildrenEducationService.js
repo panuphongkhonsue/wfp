@@ -8,6 +8,11 @@ export default {
       params: options,
     });
   },
+  getLastShcoolName(options) {
+    return api.get(`${path}/latest-school/`, {
+      params: options,
+    });
+  },
   dataById(id) {
     return api.get(`${path}/${id}`);
   },

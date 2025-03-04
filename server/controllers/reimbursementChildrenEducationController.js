@@ -1,5 +1,5 @@
 const BaseController = require('./BaseControllers');
-const { reimbursementsChildrenEducation, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation, sequelize, categories } = require('../models/mariadb');
+const { reimbursementsChildrenEducation,users,positions, sector, employeeTypes, departments, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation, sequelize, categories } = require('../models/mariadb');
 const { initLogger } = require('../logger');
 const { isNullOrEmpty } = require('../controllers/utility');
 const { Op, fn, col, literal, where } = require("sequelize");
@@ -28,6 +28,7 @@ class Controller extends BaseController {
                     [col("fund_eligible"), "fundEligible"],
                     [col("fund_sum_request"), "fundSumRequest"],
                     'status',
+                    
                 ],
                 page: page && !isNaN(page) ? Number(page) : 1,
                 paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 10,
@@ -57,6 +58,8 @@ class Controller extends BaseController {
 
         }
     }
+
+
 
     getRemainingChildFund = async (req, res, next) => {
         const method = 'getChildFundSummary';
@@ -262,23 +265,23 @@ class Controller extends BaseController {
         var itemsReturned = null;
         dataUpdate.fund_receipt = isNaN(dataUpdate.fund_receipt) ? 0 : parseFloat(dataUpdate.fund_receipt);
         dataUpdate.fund_eligible = isNaN(dataUpdate.fund_eligible) ? 0 : parseFloat(dataUpdate.fund_eligible);
-    
+
         try {
             const result = await sequelize.transaction(async t => {
-    
+
                 const [updated] = await reimbursementsChildrenEducation.update(dataUpdate, {
                     where: { id: dataId },
                     transaction: t,
                 });
 
-    
+
                 if (updated === 0 && isNullOrEmpty(child)) {
                     return { updated: false };
                 }
-    
+
                 if (!isNullOrEmpty(deletedChild)) {
                     const idsToDelete = deletedChild.map(child => child.id);
-    
+
                     var childIds = await reimbursementsChildrenEducationHasChildrenInfomation.findAll({
                         attributes: ['children_infomation_id'],
                         where: {
@@ -288,14 +291,14 @@ class Controller extends BaseController {
                         raw: true
                     });
                     const childIdArray = childIds.map(item => item.children_infomation_id);
-    
+
                     var deleteItemSub = await reimbursementsChildrenEducationHasChildrenInfomation.destroy(
                         {
                             where: { reimbursements_children_education_id: dataId, children_infomation_id: childIdArray },
                             transaction: t,
                         }
                     );
-    
+
                     var deleteItemChild = await childrenInfomation.destroy(
                         {
                             where: { id: childIdArray },
@@ -303,7 +306,7 @@ class Controller extends BaseController {
                         }
                     );
                 }
-    
+
                 if (!isNullOrEmpty(child)) {
                     var childData = child.map((childObj) => {
                         let data = {
@@ -323,17 +326,17 @@ class Controller extends BaseController {
                             province: childObj.province,
                             sub_categories_id: childObj.subCategoriesId,
                         };
-    
+
                         if (childObj.childPassedAway) {
                             data.delegate_name = childObj.delegateName ?? null;
                             data.delegate_number = childObj.delegateNumber ?? null;
                             data.delegate_birth_day = childObj.delegateBirthDay ?? null;
                             data.delegate_death_day = childObj.delegateDeathDay ?? null;
                         }
-    
+
                         return data;
                     });
-    
+
                     const existingChildren = await childrenInfomation.findAll({
                         attributes: ['id', 'fund_receipt', 'fund_other',
                             'fund_eligible', 'fund_university', 'fund_sum_request', 'child_name',
@@ -359,7 +362,7 @@ class Controller extends BaseController {
                         ],
                         raw: true,
                     });
-    
+
                     const updatedChildren = await childrenInfomation.bulkCreate(childData, {
                         updateOnDuplicate: ['fund_receipt', 'fund_other',
                             'fund_eligible', 'fund_university', 'fund_sum_request', 'child_name',
@@ -370,7 +373,7 @@ class Controller extends BaseController {
                         returning: true,
                         individualHooks: true,
                     });
-    
+
                     // Check if there are any updates on the children data
                     const hasChildUpdated = existingChildren.some((existingChild, index) => {
                         const updatedChild = updatedChildren[index];
@@ -383,18 +386,18 @@ class Controller extends BaseController {
                             existingChild.delegate_name !== updatedChild.delegate_name
                         );
                     });
-    
+
                     // 🔹 Update relationship table
                     const childrenInfoData = updatedChildren.map((childItem) => ({
                         reimbursements_children_education_id: dataId,
                         children_infomation_id: childItem.id
                     }));
-    
+
                     await reimbursementsChildrenEducationHasChildrenInfomation.bulkCreate(childrenInfoData, {
                         updateOnDuplicate: ['reimbursements_children_education_id', "children_infomation_id"],
                         transaction: t,
                     });
-    
+
                     if (updated > 0 || hasChildUpdated || deleteItemChild || deleteItemSub) {
                         itemsReturned = {
                             ...updated,
@@ -407,14 +410,14 @@ class Controller extends BaseController {
                     }
                     return itemsReturned;
                 }
-    
+
             });
-    
+
             if (result) {
                 logger.info('Complete', { method, data: { id } });
                 return res.status(201).json({ newItem: result, message: "บันทึกข้อมูลสำเร็จ" });
             }
-    
+
             res.status(400).json({ message: "ไม่มีข้อมูลที่ถูกแก้ไข" });
         }
         catch (error) {
@@ -425,13 +428,72 @@ class Controller extends BaseController {
             next(error);
         }
     };
+
+    getLatestSchoolByChildName = async (req, res, next) => {
+        const method = "GetLatestSchoolByChildId";
+        const { id } = req.user;
+        try {
+            // ดึงข้อมูลล่าสุดจาก reimbursementsChildrenEducation
+            const latestEducation = await reimbursementsChildrenEducation.findOne({
+                attributes: ['id'],
+                where: {
+                    created_by: id
+                },
+                order: [["updated_at", "DESC"]], // เรียงลำดับตาม updated_at
+                limit: 1, // จำกัดแค่รายการเดียว
+            });
+            console.log("Latest Education ID: ", latestEducation.id);
     
+            // ตรวจสอบว่าได้รับข้อมูลจาก reimbursementsChildrenEducation หรือไม่
+            if (!latestEducation) {
+                return res.status(404).json({ message: "ไม่พบข้อมูลการเบิกค่าศึกษาของบุตรล่าสุด" });
+            }
+    
+            // ดึงข้อมูลล่าสุดของบุตร
+            const childData = await childrenInfomation.findAll({
+                attributes: [
+                    'id',
+                    [col('child_name'), "childName"],
+                    [col('school_name'), "schoolName"],
+                ],
+                include: [
+                    {
+                        model: reimbursementsChildrenEducationHasChildrenInfomation,
+                        as: "reimbursements_children_education_has_children_infomations",
+                        required: true,
+                        where: { reimbursements_children_education_id: latestEducation.id },
+                    }
+                ],
+            });
+    
+            console.log("childData: ", childData);
+    
+            // ตรวจสอบว่ามีข้อมูลหรือไม่
+            if (childData && childData.length > 0) {
+                // สร้างอาร์เรย์เพื่อเก็บข้อมูลโรงเรียนของบุตรทั้งหมด
+                const ChildInformation = childData.map(child => child.dataValues);
+    
+                console.log("ChildInformation: ", ChildInformation);
+    
+                res.status(200).json({ ChildInformation });
+            } else {
+                res.status(404).json({ ChildInformation: "ไม่พบข้อมูลโรงเรียนของบุตร" });
+            }
+    
+        } catch (error) {
+            console.error(`Error: ${error.message}`, { method });
+            next(error);
+        }
+    };
+    
+
 
 
     getById = async (req, res, next) => {
         const method = 'GetReimbursementsChildrenEducationbyId';
         const { id } = req.user;
         const dataId = req.params['id'];
+
         try {
             const { filter } = req.query;
             var whereObj = { ...filter };
@@ -448,6 +510,12 @@ class Controller extends BaseController {
                     'role',
                     'position',
                     'department',
+                    [col("created_by_user.id"), "userId"],
+                    [col("created_by_user.name"), "name"],
+                    [col("created_by_user.position.name"), "positionUser"],
+                    [col("created_by_user.employee_type.name"), "employeeType"],
+                    [col("created_by_user.sector.name"), "sector"],
+                    [col("created_by_user.department.name"), "departmentUser"],
 
                 ],
                 include: [
@@ -455,6 +523,29 @@ class Controller extends BaseController {
                         model: categories, as: 'category',
                         attributes: ['id', 'name']
                     },
+                    {
+                        model: users, as: 'created_by_user',
+                        attributes: [],
+                        include: [
+                            {
+                                model: positions, as: 'position',
+                                attributes: []
+                            },
+                            {
+                                model: employeeTypes, as: 'employee_type',
+                                attributes: []
+                            },
+                            {
+                                model: sector, as: 'sector',
+                                attributes: []
+                            },
+                            {
+                                model: departments, as: 'department',
+                                attributes: []
+                            },
+                        ]
+                    },
+
                 ],
             });
             const childrenData = await childrenInfomation.findAll({
@@ -509,6 +600,14 @@ class Controller extends BaseController {
                 var reimChildrenEducation = {};
                 reimChildrenEducation.datas = {
                     ...datas,
+                    user: {
+                        userId: datas.userId,
+                        name: datas.name,
+                        position: datas.position,
+                        employeeType: datas.employeeType,
+                        sector: datas.sector,
+                        department: datas.department,
+                    },
                     children: childrenData,
                 };
                 logger.info('Complete', { method, data: { id } });
