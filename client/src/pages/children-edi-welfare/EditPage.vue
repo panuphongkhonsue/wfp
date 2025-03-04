@@ -116,7 +116,7 @@
                   <InputGroup for-id="marriageRegistration" more-class="font-16 font-medium text-grey-9"
                     label="จดทะเบียนสมรส" compclass="col-6" is-require clearable :data="model.marryRegis ?? '-'"
                     :is-view="isView">
-                    <q-select popup-content-class="font-14 font-regular" v-model="model.marryRegis"
+                    <q-select hide-bottom-space popup-content-class="font-14 font-regular" v-model="model.marryRegis"
                       class="font-14 font-regular text-grey-9" is-dense :loading="isLoading" id="selected-status"
                       outlined :options="optionsMarry" dense clearable option-value="value" emit-value map-options
                       option-label="name" :error="!!isError?.marryRegis">
@@ -237,7 +237,7 @@
                       <div class="col-md-4 col-12 q-mr-xl">
                         <InputGroup for-id="name" more-class="font-16 font-medium text-grey-9" label="ชื่อ-นามสกุล"
                           compclass="col-6" is-require clearable :data="child.childName ?? '-'" :is-view="isView">
-                          <q-select is-dense v-model="child.childName" is-require :loading="isLoading"
+                          <q-select hide-bottom-space is-dense v-model="child.childName" is-require :loading="isLoading"
                             id="selected-status" popup-content-class="font-14 font-regular" class="font-14 font-regular"
                             outlined :options="availableChildOptions" dense clearable option-value="name" emit-value
                             map-options option-label="name" :error="!!isError?.childName">
@@ -296,7 +296,7 @@
                           <InputGroup for-id="delegateName" more-class="font-16 font-medium text-grey-9"
                             label="ชื่อ - นามสกุล" compclass="col-6" is-require clearable :is-view="isView"
                             :data="child.delegateName ?? '-'">
-                            <q-select is-dense v-model="child.delegateName" :loading="isLoading" id="selected-status"
+                            <q-select hide-bottom-space is-dense v-model="child.delegateName" :loading="isLoading" id="selected-status"
                               popup-content-class="font-14 font-regular" class="font-14 font-regular" outlined
                               :options="optionsChildName" dense clearable option-value="name" emit-value map-options
                               option-label="name" />
@@ -640,7 +640,7 @@ const displayedChildren = computed(() => {
 });
 
 
-async function fetchShcoolName() {
+async function fetchSchoolName() {
   try {
   const result = await reimbursementChildrenEducationService.getLastShcoolName();
   console.log("📌 API Response:", result.data); // ✅ ดูโครงสร้างข้อมูลที่ได้จริง ๆ
@@ -818,7 +818,7 @@ async function fetchDataEdit() {
       if (returnedData) {
         model.value = {
           ...model.value,
-          createFor: null,
+          createFor: returnedData?.user.userId,
           reimNumber: returnedData?.reimNumber,
           requestDate: returnedData?.requestDate,
           status: returnedData?.status,
@@ -841,7 +841,8 @@ async function fetchDataEdit() {
       }
 
     } catch (error) {
-      router.replace({ name: "children_edu_welfare_list" });
+      console.error("Error in fetchDataEdit:", error);
+      // router.replace({ name: "children_edu_welfare_list" });
       Notify.create({
         message: error?.response?.data?.message ?? "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
         position: "bottom-left",
@@ -1170,27 +1171,25 @@ async function init() {
       fetchDataEdit();
       fetchRemaining();
       fetchUserData(authStore.id);
-      fetchShcoolName()
+      fetchSchoolName()
     }
     else if (isEdit.value) {
       if (!canCreateFor.value) {
         fetchRemaining();
         fetchUserData(authStore.id);
-        fetchShcoolName()
+        fetchSchoolName()
 
       }
-      else {
         const result = await userManagementService.getUserInitialData({ keyword: null });
         userInitialData.value = result.data.datas;
-      }
-      fetchDataEdit();
-      
+        optionsUserName.value = result.data.datas;
+        fetchDataEdit();
     }
     else {
       if (!canCreateFor.value) {
         fetchRemaining();
         fetchUserData(authStore.id);
-        fetchShcoolName()
+        fetchSchoolName()
       }
       else {
         const result = await userManagementService.getUserInitialData({ keyword: null });

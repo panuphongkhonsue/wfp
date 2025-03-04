@@ -1,5 +1,5 @@
 const BaseController = require('./BaseControllers');
-const { reimbursementsChildrenEducation, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation, sequelize, categories } = require('../models/mariadb');
+const { reimbursementsChildrenEducation,users,positions, sector, employeeTypes, departments, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation, sequelize, categories } = require('../models/mariadb');
 const { initLogger } = require('../logger');
 const { isNullOrEmpty } = require('../controllers/utility');
 const { Op, fn, col, literal, where } = require("sequelize");
@@ -28,6 +28,7 @@ class Controller extends BaseController {
                     [col("fund_eligible"), "fundEligible"],
                     [col("fund_sum_request"), "fundSumRequest"],
                     'status',
+                    
                 ],
                 page: page && !isNaN(page) ? Number(page) : 1,
                 paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 10,
@@ -509,6 +510,12 @@ class Controller extends BaseController {
                     'role',
                     'position',
                     'department',
+                    [col("created_by_user.id"), "userId"],
+                    [col("created_by_user.name"), "name"],
+                    [col("created_by_user.position.name"), "positionUser"],
+                    [col("created_by_user.employee_type.name"), "employeeType"],
+                    [col("created_by_user.sector.name"), "sector"],
+                    [col("created_by_user.department.name"), "departmentUser"],
 
                 ],
                 include: [
@@ -516,6 +523,29 @@ class Controller extends BaseController {
                         model: categories, as: 'category',
                         attributes: ['id', 'name']
                     },
+                    {
+                        model: users, as: 'created_by_user',
+                        attributes: [],
+                        include: [
+                            {
+                                model: positions, as: 'position',
+                                attributes: []
+                            },
+                            {
+                                model: employeeTypes, as: 'employee_type',
+                                attributes: []
+                            },
+                            {
+                                model: sector, as: 'sector',
+                                attributes: []
+                            },
+                            {
+                                model: departments, as: 'department',
+                                attributes: []
+                            },
+                        ]
+                    },
+
                 ],
             });
             const childrenData = await childrenInfomation.findAll({
@@ -570,6 +600,14 @@ class Controller extends BaseController {
                 var reimChildrenEducation = {};
                 reimChildrenEducation.datas = {
                     ...datas,
+                    user: {
+                        userId: datas.userId,
+                        name: datas.name,
+                        position: datas.position,
+                        employeeType: datas.employeeType,
+                        sector: datas.sector,
+                        department: datas.department,
+                    },
                     children: childrenData,
                 };
                 logger.info('Complete', { method, data: { id } });
