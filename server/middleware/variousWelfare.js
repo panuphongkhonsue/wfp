@@ -138,7 +138,7 @@ const checkNullValue = async (req, res, next) => {
             return res.status(400).json({
                 message: "จำนวนเงินตามใบเสร็จน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
-        } 
+        }
         const fundSumReceipt = Number(fundReceipt);
         if (isInvalidNumber(fundEligible) && fundEligible) {
             errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
@@ -321,7 +321,7 @@ const getRemaining = async (req, res, next) => {
         req.query.filter = {};
         req.query.filter[Op.and] = [];
         const getFiscalYearWhere = getFiscalYear();
-        
+
         if (req.access && !isNullOrEmpty(createByData)) {
             req.query.filter[Op.and].push(
                 { '$reimbursementsAssist.created_by$': createByData },
@@ -350,8 +350,8 @@ const getRemaining = async (req, res, next) => {
             req.query.filter[Op.and].push({
                 '$category.id$': { [Op.in]: [4, 5, 6, 7] }
             });
-            
-            
+
+
         }
 
         req.query.filter[Op.and].push(
@@ -470,8 +470,8 @@ const checkRemaining = async (req, res, next) => {
         if (!isNullOrEmpty(categories_id)) {
             whereObj['$category.id$'] = { [Op.in]: [3, 4, 5, 6] };
         }
-        whereObj['$reimbursementsAssist.created_by$'] = id;
-        
+        // 
+
         const results = await reimbursementsAssist.findAll({
             attributes: [
                 [literal("category.fund - SUM(reimbursementsAssist.fund_sum_request)"), "fundRemaining"],
@@ -500,19 +500,18 @@ const checkRemaining = async (req, res, next) => {
                     message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
                 });
             };
-            if (fund_sum_request > datas.perTimes && datas.perTimes) {
+            if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request > datas.fundRemaining) {
+            if (fund_sum_request > datas.fundRemaining && !isNullOrEmpty(datas.fundRemaining)) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
                 });
             }
         };
-
         next();
     } catch (error) {
         logger.error(`Error in ${method}: ${error.message}`, { method });
