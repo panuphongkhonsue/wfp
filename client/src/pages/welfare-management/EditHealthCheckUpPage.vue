@@ -9,28 +9,12 @@
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
             </q-card-section>
             <q-separator />
-            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold"
-              >
-              <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm"
-                :class="canCreateFor && !isView ? 'items-center' : ''">
+            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold">
+              <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm">
                 <p class="col-auto q-mb-none">
-                  ชื่อ-นามสกุล : <span  class="font-medium font-16 text-grey-7">{{
+                  ชื่อ-นามสกุล : <span class="font-medium font-16 text-grey-7">{{
                     userData?.name ?? "-" }}</span>
                 </p>
-                <q-select v-if="canCreateFor && !isView" popup-content-class="font-14 font-regular" :loading="isLoading"
-                  id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
-                  v-model="model.createFor" :options="options" dense option-value="id" emit-value map-options
-                  option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
-                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']" @filter-abort="abortFilterFn">
-                  <template v-slot:no-option>
-                    <q-item>
-                      <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
-                    </q-item>
-                  </template>
-                </q-select>
-              </div>
-              <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm"
-                >
               </div>
               <p class="col-lg-3 col-xl-4 col-12 q-mb-none q-pr-sm text-no-wrap ellipsis"
                 :title="userData?.position ?? '-'">
@@ -88,14 +72,13 @@
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'" is-require
-                label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number"
-                compclass="col-md-4 col-12" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ', (val) => !isOver || 'จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ'
-                  , (val) => !isOverfundRemaining || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้'
+                label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" compclass="col-md-4 col-12" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ', (val) => !isOver || 'จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ'
+                  , (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemaining || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง'
                 ]" :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
               <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require
-                label="จำนวนที่ต้องการเบิก (บาท)" type="number" compclass="col-md-4 col-12"
-                :is-view="isView" v-if="isView">
+                label="จำนวนที่ต้องการเบิก (บาท)" type="number" compclass="col-md-4 col-12" :is-view="isView"
+                v-if="isView">
               </InputGroup>
             </q-card-section>
             <q-card-section class="q-pt-sm font-medium font-16">
@@ -265,31 +248,54 @@ const isOverfundRemaining = computed(() => {
 
   const perTimes = remaining.value.perTimesRemaining ? parseFloat(remaining.value.perTimesRemaining.replace(/,/g, "")) : null;
   const fundRemaining = remaining.value.fundRemaining ? parseFloat(remaining.value.fundRemaining.replace(/,/g, "")) : null;
-
-  return (fundSumRequest > perTimes && remaining.value.perTimesRemaining) || (fundSumRequest > fundRemaining && remaining.value.fundRemaining);
+  let check = false;
+  if (Number(fundSumRequest) > perTimes && remaining.value.perTimesRemaining) {
+    check = 1;
+  }
+  if (Number(fundSumRequest) > fundRemaining && remaining.value.fundRemaining) {
+    check = 2;
+  }
+  return check;
 });
 
 
 watch(
-  () => model.value.fundReceipt,
+  () => model.value.claimByEligible,
   () => {
-    if (model.value.claimByEligible[2].fundEligible && !model.value.claimByEligible[2].fundEligibleName) {
-      Notify.create({
-        message:
-          "กรุณากรอกชื่อสิทธิ อื่น ๆ",
-        position: "bottom-left",
-        type: "negative",
-      });
+    setTimeout(async () => {
+      try {
+        if (model.value.claimByEligible[2].fundEligible && !model.value.claimByEligible[2].fundEligibleName) {
+          Notify.create({
+            message:
+              "กรุณากรอกชื่อสิทธิ อื่น ๆ",
+            position: "bottom-left",
+            type: "negative",
+          });
+        }
+        if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
+          Notify.create({
+            message:
+              "กรุณากรอกจำนวนเงินที่เบิกตามสิทธิอื่น ๆ",
+            position: "bottom-left",
+            type: "negative",
+          });
+        }
+      } catch (error) {
+        Notify.create({
+          message:
+            error?.response?.data?.message ??
+            "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
+          position: "bottom-left",
+          type: "negative",
+        });
+      }
+      isLoading.value = false;
+    }, 2000);
+    if (isOver.value) {
+      isError.value.fundReceipt = "จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
     }
-    if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
-      Notify.create({
-        message:
-          "กรุณากรอกจำนวนเงินที่เบิกตามสิทธิอื่น ๆ",
-        position: "bottom-left",
-        type: "negative",
-      });
-    }
-  }
+  },
+  { deep: true }
 );
 watch(
   () => model.value.fundReceipt,
@@ -321,7 +327,6 @@ watch(
       }
     }
   );
-
 async function fetchDataEdit() {
   setTimeout(async () => {
     try {
@@ -466,13 +471,6 @@ async function submit(actionId) {
     navigate.scrollIntoView(false);
     validate = true;
   }
-  if (!model.value.createFor) {
-    isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
-    let navigate = document.getElementById("selected-user");
-    window.location.hash = "selected-user";
-    navigate.scrollIntoView(false);
-    validate = true;
-  }
   if (model.value.claimByEligible[2].fundEligible && !model.value.claimByEligible[2].fundEligibleName) {
     validate = true;
   }
@@ -482,6 +480,12 @@ async function submit(actionId) {
   if (isOverfundRemaining.value) {
     validate = true;
     isError.value.fundReceipt = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+    if (isOverfundRemaining.value === 2) {
+      isError.value.fundReceipt = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+    }
+    else {
+      isError.value.fundReceipt = "สามารถเบิกได้สูงสุด " + remaining.value.perTimesRemaining + " บาทต่อครั้ง";
+    }
   }
   if (isOver.value) {
     isError.value.fundReceipt = "จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
@@ -576,10 +580,10 @@ async function init() {
       fetchDataEdit();
     }
     else {
-        fetchRemaining();
-        fetchUserData(authStore.id);
-        const result = await userManagementService.getUserInitialData({ keyword: null });
-        userInitialData.value = result.data.datas;
+      fetchRemaining();
+      fetchUserData(authStore.id);
+      const result = await userManagementService.getUserInitialData({ keyword: null });
+      userInitialData.value = result.data.datas;
     }
   }
   catch (error) {

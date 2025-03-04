@@ -9,15 +9,12 @@
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
             </q-card-section>
             <q-separator />
-            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold"
-              >
-              <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm"
-               >
+            <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold">
+              <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm">
                 <p class="col-auto q-mb-none">
                   ชื่อ-นามสกุล : <span class="font-medium font-16 text-grey-7">{{
                     userData?.name ?? "-" }}</span>
                 </p>
-                
               </div>
               <p class="col-lg-3 col-xl-4 col-12 q-mb-none q-pr-sm text-no-wrap ellipsis"
                 :title="userData?.position ?? '-'">
@@ -132,10 +129,10 @@
               <div class="col-lg-2"></div>
               <div class="col-lg-4 col-12 ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundEligible" :data="model.fundEligible ?? '-'"
-                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
+                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class="q-py-xs-md q-py-lg-none"
                   :is-view="isView"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน'
-                  , (val) => !isOverfundRemaining || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้']"
+                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ'
+                    , (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemaining || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง']"
                   :error-message="isError?.fundEligible" :error="!!isError?.fundEligible">
                 </InputGroup>
               </div>
@@ -256,15 +253,6 @@ watch(
     }
   }
 );
-watch(
-    () => model.value.createFor,
-    async (newValue) => {
-      if (newValue !== null) {
-        await fetchRemaining();
-      }
-    }
-  );
-
 const isValidate = computed(() => {
   let validate = false;
   if (!model.value.categoryId) {
@@ -295,9 +283,14 @@ const isOverfundRemaining = computed(() => {
 
   const perTimes = categoryData.perTimesRemaining ? parseFloat(categoryData.perTimesRemaining.replace(/,/g, "")) : null;
   const fundRemaining = categoryData.fundRemaining ? parseFloat(categoryData.fundRemaining.replace(/,/g, "")) : null;
-
-  return (fundSumRequest > perTimes && perTimes !== null) || 
-         (fundSumRequest > fundRemaining && fundRemaining !== null);
+  let check = false;
+  if (Number(fundSumRequest) > perTimes && categoryData.perTimesRemaining) {
+    check = 1;
+  }
+  if (Number(fundSumRequest) > fundRemaining && categoryData.fundRemaining) {
+    check = 2;
+  }
+  return check;
 });
 
 
@@ -424,7 +417,6 @@ async function downloadData() {
     notify();
   }
 }
-
 async function submit(actionId) {
   let validate = false;
   if (!model.value.fundReceipt) {
@@ -433,15 +425,14 @@ async function submit(actionId) {
     window.location.hash = "fund";
     navigate.scrollIntoView(false);
     validate = true;
-  } if (!model.value.createFor) {
-    isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
-    let navigate = document.getElementById("selected-user");
-    window.location.hash = "selected-user";
-    navigate.scrollIntoView(false);
-    validate = true;
   }
   if (isOverfundRemaining.value) {
-    isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+    if (isOverfundRemaining.value === 2) {
+      isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+    }
+    else {
+      isError.value.fundEligible = "สามารถเบิกได้สูงสุด " + remaining.value.perTimesRemaining + " บาทต่อครั้ง";
+    }
     validate = true;
   }
   if (isOver.value) {
