@@ -321,6 +321,7 @@ const getRemaining = async (req, res, next) => {
         req.query.filter = {};
         req.query.filter[Op.and] = [];
         const getFiscalYearWhere = getFiscalYear();
+        
         if (req.access && !isNullOrEmpty(createByData)) {
             req.query.filter[Op.and].push(
                 { '$reimbursementsAssist.created_by$': createByData },

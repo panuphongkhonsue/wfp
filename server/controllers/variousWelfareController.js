@@ -95,15 +95,13 @@ class Controller extends BaseController {
                         required: false
                     }
                 ],
-                where: {
-                    '$category.id$': { [Op.in]: [4, 5, 6, 7] }
-                },
+                where: whereObj,
                 group: ["category.id"]
             });
 
             let bindData = JSON.parse(JSON.stringify(results));
 
-            // ดึงข้อมูลจาก categories เพื่อเติมข้อมูลที่หายไป (รวม id: 5)
+            // ดึงข้อมูลจาก categories
             const allCategories = await categories.findAll({
                 attributes: [
                     [col("id"), "categoryId"],

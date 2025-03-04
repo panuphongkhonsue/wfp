@@ -93,11 +93,12 @@
                 <p class="q-pb-md font-18 font-bold q-pb-md">ข้อมูลการเบิกสวัสดิการ</p>
                 <p class="q-pl-md q-pb-md font-16 q-mb-none">(จ่ายจริงคนละไม่เกิน 5,000 บาท)</p>
               </div>
-
-              <p class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
-                v-if="isView && (model.status == 'รอตรวจสอบ')"><q-icon :name="outlinedDownload" />
+              <a class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
+                v-if="isView && (model.status == 'รอตรวจสอบ')" @click.stop.prevent="
+                  downloadData()">
+                <q-icon :name="outlinedDownload" />
                 <span> Export</span>
-              </p>
+              </a>
             </q-card-section>
             <q-card-section v-show="isView || isEdit" class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
@@ -259,7 +260,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue"
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
 import variousWelfareFuneralFamilyService from "src/boot/service/variousWelfareFuneralFamilyService";
-
+import exportService from "src/boot/service/exportService";
 defineOptions({
   name: "various_welfare_funeral_family_edit",
 });
@@ -627,12 +628,54 @@ async function fetchRemaining() {
       isLoading.value = false;
     });
   } catch (error) {
-    console.error("❌ Error fetching remaining data:", error);
+    console.error("Error fetching remaining data:", error);
     isLoading.value = false;
   }
 }
+async function downloadData() {
+  const notify = Notify.create({
+    message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",
+    position: "top-right",
+    spinner: true,
+    type: 'info',
+  });
+  try {
+    const result = await exportService.variousFuneralFamily(route.params.id);
+    let filename = null;
+    const contentDisposition = result.headers["content-disposition"];
+    if (contentDisposition) {
+      const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (matches && matches[1]) {
+        filename = decodeURIComponent(matches[1]);
+      }
+    }
 
+    const blob = new Blob([result.data], { type: "application/pdf" });
 
+    const a = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  catch (error) {
+    console.log(error);
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "ดาวน์โหลดไม่สำเร็จกรุณาลองอีกครั้ง",
+      position: "top-right",
+      type: "primary",
+    });
+  }
+  finally {
+    notify();
+  }
+}
 
 async function filterFn(val, update) {
   try {

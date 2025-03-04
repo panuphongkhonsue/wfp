@@ -108,6 +108,7 @@ import {
   outlinedDownload,
 } from "@quasar/extras/material-icons-outlined";
 import funeralWelfareEmployeeDeceasedService from "src/boot/service/funeralWelfareEmployeeDeceasedService";
+import exportService from "src/boot/service/exportService";
 defineOptions({
   name: "funeral_welfare_list",
 });
@@ -165,6 +166,50 @@ watch(
     await init();
   }
 );
+async function downloadData(requestId) {
+  const notify = Notify.create({
+    message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",
+    position: "top-right",
+    spinner: true,
+    type: 'info',
+  });
+  try {
+    const result = await exportService.funeralDeceaseEmployee(requestId);
+    let filename = null;
+    const contentDisposition = result.headers["content-disposition"];
+    if (contentDisposition) {
+      const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (matches && matches[1]) {
+        filename = decodeURIComponent(matches[1]);
+      }
+    }
+
+    const blob = new Blob([result.data], { type: "application/pdf" });
+
+    const a = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  catch (error) {
+    console.log(error);
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "ดาวน์โหลดไม่สำเร็จกรุณาลองอีกครั้ง",
+      position: "top-right",
+      type: "primary",
+    });
+  }
+  finally {
+    notify();
+  }
+}
 async function init() {
   const { keyword, dateSelected, statusId } = route.query;
   if (Object.keys(route.query).length) {
@@ -233,13 +278,6 @@ function goto(requestId) {
   });
 }
 
-function downloadData(requestId) {
-  console.log(requestId);
-  // router.push({
-  //   name: "",
-  //   params: { id: requestId },
-  // });
-}
 
 async function deleteData(id, reimNumber) {
   Swal.fire({
