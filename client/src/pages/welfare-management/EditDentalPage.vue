@@ -195,6 +195,14 @@ onBeforeUnmount(() => {
   model.value = null;
 });
 watch(
+    () => model.value.createFor,
+    async (newValue) => {
+      if (newValue !== null) {
+        await fetchRemaining();
+      }
+    }
+  );
+watch(
   model,
   () => {
     if (!isView.value) {

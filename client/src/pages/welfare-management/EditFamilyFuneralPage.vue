@@ -118,7 +118,7 @@
                   2,000 บาท ในนามส่วนงาน)</p>
               </q-card-section>
               <q-card-section v-show="model.selectedWreath"
-                class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
+                class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
                 <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                   <InputGroup for-id="fund" is-dense v-model="model.fundReceiptWreath" :data="model.fund ?? '-'"
                     is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
@@ -146,7 +146,7 @@
                 <p class="q-px-lg q-pt-sm q-pb-md font-16 q-mb-none ">(จ่ายจริงคนละไม่เกิน 10,000 บาท)</p>
               </q-card-section>
               <q-card-section v-show="model.selectedVechicle"
-                class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
+                class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
                 <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                   <InputGroup for-id="fund" is-dense v-model="model.fundReceiptVechicle" :data="model.fund ?? '-'"
                     is-require label="จำนวนเงินตามใบเสร็จ" placeholder="บาท" type="number" class="" :is-view="isView">
@@ -330,6 +330,14 @@
       }
     }
   );
+  watch(
+    () => model.value.createFor,
+    async (newValue) => {
+      if (newValue !== null) {
+        await fetchRemaining();
+      }
+    }
+  );
   async function fetchDataEdit() {
     setTimeout(async () => {
       try {
@@ -368,7 +376,7 @@
         console.log("userData:", userData.value);
         console.log("ModelData:", model.value);
       } catch (error) {
-        router.replace({ name: "various_welfare_funeral_family_list" });
+        router.replace({ name: "welfare_management_list" });
         Notify.create({
           message:
             error?.response?.data?.message ??
@@ -504,7 +512,6 @@
       fundWreathArrange: model.value.fundWreathArrange,
       fundReceiptVechicle: model.value.fundReceiptVechicle,
       fundVechicle: model.value.fundVechicle,
-      createFor: model.value.createFor,
       actionId: actionId
     }
     var fetch;
@@ -559,7 +566,7 @@
             confirmButton: "save-button",
           },
         }).then(() => {
-          router.replace({ name: "various_welfare_funeral_family_list" });
+          router.replace({ name: "welfare_management_list" });
         });
       }
     });
