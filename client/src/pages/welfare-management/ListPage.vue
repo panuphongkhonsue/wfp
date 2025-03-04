@@ -69,10 +69,12 @@
 
         <template v-slot:body-cell-tools="props">
           <q-td :props="props" class="">
-            <a @click.stop.prevent="viewData(props.row.id, props.row.categoryName, props.row.welfareType)" class="text-dark q-py-sm q-px-xs cursor-pointer">
+            <a @click.stop.prevent="viewData(props.row.id, props.row.categoryName, props.row.welfareType)"
+              class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedVisibility" size="xs" />
             </a>
-            <a v-show="props.row.status.statusId == 2" @click.stop.prevent="goto(props.row.id, props.row.categoryName, props.row.welfareType)"
+            <a v-show="props.row.status.statusId == 2"
+              @click.stop.prevent="goto(props.row.id, props.row.categoryName, props.row.welfareType)"
               class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedEdit" size="xs" color="blue" />
             </a>
@@ -82,7 +84,7 @@
               <q-icon :name="outlinedDelete" size="xs" color="red" />
             </a>
             <a v-show="props.row.status.statusId == 2" @click.stop.prevent="
-              downloadData(props.row.requestId)
+              downloadData(props.row.id, props.row.categoryName, props.row.welfareType)
               " class="text-dark q-py-sm q-px-xs cursor-pointer">
               <q-icon :name="outlinedDownload" size="xs" color="blue" />
             </a>
@@ -118,6 +120,7 @@ import { statusColor, textStatusColor } from "src/components/status";
 import { Notify } from "quasar";
 import Swal from "sweetalert2";
 import { formatDateThaiSlash, formatDateServer } from "src/components/format"
+import exportService from "src/boot/service/exportService";
 
 import {
   outlinedEdit,
@@ -134,6 +137,7 @@ const tableRef = ref();
 const modelDate = ref(null);
 const pagination = ref({ page: 1, rowsPerPage: 5 });
 const isLoading = ref(false);
+const fileData = ref();
 
 const filter = ref({
   keyword: null,
@@ -301,41 +305,41 @@ function search() {
 function viewData(requestId, categoryName, welfareType) {
   if (categoryName == "ตรวจสุขภาพ") {
     router.push({
-    name: "financial_health_check_up_welfare_view",
-    params: { id: requestId },
-  });
+      name: "financial_health_check_up_welfare_view",
+      params: { id: requestId },
+    });
   }
   else if (categoryName == "กรณีเจ็บป่วย") {
     router.push({
-    name: "financial_medical_welfare_view",
-    params: { id: requestId },
-  });
+      name: "financial_medical_welfare_view",
+      params: { id: requestId },
+    });
   }
   else if (categoryName == "ทำฟัน") {
     router.push({
-    name: "financial_dental_welfare_view",
-    params: { id: requestId },
-  });
+      name: "financial_dental_welfare_view",
+      params: { id: requestId },
+    });
   }
-  else if(welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
-    if(categoryName == "เสียชีวิตคนในครอบครัว"){
+  else if (welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
+    if (categoryName == "เสียชีวิตคนในครอบครัว") {
       router.push({
-      name: "financial_family_funeral_welfare_view",
-      params: { id: requestId },
-    });
+        name: "financial_family_funeral_welfare_view",
+        params: { id: requestId },
+      });
     }
-    else{
+    else {
       router.push({
-      name: "financial_various_welfare_view",
-      params: { id: requestId },
-    });
+        name: "financial_various_welfare_view",
+        params: { id: requestId },
+      });
     }
   }
   else if (welfareType == "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
     router.push({
-    name: "financial_funeral_welfare_view",
-    params: { id: requestId },
-  });
+      name: "financial_funeral_welfare_view",
+      params: { id: requestId },
+    });
   }
 }
 
@@ -346,37 +350,37 @@ function goto(requestId, categoryName, welfareType) {
       params: { id: requestId },
     });
   }
-  else if(categoryName == "กรณีเจ็บป่วย") {
+  else if (categoryName == "กรณีเจ็บป่วย") {
     router.push({
       name: "financial_medical_welfare_edit",
       params: { id: requestId },
     });
   }
-  else if(categoryName == "ทำฟัน") {
+  else if (categoryName == "ทำฟัน") {
     router.push({
       name: "financial_dental_welfare_edit",
       params: { id: requestId },
     });
   }
-  else if(welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
-    if(categoryName == "เสียชีวิตคนในครอบครัว"){
+  else if (welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
+    if (categoryName == "เสียชีวิตคนในครอบครัว") {
       router.push({
-      name: "financial_family_funeral_welfare_edit",
-      params: { id: requestId },
-    });
+        name: "financial_family_funeral_welfare_edit",
+        params: { id: requestId },
+      });
     }
-    else{
+    else {
       router.push({
-      name: "financial_various_welfare_edit",
-      params: { id: requestId },
-    });
+        name: "financial_various_welfare_edit",
+        params: { id: requestId },
+      });
     }
   }
   else if (welfareType == "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
     router.push({
-    name: "financial_funeral_welfare_edit",
-    params: { id: requestId },
-  });
+      name: "financial_funeral_welfare_edit",
+      params: { id: requestId },
+    });
   }
 }
 
@@ -422,5 +426,70 @@ async function deleteData(id) {
       });
     }
   });
+}
+
+async function downloadData(requestId, categoryName, welfareType) {
+  const notify = Notify.create({
+    message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",
+    position: "top-right",
+    spinner: true,
+    type: 'info',
+  });
+  try {
+    if (categoryName == "ตรวจสุขภาพ") {
+      fileData.value = await exportService.healthCheckup(requestId);
+    }
+    else if (categoryName == "กรณีเจ็บป่วย") {
+      fileData.value = await exportService.medical(requestId);
+    }
+    else if (categoryName == "ทำฟัน") {
+      fileData.value = await exportService.dental(requestId);
+    }
+    else if (welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
+      if (categoryName == "เสียชีวิตคนในครอบครัว") {
+        fileData.value = await exportService.variousFuneralFamily(requestId);
+      }
+      else {
+        fileData.value = await exportService.various(requestId);
+      }
+    }
+    else if (welfareType == "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
+      fileData.value = await exportService.funeralDeceaseEmployee(requestId);
+    }
+    const result = fileData.value;
+    let filename = null;
+    const contentDisposition = result.headers["content-disposition"];
+    if (contentDisposition) {
+      const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (matches && matches[1]) {
+        filename = decodeURIComponent(matches[1]);
+      }
+    }
+
+    const blob = new Blob([result.data], { type: "application/pdf" });
+
+    const a = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  catch (error) {
+    console.log(error);
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "ดาวน์โหลดไม่สำเร็จกรุณาลองอีกครั้ง",
+      position: "top-right",
+      type: "primary",
+    });
+  }
+  finally {
+    notify();
+  }
 }
 </script>
