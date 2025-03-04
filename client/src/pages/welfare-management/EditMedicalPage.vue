@@ -14,7 +14,7 @@
               <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm"
                >
                 <p class="col-auto q-mb-none">
-                  ชื่อ-นามสกุล : <span v-show="isView" class="font-medium font-16 text-grey-7">{{
+                  ชื่อ-นามสกุล : <span class="font-medium font-16 text-grey-7">{{
                     userData?.name ?? "-" }}</span>
                 </p>
                 
@@ -379,6 +379,15 @@ watch(
     }
   }
 );
+watch(
+    () => model.value.createFor,
+    async (newValue) => {
+      if (newValue !== null) {
+        await fetchRemaining();
+      }
+    }
+  );
+
 watch(
   () => model.value.selectedPatientVisit,
   (newValue) => {

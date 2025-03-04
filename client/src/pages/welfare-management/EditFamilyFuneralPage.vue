@@ -330,6 +330,14 @@
       }
     }
   );
+  watch(
+    () => model.value.createFor,
+    async (newValue) => {
+      if (newValue !== null) {
+        await fetchRemaining();
+      }
+    }
+  );
   async function fetchDataEdit() {
     setTimeout(async () => {
       try {
@@ -368,7 +376,7 @@
         console.log("userData:", userData.value);
         console.log("ModelData:", model.value);
       } catch (error) {
-        router.replace({ name: "various_welfare_funeral_family_list" });
+        router.replace({ name: "welfare_management_list" });
         Notify.create({
           message:
             error?.response?.data?.message ??
@@ -558,7 +566,7 @@
             confirmButton: "save-button",
           },
         }).then(() => {
-          router.replace({ name: "various_welfare_funeral_family_list" });
+          router.replace({ name: "welfare_management_list" });
         });
       }
     });
