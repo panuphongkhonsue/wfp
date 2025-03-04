@@ -57,7 +57,7 @@
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
               <p class="col q-ma-none">ตรวจสุขภาพ : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาท" :
                 remaining?.perTimesRemaining ? remaining?.perTimesRemaining + " บาท" : "ไม่จำกัดจำนวนเงิน"
-                }}
+              }}
                 {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : '(ไม่จำกัดครั้ง)' }}
               </p>
             </q-card-section>
@@ -270,25 +270,42 @@ const isOverfundRemaining = computed(() => {
 
 
 watch(
-  () => model.value.fundReceipt,
+  () => model.value.claimByEligible,
   () => {
-    if (model.value.claimByEligible[2].fundEligible && !model.value.claimByEligible[2].fundEligibleName) {
-      Notify.create({
-        message:
-          "กรุณากรอกชื่อสิทธิ อื่น ๆ",
-        position: "bottom-left",
-        type: "negative",
-      });
+    setTimeout(async () => {
+      try {
+        if (model.value.claimByEligible[2].fundEligible && !model.value.claimByEligible[2].fundEligibleName) {
+          Notify.create({
+            message:
+              "กรุณากรอกชื่อสิทธิ อื่น ๆ",
+            position: "bottom-left",
+            type: "negative",
+          });
+        }
+        if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
+          Notify.create({
+            message:
+              "กรุณากรอกจำนวนเงินที่เบิกตามสิทธิอื่น ๆ",
+            position: "bottom-left",
+            type: "negative",
+          });
+        }
+      } catch (error) {
+        Notify.create({
+          message:
+            error?.response?.data?.message ??
+            "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
+          position: "bottom-left",
+          type: "negative",
+        });
+      }
+      isLoading.value = false;
+    }, 2000);
+    if (isOver.value) {
+      isError.value.fundReceipt = "จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
     }
-    if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
-      Notify.create({
-        message:
-          "กรุณากรอกจำนวนเงินที่เบิกตามสิทธิอื่น ๆ",
-        position: "bottom-left",
-        type: "negative",
-      });
-    }
-  }
+  },
+  { deep: true }
 );
 watch(
   () => model.value.fundReceipt,
