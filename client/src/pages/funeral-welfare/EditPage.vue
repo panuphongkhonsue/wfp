@@ -151,7 +151,7 @@
                 ในนามมหาวิทยาลัย และไม่เกิน
                 2,000 บาท ในนามส่วนงาน)</p>
             </q-card-section>
-            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
+            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
                   :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
@@ -187,7 +187,7 @@
               <p class="q-pb-md q-mb-none">ค่าสนับสนุนค่าพาหนะเหมาจ่าย (จ่ายจริงคนละไม่เกิน 20,000 บาท)</p>
             </q-card-section>
 
-            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
+            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceiptVehicle"
                   :data="model.fundReceiptVehicle ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
