@@ -93,11 +93,12 @@
                 <p class="q-pb-md font-18 font-bold q-pb-md">ข้อมูลการเบิกสวัสดิการ</p>
                 <p class="q-pl-md q-pb-md font-16 q-mb-none">(จ่ายจริงคนละไม่เกิน 5,000 บาท)</p>
               </div>
-
-              <p class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
-                v-if="isView && (model.status == 'รอตรวจสอบ')"><q-icon :name="outlinedDownload" />
+              <a class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
+                v-if="isView && (model.status == 'รอตรวจสอบ')" @click.stop.prevent="
+                  downloadData()">
+                <q-icon :name="outlinedDownload" />
                 <span> Export</span>
-              </p>
+              </a>
             </q-card-section>
             <q-card-section v-show="isView || isEdit" class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
@@ -106,7 +107,6 @@
               <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md  font-medium font-16 text-grey-9">
-              <p class="col-12 q-mb-none q-pt-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
               <div v-for="option in deceaseOptions" :key="option.value" class="col-12 row q-mb-none">
                 <div class="col-md-2">
                   <q-radio v-model="model.deceasedType" :val="option.value" :label="option.label" class="q-mr-md"
@@ -191,7 +191,7 @@
                 <InputGroup for-id="fund" is-dense v-model="model.fundVechicle" :data="model.fundVechicle ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
                   :is-view="isView" :disable="!model.selectedVechicle" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
-                  (val) => model.selectedWreath && !isOverVechicle || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน',
+                  (val) => model.selectedVechicle && !isOverVechicle || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน',
                   (val) => !isOverfundRemainingVechicle || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้'
                   ]" :error-message="isError?.fundVechicle" :error="!!isError?.fundVechicle">
                 </InputGroup>
@@ -260,7 +260,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue"
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
 import variousWelfareFuneralFamilyService from "src/boot/service/variousWelfareFuneralFamilyService";
-
+import exportService from "src/boot/service/exportService";
 defineOptions({
   name: "various_welfare_funeral_family_edit",
 });
@@ -431,6 +431,7 @@ const isOverfundRemainingWreathUniversity = computed(() => {
   const fundRemaining = remaining.value[8]?.fundRemaining && remaining.value[8]?.fundRemaining !== "0" 
                         ? parseFloat(remaining.value[8]?.fundRemaining.replace(/,/g, "")) : 0;
   return (fundSumRequest > perTimes && perTimes > 0) || (fundSumRequest > fundRemaining && fundRemaining > 0);});
+
 
 const isOverfundRemainingVechicle = computed(() => {
   const fundSumRequest = Number(model.value.fundVechicle ?? 0);
@@ -609,7 +610,6 @@ async function fetchRemaining() {
         canRequest.value[item.subCategoriesId] = item.canRequest ?? false;
       }
     });
-
     allSubCategories.forEach((id) => {
       if (!remaining.value[id]) {
         remaining.value[id] = {
@@ -620,7 +620,7 @@ async function fetchRemaining() {
         canRequest.value[id] = false;
       }
     });
-
+    console.log(remaining.value)
     canRequest.value.wreath = deceaseData.some(item => item.subCategoriesId === 7 || item.subCategoriesId === 8) ? true : false;
     canRequest.value.vechicle = deceaseData.some(item => item.subCategoriesId === 9) ? true : false;
 
@@ -628,12 +628,54 @@ async function fetchRemaining() {
       isLoading.value = false;
     });
   } catch (error) {
-    console.error("❌ Error fetching remaining data:", error);
+    console.error("Error fetching remaining data:", error);
     isLoading.value = false;
   }
 }
+async function downloadData() {
+  const notify = Notify.create({
+    message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",
+    position: "top-right",
+    spinner: true,
+    type: 'info',
+  });
+  try {
+    const result = await exportService.variousFuneralFamily(route.params.id);
+    let filename = null;
+    const contentDisposition = result.headers["content-disposition"];
+    if (contentDisposition) {
+      const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (matches && matches[1]) {
+        filename = decodeURIComponent(matches[1]);
+      }
+    }
 
+    const blob = new Blob([result.data], { type: "application/pdf" });
 
+    const a = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  catch (error) {
+    console.log(error);
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "ดาวน์โหลดไม่สำเร็จกรุณาลองอีกครั้ง",
+      position: "top-right",
+      type: "primary",
+    });
+  }
+  finally {
+    notify();
+  }
+}
 
 async function filterFn(val, update) {
   try {

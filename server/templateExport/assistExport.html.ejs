@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ใบเบิกสวัสดิการค่าสงเคราะห์ต่าง ๆ ประจำปี</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&display=swap"
+    rel="stylesheet">
+  <%- cssStyles %>
+</head>
+
+<body>
+  <% const toThaiNumber=(num)=> {
+    return String(num).replace(/\d/g, d => "๐๑๒๓๔๕๖๗๘๙"[d]);
+    };
+    %>
+    <div class="content">
+      <div class="d-flex justify-end font-14"><span class="font-semi-bold">แบบ มก.๐๓</span></div>
+      <div class="d-flex justify-center font-20 pt-md">
+        <span class="font-semi-bold">ใบเบิกสวัสดิการค่าสงเคราะห์ต่างๆ กองทุนสวัสดิการมหาวิทยาลัยบูรพา</span>
+      </div>
+      <div class="d-flex justify-center font-14 pt-sm pb-md">
+        โปรดทำเครื่องหมาย / ลงในช่อง
+        <input type="checkbox" id="fake" name="fake" value="fake" />
+        พร้อมทั้งกรอกรายละเอียดให้ครบถ้วน
+      </div>
+      <table>
+        <tr>
+          <td>
+            <div class="d-flex">
+              <div style="width: 60%">
+                <div class="row" style="gap: 8px; flex-wrap: wrap">
+                  <div class="pl-sm font-semi-bold">๑.</div>
+                  <div style="flex: 2; min-width: 200px">
+                    <span class="font-semi-bold">ข้าพเจ้า :</span>
+                    <%= body?.user?.name %>
+                  </div>
+                  <div style="flex: 1">
+                    <span class="font-semi-bold">ตำแหน่ง :</span>
+                    <%= body?.user?.position %>
+                  </div>
+                  <div style="flex-basis: 100%">
+                    <div style="display: flex; gap: 8px; align-items: center">
+                      <span class="px-sm text-white">---</span>
+                      <div style="flex: 1">
+                        <span class="font-semi-bold">สังกัด ภาควิชา / ส่วนงาน :</span>
+                        <%= body?.user?.sector %> / <%= body?.user?.department %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="width: 40%">
+                <input type="checkbox" id="1" name="ข้าราชการ / ลูกจ้างประจำ" value="1" <%=body?.user?.employeeTypeId==1
+                  ? "checked" : "" %>
+                />
+                <label for="1"> ข้าราชการ / ลูกจ้างประจำ</label><br />
+                <input type="checkbox" id="2" name="พนักงานมหาวิทยาลัย
+                (สิทธิข้าราชการบำนาญ)" value="2" <%=body?.user?.employeeTypeId==2 ? "checked" : "" %> />
+                <label for="2"> พนักงานมหาวิทยาลัย (สิทธิข้าราชการบำนาญ)</label><br />
+                <input type="checkbox" id="3" name="พนักงานมหาวิทยาลัย" value="3" <%=body?.user?.employeeTypeId==3
+                  ? "checked" : "" %>
+                />
+                <label for="3">พนักงานมหาวิทยาลัย</label><br />
+                <input type="checkbox" id="4" name="พนักงานมหาวิทยาลัย" value="4" <%=body?.user?.employeeTypeId==4
+                  ? "checked" : "" %>
+                />
+                <label for="4"> พนักงานมหาวิทยาลัย</label>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <!-- สวัสดิการ ค่าสงเคราะห์ต่าง ๆ -->
+        <tr>
+          <td>
+            <div class="row" style="gap: 8px">
+              <div style="width: 100%">
+                <div class="d-flex">
+                  <div class=" px-sm  font-semi-bold">
+                    ๒.
+                  </div>
+                  <input type="checkbox" id="cate1" name="cate1" value="1" <%= [4, 5, 6].includes(body?.categoryId) ? "checked" : "" %> />
+                  <span class="font-semi-bold" for="cate1">ข้าพเจ้าขอรับเงินสวัสดิการค่าส่งเคราะห์ ผู้ปฏิบัติงานในมหาวิทยาลัยเนื่องในโอกาสต่างๆ ดังนี้</span>
+                </div>
+                <div class="d-flex">
+                  <div style="width: 5%;"></div>
+                  <div style="width: 95%;">
+                    <div class="row pt-md px-md" style="gap: 8px">
+                        <div style="flex: 1" class="px-sm">
+                          <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==4 &&
+                            body?.fundEligible ? "checked" : "" %> />
+                          <span>การสมรสโดยนิตินัย (ให้จ่ายคนละไม่เกิน ๒,๐๐๐
+                            บาท)</span>
+                        </div>
+                    </div>
+                      <div class="row pl-md py-sm" style="gap: 8px">
+                        <div style="flex: 1" class="pส-sm">
+                          <span style="padding-left: 32px;"></span><span class="font-semi-bold">หลักฐานแนบ</span>
+                        </div>
+                      </div>
+                      <div class="row" style="gap: 8px; padding-left: 32px">
+                        <div style="flex: 1" class="pl-md d-flex">
+                          <div>๑.ใบสำคัญรับเงิน</div>
+                          <div class="px-xl">๒.สำเนาทะเบียนสมรส</div>
+                        </div>
+                      </div>
+                      <div class="row pt-md px-md" style="gap: 8px">
+                        <div style="flex: 1" class="px-sm">
+                          <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==5 &&
+                            body?.fundEligible ? "checked" : "" %> />
+                          <span>การอุปสมบทหรือการไปประกอบพิธีฮัจญ์ (ให้จ่ายคนละไม่เกิน ๒,๐๐๐
+                            บาท)</span>
+                        </div>
+                    </div>
+                      <div class="row pl-md py-sm" style="gap: 8px">
+                        <div style="flex: 1" class="pส-sm">
+                          <span style="padding-left: 32px;"></span><span class="font-semi-bold">หลักฐานแนบ</span>
+                        </div>
+                      </div>
+                      <div class="row" style="gap: 8px; padding-left: 32px">
+                        <div style="flex: 1" class="pl-md d-flex">
+                          <div>๑.ใบสำคัญรับเงิน</div>
+                          <div class="px-xl">๒.สำเนาคำสั่งลาอุปสมบท หรือ เอกสารประกอบพิธีฮัจญ์</div>
+                        </div>
+                      </div>
+                      <div class="row pt-md px-md" style="gap: 8px">
+                        <div style="flex: 1" class="px-sm">
+                          <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==6 &&
+                            body?.fundEligible ? "checked" : "" %> />
+                          <span>การรับขวัญบุตรแรกเกิด (ให้จ่ายคนละไม่เกิน ๑,๐๐๐
+                            บาท)</span>
+                        </div>
+                    </div>
+                      <div class="row pl-md py-sm" style="gap: 8px">
+                        <div style="flex: 1" class="pส-sm">
+                          <span style="padding-left: 32px;"></span><span class="font-semi-bold">หลักฐานแนบ</span>
+                        </div>
+                      </div>
+                      <div class="row" style="gap: 8px; padding-left: 32px">
+                        <div style="flex: 1" class="pl-md d-flex">
+                          <div>๑.ใบสำคัญรับเงิน</div>
+                          <div class="px-xl">๒.สำเนาสูติบัตรบุตร หรือ สำเนาทะเบียนรับรองบุตร</div>
+                        </div>
+                      </div>
+                </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <!-- สวัสดิการค่าสงเคราะห์ต่าง ๆ (กรณีประสบภัยพิบัติ) -->
+        <tr>
+          <td>
+            <div class="row" style="gap: 10px">
+              <div style="width: 100%">
+                <div class="d-flex">
+                  <div class=" px-sm  font-semi-bold">
+                    ๓.
+                  </div>
+                  <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==7 &&
+                          body?.fundEligible ? "checked" : "" %>  />
+                  <span class="font-semi-bold pr-sm " for="cate1">ข้าพเจ้าขอรับเงินสวัสดิการค่าส่งเคราะห์ กรณีประสบภัยพิบัติสำหรับผู้ปฏิบัติงานในงานมหาวิทยาลัย  <span style="font-size: 12px;">(ให้จ่ายครอบครัวละไม่เกิน ๑๐,๐๐๐)</span></span>
+                </div>
+                <div class="d-flex">
+                  <div style="width: 5%;"></div>
+                  <div style="width: 95%;">
+                    <div class="row pl-md py-sm" style="gap: 8px">
+                      <div style="flex: 1" class="pส-sm">
+                        <span style="padding-left: 32px;"></span><span class="font-semi-bold">หลักฐานแนบ</span>
+                      </div>
+                    </div>
+                    <div class="row" style="gap: 8px; padding-left: 32px">
+                      <div style="flex: 1" class="pl-md d-flex">
+                        <div>๑.ใบสำคัญรับเงิน</div>
+                        <div class="px-xl">๒.รูปภาพ</div>
+                        <div>๓.สำเนาทะเบียนบ้าน</div>
+                      </div>
+                    </div>      
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <!-- สวัสดิการค่าสงเคราะห์การเสียชีวิตของ บิดา มารดา คู่สมรส บุตร ของผู้ปฎิบัติงาน -->
+        <tr>
+          <td>
+            <div class="row" style="gap: 10px">
+              <div style="width: 100%">
+                <div class="d-flex">
+                  <div class=" px-sm  font-semi-bold">
+                    ๔.
+                  </div>
+                  <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==8 ? "checked" : "" %> />
+                  <span class="font-semi-bold" for="cate1">ข้าพเจ้าขอรับเงินสวัสดิการค่าส่งเคราะห์การเสียชีวิตของบิดา มารดา คู่สมรส บุตร ของผู้ปฎิบัติงาน 
+                    <span style="font-size: 12px;">(ให้จ่ายจริงคนละไม่เกิน ๕,๐๐๐ บาท)</span> 
+                     และค่าสนับสนุนพวงหลีด <span style="font-size: 12px;">(ในนามมหาวิทยาลัยบูรพาไม่เกิน ๒,๐๐๐ บาท ในนามส่วนงานไม่เกิน ๒,๐๐๐ บาท)</span>
+                  </span>
+                </div>
+                <div class="d-flex">
+                  <div style="width: 5%;"></div>
+                  <div style="width: 100%;">
+                    <div class="row pl-md py-sm" style="gap: 8px">
+                      <div style="flex: 1" class="pส-sm">
+                        <span style="padding-left: 32px;"></span><span class="font-semi-bold">หลักฐานแนบ</span>
+                      </div>
+                    </div>
+                    <div class="row" style="gap: 8px; padding-left: 32px">
+                      <div style="flex: 1" class="pl-md d-flex">
+                        <div>๑.สำเนาใบมรณะบัตรบิดา มารดา คู่สมรส บุตร ของผู้ปฎิบัติงาน</div>
+                        <div class="px-xl">๒.ใบสำคัญรับเงิน</div>
+                      </div>
+                    </div>
+                    <div class="row pt-md px-md" style="gap: 8px">
+                      <div style="flex: 1" class="px-sm col-6">
+                        <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.deceasedType==3 &&
+                          body?.fundDecease ? "checked" : "" %> />
+                        <span><span class="font-semi-bold">บิดา</span> (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</span>
+                        <div style="flex: 1" class="px-sm">
+                           ชื่อ-นามสกุล <%= body?.deceasedType == 3 && body?.deceased ? body.deceased 
+                          : " ........................................................" %>
+                        </div>
+                      </div>  
+                      <div style="flex: 1" class="px-sm col-6">
+                        <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.deceasedType==4 &&
+                          body?.fundDecease ? "checked" : "" %> />
+                        <span><span class="font-semi-bold">มารดา</span> (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</span>
+                        <div style="flex: 1" class="px-sm">
+                          ชื่อ-นามสกุล <%= body?.deceasedType == 4 && body?.deceased ? body.deceased 
+                         : " ........................................................" %>
+                       </div>
+                     </div>  
+                      </div>                     
+                      <div class="row pt-md px-md pb-sm" style="gap: 8px">
+                      <div style="flex: 1" class="px-sm col-6">
+                        <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.deceasedType==5 &&
+                          body?.fundDecease ? "checked" : "" %> />
+                        <span><span class="font-semi-bold">คู่สมรส</span> (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</span>
+                        <div style="flex: 1" class="px-sm">
+                          ชื่อ-นามสกุล <%= body?.deceasedType == 5 && body?.deceased ? body.deceased 
+                         : " ........................................................" %>
+                       </div>
+                     </div> 
+                     <div style="flex: 1" class="px-sm col-6">
+                      <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.deceasedType==6 &&
+                        body?.fundDecease ? "checked" : "" %> />
+                      <span><span class="font-semi-bold">บุตร</span> (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</span>
+                      <div style="flex: 1" class="px-sm">
+                        ชื่อ-นามสกุล <%= body?.deceasedType == 6 && body?.deceased ? body.deceased 
+                       : " ........................................................" %>
+                     </div>
+                   </div>  
+                      </div>  
+                    </div>
+                      </div>  
+              </div>
+            </div>
+          </td>
+        </tr>
+        <!-- สวัสดิการสนับสนุนค่าพวงหลีด -->
+        <tr>
+          <td>
+            <div class="row" style="gap: 10px">
+              <div style="width: 100%">
+                <div class="d-flex">
+                  <div class=" px-sm  font-semi-bold">
+                    ๕.
+                  </div>
+                  <input type="checkbox" id="cate1" name="cate1" value="1" 
+                  <%= body?.categoryId == 8 && (body?.fundWreathArrange || body?.fundWreathUniversity) ? "checked" : "" %> />
+                  <span class="font-semi-bold" for="cate1">ค่าสนับสนุนค่าพวงหลีด <span style="font-size: 12px;">(ในนามมหาวิทยาลัยบูรพาไม่เกิน ๒,๐๐๐ บาท ในนามส่วนงานไม่เกิน ๒,๐๐๐ บาท)</span>
+                  </span>
+                </div>
+                <div class="d-flex">
+                  <div style="width: 5%;"></div>
+                  <div style="width: 100%;">
+                    <div class="row pl-md py-sm" style="gap: 8px">
+                      <div style="flex: 1" class="pส-sm">
+                        <span style="padding-left: 32px;"></span><span class="font-semi-bold">หลักฐานแนบ</span>
+                      </div>
+                    </div>
+                    <div class="row" style="gap: 8px; padding-left: 32px">
+                      <div style="flex: 1" class="pl-md d-flex">
+                        <div>๑.ใบเสร็จรับเงิน</div>
+                        <div class="px-xl">๒.ใบสำคัญรับเงิน (โดยเจ้าหน้าที่ผู้รับผิดชอบด้านบุคคล ลงนามรับเงิน)</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>  
+              </div>
+            </div>
+          </td>
+        </tr>
+        <!-- สวัสดิการสนับสนุนค่าพาหนะ -->
+        <tr>
+          <td>
+            <div class="row" style="gap: 10px">
+              <div style="width: 100%">
+                <div class="d-flex">
+                  <div class=" px-sm  font-semi-bold">
+                    ๖.
+                  </div>
+                  <input type="checkbox" id="cate1" name="cate1" value="1" 
+                  <%= body?.categoryId == 8 && body?.fundVechicle  ? "checked" : "" %> />
+                  <span class="font-semi-bold" for="cate1">ค่าสนับสนุนค่าพาหนะเหมาจ่าย เพื่อไปร่วมงานศพบิดา มารดา คู่สมรส บุตรของผู้ปฎิบัติงาน <span style="font-size: 12px;">(เท่าที่จ่ายจริง งานละไม่เกิน ๑๐,๐๐๐ บาท)</span>
+                  </span>
+                </div>
+                <div class="d-flex">
+                  <div style="width: 5%;"></div>
+                  <div style="width: 100%;">
+                    <div class="row pl-md py-sm" style="gap: 8px">
+                      <div style="flex: 1" class="pส-sm">
+                        <span style="padding-left: 32px;"></span><span class="font-semi-bold">หลักฐานแนบ</span>
+                      </div>
+                    </div>
+                    <div class="row" style="gap: 8px; padding-left: 32px">
+                      <div style="flex: 1" class="pl-md d-flex">
+                        <div class="font-14 ">๑.ใบสำคัญรับเงิน (โดยเจ้าหน้าที่ผู้รับผิดชอบด้านบุคคล<br> ลงนามรับเงิน)</div>
+                        <div class="px-xl font-14">๒.ใบเสร็จรับเงิน หรือ หลักฐานการจ่ายเงินอื่น</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>  
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <!-- New Page -->
+    <div class="page-break"></div>
+    <div class="py-sm"></div>
+    <div class="content">
+      <table>
+        <tr>
+          <td>
+            <div class="row" style="gap: 8px">
+              <div class="px-sm text-white">--</div>
+              <div style="flex: 1">
+                <span class="font-semi-bold">ข้าพเจ้าขอรับรองว่า
+                  ข้าพเจ้ามีสิทธิได้รับเงินตามประกาศคณะกรรมการสวัสดิการมหาวิทยาลัยบูรพา</span>
+              </div>
+            </div>
+            <div class="row py-md" style="gap: 8px">
+              <span class="px-md text-white">๒.</span>
+              <div style="flex: 1">
+                จำนวนเงิน <%= toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US')) %> บาท
+                  (<%= bahttext(Number(body?.fundSumRequest)) %>) จริง
+              </div>
+            </div>
+            <div class="row px-md py-sm" style="gap: 8px; align-items: flex-end">
+              <div class="col"></div>
+              <div class="col row justify-center">
+                <div class="col-sign">
+                  ลงชื่อ.........................................................ผู้ขอรับเงินสวัสดิการ
+                </div>
+                <div class="col-sign py-sm">
+                  (..............................................................)
+                </div>
+                <div class="col-sign">
+                  วันที่..........เดือน............ พ.ศ. ............
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="row" style="gap: 8px">
+              <span class="font-semi-bold px-md" class="col-12 px-md">การตรวจสอบ</span>
+              <div class="col-12 px-md">
+                <span class="font-semi-bold px-md">เสนอ</span>
+                <span>
+                  <%= body?.user?.positionId==2 || body?.user?.positionId==3 ? "อธิการบดี" : "คณบดี" %>
+                </span>
+              </div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 5%;"></div>
+              <div class="row px-md py-sm" style="gap: 8px; width: 95%;">
+                <div class="col-12 pl-sm ml-sm">
+                  ๑. ข้าพเจ้า ได้ตรวจสอบใบขอเบิกเงินสวัสดิการฉบับนี้แล้ว
+                  ขอรับรองว่าผู้ขอเบิกสวัสดิการฯ มีสิทธิเบิกสวัสดิการฯ
+                  ได้ตามประกาศ คณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา
+                </div>
+                <div class="col-12 pl-sm ml-sm">
+                  ๒. ผู้ขับรับสวัสดิการฯ
+                  มีสิทธิเบิกตามจำนวนเงินที่ขอเบิก..............................บาท
+                  จริง ไม่เกินอัตราที่กำหนดต่อปี
+                </div>
+              </div>
+            </div>
+            <div class="row px-md py-sm" style="gap: 8px; align-items: flex-end">
+              <div class="col"></div>
+              <div class="col row justify-center">
+                <div class="col-sign">
+                  ลงชื่อ.........................................................ผู้ตรวจสอบ
+                </div>
+                <div class="col-sign py-sm">
+                  (..............................................................)
+                </div>
+                <div class="col-position px-md">
+                  <div>ตำแหน่ง</div>
+                  <div>
+                    <%= body?.user?.positionId==2 || body?.user?.positionId==3 ? "อธิการบดี" : "คณบดี" %>
+                  </div>
+                </div>
+                <div class="col-sign py-sm">
+                  วันที่..........เดือน............ พ.ศ. ............
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="row" style="gap: 8px">
+              <span class="font-semi-bold px-md" class="col-12 px-md">คำอนุมัติ</span>
+            </div>
+            <div class="d-flex py-sm" style="width: 100%;">
+              <div style="width: 5%;"></div>
+              <div style="width: 95%;" class="pl-md ml-md">
+                <div class="pl-md ml-md"> อนุมัติเบิกจ่ายได้</div>
+              </div>
+            </div>
+            <div class="row px-md py-sm" style="gap: 8px; align-items: flex-end">
+              <div class="col"></div>
+              <div class="col row justify-center">
+                <div class="col-sign">
+                  ลงชื่อ.........................................................ผู้อนุมัติ
+                </div>
+                <div class="col-sign py-sm">
+                  (..............................................................)
+                </div>
+                <div class="col-sign px-md">
+                  ตำแหน่ง..........................................
+                </div>
+                <div class="col-sign py-sm">
+                  วันที่..........เดือน............ พ.ศ. ............
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="row" style="gap: 8px">
+              <span class="font-semi-bold px-md" class="col-12 px-md">ใบรับเงิน</span>
+            </div>
+            <div class="d-flex" style="width: 100%;">
+              <div style="width: 5%;"></div>
+              <div style="width: 95%;">
+                <div class="row px-md ml-md pt-md" style="gap: 8px">
+                  <div class="col-12 pl-md ml-md">
+                    ข้าพเจ้าได้รับเงินสวัสดิการตามประกาศคณะกรรมการสวัสดิการ
+                    มหาวิทยาลัยบูรพา
+                  </div>
+                </div>
+                <div class="row px-md ml-md" style="gap: 8px">
+                  <div style="flex: 1" class="pl-md ml-md">
+                    จำนวนเงิน <%= toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US')) %> บาท
+                    (<%= bahttext(Number(body?.fundSumRequest)) %>) ไว้ถูกต้องแล้ว/ครบถ้วนแล้ว
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row px-md py-md" style="gap: 8px; align-items: flex-end">
+              <div class="col"></div>
+              <div class="col row justify-center">
+                <div class="col-sign">
+                  ลงชื่อ.........................................................ผู้รับเงิน
+                </div>
+                <div class="col-sign py-sm">
+                  (..............................................................)
+                </div>
+              </div>
+            </div>
+            <div class="row px-md" style="gap: 8px; align-items: flex-end">
+              <div class="col"></div>
+              <div class="col row justify-center">
+                <div class="col-sign">
+                  ลงชื่อ.........................................................ผู้จ่ายเงิน
+                </div>
+                <div class="col-sign py-sm">
+                  (..............................................................)
+                </div>
+                <div class="col-sign py-sm">
+                  วันที่..........เดือน............ พ.ศ. ............
+                </div>
+                <div class="col-sign py-sm">
+                  ลงชื่อต่อเมื่อได้รับเงินแล้วเท่านั้น
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <div class="row py-md" style="gap: 8px">
+        <span class="px-md text-white">๒.</span>
+        <div style="flex: 0" class="px-md">
+          <span class="font-semi-bold">หมายเหตุ</span>
+        </div>
+        <div style="flex: 1" class="font-14">
+          ๑. ผู้มีสิทธิ หมายถึง ผู้ปฏิบัติงานในมหาวิทยาลัย ตามมาตรา ๔ แห่ง
+          พระราชบัญญัติมหาวิทยาลัยบูรพา
+          <br>
+          พ.ศ. ๒๕๕๐
+        </div>
+      </div>
+      <div class="row" style="gap: 8px">
+        <span class="px-md text-white">๒.</span>
+        <div style="flex: 0" class="px-md text-white font-14">
+          <span class="font-semi-bold">หมายเหตุ</span>
+        </div>
+        <div style="flex: 1">
+          ๒. อัตรา หมายถึง อัตราตามประกาศคณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา
+        </div>
+      </div>
+    </div>
+    <!-- New Page -->
+    <div class="page-break"></div>
+    <div class="py-sm"></div>
+    <%- receipt %>
+</body>
+
+</html>

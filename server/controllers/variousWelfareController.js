@@ -3,6 +3,7 @@ const { reimbursementsAssist, categories, users, positions, sector, employeeType
 const { Op, fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
 const logger = initLogger('variousWelfareController');
+const { isNullOrEmpty } = require('./utility');
 
 class Controller extends BaseController {
     constructor() {
@@ -62,19 +63,26 @@ class Controller extends BaseController {
         try {
             const { filter } = req.query;
             var whereObj = { ...filter };
+
+            whereObj[Op.and] = whereObj[Op.and] || [];
+            whereObj[Op.and].push(
+                { '$category.id$': { [Op.in]: [4, 5, 6, 7] } }
+            );
+
+            // ดึงข้อมูลจาก reimbursementsAssist
             const results = await reimbursementsAssist.findAll({
                 attributes: [
                     [col("category.id"), "categoryId"],
                     [fn("SUM", col("reimbursementsAssist.fund_sum_request")), "totalSumRequested"],
                     [col("category.fund"), "fund"],
                     [
-                        literal("category.fund - SUM(reimbursementsAssist.fund_sum_request)"),
+                        literal("category.fund - COALESCE(SUM(reimbursementsAssist.fund_sum_request), 0)"),
                         "fundRemaining"
                     ],
                     [fn("COUNT", col("reimbursementsAssist.fund_sum_request")), "totalCountRequested"],
                     [col("category.per_years"), "perYears"],
                     [
-                        literal("category.per_years - COUNT(reimbursementsAssist.fund_sum_request)"),
+                        literal("category.per_years - COALESCE(COUNT(reimbursementsAssist.fund_sum_request), 0)"),
                         "requestsRemaining"
                     ],
                     [col("category.per_times"), "perTimesRemaining"],
@@ -84,69 +92,53 @@ class Controller extends BaseController {
                         model: categories,
                         as: "category",
                         attributes: [],
-                        required: true
+                        required: false
                     }
                 ],
                 where: whereObj,
                 group: ["category.id"]
             });
-            if (results.length > 0) {
-                const datas = results.map(item => {
-                    const fundRemaining = item.dataValues.fundRemaining;
-                    const requestsRemaining = item.dataValues.requestsRemaining;
 
-                    return {
-                        categoryId: item.dataValues.categoryId,
-                        fundRemaining: fundRemaining,
-                        requestsRemaining: requestsRemaining,
-                        perTimesRemaining: item.dataValues.perTimesRemaining,
-                        canRequest: fundRemaining > 0 && requestsRemaining > 0
-                    };
-                });
+            let bindData = JSON.parse(JSON.stringify(results));
 
-                logger.info('Complete', { method, data: { id } });
-                return res.status(200).json({
-                    datas: datas,
-                });
-            } else {
-                const getFund = await categories.findAll({
-                    attributes: [
-                        [col("id"), "categoryId"],
-                        [col("fund"), "fundRemaining"],
-                        [col("per_years"), "requestsRemaining"],
-                        [col("per_times"), "perTimesRemaining"],
-                    ],
-                    where: {
-                        id: {
-                            [Op.in]: [4, 5, 6, 7]
-                        }
-                    }
-                });
-                if (getFund.length > 0) {
-                    const datas = getFund.map(item => {
-                        const fundRemaining = item.dataValues.fundRemaining;
-                        const requestsRemaining = item.dataValues.requestsRemaining;
+            // ดึงข้อมูลจาก categories
+            const allCategories = await categories.findAll({
+                attributes: [
+                    [col("id"), "categoryId"],
+                    [col("name"), "categoryName"],
+                    [col("fund"), "fundRemaining"],
+                    [col("per_years"), "requestsRemaining"],
+                    [col("per_times"), "perTimesRemaining"],
+                ],
+                where: { id: [4, 5, 6, 7] }
+            });
 
-                        return {
-                            categoryId: item.dataValues.categoryId,
-                            fundRemaining: fundRemaining,
-                            requestsRemaining: requestsRemaining,
-                            perTimesRemaining: item.dataValues.perTimesRemaining,
-                            canRequest: fundRemaining > 0 && requestsRemaining > 0
-                        };
-                    });
-                    logger.info('Complete', { method, data: { ids: [4, 5, 6, 7] } });
-                    return res.status(200).json({
-                        datas: datas,
-                    });
-                }
-                logger.info('Data not Found', { method, data: { ids: [4, 5, 6, 7] } });
-                res.status(200).json({
-                    message: "ไม่มีข้อมูลสำหรับ ID ที่กำหนด"
-                });
-            }
-        }
-        catch (error) {
+            const categoryData = JSON.parse(JSON.stringify(allCategories));
+
+            // รวมข้อมูล categories กับ reimbursementsAssist
+            const finalData = categoryData.map(cat => {
+                let matched = bindData.find(item => item.categoryId === cat.categoryId);
+
+                return {
+                    categoryId: cat.categoryId,
+                    totalSumRequested: matched ? matched.totalSumRequested : 0,
+                    fund: cat.fundRemaining,
+                    fundRemaining: matched ? matched.fundRemaining : cat.fundRemaining,
+                    totalCountRequested: matched ? matched.totalCountRequested : 0,
+                    perYears: cat.requestsRemaining,
+                    requestsRemaining: matched ? matched.requestsRemaining : cat.requestsRemaining,
+                    perTimesRemaining: cat.perTimesRemaining,
+                    canRequest: (matched ? matched.fundRemaining : cat.fundRemaining) > 0 &&
+                        ((matched ? matched.requestsRemaining : cat.requestsRemaining) !== 0)
+
+                };
+            });
+
+            logger.info('Complete', { method, data: { id } });
+            return res.status(200).json({
+                datas: finalData
+            });
+        } catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
                 data: { id },
@@ -154,6 +146,8 @@ class Controller extends BaseController {
             next(error);
         }
     };
+
+
     getById = async (req, res, next) => {
         const method = 'GetVariousWelfarebyId';
         const { id } = req.user;
@@ -241,7 +235,7 @@ class Controller extends BaseController {
             next(error);
         }
     }
-    
+
 }
 
 module.exports = new Controller();
