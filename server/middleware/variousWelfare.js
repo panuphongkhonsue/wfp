@@ -138,7 +138,8 @@ const checkNullValue = async (req, res, next) => {
             return res.status(400).json({
                 message: "จำนวนเงินตามใบเสร็จน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
-        }
+        } 
+        const fundSumReceipt = Number(fundReceipt);
         if (isInvalidNumber(fundEligible) && fundEligible) {
             errorObj["fundEligible"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
 
@@ -159,8 +160,7 @@ const checkNullValue = async (req, res, next) => {
                 message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าเงินที่ต้องการเบิกได้",
             });
         }
-        
-        if ((isNullOrEmpty(actionId) || (actionId !== status.draft && actionId !== status.waitApprove)) && !req.access) {
+        if ((isNullOrEmpty(actionId) || (actionId != status.draft && actionId != status.waitApprove)) && !req.access) {
             return res.status(400).json({
                 message: "ไม่มีการกระทำที่ต้องการ",
             });
@@ -169,6 +169,7 @@ const checkNullValue = async (req, res, next) => {
         req.body = {
             ...req.body,
             fundSumRequest: fundSumRequest,
+            fundSumReceipt: fundSumReceipt,
         };
         next();
     }
@@ -208,6 +209,7 @@ const bindCreate = async (req, res, next) => {
             fund_sum_receipt: fundReceipt,
             fund_eligible: fundEligible,
             fund_sum_request: fundSumRequest,
+            fund_sum_receipt: fundSumReceipt,
             created_by: createFor ?? id,
             updated_by: id,
             status: actionId,
@@ -228,7 +230,6 @@ const bindUpdate = async (req, res, next) => {
         const { fundReceipt, fundEligible, fundSumRequest, createFor, actionId, categoryId } = req.body;
         const { id, } = req.user;
         if (!isNullOrEmpty(createFor) && !req.isEditor) {
-            console.log(createFor);
             return res.status(400).json({
                 message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
             });
@@ -284,9 +285,8 @@ const bindUpdate = async (req, res, next) => {
             categories_id: categoryId,
             updated_by: id,
         }
-        console.log(dataBinding);
         if (!isNullOrEmpty(actionId)) {
-            if (req.access && actionId != 3) {
+            if (req.access && actionId != status.approve) {
                 return res.status(400).json({
                     message: "ไม่มีการกระทำที่ต้องการ",
                 });
@@ -304,9 +304,6 @@ const bindUpdate = async (req, res, next) => {
             dataBinding.createByData = createByData;
         }
 
-        if (!isNullOrEmpty(reimNumber) && !req.access) {
-            dataBinding.reimNumber = reimNumber;
-        }
         req.body = dataBinding;
         next();
     } catch (error) {
@@ -324,6 +321,7 @@ const getRemaining = async (req, res, next) => {
         req.query.filter = {};
         req.query.filter[Op.and] = [];
         const getFiscalYearWhere = getFiscalYear();
+        
         if (req.access && !isNullOrEmpty(createByData)) {
             req.query.filter[Op.and].push(
                 { '$reimbursementsAssist.created_by$': createByData },
@@ -349,9 +347,11 @@ const getRemaining = async (req, res, next) => {
                 { '$category.id$': categories_id }
             );
         } else {
-            req.query.filter[Op.and].push(
-                { '$category.id$': { [Op.ne]: category.variousFuneralFamily } }
-            );
+            req.query.filter[Op.and].push({
+                '$category.id$': { [Op.in]: [4, 5, 6, 7] }
+            });
+            
+            
         }
 
         req.query.filter[Op.and].push(
@@ -467,8 +467,12 @@ const checkRemaining = async (req, res, next) => {
         }
         const { filter } = req.query;
         let whereObj = { ...filter };
-        whereObj["$category.id$"] = categories_id;
-        const results = await reimbursementsAssist.findOne({
+        if (!isNullOrEmpty(categories_id)) {
+            whereObj['$category.id$'] = { [Op.in]: [3, 4, 5, 6] };
+        }
+        whereObj['$reimbursementsAssist.created_by$'] = id;
+        
+        const results = await reimbursementsAssist.findAll({
             attributes: [
                 [literal("category.fund - SUM(reimbursementsAssist.fund_sum_request)"), "fundRemaining"],
                 [col("category.per_times"), "perTimes"],

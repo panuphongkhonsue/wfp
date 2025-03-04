@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 const reimbursementsAssistController = require('../controllers/variousWelfareController');
-const {     authPermission,
+const {     
+    authPermission,
     bindFilter,
     getRemaining,
     checkRemaining,
@@ -14,6 +15,7 @@ const {     authPermission,
     checkUpdateRemaining,
     checkFullPerTimes
  } = require('../middleware/variousWelfare')
+
  router.get('/', authPermission, bindFilter, reimbursementsAssistController.list);
  router.get('/remaining', authPermission, getRemaining, reimbursementsAssistController.getRemaining);
  router.get('/:id', authPermission, byIdMiddleWare, reimbursementsAssistController.getById);

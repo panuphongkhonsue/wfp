@@ -45,7 +45,7 @@
 
         <template v-slot:body-cell-fund="props">
           <q-td v-if="clickEditIndex !== props.rowIndex" :props="props" class="text-center">
-            {{ formatNumber(props.row.fund) }}
+            {{formatNumber(props.row.fund)}}
           </q-td>
           <q-td v-else :props="props">
             <q-input class="font-14 font-regular" dense v-model="payload.fund" outlined autocomplete="off" color="dark"
@@ -123,7 +123,6 @@ const isLoading = ref(false);
 const listStore = useListStore();
 const tableRef = ref();
 let validateText = null;
-let payloadCurrentFund = null;
 const payload = ref(
   {
     fund: null,
@@ -176,7 +175,7 @@ const columns = [
   { name: "welfareType", label: "ประเภทสวัสดิการ", align: "left", field: "welfareType" },
   { name: "subCategory", label: "ประเภทย่อย", align: "left", field: "subCategory" },
   { name: "description", label: "รายละเอียดเพิ่มเติม", align: "left", field: "description" },
-  { name: "fund", label: "เพดานเงิน", align: "right", field: (row) => row.fund ?? '-' },
+  { name: "fund", label: "เพดานเงิน", align: "right", field: (row) => row.fund ?? '-'},
   { name: "perYears", label: "จำนวนครั้ง (ต่อปี)", align: "right", field: "perYears" },
   { name: "perTimes", label: "ครั้งละไม่เกิน", align: "right", field: "perTimes" },
   { name: "tools", label: "จัดการ", align: "center", field: "tools" },
@@ -212,6 +211,7 @@ watch(
     modelDate.value = newValue.from + " - " + newValue.to;
   }
 );
+
 
 watch(
   () => route.query,
@@ -354,10 +354,13 @@ async function updateConfigWelfare(propsRowData) {
             if (payload.value.fund != null) {
               if (payload.value.fund < 0) {
                 validateMessage = "ข้อมูลเพดานเงินไม่ถูกต้อง";
-              } 
-              else if(payload.value.fund == 0){
+              }
+              else if (payload.value.fund == 0) {
                 payload.value.fund = null;
-              }           
+              }
+              else if (payload.value.fund < propsRowData.perTimes){
+                validateMessage = "ข้อมูลครั้งละไม่เกินสูงกว่าเพดานเงิน";
+              }
             }
             else {
               if (!propsRowData.subCategoryName) {
@@ -366,7 +369,6 @@ async function updateConfigWelfare(propsRowData) {
               else {
                 payload.value.fund = propsRowData.subCategoryFund;
               }
-              payloadCurrentFund = payload.value.fund;
             }
             if (payload.value.perYears != null) {
               if (payload.value.perYears < 0) {
@@ -391,10 +393,11 @@ async function updateConfigWelfare(propsRowData) {
               else if (payload.value.perTimes == 0) {
                 payload.value.perTimes = null;
               }
-              else if (propsRowData.fund != '-'){
-                if (payload.value.perTimes > payloadCurrentFund) {
-                validateMessage = "ข้อมูลครั้งละไม่เกินสูงกว่าเพดานเงิน";
-              }
+              else if (propsRowData.fund != '-') {
+                console.log("payload.value.fund", payload.value.fund)
+                if (Number(payload.value.perTimes) > Number(payload.value.fund)) {
+                  validateMessage = "ข้อมูลครั้งละไม่เกินสูงกว่าเพดานเงิน";
+                }
               }
             }
             else {
@@ -406,7 +409,6 @@ async function updateConfigWelfare(propsRowData) {
               }
             }
           }
-
           validateText = validateMessage;
           payloadLogCategory.value = (
             {
@@ -465,7 +467,7 @@ async function updateConfigWelfare(propsRowData) {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        if (validateText == null) {
+        if (validateText == "") {
           Swal.fire({
             html: `ข้อมูลสวัสดิการถูกแก้ไข`,
             icon: "success",

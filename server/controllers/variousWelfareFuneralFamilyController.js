@@ -64,6 +64,9 @@ class Controller extends BaseController {
         try {
             const { filter } = req.query;
             var whereObj = { ...filter }
+            whereObj[Op.and].push(
+                { '$sub_category.id$': { [Op.in]: [3, 4, 5, 6] } }
+            );
             const decreaseRemaining = await reimbursementsAssistHasSubCategories.findAll({
                 attributes: [
                     [col("sub_category.id"), "subCategoriesId"],
@@ -95,11 +98,7 @@ class Controller extends BaseController {
                         required: false
                     }
                 ],
-                where: {
-                    '$sub_category.id$': {
-                        [Op.in]: [3, 4, 5, 6]
-                    }
-                },
+                where: whereObj,
                 group: ["sub_category.id", "sub_category.name", "sub_category.fund", "sub_category.per_years", "sub_category.per_times"]
             });
             whereObj[Op.and].push(
@@ -204,33 +203,49 @@ class Controller extends BaseController {
 
             if (!isNullOrEmpty(decreaseRemaining) || !isNullOrEmpty(wreathRemaining) || !isNullOrEmpty(vechicleRemaining)) {
                 let bindData = [];
+
+                let datas = [];
                 if (!isNullOrEmpty(decreaseRemaining)) {
-                    const datas = JSON.parse(JSON.stringify(decreaseRemaining));
-                    datas.forEach(item => {
-                        item.canRequest = (item.fundRemaining !== 0 && item.requestsRemaining !== 0);
-                    });
-                    bindData.push(...datas);
-                }
-                else {
-                    const getFund = await subCategories.findAll({
-                        attributes: [
-                            [col("id"), "subCategoriesId"],
-                            [col("name"), "subCategoriesName"],
-                            [col("fund"), "fundRemaining"],
-                            [col("per_years"), "requestsRemaining"],
-                            [col("per_times"), "perTimesRemaining"],
-                        ],
-                        where: { id: [3, 4, 5, 6] }
-                    });
-                    const datas = JSON.parse(JSON.stringify(getFund));
-                    datas.forEach(item => {
-                        if (item.fundRemaining === 0 || item.requestsRemaining === 0) item.canRequest = false;
-                        else item.canRequest = true;
-                    });
-                    bindData.push(...datas);
-
+                    datas = JSON.parse(JSON.stringify(decreaseRemaining));
                 }
 
+                const getFund = await subCategories.findAll({
+                    attributes: [
+                        [col("id"), "subCategoriesId"],
+                        [col("name"), "subCategoriesName"],
+                        [col("fund"), "fundRemaining"],
+                        [col("per_years"), "requestsRemaining"],
+                        [col("per_times"), "perTimesRemaining"],
+                    ],
+                    where: { id: [3, 4, 5, 6] }
+                });
+
+                const fundDatas = JSON.parse(JSON.stringify(getFund));
+
+                let dataMap = new Map();
+
+                fundDatas.forEach(item => {
+                    dataMap.set(item.subCategoriesId, {
+                        ...item,
+                        canRequest: item.fundRemaining !== 0 && item.requestsRemaining !== 0
+                    });
+                });
+                datas.forEach(item => {
+                    if (dataMap.has(item.subCategoriesId)) {
+                        let existing = dataMap.get(item.subCategoriesId);
+                        dataMap.set(item.subCategoriesId, {
+                            ...existing,
+                            ...item, 
+                            canRequest: item.fundRemaining !== 0 && item.requestsRemaining !== 0
+                        });
+                    } else {
+                        dataMap.set(item.subCategoriesId, {
+                            ...item,
+                            canRequest: item.fundRemaining !== 0 && item.requestsRemaining !== 0
+                        });
+                    }
+                });
+                bindData = Array.from(dataMap.values());
 
                 if (!isNullOrEmpty(wreathRemaining)) {
                     const datas = JSON.parse(JSON.stringify(wreathRemaining));
