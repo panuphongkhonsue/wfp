@@ -138,8 +138,8 @@
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund-request" is-dense v-model="model.fundRequest" :data="model.fundRequest ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
-                  :is-view="isView" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOverRequest || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบสำคัญรับเงิน',
-                  (val) => !isOverfundRemaining || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้']"
+                  :is-view="isView"  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOverRequest || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ'
+                    , (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemaining || 'สามารถเบิกได้สูงสุด ' + remaining[9].perTimesRemaining + ' บาทต่อครั้ง']"
                   :error-message="isError?.fundRequest" :error="!!isError?.fundRequest">
                 </InputGroup>
               </div>
@@ -163,9 +163,9 @@
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund-wreath-arrange" is-dense v-model="model.fundWreathArrange"
                   :data="model.fundWreathArrange ?? '-'" label="จำนวนเงินที่ต้องการเบิก (บาท) (ในนามส่วนงาน)"
-                  placeholder="บาท" type="number" class="" :is-view="isView" :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
-                  (val) => model.selectedWreath && !isOverWreathArrange || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน',
-                  (val) => !isOverfundRemainingWreathArrange || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้'
+                  placeholder="บาท" type="number" class="" :is-view="isView" :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
+                  (val) => model.selectedWreath && !isOverWreathArrange || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
+                    , (val) => isOverfundRemainingWreathArrange !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemainingWreathArrange || 'สามารถเบิกได้สูงสุด ' + remaining[10]?.perTimesRemaining + ' บาทต่อครั้ง'
                   ]" :error-message="isError?.fundWreathArrange" :error="!!isError?.fundWreathArrange">
                 </InputGroup>
               </div>
@@ -173,8 +173,9 @@
                 <InputGroup for-id="fund-wreath-university" is-dense v-model="model.fundWreathUniversity"
                   :data="model.fundWreathUniversity ?? '-'" label="จำนวนเงินที่ต้องการเบิก (บาท) (ในนามมหาวิทยาลัย)"
                   placeholder="บาท" type="number" class="" :is-view="isView" style="white-space: nowrap;"
-                  :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => model.selectedWreath && !isOverWreathUniversity || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน',
-                  (val) => !isOverfundRemainingWreathUniversity || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้'
+                  :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
+                  (val) => model.selectedWreath && !isOverWreathUniversity || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
+                    , (val) => isOverfundRemainingWreathUniversity !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemainingWreathUniversity || 'สามารถเบิกได้สูงสุด ' + remaining[11]?.perTimesRemaining + ' บาทต่อครั้ง'
                   ]" :error-message="isError?.fundWreathUniversity" :error="!!isError?.fundWreathUniversity">
                 </InputGroup>
               </div>
@@ -199,9 +200,9 @@
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund" is-dense v-model="model.fundVehicle" :data="model.fundVehicle ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
-                  :is-view="isView" :disable="!model.selectedVehicle" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
-                  (val) => model.selectedVehicle && !isOverVehicle || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน',
-                  (val) => !isOverfundRemainingVehicle || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้'
+                  :is-view="isView" :disable="!model.selectedVehicle" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
+                  (val) => model.selectedVehicle && !isOverVehicle || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
+                    , (val) => isOverfundRemainingVehicle !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemainingVehicle || 'สามารถเบิกได้สูงสุด ' + remaining[12]?.perTimesRemaining + ' บาทต่อครั้ง'
                   ]" :error-message="isError?.fundVehicle" :error="!!isError?.fundVehicle">
                 </InputGroup>
               </div>
@@ -417,31 +418,55 @@ const isOverfundRemaining = computed(() => {
   const fundSumRequest = Number(model.value.fundRequest ?? 0);
   const perTimes = remaining.value[9]?.perTimesRemaining ? parseFloat(remaining.value[9]?.perTimesRemaining.replace(/,/g, "")) : null;
   const fundRemaining = remaining.value[9]?.fundRemaining ? parseFloat(remaining.value[9]?.fundRemaining.replace(/,/g, "")) : null;
-
-  return (fundSumRequest > perTimes && remaining.value[9]?.perTimesRemaining) || (fundSumRequest > fundRemaining && remaining.value[9]?.fundRemaining);
+  let check = false;
+  if (Number(fundSumRequest) > perTimes && remaining.value[9]?.perTimesRemaining) {
+    check = 1;
+  }
+  if (Number(fundSumRequest) > fundRemaining && remaining.value[9]?.fundRemaining) {
+    check = 2;
+  }
+  return check;
 });
 const isOverfundRemainingWreathArrange = computed(() => {
   const fundSumRequest = Number(model.value.fundWreathArrange ?? 0);
   const perTimes = remaining.value[10]?.perTimesRemaining ? parseFloat(remaining.value[10]?.perTimesRemaining.replace(/,/g, "")) : null;
   const fundRemaining = remaining.value[10]?.fundRemaining ? parseFloat(remaining.value[10]?.fundRemaining.replace(/,/g, "")) : null;
-
-  return (fundSumRequest > perTimes && remaining.value[10]?.perTimesRemaining) || (fundSumRequest > fundRemaining && remaining.value[10]?.fundRemaining);
+  let check = false;
+  if (Number(fundSumRequest) > perTimes && remaining.value[10]?.perTimesRemaining) {
+    check = 1;
+  }
+  if (Number(fundSumRequest) > fundRemaining && remaining.value[10]?.fundRemaining) {
+    check = 2;
+  }
+  return check;
 });
 
 const isOverfundRemainingWreathUniversity = computed(() => {
   const fundSumRequest = Number(model.value.fundWreathUniversity ?? 0);
   const perTimes = remaining.value[11]?.perTimesRemaining ? parseFloat(remaining.value[11]?.perTimesRemaining.replace(/,/g, "")) : null;
   const fundRemaining = remaining.value[11]?.fundRemaining ? parseFloat(remaining.value[11]?.fundRemaining.replace(/,/g, "")) : null;
-
-  return (fundSumRequest > perTimes && remaining.value[11]?.perTimesRemaining) || (fundSumRequest > fundRemaining && remaining.value[11]?.fundRemaining);
+  let check = false;
+  if (Number(fundSumRequest) > perTimes && remaining.value[11]?.perTimesRemaining) {
+    check = 1;
+  }
+  if (Number(fundSumRequest) > fundRemaining && remaining.value[11]?.fundRemaining) {
+    check = 2;
+  }
+  return check;
 });
 
 const isOverfundRemainingVehicle = computed(() => {
   const fundSumRequest = Number(model.value.fundVehicle ?? 0);
   const perTimes = remaining.value[12]?.perTimesRemaining ? parseFloat(remaining.value[12]?.perTimesRemaining.replace(/,/g, "")) : null;
   const fundRemaining = remaining.value[12]?.fundRemaining ? parseFloat(remaining.value[12]?.fundRemaining.replace(/,/g, "")) : null;
-
-  return (fundSumRequest > perTimes && remaining.value[12]?.perTimesRemaining) || (fundSumRequest > fundRemaining && remaining.value[12]?.fundRemaining);
+  let check = false;
+  if (Number(fundSumRequest) > perTimes && remaining.value[12]?.perTimesRemaining) {
+    check = 1;
+  }
+  if (Number(fundSumRequest) > fundRemaining && remaining.value[12]?.fundRemaining) {
+    check = 2;
+  }
+  return check;
 });
 
 const isOverRequest = computed(() => {
@@ -755,11 +780,21 @@ async function submit(actionId) {
       validate = true;
     }
     if (isOverfundRemainingWreathArrange.value) {
-      isError.value.fundWreathArrange = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+      if (isOverfundRemainingWreathArrange.value === 2) {
+        isError.value.fundWreathArrange = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+      }
+      else {
+        isError.value.fundWreathArrange = "สามารถเบิกได้สูงสุด " + remaining.value[7]?.perTimesRemaining + " บาทต่อครั้ง";
+      }
       validate = true;
     }
     if (isOverfundRemainingWreathUniversity.value) {
-      isError.value.fundWreathUniversity = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+      if (isOverfundRemainingWreathUniversity.value === 2) {
+        isError.value.fundWreathUniversity = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+      }
+      else {
+        isError.value.fundWreathUniversity = "สามารถเบิกได้สูงสุด " + remaining.value[8]?.perTimesRemaining + " บาทต่อครั้ง";
+      }
       validate = true;
     }
   }
@@ -773,7 +808,12 @@ async function submit(actionId) {
       validate = true;
     }
     if (isOverfundRemainingVehicle.value) {
-      isError.value.fundVehicle = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+      if (isOverfundRemainingVehicle.value === 2) {
+        isError.value.fundVehicle = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+      }
+      else {
+        isError.value.fundVehicle = "สามารถเบิกได้สูงสุด " + remaining.value[9]?.perTimesRemaining + " บาทต่อครั้ง";
+      }
       validate = true;
     }
   }

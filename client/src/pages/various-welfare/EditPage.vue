@@ -142,10 +142,10 @@
               <div class="col-lg-2"></div>
               <div class="col-lg-4 col-12 ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundEligible" :data="model.fundEligible ?? '-'"
-                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
+                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class="q-py-xs-md q-py-lg-none"
                   :is-view="isView"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน'
-                  , (val) => !isOverfundRemaining || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้']"
+                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ'
+                    , (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemaining || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง']"
                   :error-message="isError?.fundEligible" :error="!!isError?.fundEligible">
                 </InputGroup>
               </div>
@@ -322,9 +322,14 @@ const isOverfundRemaining = computed(() => {
 
   const perTimes = categoryData.perTimesRemaining ? parseFloat(categoryData.perTimesRemaining.replace(/,/g, "")) : null;
   const fundRemaining = categoryData.fundRemaining ? parseFloat(categoryData.fundRemaining.replace(/,/g, "")) : null;
-
-  return (fundSumRequest > perTimes && perTimes !== null) || 
-         (fundSumRequest > fundRemaining && fundRemaining !== null);
+  let check = false;
+  if (Number(fundSumRequest) > perTimes && categoryData.perTimesRemaining) {
+    check = 1;
+  }
+  if (Number(fundSumRequest) > fundRemaining && categoryData.fundRemaining) {
+    check = 2;
+  }
+  return check;
 });
 
 
@@ -490,7 +495,12 @@ async function submit(actionId) {
     validate = true;
   }
   if (isOverfundRemaining.value) {
-    isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+    if (isOverfundRemaining.value === 2) {
+      isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+    }
+    else {
+      isError.value.fundEligible = "สามารถเบิกได้สูงสุด " + remaining.value.perTimesRemaining + " บาทต่อครั้ง";
+    }
     validate = true;
   }
   if (isOver.value) {
