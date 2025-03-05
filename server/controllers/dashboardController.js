@@ -85,16 +85,22 @@ class Controller extends BaseController {
                 paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 10,
                 attributes: [
                     [fn("SUM", col("fund_sum_request")), "total_fund"],
-                    "welfare_type",
+                    "welfare_type"
                   ],
                   where: {
                     updated_at: {
-                        [Op.between]: [`${parseInt(year) - 1}-10-01`, `${year}-09-30`]
-                    },
+                      [Op.between]: ["2024-10-01", "2025-09-30"]
+                    }
                   },
                   group: ["welfare_type"],
-                  raw: true,
-            });
+                  order: [
+                    [literal(`FIELD(welfare_type, 
+                      'สวัสดิการทั่วไป', 
+                      'สวัสดิการค่าสงเคราะห์ต่าง ๆ', 
+                      'สวัสดิการค่าสงเคราะห์การเสียชีวิต', 
+                      'สวัสดิการเกี่ยวกับการศึกษาของบุตร')`)]
+                  ]
+                });
             logger.info('Complete', { method, data: { userId } });
             res.status(200).json(dashboardDataList);
         }
