@@ -97,7 +97,10 @@
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedAccident" />
-              <p class="q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ 1,000 บาท)</p>
+              <p class="q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ {{ remaining?.accident.fund ? remaining?.accident.fund + " บาท ต่อปี" :
+                remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาท ต่อครั้ง" :
+                  "ไม่จำกัดจำนวนเงิน"
+              }})</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund-receipt-accident" is-dense v-model="model.fundReceipt"
@@ -118,8 +121,12 @@
             <q-card-section class="row wrap q-pt-none font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedPatientVisit" />
-              <p class="q-mb-none">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน 1,000 บาท ต่อครั้ง ปีนึงไม่เกิน
-                3 ครั้ง</p>
+              <p class="q-mb-none">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน {{ remaining?.patientVisit.fund ? remaining?.patientVisit.fund + " บาท ต่อปี" :
+                remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาท ต่อครั้ง" :
+                  "ไม่จำกัดจำนวนเงิน"
+              }} {{ remaining?.patientVisit.perYears ? "ปีนึงไม่เกิน " + remaining?.patientVisit.perYears +
+              " ครั้ง" :
+              'ไม่จำกัดครั้ง' }}</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-sm font-16 text-grey-9">
               <InputGroup label="ตั้งแต่วันที่" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl"
