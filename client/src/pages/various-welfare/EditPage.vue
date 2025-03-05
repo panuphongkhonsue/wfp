@@ -142,8 +142,8 @@
               <div class="col-lg-2"></div>
               <div class="col-lg-4 col-12 ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundEligible" :data="model.fundEligible ?? '-'"
-                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class="q-py-xs-md q-py-lg-none"
-                  :is-view="isView"
+                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number"
+                  class="q-py-xs-md q-py-lg-none" :is-view="isView"
                   :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ'
                     , (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemaining || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง']"
                   :error-message="isError?.fundEligible" :error="!!isError?.fundEligible">
@@ -395,7 +395,7 @@ async function fetchRemaining() {
     if (Array.isArray(fetchRemaining.data?.datas)) {
       fetchRemaining.data.datas.forEach((item) => {
         remaining.value[item.categoryId] = item;
-        
+
         if (item.fundRemaining !== null && !isNaN(Number(item.fundRemaining))) {
           item.fundRemaining = formatNumber(item.fundRemaining);
         }
@@ -517,8 +517,8 @@ async function submit(actionId) {
   }
   let isValid = false;
   let payload = {
-    fundReceipt: model.value.fundReceipt,
-    fundEligible: model.value.fundEligible,
+    fundReceipt: Number(model.value.fundReceipt),
+    fundEligible: Number(model.value.fundEligible),
     createFor: canCreateFor.value ? model.value.createFor : null,
     categoryId: model.value.categoryId,
     actionId: actionId,
