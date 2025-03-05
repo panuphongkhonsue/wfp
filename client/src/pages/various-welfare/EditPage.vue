@@ -125,10 +125,18 @@
                   :disable="isView" :rules="[(val) => !!val || '']" />
               </div>
               <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p>
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 2,000 บาท)</p>
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 1,000 บาท)</p>
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ 10,000 บาท)</p>
+                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[4]?.fund ? remaining[4]?.fund + " บาท" :
+                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาท ต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน" }})</p>
+                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[5]?.fund ? remaining[5]?.fund + " บาท" :
+                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาท ต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน" }})</p>
+                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[6]?.fund ? remaining[6]?.fund + " บาท" :
+                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาท ต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน" }})</p>
+                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[7]?.fund ? remaining[7]?.fund + " บาท" :
+                  remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาท ต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน" }})</p>
               </div>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
