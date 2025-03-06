@@ -59,8 +59,11 @@
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
                 เบิกได้สูงสุดไม่เกิน :
-                <span v-if="remaining[9]?.perTimesRemaining !== null">{{ remaining[9]?.perTimesRemaining ?? "-" }}
-                  บาท</span>
+                <span v-if="remaining[9]?.perTimesRemaining !== null">
+                  {{ remaining[9]?.fundRemaining ? remaining[9]?.fundRemaining + " บาทต่อปี" :
+                  remaining[9]?.perTimesRemaining ? remaining[9]?.perTimesRemaining + " บาทต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน"
+                }}</span>
                 <span v-else>กรุณาเลือกผู้เสียชีวิต</span>
               </p>
             </q-card-section>

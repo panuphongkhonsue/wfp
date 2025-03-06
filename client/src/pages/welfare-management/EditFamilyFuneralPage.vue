@@ -43,26 +43,26 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
-                บิดา : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาท" :
-                  remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาท" :
+                บิดา : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาทต่อปี" :
+                  remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                มารดา : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาท" :
-                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาท" :
+                มารดา : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
+                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                คู่สมรส : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาท" :
-                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาท" :
+                คู่สมรส : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
+                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                บุตร : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
-                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาท" :
+                บุตร : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
+                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
@@ -115,9 +115,10 @@
               </div>
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund-request" is-dense v-model="model.fundDecease" :data="model.fundDecease ?? '-'"
-                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class="q-py-xs-md q-py-lg-none"
+                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number"
+                  class="q-py-xs-md q-py-lg-none"
                   :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOverDecease || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ'
-                    , (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemaining || 'สามารถเบิกได้สูงสุด ' + remaining[3,4,5,6].perTimesRemaining + ' บาทต่อครั้ง']"
+                    , (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemaining || 'สามารถเบิกได้สูงสุด ' + remaining[3, 4, 5, 6].perTimesRemaining + ' บาทต่อครั้ง']"
                   :error-message="isError?.fundDecease" :error="!!isError?.fundDecease">
                 </InputGroup>
               </div>
@@ -141,7 +142,8 @@
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund-wreath-arrange" is-dense v-model="model.fundWreathArrange"
                   :data="model.fundWreathArrange ?? '-'" label="จำนวนเงินที่ต้องการเบิก (บาท) (ในนามส่วนงาน)"
-                  placeholder="บาท" type="number" class="q-py-xs-md q-py-lg-none" :is-view="isView" :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
+                  placeholder="บาท" type="number" class="q-py-xs-md q-py-lg-none" :is-view="isView"
+                  :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
                   (val) => model.selectedWreath && !isOverWreathArrange || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
                     , (val) => isOverfundRemainingWreathArrange !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemainingWreathArrange || 'สามารถเบิกได้สูงสุด ' + remaining[7]?.perTimesRemaining + ' บาทต่อครั้ง'
                   ]" :error-message="isError?.fundWreathArrange" :error="!!isError?.fundWreathArrange">
@@ -177,8 +179,8 @@
               </div>
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund" is-dense v-model="model.fundVechicle" :data="model.fundVechicle ?? '-'"
-                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class="q-py-xs-md q-py-lg-none"
-                  :is-view="isView" :disable="!model.selectedVechicle"  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
+                  is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number"
+                  class="q-py-xs-md q-py-lg-none" :is-view="isView" :disable="!model.selectedVechicle" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
                   (val) => model.selectedVechicle && !isOverVechicle || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
                     , (val) => isOverfundRemainingVechicle !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemainingVechicle || 'สามารถเบิกได้สูงสุด ' + remaining[9]?.perTimesRemaining + ' บาทต่อครั้ง'
                   ]" :error-message="isError?.fundVechicle" :error="!!isError?.fundVechicle">
@@ -224,8 +226,7 @@
     <template v-slot:action>
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
-          style="background : #BFBFBF;" label="ย้อนกลับ" no-caps
-          :to="{ name: 'welfare_management_list' }" />
+          style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'welfare_management_list' }" />
         <q-btn :disable="isValidate" id="button-draft"
           class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
           label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
@@ -400,21 +401,21 @@ const isOverfundRemaining = computed(() => {
     }
   }
   let check = false;
-  if (Number(fundSumRequest) > perTimes && remaining.value[3,4,5,6]?.perTimes) {
+  if (Number(fundSumRequest) > perTimes && remaining.value[3, 4, 5, 6]?.perTimes) {
     check = 1;
   }
-  if (Number(fundSumRequest) > fundRemaining && remaining.value[3,4,5,6]?.fundRemaining) {
+  if (Number(fundSumRequest) > fundRemaining && remaining.value[3, 4, 5, 6]?.fundRemaining) {
     check = 2;
   }
   return check;
 });
 const isOverfundRemainingWreathArrange = computed(() => {
   const fundSumRequest = Number(model.value.fundWreathArrange ?? 0);
-  
-  const perTimes = remaining.value[7]?.perTimesRemaining 
-    ? parseFloat(remaining.value[7].perTimesRemaining.replace(/,/g, "")) 
+
+  const perTimes = remaining.value[7]?.perTimesRemaining
+    ? parseFloat(remaining.value[7].perTimesRemaining.replace(/,/g, ""))
     : 0;
-  
+
   const fundRemaining = remaining.value[7]?.fundRemaining && remaining.value[7]?.fundRemaining !== "0"
     ? parseFloat(remaining.value[7].fundRemaining.replace(/,/g, ""))
     : 0;
@@ -425,7 +426,7 @@ const isOverfundRemainingWreathArrange = computed(() => {
   if (Number(fundSumRequest) > fundRemaining && fundRemaining !== 0) {
     return 2;
   }
-  
+
   return false;
 });
 
@@ -436,13 +437,13 @@ const isOverfundRemainingWreathUniversity = computed(() => {
   const perTimes = remaining.value[8]?.perTimesRemaining ? parseFloat(remaining.value[8]?.perTimesRemaining.replace(/,/g, "")) : 0;
   const fundRemaining = remaining.value[8]?.fundRemaining && remaining.value[8]?.fundRemaining !== "0"
     ? parseFloat(remaining.value[8]?.fundRemaining.replace(/,/g, "")) : 0;
-    if (Number(fundSumRequest) > perTimes && perTimes !== 0) {
+  if (Number(fundSumRequest) > perTimes && perTimes !== 0) {
     return 1;
   }
   if (Number(fundSumRequest) > fundRemaining && fundRemaining !== 0) {
     return 2;
   }
-  
+
   return false;
 });
 
@@ -452,13 +453,13 @@ const isOverfundRemainingVechicle = computed(() => {
   const perTimes = remaining.value[9]?.perTimesRemaining ? parseFloat(remaining.value[9]?.perTimesRemaining.replace(/,/g, "")) : 0;
   const fundRemaining = remaining.value[9]?.fundRemaining && remaining.value[9]?.fundRemaining !== "0"
     ? parseFloat(remaining.value[9]?.fundRemaining.replace(/,/g, "")) : 0;
-    if (Number(fundSumRequest) > perTimes && perTimes !== 0) {
+  if (Number(fundSumRequest) > perTimes && perTimes !== 0) {
     return 1;
   }
   if (Number(fundSumRequest) > fundRemaining && fundRemaining !== 0) {
     return 2;
   }
-  
+
   return false;
 });
 
@@ -518,13 +519,13 @@ watch(
   }
 );
 watch(
-    () => model.value.createFor,
-    async (newValue) => {
-      if (newValue !== null) {
-        await fetchRemaining();
-      }
+  () => model.value.createFor,
+  async (newValue) => {
+    if (newValue !== null) {
+      await fetchRemaining();
     }
-  );
+  }
+);
 async function fetchDataEdit() {
   setTimeout(async () => {
     try {

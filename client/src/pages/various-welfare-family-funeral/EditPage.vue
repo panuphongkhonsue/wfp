@@ -56,26 +56,26 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
-                บิดา : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาท" :
-                  remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาท" :
+                บิดา : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาทต่อปี" :
+                  remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                มารดา : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาท" :
-                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาท" :
+                มารดา : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
+                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                คู่สมรส : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาท" :
-                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาท" :
+                คู่สมรส : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
+                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                บุตร : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
-                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาท" :
+                บุตร : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
+                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>

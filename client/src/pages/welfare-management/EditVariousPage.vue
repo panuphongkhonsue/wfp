@@ -44,43 +44,43 @@
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
                 ค่าสมรส :
-                {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาท" :
-                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาท" :
-                    remaining[4]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+                {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
+                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
-                  remaining[4]?.requestsRemaining === null
-                    ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
+                  "(ไม่จำกัดครั้ง)"  
+                  }}
               </p>
               <p class="col-12 q-mb-none">
                 ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ :
-                {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาท" :
-                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาท" :
-                    remaining[5]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+                {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
+                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
-                  remaining[5]?.requestsRemaining === null
-                    ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
+                  "(ไม่จำกัดครั้ง)"  
+                   }}
               </p>
               <p class="col-12 q-mb-none">
                 ค่ารับขวัญบุตร :
-                {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
-                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาท" :
-                    remaining[6]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+                {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
+                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
-                  remaining[6]?.requestsRemaining === null
-                    ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
+                  "(ไม่จำกัดครั้ง)"  
+                   }}
               </p>
               <p class="col-12 q-mb-none">
                 กรณีประสบภัยพิบัติ :
-                {{ remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาท" :
-                  remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาท" :
-                    remaining[7]?.fundRemaining === null ? "ไม่จำกัดจำนวนเงิน" : "0 บาท"
+                {{ remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาทต่อปี" :
+                  remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
-                  remaining[7]?.requestsRemaining === null
-                    ? "(ไม่จำกัดครั้ง)" : "(0 ครั้ง)" }}
+                  "(ไม่จำกัดครั้ง)"  
+                  }}
               </p>
             </q-card-section>
           </q-card>
