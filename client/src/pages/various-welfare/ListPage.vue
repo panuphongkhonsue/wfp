@@ -32,7 +32,7 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-10 row font-bold font-14 q-col-gutter-x-md ">
-        <p class="col-12 col-md-2 q-ma-none ">
+        <p class="col-12 col-md-2 q-ma-none q-py-xs">
           ค่าสมรส :
                 {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
                   remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
@@ -42,7 +42,7 @@
                   "(ไม่จำกัดครั้ง)"  
                   }}
         </p>
-        <p class="col-12 col-md-3 col-xl-4 q-ma-none q-px-xl-xl">
+        <p class="col-12 col-md-3 col-xl-4 q-ma-none q-py-xs">
           ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ :
                 {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
                   remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
@@ -52,7 +52,7 @@
                   "(ไม่จำกัดครั้ง)"  
                    }}
         </p>
-        <p class="col-12 col-md-3 q-ma-none q-pl-lg-lg">
+        <p class="col-12 col-md-3 q-ma-none q-py-xs">
           ค่ารับขวัญบุตร :
                 {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
                   remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
@@ -62,7 +62,7 @@
                   "(ไม่จำกัดครั้ง)"  
                    }}
         </p>
-        <p class="col-12 col-md-3 q-ma-none ">
+        <p class="col-12 col-md-3 q-ma-none q-py-xs">
           กรณีประสบภัยพิบัติ :
                 {{ remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาทต่อปี" :
                   remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
