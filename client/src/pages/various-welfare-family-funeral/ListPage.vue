@@ -32,26 +32,26 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-10 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none"> บิดา : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาท" :
-          remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาท" :
+        <p class="col q-ma-none"> บิดา : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาทต่อปี" :
+          remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาทต่อครั้ง" :
             "ไม่จำกัดจำนวนเงิน"
         }}
-         </p>
-        <p class="col q-ma-none"> มารดา : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาท" :
-          remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาท" :
-            "ไม่จำกัดจำนวนเงิน"
-        }}
-          </p>
-        <p class="col q-ma-none"> คู่สมรส : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาท" :
-          remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาท" :
-            "ไม่จำกัดจำนวนเงิน"
-        }}
-          </p>
-        <p class="col q-ma-none"> บุตร : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
-          remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาท" :
-            "ไม่จำกัดจำนวนเงิน"
-        }}
-          </p>
+        </p>
+        <p class="col q-ma-none">  มารดา : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
+                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน"
+                }}
+        </p>
+        <p class="col q-ma-none">  คู่สมรส : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
+                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน"
+                }}
+        </p>
+        <p class="col q-ma-none"> บุตร : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
+                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน"
+                }}
+        </p>
       </div>
       <div class="col-12 col-md-2 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -245,22 +245,22 @@ async function init() {
     const fetchRemainingData = await variousWelfareFuneralFamilyService.getRemaining({ createFor: model.value.createFor });
     const deceaseData = fetchRemainingData.data?.datas ?? [];
     remaining.value = {};
-    const allCategories = [3, 4, 5, 6, 7, 8, 9]; 
+    const allCategories = [3, 4, 5, 6, 7, 8, 9];
 
     deceaseData.forEach((item) => {
       if (Array.isArray(item)) {
         item.forEach((subItem) => {
           remaining.value[subItem.subCategoriesId] = {
-            requestsRemaining: formatNumber(subItem.requestsRemaining ),
-            fundRemaining: formatNumber(subItem.fundRemaining ),
-            perTimesRemaining: formatNumber(subItem.perTimesRemaining ),
+            requestsRemaining: formatNumber(subItem.requestsRemaining),
+            fundRemaining: formatNumber(subItem.fundRemaining),
+            perTimesRemaining: formatNumber(subItem.perTimesRemaining),
           };
         });
       } else {
         remaining.value[item.subCategoriesId] = {
-          requestsRemaining: formatNumber(item.requestsRemaining ),
-          fundRemaining: formatNumber(item.fundRemaining ),
-          perTimesRemaining: formatNumber(item.perTimesRemaining ),
+          requestsRemaining: formatNumber(item.requestsRemaining),
+          fundRemaining: formatNumber(item.fundRemaining),
+          perTimesRemaining: formatNumber(item.perTimesRemaining),
         };
       }
     });
