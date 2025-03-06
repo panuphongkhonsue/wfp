@@ -55,8 +55,8 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col q-ma-none">ตรวจสุขภาพ : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาท" :
-                remaining?.perTimesRemaining ? remaining?.perTimesRemaining + " บาท" : "ไม่จำกัดจำนวนเงิน"
+              <p class="col q-ma-none">ตรวจสุขภาพ : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาทต่อปี" :
+                remaining?.perTimesRemaining ? remaining?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : '(ไม่จำกัดครั้ง)' }}
               </p>

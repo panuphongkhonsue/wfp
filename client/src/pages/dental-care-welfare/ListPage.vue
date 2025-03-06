@@ -32,9 +32,9 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-6 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none">สิทธิ์คงเหลือ : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาท" :
+        <p class="col q-ma-none">สิทธิ์คงเหลือ : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาทต่อปี" :
           remaining?.perTimesRemaining ?
-            remaining?.perTimesRemaining + " บาท" : "ไม่จำกัดจำนวนเงิน" }}
+            remaining?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน" }}
           {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : "(ไม่จำกัดครั้ง)" }}</p>
       </div>
       <div class="col-12 col-md-6 flex justify-end">

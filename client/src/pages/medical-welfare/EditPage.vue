@@ -56,16 +56,16 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
               <p class="col-12 q-ma-none">ประสบอุบัติเหตุ :
-                {{ remaining?.accident.fundRemaining ? remaining?.accident.fundRemaining + " บาท" :
-                  remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาท" :
+                {{ remaining?.accident.fundRemaining ? remaining?.accident.fundRemaining + " บาทต่อปี" :
+                  remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining?.accident.requestsRemaining ? "( " + remaining?.accident.requestsRemaining + " ครั้ง)" :
                   '(ไม่จำกัดครั้ง)' }}</p>
               <p class="col-12 q-ma-none">เยี่ยมไข้ :
                 {{ remaining?.patientVisit.fundRemaining
-                  ? remaining?.patientVisit.fundRemaining + " บาท" :
-                  remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาท" :
+                  ? remaining?.patientVisit.fundRemaining + " บาทต่อปี" :
+                  remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน" }}
                 {{ remaining?.patientVisit.requestsRemaining ? "( " + remaining?.patientVisit.requestsRemaining +
                   " ครั้ง) " :
