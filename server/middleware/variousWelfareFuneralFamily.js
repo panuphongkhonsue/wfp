@@ -168,7 +168,7 @@ const checkNullValue = async (req, res, next) => {
                 errorObj["fundWreathUniversity"] = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก (ในนามมหาวิทยาลัย)";
             } else if (isInvalidNumber(fundWreathUniversity)) {
                 errorObj["fundWreathUniversity"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-            } else if (fundWreathUniversity <= 0) {
+            } else if (fundWreathUniversity < 0) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });
@@ -177,7 +177,7 @@ const checkNullValue = async (req, res, next) => {
                 errorObj["fundWreathArrange"] = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก (ในนามส่วนงาน)";
             } else if (isInvalidNumber(fundWreathArrange)) {
                 errorObj["fundWreathArrange"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-            } else if (fundWreathArrange <= 0) {
+            } else if (fundWreathArrange < 0) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });

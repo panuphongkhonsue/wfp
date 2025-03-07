@@ -92,8 +92,8 @@
               <div class="row">
                 <p class="q-pb-md font-18 font-bold q-pb-md">ข้อมูลการเบิกสวัสดิการ</p>
                 <p class="q-pl-md q-pb-md font-16 q-mb-none">
-                  (จ่ายไม่เกินคนละ {{ remaining[3]?.fund ? remaining[3]?.fund + " บาท" :
-                    remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาท ต่อครั้ง" :
+                  (จ่ายไม่เกินคนละ {{ remaining[4]?.fund ? remaining[4]?.fund + " บาท" :
+                    remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
                       "ไม่จำกัดจำนวนเงิน" }})
                 </p>
 
@@ -119,7 +119,8 @@
                 </div>
                 <InputGroup label="" v-if="model.deceasedType === option.value" v-model="model.decease"
                   :data="model.fund ?? '-'" placeholder="ชื่อ-นามสกุล" type="text" class="col-md-4 q-ml-md"
-                  :is-view="isView" is-dense :rules="[(val) => !!val || 'กรุณากรอกข้อมูลชื่อ - นามสกุลของผู้เสียชีวิต']">
+                  :is-view="isView" is-dense
+                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลชื่อ - นามสกุลของผู้เสียชีวิต']">
                 </InputGroup>
               </div>
             </q-card-section>
@@ -145,13 +146,16 @@
               :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedWreath" />
               <p class="q-mb-none">ค่าสนับสนุนค่าพวงหรีด (จ่ายไม่เกินคนละ {{ remaining[7]?.fund ? remaining[7]?.fund
-                + " บาท" : remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาท" : "ไม่จำกัดจำนวนเงิน" }}
+                + " บาท" : remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาท" :
+                "ไม่จำกัดจำนวนเงิน" }}
                 ในนามมหาวิทยาลัย และไม่เกิน
                 {{ remaining[8]?.fund ? remaining[8]?.fund
-                + " บาท" : remaining[8]?.perTimesRemaining ? remaining[8]?.perTimesRemaining + " บาท" : "ไม่จำกัดจำนวนเงิน" }} ในนามส่วนงาน)</p>
+                  + " บาท" : remaining[8]?.perTimesRemaining ? remaining[8]?.perTimesRemaining + " บาท" :
+                  "ไม่จำกัดจำนวนเงิน" }}
+                ในนามส่วนงาน)</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
-              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
                   :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
                   placeholder="บาท" type="number" class="" :is-view="isView" :disable="!model.selectedWreath"
@@ -159,23 +163,27 @@
                   :error-message="isError?.fundReceiptWreath" :error="!!isError?.fundReceiptWreath">
                 </InputGroup>
               </div>
-              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
+              <div class="col-xl-4 col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-arrange" is-dense v-model="model.fundWreathArrange"
                   :data="model.fundWreathArrange ?? '-'" label="จำนวนเงินที่ต้องการเบิก (บาท) (ในนามส่วนงาน)"
                   placeholder="บาท" type="number" class="q-py-xs-md q-py-lg-none" :is-view="isView"
-                  :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
-                  (val) => model.selectedWreath && !isOverWreathArrange || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
-                    , (val) => isOverfundRemainingWreathArrange !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemainingWreathArrange || 'สามารถเบิกได้สูงสุด ' + remaining[7]?.perTimesRemaining + ' บาทต่อครั้ง'
+                  style="white-space: nowrap;" :disable="!model.selectedWreath" :rules="[
+                    (val) => model.selectedWreath ? (!!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก') : true,
+                    (val) => model.selectedWreath && !isOverWreathArrange || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
+                    (val) => model.selectedWreath && isOverfundRemainingWreathArrange !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
+                    (val) => model.selectedWreath && !isOverfundRemainingWreathArrange || 'สามารถเบิกได้สูงสุด ' + remaining[7]?.perTimesRemaining + ' บาทต่อครั้ง'
                   ]" :error-message="isError?.fundWreathArrange" :error="!!isError?.fundWreathArrange">
                 </InputGroup>
               </div>
-              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-university" is-dense v-model="model.fundWreathUniversity"
                   :data="model.fund ?? '-'" label="จำนวนเงินที่ต้องการเบิก (บาท) (ในนามมหาวิทยาลัย)" placeholder="บาท"
                   type="number" class="font-14" :is-view="isView" style="white-space: nowrap;"
-                  :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
-                  (val) => model.selectedWreath && !isOverWreathUniversity || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
-                    , (val) => isOverfundRemainingWreathUniversity !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemainingWreathUniversity || 'สามารถเบิกได้สูงสุด ' + remaining[8]?.perTimesRemaining + ' บาทต่อครั้ง'
+                  :disable="!model.selectedWreath" :rules="[
+                    (val) => model.selectedWreath ? (!!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก') : true,
+                    (val) => model.selectedWreath && !isOverWreathUniversity || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
+                    (val) => model.selectedWreath && isOverfundRemainingWreathUniversity !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
+                    (val) => model.selectedWreath && !isOverfundRemainingWreathUniversity || 'สามารถเบิกได้สูงสุด ' + remaining[8]?.perTimesRemaining + ' บาทต่อครั้ง'
                   ]" :error-message="isError?.fundWreathUniversity" :error="!!isError?.fundWreathUniversity">
                 </InputGroup>
               </div>
@@ -186,7 +194,9 @@
               <q-checkbox v-if="!isView" v-model="model.selectedVechicle" />
               <p class="q-mb-none ">ค่าสนับสนุนค่าพาหนะเหมาจ่าย (จ่ายจริงคนละไม่เกิน
                 {{ remaining[9]?.fund ? remaining[9]?.fund
-                + " บาท" : remaining[9]?.perTimesRemaining ? remaining[9]?.perTimesRemaining + " บาท" : "ไม่จำกัดจำนวนเงิน" }})</p>
+                  + " บาท" : remaining[9]?.perTimesRemaining ? remaining[9]?.perTimesRemaining + " บาท" :
+                  "ไม่จำกัดจำนวนเงิน"
+                }})</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
@@ -251,7 +261,7 @@
         <q-btn :disable="isValidate" id="button-draft"
           class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
           label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
-        <q-btn :disable="(!canRequest.wreath && !canRequest.vechicle) || isValidate" id="button-approve"
+        <q-btn :disable=" (!canRequest.wreath && !canRequest.vechicle) || isValidate" id="button-approve"
           class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
           label="ส่งคำร้องขอ" no-caps @click="submit(2)" v-if="!isView && !isLoading" />
       </div>
@@ -362,11 +372,8 @@ const isValidate = computed(() => {
     if (!model.value.fundReceiptWreath) {
       validate = true;
     }
-    if (!model.value.fundWreathArrange) {
-      validate = true;
-    }
-    if (!model.value.fundWreathUniversity) {
-      validate = true;
+    if (!model.value.fundWreathArrange && !model.value.fundWreathUniversity) {
+      validate = true;  
     }
     if (isOverWreathArrange.value) {
       validate = true;
@@ -666,6 +673,7 @@ async function fetchRemaining() {
           requestsRemaining: "",
           fundRemaining: null,
           perTimesRemaining: null,
+          fund: null
         };
         canRequest.value[id] = false;
       }
@@ -764,6 +772,10 @@ async function submit(actionId) {
       isError.value.decease = "กรุณากรอกข้อมูลชื่อ - นามสกุลของผู้เสียชีวิต";
       validate = true;
     }
+    if (!model.value.fundReceipt) {
+      isError.value.fundReceipt = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน";
+      validate = true;
+    }
     if (isOverfundRemaining.value) {
       isError.value.fundDecease = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
       validate = true;
@@ -774,14 +786,7 @@ async function submit(actionId) {
       isError.value.fundReceiptWreath = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงินสนับสนุนค่าพวงหลีด";
       validate = true;
     }
-    if (!model.value.fundWreathUniversity) {
-      isError.value.fundWreathUniversity = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิกในนามมหาวิทยาลัย";
-      validate = true;
-    }
-    if (!model.value.fundWreathArrange) {
-      isError.value.fundWreathArrange = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิกในนามส่วนงาน";
-      validate = true;
-    }
+
     if (isOverfundRemainingWreathArrange.value) {
       if (isOverfundRemainingWreathArrange.value === 2) {
         isError.value.fundWreathArrange = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";

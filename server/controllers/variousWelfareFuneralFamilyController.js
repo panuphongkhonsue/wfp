@@ -252,10 +252,6 @@ class Controller extends BaseController {
                     datas.forEach(item => {
                         item.canRequest = (item.fundRemaining !== 0 && item.requestsRemaining !== 0);
                     });
-                    delete datas.totalSumRequested;
-                    delete datas.fund;
-                    delete datas.totalCountRequested;
-                    delete datas.perYears;
                     bindData.push(...datas);
                 }
                 else {
@@ -287,11 +283,6 @@ class Controller extends BaseController {
                     }
                     if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
                     else datas.canRequest = true;
-
-                    delete datas.totalSumRequested;
-                    delete datas.fund;
-                    delete datas.totalCountRequested;
-                    delete datas.perYears;
                     bindData.push(datas);
                 }
                 else {

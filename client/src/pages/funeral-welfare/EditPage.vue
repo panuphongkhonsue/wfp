@@ -151,14 +151,14 @@
             <q-card-section class="row wrap q-pt-none font-medium q-pb-xs font-16 text-grey-9 items-center "
               :class="isView ? '' : 'q-pl-sm '">
               <q-checkbox v-model="model.selectedWreath" v-if="!isView" />
-              <p class="q-pb-md q-mb-none ">ค่าสนับสนุนค่าพวงหรีด (จ่ายไม่เกินคนละ {{ remaining[10]?.fund ? remaining[10]?.fund
+              <p class="q-mb-none ">ค่าสนับสนุนค่าพวงหรีด (จ่ายไม่เกินคนละ {{ remaining[10]?.fund ? remaining[10]?.fund
                 + " บาท" : remaining[10]?.perTimesRemaining ? remaining[10]?.perTimesRemaining + " บาท" : "กรุณาเลือกผู้เสียชีวิต" }}
                 ในนามมหาวิทยาลัย และไม่เกิน
                 {{ remaining[11]?.fund ? remaining[11]?.fund
                 + " บาท" : remaining[11]?.perTimesRemaining ? remaining[11]?.perTimesRemaining + " บาท" : "กรุณาเลือกผู้เสียชีวิต" }} ในนามส่วนงาน)</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none q-pb-sm">
-              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
                   :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
                   placeholder="บาท" type="number" class="" :is-view="isView" :disable="!model.selectedWreath"
@@ -166,7 +166,7 @@
                   :error-message="isError?.fundReceiptWreath" :error="!!isError?.fundReceiptWreath">
                 </InputGroup>
               </div>
-              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-arrange" is-dense v-model="model.fundWreathArrange"
                   :data="model.fundWreathArrange ?? '-'" label="จำนวนเงินที่ต้องการเบิก (บาท) (ในนามส่วนงาน)"
                   placeholder="บาท" type="number" class="q-py-xs-md q-py-lg-none" :is-view="isView" :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
@@ -175,7 +175,7 @@
                   ]" :error-message="isError?.fundWreathArrange" :error="!!isError?.fundWreathArrange">
                 </InputGroup>
               </div>
-              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
+              <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-university" is-dense v-model="model.fundWreathUniversity"
                   :data="model.fundWreathUniversity ?? '-'" label="จำนวนเงินที่ต้องการเบิก (บาท) (ในนามมหาวิทยาลัย)"
                   placeholder="บาท" type="number" class="" :is-view="isView" style="white-space: nowrap;"
@@ -191,7 +191,7 @@
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedVehicle" />
-              <p class="q-pb-md q-mb-none">ค่าสนับสนุนค่าพาหนะเหมาจ่าย (จ่ายจริงคนละไม่เกิน
+              <p class="q-mb-none">ค่าสนับสนุนค่าพาหนะเหมาจ่าย (จ่ายจริงคนละไม่เกิน
                 {{ remaining[12]?.fund ? remaining[12]?.fund
                 + " บาท" : remaining[12]?.perTimesRemaining ? remaining[12]?.perTimesRemaining + " บาท" : "กรุณาเลือกผู้เสียชีวิต" }})</p>
             </q-card-section>

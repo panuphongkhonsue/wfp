@@ -413,6 +413,10 @@ async function fetchRemaining() {
         if (item.requestsRemaining !== null && !isNaN(Number(item.requestsRemaining))) {
           item.requestsRemaining = formatNumber(item.requestsRemaining);
         }
+        if (item.fund !== null && !isNaN(Number(item.fund))) {
+          item.fund = formatNumber(item.fund);
+        }
+        
       });
     }
     canRequest.value = fetchRemaining.data?.canRequest;
