@@ -18,31 +18,31 @@
           <div class="d-flex justify-end py-sm">
             วันที่..................................................
           </div>
-          <div class="px-md py-sm">
+          <div class="px-md py-sm" style="text-decoration-style: dotted;">
             ข้าพเจ้าชื่อ (เขียนชื่อ-นามสกุล
-            ตัวบรรจง) : <%= body.user.name ?? '.................................................................' %>
+            ตัวบรรจง) <%= body.user.name ?? '.................................................................' %>
           </div>
           <div class="d-flex" style="width: 90%;">
-            <div style="flex:1">
-              อยู่บ้านเลขที่ : <%= body.user.houseNumber ?? '...................' %>
+            <div style="flex:1" style="text-decoration-style: dotted;">
+              อยู่บ้านเลขที่ <%= body.user.houseNumber ?? '...................' %>
             </div>
-            <div style="flex:1">
-              ถนน : <%= body.user.street ?? '.....................' %>
+            <div style="flex:1" style="text-decoration-style: dotted;">
+              ถนน <%= body.user.street ?? '.....................' %>
             </div>
 
-            <div style="flex:1">
-              ตำบล/แขวง : <%= body.user.subDistrict ?? '.....................................' %>
+            <div style="flex:1" style="text-decoration-style: dotted;">
+              ตำบล/แขวง <%= body.user.subDistrict ?? '.....................................' %>
             </div>
           </div>
-          <div class="py-sm d-flex" style="width: 90%;">
+          <div class="py-sm d-flex" style="width: 90%;" style="text-decoration-style: dotted;">
             <div style="flex:1">
-              อำเภอ/เขต : <%= body.user.district ?? '..........................' %>
+              อำเภอ/เขต <%= body.user.district ?? '..........................' %>
             </div>
-            <div style="flex:1">
-              จังหวัด : <%= body.user.province ?? '................................' %>
+            <div style="flex:1" style="text-decoration-style: dotted;">
+              จังหวัด <%= body.user.province ?? '................................' %>
             </div>
-            <div style="flex:1">
-              รหัสไปรษณีย์ : <%= body.user.postalCode ?? '................' %>
+            <div style="flex:1" style="text-decoration-style: dotted;">
+              รหัสไปรษณีย์ <%= body.user.postalCode ?? '................' %>
             </div>
           </div>
           <div>
@@ -169,15 +169,15 @@
                 <td>
                   <div class="d-flex justify-center py-md">
                     <div class="row d-flex justify-center">
-                      <div class="col-12 py-sm d-flex justify-center">
+                      <div class="col-12 py-sm d-flex justify-center" style="text-decoration-style: dotted;">
                         จำนวนเงิน (ตัวอักษร) <%= body.total ?bahttext(Number(body.total))
-                          : " ..........................................." %>
+                          : " .........................................................." %>
                       </div>
                       <div class="col-12 py-sm d-flex justify-center">
-                        (ลงชื่อ)..............................................(ผู้รับเงิน)
+                        (ลงชื่อ)....................................................................................(ผู้รับเงิน)
                       </div>
                       <div class="col-12 py-sm d-flex justify-center">
-                        (ลงชื่อ)..............................................(ผู้จ่ายเงิน)
+                        (ลงชื่อ)....................................................................................(ผู้จ่ายเงิน)
                       </div>
                     </div>
                   </div>

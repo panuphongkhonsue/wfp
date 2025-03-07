@@ -1,6 +1,6 @@
 <template>
   <q-input outlined :dense="isDense" v-model="dateShow" :placeholder="noTime ? 'DD/MMM/YYYY' : 'DD/MMM/YYYY HH:mm'"
-    clearable :disable="disabled" @click="$refs.qDate1.show()" :readonly="isReadonly"
+    clearable :disable="disabled" @click="$refs.qDate1.show()" :readonly="isReadonly" :hide-bottom-space="hideBottom"
     input-class="cursor-pointer font-14 font-regular" :error-message="err" :error="!!err" :for="forId">
     <template v-slot:append>
       <q-icon :name="noTime ? 'event' : 'access_time'" class="cursor-pointer">
@@ -66,6 +66,12 @@ defineProps({
   rangeTime: {
     type: Boolean,
     default: false,
+  },
+  hideBottom : {
+    type :Boolean,
+    default(){
+      return true;
+    }
   },
 });
 </script>

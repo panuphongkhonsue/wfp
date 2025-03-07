@@ -79,11 +79,11 @@ const getpathMenuEditor = (e) => {
                     },
                     {
                         title: "รายละเอียดการเบิกจ่ายสวัสดิการรายบุคคลของปีงบประมาณ",
-                        to: { name: "pages/report/ReportPersonal.vue" },
+                        to: { name: "report_personal" },
                     },
                     {
                         title: "รายงานภาพรวมค่าใช้จ่ายประจำปีงบประมาณ",
-                        to: { name: "pages/report/ReportFundRequestPerYears.vue" },
+                        to: { name: "report_fund_request_per_years" },
                     },
                 ],
             };
