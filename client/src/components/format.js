@@ -58,10 +58,14 @@ export function dateDiff(d1, d2) {
 export function formatNumber(val) {
   const number = Number(val); // Convert to number
   if (!isNaN(number)) {
-    return number.toLocaleString("en-US"); // Format as '3,000'
+    return number.toLocaleString("en-US", {
+      minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+      maximumFractionDigits: 2, // Limit to 2 decimal places
+    });
   }
   return `-`; // If conversion fails, return a fallback value
 }
+
 
 export function toThaiYear(year){
   return year+543;

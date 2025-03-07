@@ -83,9 +83,6 @@
               </p>
               <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
             </q-card-section>
-            <q-card-section class="q-px-md q-pt-md q-pb-md font-18 font-bold">
-              <p class="q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
-            </q-card-section>
             <q-card-section class="row wrap q-col-gutter-x-md font-medium q-pb-xs font-16 text-grey-9">
               <div class="col-12 col-lg">
                 <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'"
@@ -671,7 +668,10 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
+        return number.toLocaleString("en-US",{
+          minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+          maximumFractionDigits: 2, // Limit to 2 decimal places
+        }); // Format as '3,000'
       }
       return `${val}`; // If conversion fails, return a fallback value
     },

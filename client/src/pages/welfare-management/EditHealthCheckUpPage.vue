@@ -262,6 +262,7 @@ const isOverfundRemaining = computed(() => {
 watch(
   () => model.value.claimByEligible,
   () => {
+    if (!model.value.claimByEligible[2]?.fundEligible && !model.value.claimByEligible[2]?.fundEligibleName) return;
     setTimeout(async () => {
       try {
         if (model.value.claimByEligible[2].fundEligible && !model.value.claimByEligible[2].fundEligibleName) {
@@ -281,13 +282,7 @@ watch(
           });
         }
       } catch (error) {
-        Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
-          position: "bottom-left",
-          type: "negative",
-        });
+        Promise.reject(error);
       }
       isLoading.value = false;
     }, 2000);

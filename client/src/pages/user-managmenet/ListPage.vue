@@ -7,7 +7,7 @@
             placeholder="ชื่อ-นามสกุล" clearable>
           </InputGroup>
         </div>
-        <div class="content-center q-pt-sm-lg  q-pt-md-xs col-2">
+        <div class="content-center q-pt-xs-lg  q-pt-md-xs q-mt-md-lg col-md-2 col-12">
           <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs"
             dense type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>

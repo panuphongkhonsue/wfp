@@ -24,7 +24,7 @@
             </template>
           </q-select>
         </div>
-        <div class="content-center q-pt-md-xs col-2 q-pt-xs-md q-pt-md-none">
+        <div class="content-end col-md-2 col-12 q-pt-xs-md q-pt-md-none">
           <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs" dense
             type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>
@@ -416,7 +416,10 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
+        return number.toLocaleString("en-US",{
+          minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+          maximumFractionDigits: 2, // Limit to 2 decimal places
+        }); // Format as '3,000'
       }
       return `${val}`; // If conversion fails, return a fallback value
     },
@@ -430,7 +433,10 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
+        return number.toLocaleString("en-US",{
+          minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+          maximumFractionDigits: 2, // Limit to 2 decimal places
+        }); // Format as '3,000'
       }
       return `${val}`; // If conversion fails, return a fallback value
     },
@@ -444,7 +450,10 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
+        return number.toLocaleString("en-US",{
+          minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+          maximumFractionDigits: 2, // Limit to 2 decimal places
+        }); // Format as '3,000'
       }
       return `${val}`; // If conversion fails, return a fallback value
     },

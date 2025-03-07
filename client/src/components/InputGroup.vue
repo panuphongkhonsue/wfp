@@ -7,7 +7,7 @@
       <q-input v-else class="font-14 font-regular" :dense="isDense" v-model="model" outlined :placeholder="placeholder"
         autocomplete="off" color="dark" :prefix="prefix" :suffix="suffix" :type="type" :mask="mask" :min="min"
         :rules="rules" :error="error" :disable="disable" :readonly="readonly" bottom-slots :for="forId"
-        :clearable="clearable" hide-bottom-space>
+        :clearable="clearable" :hide-bottom-space="hideBottom">
         <template v-slot:error>
           <div>
             {{ errorMessage }}
@@ -16,8 +16,15 @@
       </q-input>
     </div>
     <div v-else class="q-my-sm font-regular text-req-info">
-      <p style="margin: 0px"> {{ model ? (typeof model === 'number' ? model.toLocaleString() : model) : (typeof data ===
-        'number' ? data.toLocaleString() : data) }}</p>
+      <p style="margin: 0px"> {{ model ? (typeof model === 'number' ? model.toLocaleString("en-US",{
+          minimumFractionDigits: model % 1 === 0 ? 0 : 2,
+          maximumFractionDigits: 2,
+        }) : model) : (typeof data ===
+        'number' ? data.toLocaleString("en-US",{
+          minimumFractionDigits: data % 1 === 0 ? 0 : 2,
+          maximumFractionDigits: 2,
+        }) : data) }}
+      </p>
     </div>
   </div>
 </template>
@@ -44,6 +51,12 @@ defineProps({
     default() {
       return "";
     },
+  },
+  hideBottom : {
+    type :Boolean,
+    default(){
+      return true;
+    }
   },
   moreClass: String,
   type: String,

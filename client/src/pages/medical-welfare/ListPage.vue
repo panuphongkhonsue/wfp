@@ -24,7 +24,7 @@
             </template>
           </q-select>
         </div>
-        <div class="content-center q-pt-md-xs col-2 q-pt-xs-md q-pt-md-none">
+        <div class="content-end col-md-2 col-12 q-pt-xs-md q-pt-md-none">
           <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs" dense
             type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>
@@ -32,13 +32,13 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-9 row font-bold font-16  q-col-gutter-md">
-        <p class="col-md col-12 q-ma-none">สิทธิ์คงเหลือ(ประสบอุบัติเหตุขณะปฏิบัติหน้าที่) :
+        <p class="col-md col-12 q-ma-none">สิทธิ์คงเหลือ (ประสบอุบัติเหตุขณะปฏิบัติหน้าที่) :
           {{ remaining?.accident.fundRemaining ? remaining?.accident.fundRemaining + " บาทต่อปี" :
             remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน"
           }}
           {{ remaining?.accident.requestsRemaining ? "( " + remaining?.accident.requestsRemaining + " ครั้ง)" :
             '(ไม่จำกัดครั้ง)' }}</p>
-        <p class="col-md col-12 q-ma-none">สิทธิ์คงเหลือ(เยี่ยมไข้) :
+        <p class="col-md col-12 q-ma-none">สิทธิ์คงเหลือ (เยี่ยมไข้) :
           {{ remaining?.patientVisit.fundRemaining
             ? remaining?.patientVisit.fundRemaining + " บาทต่อปี" :
             remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาทต่อครั้ง" :
@@ -425,7 +425,10 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
+        return number.toLocaleString("en-US",{
+          minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+          maximumFractionDigits: 2, // Limit to 2 decimal places
+        }); // Format as '3,000'
       }
       return `${val}`; // If conversion fails, return a fallback value
     },
@@ -439,7 +442,10 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
+        return number.toLocaleString("en-US",{
+          minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+          maximumFractionDigits: 2, // Limit to 2 decimal places
+        }); // Format as '3,000'
       }
       return `${val}`; // If conversion fails, return a fallback value
     },

@@ -39,7 +39,7 @@
           </q-select>
         </div>
 
-        <div class="col-12 col-md content-center q-pt-lg q-pt-md-xs ">
+        <div class="col-12 col-md content-end q-pt-xs-md q-pt-md-none">
           <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm q-pt-sm weight-8 q-mt-xs"
             dense type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>
@@ -50,7 +50,7 @@
       <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
         row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
         table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
-        @request="onRequest">
+        @request="onRequest" @row-click="(evt, row, index) => viewData(row.id, row.categoryName, row.welfareType)">
 
         <template v-slot:body-cell-index="props">
           <q-td :props="props">
@@ -254,7 +254,6 @@ function onRequest(props) {
         },
         id: item.id,
       }));
-      console.log("prop:", props.row)
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
     } catch (error) {
@@ -276,7 +275,6 @@ async function fetchFromServer(page, rowPerPage, filters) {
       itemPerPage: rowPerPage,
     });
     pagination.value.rowsNumber = allReimbursementWelfare.data.total;
-    console.log("allReimbursementWelfare : ", allReimbursementWelfare);
     return allReimbursementWelfare.data.docs;
   } catch (error) {
     Notify.create({
@@ -479,7 +477,6 @@ async function downloadData(requestId, categoryName, welfareType) {
     document.body.removeChild(a);
   }
   catch (error) {
-    console.log(error);
     Notify.create({
       message:
         error?.response?.data?.message ??
