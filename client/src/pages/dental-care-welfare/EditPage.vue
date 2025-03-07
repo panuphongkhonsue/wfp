@@ -55,7 +55,7 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col q-ma-none">ทำฟัน : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาทต่อปี":
+              <p class="col q-ma-none">{{ remaining.categoryName ?? "ทำฟัน" }} : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาทต่อปี":
                 remaining?.perTimesRemaining ?
                   remaining?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน" }}
                 {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : "(ไม่จำกัดครั้ง)" }}
@@ -400,6 +400,9 @@ async function fetchRemaining() {
     }
     if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
       remaining.value.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
+    }
+    if(fetchRemaining.data?.datas?.categoryName != null){
+      remaining.value.categoryName = fetchRemaining.data?.datas?.categoryName;
     }
     canRequest.value = fetchRemaining.data?.canRequest;
     if (Array.isArray(fetchRemaining.data?.requestData) && fetchRemaining.data?.requestData.length > 0) {

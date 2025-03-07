@@ -55,14 +55,14 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-ma-none">ประสบอุบัติเหตุ :
+              <p class="col-12 q-ma-none">{{ remaining?.accident?.categoryName ?? "ประสุบอุบัติเหตุ" }} :
                 {{ remaining?.accident.fundRemaining ? remaining?.accident.fundRemaining + " บาทต่อปี" :
                   remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining?.accident.requestsRemaining ? "( " + remaining?.accident.requestsRemaining + " ครั้ง)" :
                   '(ไม่จำกัดครั้ง)' }}</p>
-              <p class="col-12 q-ma-none">เยี่ยมไข้ :
+              <p class="col-12 q-ma-none">{{ remaining?.patientVisit?.categoryName ?? "ประสุบอุบัติเหตุ" }} :
                 {{ remaining?.patientVisit.fundRemaining
                   ? remaining?.patientVisit.fundRemaining + " บาทต่อปี" :
                   remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาทต่อครั้ง" :
@@ -559,6 +559,9 @@ async function fetchRemaining() {
     if (accidentData.perTimesRemaining != null && !isNaN(Number(accidentData.perTimesRemaining))) {
       remaining.value.accident.perTimesRemaining = formatNumber(accidentData.perTimesRemaining);
     }
+    if (accidentData.subCategoriesName != null) {
+      remaining.value.accident.categoryName = accidentData.subCategoriesName;
+    }
     if (patientVisitData.requestsRemaining != null && !isNaN(Number(patientVisitData.requestsRemaining))) {
       remaining.value.patientVisit.requestsRemaining = formatNumber(patientVisitData.requestsRemaining);
     }
@@ -567,6 +570,9 @@ async function fetchRemaining() {
     }
     if (patientVisitData.perTimesRemaining != null && !isNaN(Number(patientVisitData.perTimesRemaining))) {
       remaining.value.patientVisit.perTimesRemaining = formatNumber(patientVisitData.perTimesRemaining);
+    }
+    if (patientVisitData.subCategoriesName != null) {
+      remaining.value.patientVisit.categoryName = patientVisitData.subCategoriesName;
     }
     canRequest.value.accident = accidentData.canRequest;
     canRequest.value.patientVisit = patientVisitData.canRequest;

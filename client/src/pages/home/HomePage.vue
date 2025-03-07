@@ -1,71 +1,33 @@
 <template>
   <q-page padding class="q-pt-none q-mb-lg">
     <DynamicBreadcrumb />
-
     <div class="row q-pb-md">
-      <div class="col-lg-8 col-12 q-pb-md-lg q-pb-sm-lg">
+      <div class="col-lg-8 col-12">
         <p class="q-mb-none col-8 q-mb-md">สิทธิ์คงเหลือ</p>
         <!-- card แถวที่ 1 -->
-        <div class="row q-pb-md">
-          <div class="col-12 col-md q-mr-md">
+        <div class="row q-pb-md q-col-gutter-md q-pr-md">
+          <div class="col-12 col-lg-6" v-for="(items) in remainingAll" :key="items.categoryName">
             <q-card class="border-card bg-blue-9 q-ms-md">
               <q-card-section class="q-px-lg row items-center justify-between">
                 <!-- ข้อความ -->
                 <div>
-                  <p class="q-mb-none text-white font-20 font-bold q-pb-md">ทำฟัน</p>
-                  <p class="q-mb-none text-white font-16 q-pb-sm">เงินคงเหลือ 2000 บาท</p>
-                  <p class="q-mb-none text-white font-16">จำนวน 3 ครั้ง</p>
+                  <p class="q-mb-none text-white font-20 font-bold q-pb-md">{{ items.categoryName }}</p>
+                  <p class="q-mb-none text-white font-16 q-pb-sm">เงินคงเหลือ {{ items?.fundRemaining ?
+                    items?.fundRemaining + " บาทต่อปี" :
+                    items?.perTimesRemaining ? items?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน"
+                    }}</p>
+                  <p class="q-mb-none text-white font-16">{{ items?.requestsRemaining ? "จำนวน " +
+                    items?.requestsRemaining + " ครั้ง" : 'ไม่จำกัดครั้ง' }}</p>
                 </div>
                 <!-- รูปภาพ -->
-                <img src="../../assets/dentalwork.svg" alt="dental-work" class="q-pt-xl" />
-              </q-card-section>
-            </q-card>
-          </div>
-
-          <div class="col-12 col-md q-mr-md">
-            <q-card class="border-card bg-blue-9" :class="{ 'q-mt-md': $q.screen.lt.md }">
-              <q-card-section class="q-px-lg row items-center justify-between">
-                <!-- ข้อความ -->
-                <div>
-                  <p class="q-mb-none text-white font-20 font-bold q-pb-md">ตรวจสุขภาพประจำปี</p>
-                  <p class="q-mb-none text-white font-16 q-pb-sm">เงินคงเหลือ 2000 บาท</p>
-                  <p class="q-mb-none text-white font-16">จำนวน - ครั้ง</p>
-                </div>
-                <!-- รูปภาพ -->
-                <img src="../../assets/health-check.svg" alt="dental-work" class="q-pt-xl" />
-              </q-card-section>
-            </q-card>
-          </div>
-        </div>
-
-        <!-- card แถวที่ 2 -->
-        <div class="row">
-          <div class="col-12 col-md q-mr-md">
-            <q-card class="border-card bg-blue-9">
-              <q-card-section class="q-px-lg row items-center justify-between">
-                <!-- ข้อความ -->
-                <div>
-                  <p class="q-mb-none text-white font-20 font-bold q-pb-md">สมรสโดยนิตินัย</p>
-                  <p class="q-mb-none text-white font-16 q-pb-sm">เงินคงเหลือ 2000 บาท</p>
-                  <p class="q-mb-none text-white font-16">จำนวน 3 ครั้ง</p>
-                </div>
-                <!-- รูปภาพ -->
-                <img src="../../assets/marriage.svg" alt="dental-work" class="q-pt-xl" />
-              </q-card-section>
-            </q-card>
-          </div>
-
-          <div class="col-12 col-md q-mr-md">
-            <q-card class="border-card bg-blue-9" :class="{ 'q-mt-md': $q.screen.lt.md }">
-              <q-card-section class="q-px-lg row items-center justify-between">
-                <!-- ข้อความ -->
-                <div>
-                  <p class="q-mb-none text-white font-20 font-bold q-pb-md">การศึกษาบุตร</p>
-                  <p class="q-mb-none text-white font-16 q-pb-sm">เงินคงเหลือ 2000 บาท</p>
-                  <p class="q-mb-none text-white font-16">จำนวน 3 ครั้ง</p>
-                </div>
-                <!-- รูปภาพ -->
-                <img src="../../assets/child-education.svg" alt="dental-work" class="q-pt-xl" />
+                <q-img :src="items?.src" class="q-mt-xl" fit="fill" :ratio="16/9" width="4rem" height="4rem"
+                >
+                <template v-slot:error>
+                  <div class="absolute-full flex flex-center bg-negative text-white">
+                    ไม่พบรูป
+                  </div>
+                </template>
+              </q-img>
               </q-card-section>
             </q-card>
           </div>
@@ -77,91 +39,97 @@
         <div class="row q-mb-md items-center justify-between " :class="{ 'q-mt-md': $q.screen.lt.md }">
           <p class="q-mb-none col-4 ">ระเบียบการเบิกสวัสดิการ</p>
           <!-- แสดงปุ่มแก้ไขเมื่อไม่อยู่ในโหมดแก้ไข -->
-          <q-btn v-if="!isEditing" color="orange-4" text-color="white" label="แก้ไข" class="font-14 border-button-edit"
-            @click="toggleEdit" />
+          <q-btn v-if="!isEditing && authStore.isEditor" color="orange-4" text-color="white" label="แก้ไข"
+            class="font-14 border-button-edit" @click="toggleEdit" />
           <!-- แสดงปุ่มอัปโหลดและบันทึกเมื่ออยู่ในโหมดแก้ไข -->
-          <div v-else class="row q-gutter-sm">
+          <div v-else-if="isEditing && authStore.isEditor" class="row q-gutter-sm">
             <q-btn color="blue-10" text-color="white" label="อัปโหลด" class="font-14 border-button-edit" />
             <q-btn color="green-6" text-color="white" label="บันทึก" class="font-14 border-button-edit"
               @click="toggleEdit" />
           </div>
         </div>
-        <q-scroll-area  style="height: 300px;">
-        <div class="q-gutter-y-sm">
-          <div class="col-4 col-md ">
-            <q-card class="bg-grey-11 no-shadow no-border-radius">
-              <q-card-section class="q-px-lg row items-center justify-between ">
-                <div class="row">
-                  <!-- รูปภาพ -->
-                  <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
-                  <!-- ข้อความ -->
-                  <div class="regulation-name">
-                    <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">ระเบียบการเบิก_สวัสดิการทั่วไป.pdf</p>
+        <q-scroll-area style="height: 300px;">
+          <div class="q-gutter-y-sm">
+            <div class="col-4 col-md ">
+              <q-card class="bg-grey-11 no-shadow no-border-radius">
+                <q-card-section class="q-px-lg row items-center justify-between ">
+                  <div class="row">
+                    <!-- รูปภาพ -->
+                    <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
+                    <!-- ข้อความ -->
+                    <div class="regulation-name">
+                      <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">ระเบียบการเบิก_สวัสดิการทั่วไป.pdf</p>
+                    </div>
                   </div>
-                </div>
-                <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
-                  class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
-                <q-icon v-else name="remove_circle" color="red" @click="deleteFile" class="cursor-pointer btn-delete-file" />
-              </q-card-section>
-            </q-card>
-          </div>
+                  <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
+                    class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
+                  <q-icon v-else-if="isEditing && authStore.isEditor" name="remove_circle" color="red"
+                    @click="deleteFile" class="cursor-pointer btn-delete-file" />
+                </q-card-section>
+              </q-card>
+            </div>
 
 
-          <div class="col-4 col-md ">
-            <q-card class="bg-grey-11 no-shadow no-border-radius">
-              <q-card-section class="q-px-lg row items-center justify-between">
-                <div class="row">
-                  <!-- รูปภาพ -->
-                  <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
-                  <!-- ข้อความ -->
-                  <div class="regulation-name">
-                    <p class="q-mb-none font-14 q-px-md  text-ellipsis ellipsis">ระเบียบการเบิก_สวัสดิการสงเคราะห์ต่างๆ.pdf</p>
+            <div class="col-4 col-md ">
+              <q-card class="bg-grey-11 no-shadow no-border-radius">
+                <q-card-section class="q-px-lg row items-center justify-between">
+                  <div class="row">
+                    <!-- รูปภาพ -->
+                    <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
+                    <!-- ข้อความ -->
+                    <div class="regulation-name">
+                      <p class="q-mb-none font-14 q-px-md  text-ellipsis ellipsis">
+                        ระเบียบการเบิก_สวัสดิการสงเคราะห์ต่างๆ.pdf</p>
+                    </div>
                   </div>
-                </div>
-                <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
-                  class="font-14 border-button q-px-sm  q-mt-xs-sm q-mt-md-none " />
-                <q-icon v-else name="remove_circle" color="red" @click="deleteFile" class="cursor-pointer btn-delete-file" />
-              </q-card-section>
-            </q-card>
-          </div>
+                  <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
+                    class="font-14 border-button q-px-sm  q-mt-xs-sm q-mt-md-none " />
+                  <q-icon v-else-if="isEditing && authStore.isEditor" name="remove_circle" color="red"
+                    @click="deleteFile" class="cursor-pointer btn-delete-file" />
+                </q-card-section>
+              </q-card>
+            </div>
 
-          <div class="col-4 col-md ">
-            <q-card class="bg-grey-11 no-shadow no-border-radius">
-              <q-card-section class="q-px-lg row items-center justify-between ">
-                <div class="row">
-                  <!-- รูปภาพ -->
-                  <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
-                  <!-- ข้อความ -->
-                  <div class="regulation-name">
-                    <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">
-                      ระเบียบการเบิก_สวัสดิการเกี่ยวกับการศึกษาของบุตร.pdf</p>
+            <div class="col-4 col-md ">
+              <q-card class="bg-grey-11 no-shadow no-border-radius">
+                <q-card-section class="q-px-lg row items-center justify-between ">
+                  <div class="row">
+                    <!-- รูปภาพ -->
+                    <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
+                    <!-- ข้อความ -->
+                    <div class="regulation-name">
+                      <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">
+                        ระเบียบการเบิก_สวัสดิการเกี่ยวกับการศึกษาของบุตร.pdf</p>
+                    </div>
                   </div>
-                </div>
-                <q-btn v-if="!isEditing" color="blue-10" height="64" text-color="white" label="ดาวน์โหลด"
-                  class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
-                <q-icon v-else name="remove_circle" color="red" @click="deleteFile" class="cursor-pointer btn-delete-file" />
-              </q-card-section>
-            </q-card>
-          </div>
+                  <q-btn v-if="!isEditing" color="blue-10" height="64" text-color="white" label="ดาวน์โหลด"
+                    class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
+                  <q-icon v-else-if="isEditing && authStore.isEditor" name="remove_circle" color="red"
+                    @click="deleteFile" class="cursor-pointer btn-delete-file" />
+                </q-card-section>
+              </q-card>
+            </div>
 
-          <div class="col-4 col-md">
-            <q-card class="bg-grey-11 no-shadow no-border-radius">
-              <q-card-section class="q-px-lg row items-center justify-between">
-                <div class="row">
-                  <!-- รูปภาพ -->
-                  <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
-                  <!-- ข้อความ -->
-                  <div class="regulation-name">
-                    <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">ระเบียบการเบิก_สวัสดิการค่าสงเคราะห์การเสียชีวิต.pdf</p>
+            <div class="col-4 col-md">
+              <q-card class="bg-grey-11 no-shadow no-border-radius">
+                <q-card-section class="q-px-lg row items-center justify-between">
+                  <div class="row">
+                    <!-- รูปภาพ -->
+                    <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
+                    <!-- ข้อความ -->
+                    <div class="regulation-name">
+                      <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">
+                        ระเบียบการเบิก_สวัสดิการค่าสงเคราะห์การเสียชีวิต.pdf</p>
+                    </div>
                   </div>
-                </div>
-                <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
-                  class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
-                <q-icon v-else name="remove_circle" color="red" @click="deleteFile" class="cursor-pointer btn-delete-file" />
-              </q-card-section>
-            </q-card>
+                  <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
+                    class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
+                  <q-icon v-else-if="isEditing && authStore.isEditor" name="remove_circle" color="red"
+                    @click="deleteFile" class="cursor-pointer btn-delete-file" />
+                </q-card-section>
+              </q-card>
+            </div>
           </div>
-        </div>
         </q-scroll-area>
 
         <q-separator />
@@ -216,8 +184,12 @@ import DynamicBreadcrumb from "components/DynamicBreadcrumb.vue";
 import { statusColor, textStatusColor } from "src/components/status";
 import { ref, onMounted } from "vue";
 import { useListStore } from "src/stores/listStore";
-import { formatDateThaiSlash } from "src/components/format";
+import { formatDateThaiSlash, formatNumber } from "src/components/format";
 import { Notify } from "quasar";
+import { useAuthStore } from "src/stores/authStore";
+import healthCheckUpWelfareService from "src/boot/service/healthCheckUpWelfareService";
+import dentalWelfareService from "src/boot/service/dentalWelfareService";
+import medicalWelfareService from "src/boot/service/medicalWelfareService";
 import {
   outlinedEdit,
   outlinedVisibility,
@@ -227,6 +199,8 @@ const listStore = useListStore();
 const isLoading = ref(false);
 const isEditing = ref(false);
 
+const authStore = useAuthStore();
+
 function toggleEdit() {
   isEditing.value = !isEditing.value;
 }
@@ -234,9 +208,89 @@ onMounted(async () => {
   await init();
 });
 
+const remainingAll = ref([]);
+
+async function fetchRemainingHealthCheckup() {
+  try {
+    let remaining = {};
+    const fetchRemaining = await healthCheckUpWelfareService.getRemaining();
+    if (fetchRemaining.data?.datas?.requestsRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.requestsRemaining))) {
+      remaining.requestsRemaining = formatNumber(fetchRemaining.data?.datas?.requestsRemaining);
+    }
+    if (fetchRemaining.data?.datas?.fundRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.fundRemaining))) {
+      remaining.fundRemaining = formatNumber(fetchRemaining.data?.datas?.fundRemaining);
+    }
+    if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
+      remaining.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
+    }
+    if (fetchRemaining.data?.datas?.categoryName != null) {
+      remaining.categoryName = fetchRemaining.data?.datas?.categoryName;
+    }
+    remaining.src = "src/assets/health-check.svg";
+    remainingAll.value.push(remaining);
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+}
+
+
+async function fetchRemainingDental() {
+  try {
+    let remaining = {};
+    const fetchRemaining = await dentalWelfareService.getRemaining({ createFor: model.value.createFor });
+    if (fetchRemaining.data?.datas?.requestsRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.requestsRemaining))) {
+      remaining.requestsRemaining = formatNumber(fetchRemaining.data?.datas?.requestsRemaining);
+    }
+    if (fetchRemaining.data?.datas?.fundRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.fundRemaining))) {
+      remaining.fundRemaining = formatNumber(fetchRemaining.data?.datas?.fundRemaining);
+    }
+    if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
+      remaining.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
+    }
+    if (fetchRemaining.data?.datas?.categoryName != null) {
+      remaining.categoryName = fetchRemaining.data?.datas?.categoryName;
+    }
+    remaining.src = "src/assets/dentalwork.svg";
+    remainingAll.value.push(remaining);
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+}
+
+async function fetchRemainingMedical() {
+  try {
+    let remaining = {};
+    const fetchRemaining = await medicalWelfareService.getRemaining({ createFor: model.value.createFor });
+    const accidentData = fetchRemaining.data?.datas[0];
+    if (accidentData.requestsRemaining != null && !isNaN(Number(accidentData.requestsRemaining))) {
+      remaining.requestsRemaining = formatNumber(accidentData.requestsRemaining);
+    }
+    if (accidentData.fundRemaining != null && !isNaN(Number(accidentData.fundRemaining))) {
+      remaining.fundRemaining = formatNumber(accidentData.fundRemaining);
+    }
+    if (accidentData.perTimesRemaining != null && !isNaN(Number(accidentData.perTimesRemaining))) {
+      remaining.perTimesRemaining = formatNumber(accidentData.perTimesRemaining);
+    }
+    if (accidentData?.subCategoriesName != null) {
+      remaining.categoryName = accidentData?.subCategoriesName;
+    }
+    remaining.src = "src/assets/medical.png";
+    remainingAll.value.push(remaining);
+  }
+  catch (error) {
+    Promise.reject(error);
+  }
+}
+
+
 async function init() {
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
+  await fetchRemainingHealthCheckup();
+  await fetchRemainingDental();
+  await fetchRemainingMedical();
 }
 
 async function fetchFromServer() {
@@ -425,23 +479,24 @@ const columns = ref([
   /* กำหนดขนาดรูปภาพ */
   height: auto;
 }
-.btn-delete-file{
+
+.btn-delete-file {
   padding: 10px 0px;
 }
+
 /* .regulation-name{
   max-width: 13em;
 } */
 
-@media (min-width: 1440px) and (max-width: 1900px) { 
-  .regulation-name {
-    max-width: 13em;
-  }
-}
-@media (max-width: 533px) { 
+@media (min-width: 1440px) and (max-width: 1900px) {
   .regulation-name {
     max-width: 13em;
   }
 }
 
- 
+@media (max-width: 533px) {
+  .regulation-name {
+    max-width: 13em;
+  }
+}
 </style>

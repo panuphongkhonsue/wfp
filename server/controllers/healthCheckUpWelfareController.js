@@ -66,6 +66,7 @@ class Controller extends BaseController {
             const results = await reimbursementsGeneral.findOne({
                 attributes: [
                     [col("category.id"), "categoryId"],
+                    [col("category.name"), "categoryName"],
                     [fn("SUM", col("reimbursementsGeneral.fund_sum_request")), "totalSumRequested"],
                     [col("category.fund"), "fund"],
                     [
@@ -101,6 +102,7 @@ class Controller extends BaseController {
             };
             const getFund = await categories.findOne({
                 attributes: [
+                    [col("name"), "categoryName"],
                     [col("fund"), "fundRemaining"],
                     [col("per_years"), "requestsRemaining"],
                     [col("per_times"), "perTimesRemaining"],
