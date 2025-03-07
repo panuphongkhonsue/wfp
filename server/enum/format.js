@@ -72,7 +72,20 @@ const getpathMenuEditor = (e) => {
             return {
                 title: "รายงาน",
                 icon: "outlinedAssessment",
-                to: 'report',
+                childs: [
+                    {
+                        title: "รายงานเปรียบเทียบการเบิกจ่ายสวัสดิการรายปีงบประมาณ",
+                        to: { name: "report_compare-expenses" },
+                    },
+                    {
+                        title: "รายละเอียดการเบิกจ่ายสวัสดิการรายบุคคลของปีงบประมาณ",
+                        to: { name: "pages/report/ReportPersonal.vue" },
+                    },
+                    {
+                        title: "รายงานภาพรวมค่าใช้จ่ายประจำปีงบประมาณ",
+                        to: { name: "pages/report/ReportFundRequestPerYears.vue" },
+                    },
+                ],
             };
     }
 }
