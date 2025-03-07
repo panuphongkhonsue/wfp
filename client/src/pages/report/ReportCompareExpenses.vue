@@ -16,7 +16,7 @@
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-2">
-          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense label="ตั้งแต่ปี">
+          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense label="ถึงปี">
             <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm font-14 font-regular"
               popup-content-class="font-14 font-regular" outlined v-model="filters.endYear" :options="optionEndYear"
               label="ปีงบประมาณ" dense option-value="name" emit-value map-options option-label="name">
