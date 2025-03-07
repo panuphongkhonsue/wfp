@@ -213,7 +213,7 @@ class Controller extends BaseController {
                     attributes: [
                         [col("id"), "subCategoriesId"],
                         [col("name"), "subCategoriesName"],
-                        [col("fund"), "fundRemaining"],
+                        [col("fund"), "fund"],
                         [col("per_years"), "requestsRemaining"],
                         [col("per_times"), "perTimesRemaining"],
                     ],
@@ -227,15 +227,23 @@ class Controller extends BaseController {
                 fundDatas.forEach(item => {
                     dataMap.set(item.subCategoriesId, {
                         ...item,
+                        totalSumRequested: 0,
+                        totalCountRequested: 0,
+                        fundRemaining: item.fund, 
                         canRequest: item.fundRemaining !== 0 && item.requestsRemaining !== 0
                     });
                 });
                 datas.forEach(item => {
                     if (dataMap.has(item.subCategoriesId)) {
                         let existing = dataMap.get(item.subCategoriesId);
+                        let totalSumRequested = item.totalSumRequested ? parseFloat(item.totalSumRequested) : 0;
+                        let calculatedFundRemaining = parseFloat(existing.fund) - totalSumRequested;
+        
                         dataMap.set(item.subCategoriesId, {
                             ...existing,
-                            ...item, 
+                            totalSumRequested: totalSumRequested,
+                            totalCountRequested: item.totalCountRequested,
+                            fundRemaining: calculatedFundRemaining < 0 ? 0 : calculatedFundRemaining, 
                             canRequest: item.fundRemaining !== 0 && item.requestsRemaining !== 0
                         });
                     } else {
@@ -252,10 +260,6 @@ class Controller extends BaseController {
                     datas.forEach(item => {
                         item.canRequest = (item.fundRemaining !== 0 && item.requestsRemaining !== 0);
                     });
-                    delete datas.totalSumRequested;
-                    delete datas.fund;
-                    delete datas.totalCountRequested;
-                    delete datas.perYears;
                     bindData.push(...datas);
                 }
                 else {
@@ -287,11 +291,6 @@ class Controller extends BaseController {
                     }
                     if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
                     else datas.canRequest = true;
-
-                    delete datas.totalSumRequested;
-                    delete datas.fund;
-                    delete datas.totalCountRequested;
-                    delete datas.perYears;
                     bindData.push(datas);
                 }
                 else {

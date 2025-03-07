@@ -31,51 +31,51 @@
       </q-form>
     </template>
     <template v-slot:toolbar>
-      <div class="col-12 col-md-10 row font-bold font-14 q-col-gutter-x-md ">
-        <p class="col-12 col-md-2 q-ma-none ">
-          ค่าสมรส :
-                {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
-                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
-                }}
-                {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"  
-                  }}
+      <div class="col-12  row font-bold font-14 q-col-gutter-x-md full-width">
+        <p class="col-12 col-md-2 q-py-sm q-ma-none row  items-center ">
+          {{ remaining[4]?.categoryName ?? "ค่าสมรส" }} :
+          {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
+            remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
+              "ไม่จำกัดจำนวนเงิน"
+          }}
+          {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
+            "(ไม่จำกัดครั้ง)"
+          }}
         </p>
-        <p class="col-12 col-md-3 col-xl-4 q-ma-none q-px-xl-xl">
-          ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ :
-                {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
-                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
-                }}
-                {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"  
-                   }}
+        <p class="col-12 col-md-3 q-py-sm q-ma-none row  items-center ">
+          {{ remaining[5]?.categoryName ?? "ค่าอุปสมบทหรือประกอบพิธีฮัจญ์" }} :
+          {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
+            remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
+              "ไม่จำกัดจำนวนเงิน"
+          }}
+          {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
+            "(ไม่จำกัดครั้ง)"
+          }}
         </p>
-        <p class="col-12 col-md-3 q-ma-none q-pl-lg-lg">
-          ค่ารับขวัญบุตร :
-                {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
-                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
-                }}
-                {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"  
-                   }}
+        <p class="col-12 col-md-2 q-py-sm q-ma-none row  items-center">
+          {{ remaining[6]?.categoryName ?? "ค่ารับขวัญบุตร" }} :
+          {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
+            remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
+              "ไม่จำกัดจำนวนเงิน"
+          }}
+          {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
+            "(ไม่จำกัดครั้ง)"
+          }}
         </p>
-        <p class="col-12 col-md-3 q-ma-none ">
-          กรณีประสบภัยพิบัติ :
-                {{ remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาทต่อปี" :
-                  remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
-                }}
-                {{ remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"  
-                  }}
+        <p class="col-12 col-md-3 q-py-sm q-ma-none row  items-center">
+          {{ remaining[7]?.categoryName ?? "กรณีประสบภัยพิบัติ" }} :
+          {{ remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาทต่อปี" :
+            remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
+              "ไม่จำกัดจำนวนเงิน"
+          }}
+          {{ remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
+            "(ไม่จำกัดครั้ง)"
+          }}
         </p>
-      </div>
-      <div class="col-12 col-md-2 flex justify-end">
-        <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
-          icon="add" :to="{ name: 'various_welfare_new' }" />
+        <div class="col-12 col-md-2 flex justify-end">
+          <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
+            icon="add" :to="{ name: 'various_welfare_new' }" />
+        </div>
       </div>
     </template>
 
@@ -276,16 +276,19 @@ async function init() {
     const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
     if (Array.isArray(fetchRemaining.data?.datas)) {
       fetchRemaining.data.datas.forEach((item) => {
-        remaining.value[item.categoryId] = item;
-        
-        if (item.fundRemaining !== null) {
-          item.fundRemaining = formatNumber(item.fundRemaining);
+        remaining.value[item.categoryId] = { ...item };
+
+        if (item.fundRemaining !== null && !isNaN(Number(item.fundRemaining))) {
+          remaining.value[item.categoryId].fundRemaining = formatNumber(item.fundRemaining);
         }
-        if (item.perTimesRemaining !== null) {
-          item.perTimesRemaining = formatNumber(item.perTimesRemaining);
+        if (item.perTimesRemaining !== null && !isNaN(Number(item.perTimesRemaining))) {
+          remaining.value[item.categoryId].perTimesRemaining = formatNumber(item.perTimesRemaining);
         }
-        if (item.requestsRemaining !== null) {
-          item.requestsRemaining = formatNumber(item.requestsRemaining);
+        if (item.requestsRemaining !== null && !isNaN(Number(item.requestsRemaining))) {
+          remaining.value[item.categoryId].requestsRemaining = formatNumber(item.requestsRemaining);
+        }
+        if (item.fund !== null && !isNaN(Number(item.fund))) {
+          remaining.value[item.categoryId].fund = formatNumber(item.fund);
         }
       });
     }
@@ -449,7 +452,10 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
+        return number.toLocaleString("en-US", {
+          minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+          maximumFractionDigits: 2, // Limit to 2 decimal places
+        }); // Format as '3,000'
       }
       return `${val}`; // If conversion fails, return a fallback value
     },
@@ -463,7 +469,10 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
+        return number.toLocaleString("en-US", {
+          minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+          maximumFractionDigits: 2, // Limit to 2 decimal places
+        }); // Format as '3,000'
       }
       return `${val}`; // If conversion fails, return a fallback value
     },

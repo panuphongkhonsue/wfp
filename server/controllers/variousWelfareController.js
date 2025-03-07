@@ -86,6 +86,7 @@ class Controller extends BaseController {
                         "requestsRemaining"
                     ],
                     [col("category.per_times"), "perTimesRemaining"],
+                    [col("category.name"), "categoryName"]
                 ],
                 include: [
                     {
@@ -120,6 +121,7 @@ class Controller extends BaseController {
                 let matched = bindData.find(item => item.categoryId === cat.categoryId);
 
                 return {
+                    categoryName: cat.categoryName, 
                     categoryId: cat.categoryId,
                     totalSumRequested: matched ? matched.totalSumRequested : 0,
                     fund: cat.fundRemaining,

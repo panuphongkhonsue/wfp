@@ -39,19 +39,19 @@
               <div style="width: 100%">
                 <div class="row" style="gap: 8px; flex-wrap: wrap">
                   <div class="pl-sm font-semi-bold">๑.</div>
-                  <div style="flex: 1;">
-                    <span class="font-semi-bold">๑.ข้าพเจ้า :</span>
+                  <div style="flex: 1;" style="text-decoration-style: dotted;" >
+                    <span class="font-semi-bold" style="text-decoration-style: dotted;">๑.ข้าพเจ้า :</span>
                     <%= body?.user?.name %>
                     
                   </div> <span class="font-semi-bold px-xl">(เจ้าหน้าที่ผู้รับผิดชอบด้านบุคคล)</span>   
                 </div>
                 <div class=" row" style="gap: 8px; flex-wrap: wrap;">
-                    <div style="flex: 1; padding-left: 20px;">
-                        <span class="pl-sm font-semi-bold">ตำแหน่ง :</span>
+                    <div style="flex: 1; padding-left: 20px;" style="text-decoration-style: dotted;">
+                        <span class="pl-sm font-semi-bold" style="text-decoration-style: dotted;">ตำแหน่ง :</span>
                         <%= body?.user?.position %>
                     </div>
                     <div class="px-xl">
-                            <span class="font-semi-bold">สังกัด ภาควิชา / ส่วนงาน :</span>
+                            <span class="font-semi-bold" style="text-decoration-style: dotted;">สังกัด ภาควิชา / ส่วนงาน :</span>
                             <%= body?.user?.sector %> / <%= body?.user?.department %>
                     </div>
                 </div>
@@ -111,7 +111,7 @@
             </div>
           </td>
         </tr>
-        <!-- สวัสดิการค่าสงเคราะห์ต่าง ๆ (กรณีประสบภัยพิบัติ) -->
+        <!-- คำรับรองการเป็นผู้จัดการงานศพ -->
         <tr>
           <td>
             <div class="row" style="gap: 10px">
@@ -127,7 +127,10 @@
                         <span style="padding-left: 24px;"></span><span >ข้าพเจ้าขอรับรองว่า <%= body?.organizer ? body.organizer : " ........................................................" %></span>
                         <span>(ชื่อ-นามสกุล ผู้จัดการงานศพ) ได้เป็นผู้จัดการการงานศพและรับเงินค่าสงเคราะห์การเสียชีวิตของผู้ปฎิบัติงาน</span>
                         <span class="pl-sm">จำนวนเงิน <%= body?.fundSumRequest ?
-                            toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US'))
+                          toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US',{
+                            minimumFractionDigits: body?.fundSumRequest % 1 === 0 ? 0 : 2,
+                            maximumFractionDigits: 2,
+                          }))
                             : '..............................' %> บาท
                             (<%= body?.fundSumRequest ? bahttext(Number(body?.fundSumRequest))
                               : " ........................................................" %>) จริง</span>
@@ -136,12 +139,12 @@
                     <div class="d-flex justify-center py-md">
                         <div class="row d-flex justify-center">
                           <div class="col-12 py-xl  d-flex justify-end" style="padding-right: 80px;">
-                            ลงชื่อ..................................................ผู้ขอรับเงิน (เจ้าหน้าที่ผู้รับผิดชอบด้านบุคคล)
+                            ลงชื่อ.........................................................ผู้ขอรับเงิน (เจ้าหน้าที่ผู้รับผิดชอบด้านบุคคล)
                           </div>
-                          <div class="col-12 py-sm d-flex justify-center">
-                            (..................................................)
+                          <div class="col-12 py-sm pr-xl d-flex  justify-center">
+                            .........................................................
                           </div>
-                          <div class="col-12 py-sm d-flex justify-center">
+                          <div class="col-12 py-sm pr-xl d-flex justify-center">
                             วันที่........เดือน...............พ.ศ.........
                           </div>
                         </div>
@@ -222,53 +225,53 @@
           </td>
         </tr>
         <tr>
-            <td>
-              <div class="row" style="gap: 8px">
-                <span class="font-semi-bold px-md" class="col-12 px-md">การตรวจสอบ</span>
-                <div class="col-12 px-md">
-                  <span class="font-semi-bold px-md">เสนอ</span>
-                  <span>
+          <td>
+            <div class="row" style="gap: 8px">
+              <span class="font-semi-bold px-md" class="col-12 px-md">การตรวจสอบ</span>
+              <div class="col-12 px-md">
+                <span class="font-semi-bold px-md">เสนอ</span>
+                <span>
+                  <%= body?.user?.positionId==2 || body?.user?.positionId==3 ? "อธิการบดี" : "คณบดี" %>
+                </span>
+              </div>
+            </div>
+            <div class="d-flex">
+              <div style="width: 5%;"></div>
+              <div class="row px-md py-sm" style="gap: 8px; width: 95%;">
+                <div class="col-12 pl-sm ml-sm">
+                  ๑. ข้าพเจ้า ได้ตรวจสอบใบขอเบิกเงินสวัสดิการฉบับนี้แล้ว
+                  ขอรับรองว่าผู้ขอเบิกสวัสดิการฯ มีสิทธิเบิกสวัสดิการฯ
+                  ได้ตามประกาศ คณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา
+                </div>
+                <div class="col-12 pl-sm ml-sm">
+                  ๒. ผู้ขับรับสวัสดิการฯ
+                  มีสิทธิเบิกตามจำนวนเงินที่ขอเบิก..............................บาท
+                  จริง ไม่เกินอัตราที่กำหนดต่อปี
+                </div>
+              </div>
+            </div>
+            <div class="row px-md py-sm" style="gap: 8px; align-items: flex-end">
+              <div class="col"></div>
+              <div class="col row justify-center">
+                <div class="col-sign">
+                  ลงชื่อ.........................................................ผู้ตรวจสอบ
+                </div>
+                <div class="col-sign py-sm">
+                  (..............................................................)
+                </div>
+                <div class="col-position px-md">
+                  <div>ตำแหน่ง</div>
+                  <div>
                     <%= body?.user?.positionId==2 || body?.user?.positionId==3 ? "อธิการบดี" : "คณบดี" %>
-                  </span>
-                </div>
-              </div>
-              <div class="d-flex">
-                <div style="width: 5%;"></div>
-                <div class="row px-md py-sm" style="gap: 8px; width: 95%;">
-                  <div class="col-12 pl-sm ml-sm">
-                    ๑. ข้าพเจ้า ได้ตรวจสอบใบขอเบิกเงินสวัสดิการฉบับนี้แล้ว
-                    ขอรับรองว่าผู้ขอเบิกสวัสดิการฯ มีสิทธิเบิกสวัสดิการฯ
-                    ได้ตามประกาศ คณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา
-                  </div>
-                  <div class="col-12 pl-sm ml-sm">
-                    ๒. ผู้ขับรับสวัสดิการฯ
-                    มีสิทธิเบิกตามจำนวนเงินที่ขอเบิก..............................บาท
-                    จริง ไม่เกินอัตราที่กำหนดต่อปี
                   </div>
                 </div>
-              </div>
-              <div class="row px-md py-sm" style="gap: 8px; align-items: flex-end">
-                <div class="col"></div>
-                <div class="col row justify-center">
-                  <div class="col-sign">
-                    ลงชื่อ.........................................................ผู้ตรวจสอบ
-                  </div>
-                  <div class="col-sign py-sm">
-                    (..............................................................)
-                  </div>
-                  <div class="col-position px-md">
-                    <div>ตำแหน่ง</div>
-                    <div>
-                      <%= body?.user?.positionId==2 || body?.user?.positionId==3 ? "อธิการบดี" : "คณบดี" %>
-                    </div>
-                  </div>
-                  <div class="col-sign py-sm">
-                    วันที่..........เดือน............ พ.ศ. ............
-                  </div>
+                <div class="col-sign py-sm">
+                  วันที่..........เดือน............ พ.ศ. ............
                 </div>
               </div>
-            </td>
-          </tr>
+            </div>
+          </td>
+        </tr>
       </table>
     </div>
     <!-- New Page -->
@@ -322,7 +325,10 @@
                 </div>
                 <div class="row px-md ml-md" style="gap: 8px">
                   <div style="flex: 1" class="pl-md ml-md">
-                    จำนวนเงิน <%= toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US')) %> บาท
+                    จำนวนเงิน <%= toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US',{
+                      minimumFractionDigits: body?.fundSumRequest % 1 === 0 ? 0 : 2,
+                      maximumFractionDigits: 2,
+                    })) %> บาท
                     (<%= bahttext(Number(body?.fundSumRequest)) %>) ไว้ถูกต้องแล้ว/ครบถ้วนแล้ว
                   </div>
                 </div>
