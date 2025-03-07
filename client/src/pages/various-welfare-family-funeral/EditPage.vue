@@ -56,25 +56,25 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
-                บิดา : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาทต่อปี" :
+                {{ remaining[3]?.subCategoriesName ?? "บิดา" }} : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาทต่อปี" :
                   remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                มารดา : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
+                {{ remaining[4]?.subCategoriesName ?? "มารดา" }} : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
                   remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                คู่สมรส : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
+                {{ remaining[5]?.subCategoriesName ?? "คู่สมรส" }} : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
                   remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                บุตร : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
+                {{ remaining[6]?.subCategoriesName ?? "บุตร" }} : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
                   remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
@@ -318,6 +318,8 @@ const deceaseOptions = [
     value: 6
   }
 ]
+const isFetch = ref(false);
+
 const isError = ref({});
 const isView = ref(false);
 const isLoading = ref(false);
@@ -508,15 +510,25 @@ const isOverWreathUniversity = computed(() => {
 const isOverVechicle = computed(() => {
   return Number(model.value.fundVechicle) > Number(model.value.fundReceiptVechicle);
 });
-
 watch(
   () => model.value.deceasedType,
   (newValue) => {
-    if (newValue && !model.value.decease) {
-      model.value.decease = "";
+    console.log(isFetch.value)
+    if (newValue !== null && !isFetch.value ) {
+      isError.value = {}; 
+      model.value.decease = null;
     }
+    isFetch.value = false;
   }
 );
+// watch(
+//   () => model.value.deceasedType,
+//   (newValue) => {
+//     if (newValue && !model.value.decease) {
+//       model.value.decease = "";
+//     }
+//   }
+// );
 watch(
   model,
   () => {
@@ -604,7 +616,7 @@ async function fetchDataEdit() {
           sector: returnedData?.user.sector,
           department: returnedData?.user.department,
         };
-        console.log("returnedData: ", returnedData);
+        isFetch.value = true;
       }
 
     } catch (error) {
@@ -643,42 +655,17 @@ async function fetchRemaining() {
     const fetchRemainingData = await variousWelfareFuneralFamilyService.getRemaining({ createFor: model.value.createFor });
     const deceaseData = fetchRemainingData.data?.datas ?? [];
     remaining.value = {};
-    const allSubCategories = [3, 4, 5, 6, 7, 8, 9];
 
     deceaseData.forEach((item) => {
-      if (Array.isArray(item)) {
-        item.forEach((subItem) => {
-          remaining.value[subItem.subCategoriesId] = {
-            requestsRemaining: formatNumber(subItem.requestsRemaining),
-            fundRemaining: subItem.fundRemaining === "0" ? null : formatNumber(subItem.fundRemaining),
-            perTimesRemaining: subItem.perTimesRemaining === "0" ? null : formatNumber(subItem.perTimesRemaining),
-            fund: subItem.fund ? formatNumber(subItem.fund) : null,
-          };
-          canRequest.value[subItem.subCategoriesId] = subItem.canRequest ?? false;
-        });
-      } else {
-        remaining.value[item.subCategoriesId] = {
-          requestsRemaining: formatNumber(item.requestsRemaining),
-          fundRemaining: item.fundRemaining === "0" ? null : formatNumber(item.fundRemaining),
-          perTimesRemaining: item.perTimesRemaining === "0" ? null : formatNumber(item.perTimesRemaining),
-          fund: item.fund ? formatNumber(item.fund) : null,
-        };
-        canRequest.value[item.subCategoriesId] = item.canRequest ?? false;
-      }
+      remaining.value[item.subCategoriesId] = {
+        subCategoriesName: item.subCategoriesName, 
+        requestsRemaining: formatNumber(item.requestsRemaining),
+        fundRemaining: item.fundRemaining === "0" ? null : formatNumber(item.fundRemaining),
+        perTimesRemaining: item.perTimesRemaining === "0" ? null : formatNumber(item.perTimesRemaining),
+        fund: item.fund ? formatNumber(item.fund) : null,
+      };
+      canRequest.value[item.subCategoriesId] = item.canRequest ?? false;
     });
-    allSubCategories.forEach((id) => {
-      if (!remaining.value[id]) {
-        remaining.value[id] = {
-          requestsRemaining: "",
-          fundRemaining: null,
-          perTimesRemaining: null,
-          fund: null
-        };
-        canRequest.value[id] = false;
-      }
-    });
-    canRequest.value.wreath = deceaseData.some(item => item.subCategoriesId === 7 || item.subCategoriesId === 8) ? true : false;
-    canRequest.value.vechicle = deceaseData.some(item => item.subCategoriesId === 9) ? true : false;
 
     nextTick(() => {
       isLoading.value = false;
@@ -688,6 +675,7 @@ async function fetchRemaining() {
     isLoading.value = false;
   }
 }
+
 async function downloadData() {
   const notify = Notify.create({
     message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",

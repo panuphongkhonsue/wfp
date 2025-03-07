@@ -56,7 +56,7 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
-                ค่าสมรส :
+                {{ remaining[4]?.categoryName  ?? "ค่าสมรส" }} :
                 {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
                   remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
@@ -66,7 +66,7 @@
                   }}
               </p>
               <p class="col-12 q-mb-none">
-                ค่าอุปสมบทหรือประกอบพิธีฮัจญ์ :
+                {{ remaining[5]?.categoryName ?? "ค่าอุปสมบทหรือประกอบพิธีฮัจญ์" }} :
                 {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
                   remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
@@ -76,7 +76,7 @@
                    }}
               </p>
               <p class="col-12 q-mb-none">
-                ค่ารับขวัญบุตร :
+                {{ remaining[6]?.categoryName ?? "ค่ารับขวัญบุตร" }} :
                 {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
                   remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
@@ -86,7 +86,7 @@
                    }}
               </p>
               <p class="col-12 q-mb-none">
-                กรณีประสบภัยพิบัติ :
+                {{ remaining[7]?.categoryName ?? "กรณีประสบภัยพิบัติ" }} :
                 {{ remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาทต่อปี" :
                   remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
@@ -247,7 +247,7 @@ const categoryOptions =
       value: 7
     }
   ]
-
+const isFetch = ref(false);
 const userData = ref({});
 const remaining = ref({});
 const isLoading = ref(false);
@@ -269,14 +269,20 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   model.value = null;
 });
+
 watch(
-  () => model.value.fundReceipt,
+  () => model.value.categoryId,
   (newValue) => {
-    if (newValue !== null) {
-      delete isError.value.fundReceipt;
+    console.log(isFetch.value)
+    if (newValue !== null && !isFetch.value ) {
+      isError.value = {}; 
+      model.value.fundEligible = null;
+      model.value.fundReceipt = null;
     }
+    isFetch.value = false;
   }
 );
+
 
 watch(
   () => model.value.createFor,
@@ -366,6 +372,7 @@ async function fetchDataEdit() {
           department: returnedData?.user.department,
         };
       }
+      isFetch.value = true;
     } catch (error) {
       router.replace({ name: "various_welfare_list" });
       Notify.create({
@@ -402,21 +409,20 @@ async function fetchRemaining() {
     const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
     if (Array.isArray(fetchRemaining.data?.datas)) {
       fetchRemaining.data.datas.forEach((item) => {
-        remaining.value[item.categoryId] = item;
+        remaining.value[item.categoryId] = { ...item }; 
 
         if (item.fundRemaining !== null && !isNaN(Number(item.fundRemaining))) {
-          item.fundRemaining = formatNumber(item.fundRemaining);
+          remaining.value[item.categoryId].fundRemaining = formatNumber(item.fundRemaining);
         }
         if (item.perTimesRemaining !== null && !isNaN(Number(item.perTimesRemaining))) {
-          item.perTimesRemaining = formatNumber(item.perTimesRemaining);
+          remaining.value[item.categoryId].perTimesRemaining = formatNumber(item.perTimesRemaining);
         }
         if (item.requestsRemaining !== null && !isNaN(Number(item.requestsRemaining))) {
-          item.requestsRemaining = formatNumber(item.requestsRemaining);
+          remaining.value[item.categoryId].requestsRemaining = formatNumber(item.requestsRemaining);
         }
         if (item.fund !== null && !isNaN(Number(item.fund))) {
-          item.fund = formatNumber(item.fund);
+          remaining.value[item.categoryId].fund = formatNumber(item.fund);
         }
-        
       });
     }
     canRequest.value = fetchRemaining.data?.canRequest;
@@ -424,6 +430,7 @@ async function fetchRemaining() {
     Promise.reject(error);
   }
 }
+
 async function downloadData() {
   const notify = Notify.create({
     message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",
