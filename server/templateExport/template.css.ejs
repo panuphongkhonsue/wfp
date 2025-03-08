@@ -56,12 +56,6 @@ div{
 .d-flex{
     display:flex;
 }
-.row {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    margin-left: -8px !important;
-    margin-right: -8px !important;
-}
 .justify-end {
     justify-content: end;
 }
@@ -80,6 +74,9 @@ div{
 }
 .pl-xl{
     padding-left: 24px;
+}
+.pl-xs{
+    padding-left: 4px;
 }
 .pl-sm{
     padding-left: 8px;
@@ -115,6 +112,10 @@ div{
     padding-left : 24px;
     padding-right : 24px;
 }
+.px-sm {
+    padding-left : 4px;
+    padding-right : 4px;
+}
 .px-sm{
     padding-left : 8px;
     padding-right : 8px;
@@ -126,6 +127,12 @@ div{
 .justify-center {
     justify-content: center !important;
 }
+.row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    margin-left: -8px !important;
+    margin-right: -8px !important;
+}
 .col {
     flex: 1 1 0%;
     max-width: 100%;
@@ -134,11 +141,28 @@ div{
     flex: 0 0 100%;
     max-width: 100%;
 }
+.wrap{
+    flex-wrap: wrap;
+}
 .col-sign {
     flex: 0 0 100%;
     max-width: 100%;
     display: flex;
     justify-content: center;
+}
+.text-dot {
+    position: relative;
+    flex-grow: 1;
+    min-width: fit-content; 
+}
+.text-dot::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 1px;
+    border-bottom: 1px dotted black;
 }
 .col-sign2 {
     flex: 0 0 100%;
