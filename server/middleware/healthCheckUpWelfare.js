@@ -127,6 +127,10 @@ const byIdMiddleWare = async (req, res, next) => {
 const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, fundDecree, fundUniversity, fundEligible, fundEligibleName, actionId } = req.body;
+        // todo [Mos]
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            return next();
+        }
         const errorObj = {};
         if (isNullOrEmpty(fundReceipt)) {
             errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
@@ -282,6 +286,15 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
+            // todo [Mos]
+            if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+                const dataBinding = {
+                    status : actionId,
+                    updated_by: id,
+                }
+                req.body = dataBinding;
+                return next();
+            }
         }
         else {
             return res.status(400).json({
@@ -330,6 +343,11 @@ const getRemaining = async (req, res, next) => {
         const { id } = req.user;
         const { createFor } = req.query;
         const { created_by, createByData } = req.body;
+        const { actionId } = req.body;
+        // todo [Mos]
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            return next();
+        }
         req.query.filter = {};
         req.query.filter[Op.and] = [];
         const getFiscalYearWhere = getFiscalYear();
@@ -370,7 +388,11 @@ const checkUpdateRemaining = async (req, res, next) => {
         const { filter } = req.query;
         const dataId = req.params['id'];
         var whereObj = { ...filter }
-        const { fund_sum_request } = req.body;
+        // todo [Mos]
+        const { fund_sum_request, actionId } = req.body;
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+           return next();
+        }
         const results = await reimbursementsGeneral.findOne({
             attributes: [
                 [
@@ -432,7 +454,11 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { fund_sum_request } = req.body;
+        // todo [Mos]
+        const { fund_sum_request, actionId } = req.body;
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            return next();
+        }
         const getFund = await categories.findOne({
             attributes: [
                 [col("fund"), "fundRemaining"],
