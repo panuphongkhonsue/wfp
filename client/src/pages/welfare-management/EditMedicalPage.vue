@@ -42,14 +42,14 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col-12 q-ma-none">ประสบอุบัติเหตุ :
+              <p class="col-12 q-ma-none">{{ remaining?.accident?.categoryName ?? "ประสุบอุบัติเหตุ" }} :
                 {{ remaining?.accident.fundRemaining ? remaining?.accident.fundRemaining + " บาทต่อปี" :
                   remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining?.accident.requestsRemaining ? "( " + remaining?.accident.requestsRemaining + " ครั้ง)" :
                   '(ไม่จำกัดครั้ง)' }}</p>
-              <p class="col-12 q-ma-none">เยี่ยมไข้ :
+              <p class="col-12 q-ma-none">{{ remaining?.patientVisit?.categoryName ?? "ประสุบอุบัติเหตุ" }} :
                 {{ remaining?.patientVisit.fundRemaining
                   ? remaining?.patientVisit.fundRemaining + " บาทต่อปี" :
                   remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาทต่อครั้ง" :
@@ -84,7 +84,10 @@
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedAccident" />
-              <p class="q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ 1,000 บาท)</p>
+              <p class="q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ {{ remaining?.accident.fund ? remaining?.accident.fund + " บาท ต่อปี" :
+                remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาท ต่อครั้ง" :
+                  "ไม่จำกัดจำนวนเงิน"
+              }})</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund-receipt-accident" is-dense v-model="model.fundReceipt"
@@ -105,8 +108,12 @@
             <q-card-section class="row wrap q-pt-none font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedPatientVisit" />
-              <p class="q-mb-none">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน 1,000 บาท ต่อครั้ง ปีนึงไม่เกิน
-                3 ครั้ง</p>
+              <p class="q-mb-none">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน {{ remaining?.patientVisit.fund ? remaining?.patientVisit.fund + " บาท ต่อปี" :
+                remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาท ต่อครั้ง" :
+                  "ไม่จำกัดจำนวนเงิน"
+              }} {{ remaining?.patientVisit.perYears ? "ปีนึงไม่เกิน " + remaining?.patientVisit.perYears +
+              " ครั้ง" :
+              'ไม่จำกัดครั้ง' }}</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-sm font-16 text-grey-9">
               <InputGroup label="ตั้งแต่วันที่" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl"
@@ -479,7 +486,7 @@ async function fetchDataEdit() {
         }
       }
     } catch (error) {
-      router.replace({ name: "medical_welfare_list" });
+      router.replace({ name: "welfare_management_list" });
       Notify.create({
         message:
           error?.response?.data?.message ??
@@ -523,6 +530,9 @@ async function fetchRemaining() {
     if (accidentData.perTimesRemaining != null && !isNaN(Number(accidentData.perTimesRemaining))) {
       remaining.value.accident.perTimesRemaining = formatNumber(accidentData.perTimesRemaining);
     }
+    if (accidentData.subCategoriesName != null) {
+      remaining.value.accident.categoryName = accidentData.subCategoriesName;
+    }
     if (patientVisitData.requestsRemaining != null && !isNaN(Number(patientVisitData.requestsRemaining))) {
       remaining.value.patientVisit.requestsRemaining = formatNumber(patientVisitData.requestsRemaining);
     }
@@ -531,6 +541,9 @@ async function fetchRemaining() {
     }
     if (patientVisitData.perTimesRemaining != null && !isNaN(Number(patientVisitData.perTimesRemaining))) {
       remaining.value.patientVisit.perTimesRemaining = formatNumber(patientVisitData.perTimesRemaining);
+    }
+    if (patientVisitData.subCategoriesName != null) {
+      remaining.value.patientVisit.categoryName = patientVisitData.subCategoriesName;
     }
     canRequest.value.accident = accidentData.canRequest;
     canRequest.value.patientVisit = patientVisitData.canRequest;
@@ -762,7 +775,7 @@ async function submit(actionId) {
           confirmButton: "save-button",
         },
       }).then(() => {
-        router.replace({ name: "medical_welfare_list" });
+        router.replace({ name: "welfare_management_list" });
       });
     }
   });
@@ -812,7 +825,10 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
+        return number.toLocaleString("en-US",{
+          minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+          maximumFractionDigits: 2, // Limit to 2 decimal places
+        }); // Format as '3,000'
       }
       return `${val}`; // If conversion fails, return a fallback value
     },
@@ -834,10 +850,10 @@ async function init() {
       fetchDataEdit();
     }
     else {
-        fetchRemaining();
-        fetchUserData(authStore.id);
-        const result = await userManagementService.getUserInitialData({ keyword: null });
-        userInitialData.value = result.data.datas;
+      fetchRemaining();
+      fetchUserData(authStore.id);
+      const result = await userManagementService.getUserInitialData({ keyword: null });
+      userInitialData.value = result.data.datas;
     }
   }
   catch (error) {

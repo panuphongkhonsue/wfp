@@ -4,6 +4,8 @@ export function statusColor(e) {
       return "grey-4";
     case "รอตรวจสอบ":
       return "amber-2";
+    case "ไม่อนุมัติ":
+      return "text-red-9";
     case "อนุมัติ":
       return "green-2";
     default:
@@ -17,8 +19,10 @@ export function textStatusColor(e) {
       return "text-grey-8";
     case "รอตรวจสอบ":
       return "text-amber-9";
-    case "อนุมัติ":
+    case "ไม่อนุมัติ":
       return "text-green-9";
+    case "อนุมัติ":
+      return "text-red-9";
     default:
       return "";
   }
