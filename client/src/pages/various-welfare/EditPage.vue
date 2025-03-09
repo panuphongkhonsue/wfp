@@ -534,8 +534,11 @@ async function submit(actionId) {
     if (isOverfundRemaining.value === 2) {
       isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
     }
-    else {
+    else if(isOverfundRemaining.value === 1) {
       isError.value.fundEligible = "สามารถเบิกได้สูงสุด " + remaining.value.perTimesRemaining + " บาทต่อครั้ง";
+    }
+    else{
+      isError.value.fundEligible = "คุณใช้จำนวนการเบิกครบแล้ว";
     }
     validate = true;
   }

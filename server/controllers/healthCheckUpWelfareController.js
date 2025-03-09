@@ -93,7 +93,7 @@ class Controller extends BaseController {
             });
             if (results) {
                 const datas = JSON.parse(JSON.stringify(results));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
+                if (datas.fundRemaining <= 0 || datas.requestsRemaining <= 0) datas.canRequest = false;
                 logger.info('Complete', { method, data: { id } });
                 return res.status(200).json({
                     datas: datas,

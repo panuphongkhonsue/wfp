@@ -147,7 +147,7 @@ class Controller extends BaseController {
                     if (datas.requestsRemaining == null) {
                         datas.requestsRemaining = datas.perYears;
                     }
-                    if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
+                    if (datas.fundRemaining <= 0 || datas.requestsRemaining <= 0) datas.canRequest = false;
                     else datas.canRequest = true;
                     bindData.push(datas);
                 }
@@ -174,7 +174,7 @@ class Controller extends BaseController {
                     if (datas.requestsRemaining == null) {
                         datas.requestsRemaining = datas.perYears;
                     }
-                    if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
+                    if (datas.fundRemaining <= 0 || datas.requestsRemaining <= 0) datas.canRequest = false;
                     else datas.canRequest = true;
                     whereObj = {};
                     whereObj[Op.and] = [];
