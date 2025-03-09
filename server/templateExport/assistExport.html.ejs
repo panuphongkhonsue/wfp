@@ -41,13 +41,13 @@
                     style="gap:8px; flex-wrap: wrap">
                     <div>
                       <span class="font-semi-bold">ข้าพเจ้า</span>
-                      <span class="text-dot pl-sm">
+                      <span class="text-dot pl-sm text-center">
                         <%= body?.user?.name %>
                       </span>
                     </div>
                     <div class="col">
                       <span class="font-semi-bold">ตำแหน่ง</span>
-                      <span class="text-dot pl-sm">
+                      <span class="text-dot pl-sm text-center">
                         <%= body?.user?.position %>
                       </span>
                     </div>
@@ -56,7 +56,7 @@
                         <div style="flex: 1">
                           <span class="font-semi-bold">สังกัด ภาควิชา /
                             ส่วนงาน</span>
-                          <span class="text-dot pl-sm">
+                          <span class="text-dot pl-sm text-center">
                             <%= body?.user?.sector %> / <%=
                             body?.user?.department %>
                           </span>
@@ -259,74 +259,60 @@
                         <div class="px-xl">๒.ใบสำคัญรับเงิน</div>
                       </div>
                     </div>
-                    <div class="row pt-md px-md" style="gap: 16px">
-                      <div class="px-sm">
+                    <div class="row pt-md px-md " style="gap: 8px">
+                      <div class="col-5 px-sm ">
                         <input type="checkbox" id="cate1" name="cate1" value="1"
                           <%=body?.deceasedType==3 &&
                           body?.fundDecease ? "checked" : "" %> />
-                        <span><span class="font-semi-bold">บิดา</span>
-                          (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</span>
-                        <div  class="d-flex px-sm">
-                          ชื่อ-นามสกุล&nbsp;<span
-                            class="<%= body?.deceasedType == 3 && body?.deceased ? 'text-dot' : '' %>">
-                            <%= body?.deceasedType == 3 && body?.deceased ?
-                            body.deceased
-                            :
-                            " ....................................................."
-                            %></span>
+                        <label><span class="font-semi-bold">บิดา</span>
+                          (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</label>
+                        <div class="d-flex px-sm text-center">
+                          ชื่อ-นามสกุล<span style="max-width: 150px; width: 150px;"
+                            class="<%= body?.deceasedType == 3 && body?.deceased ? 'text-dot-pl text-center' : 'text-dot-no-value' %>">
+                            <%= body?.deceasedType == 3 && body?.deceased ? body.deceased : "" %></span>
                         </div>
                       </div>
-                      <div  class="px-sm">
+                      <div class="col-5 px-sm ">
                         <input type="checkbox" id="cate1" name="cate1" value="1"
                           <%=body?.deceasedType==4 &&
                           body?.fundDecease ? "checked" : "" %> />
-                        <span><span class="font-semi-bold">มารดา</span>
-                          (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</span>
-                        <div  class="d-flex px-sm">
-                          ชื่อ-นามสกุล&nbsp;<span
-                            class="<%= body?.deceasedType == 4 && body?.deceased ? 'text-dot' : '' %>">
-                            <%= body?.deceasedType == 4 && body?.deceased ?
-                            body.deceased
-                            :
-                            " ....................................................."
-                            %></span>
+                        <label><span class="font-semi-bold">มารดา</span>
+                          (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</label>
+                        <div class="d-flex px-sm text-center">
+                          ชื่อ-นามสกุล<span style="max-width: 150px; width: 150px;"
+                            class="<%= body?.deceasedType == 4 && body?.deceased ? 'text-dot-pl text-center' : 'text-dot-no-value' %>">
+                            <%= body?.deceasedType == 4 && body?.deceased ? body.deceased : "" %></span>
                         </div>
                       </div>
                     </div>
-                    <div class="row pt-md px-md pb-sm" style="gap: 16px">
-                      <div  class="px-sm">
+
+                    <div class="row pt-md px-md pb-sm" style="gap: 8px">
+                      <div class="col-5 px-sm">
                         <input type="checkbox" id="cate1" name="cate1" value="1"
                           <%=body?.deceasedType==5 &&
                           body?.fundDecease ? "checked" : "" %> />
-                        <span><span class="font-semi-bold">คู่สมรส</span>
-                          (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</span>
-                        <div  class="d-flex px-sm">
-                          ชื่อ-นามสกุล&nbsp;<span
-                            class="<%= body?.deceasedType == 5 && body?.deceased ? 'text-dot' : '' %>">
-                            <%= body?.deceasedType == 5 && body?.deceased ?
-                            body.deceased
-                            :
-                            " ....................................................."
-                            %></span>
+                        <label><span class="font-semi-bold">คู่สมรส</span>
+                          (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</label>
+                        <div class="d-flex px-sm text-center">
+                          ชื่อ-นามสกุล<span style="max-width: 150px; width: 150px;"
+                            class="<%= body?.deceasedType == 5 && body?.deceased ? 'text-dot-pl text-center' : 'text-dot-no-value' %>">
+                            <%= body?.deceasedType == 5 && body?.deceased ? body.deceased : "" %></span>
                         </div>
                       </div>
-                      <div  class="px-sm">
+                      <div class="col-5 px-sm">
                         <input type="checkbox" id="cate1" name="cate1" value="1"
                           <%=body?.deceasedType==6 &&
                           body?.fundDecease ? "checked" : "" %> />
-                        <span><span class="font-semi-bold">บุตร</span>
-                          (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</span>
-                        <div  class="d-flex px-sm">
-                          ชื่อ-นามสกุล&nbsp;<span
-                            class="<%= body?.deceasedType == 6 && body?.deceased ? 'text-dot' : '' %>">
-                            <%= body?.deceasedType == 6 && body?.deceased ?
-                            body.deceased
-                            :
-                            " ....................................................."
-                            %></span>
+                        <label><span class="font-semi-bold">บุตร</span>
+                          (ให้แนบสำเนาทะเบียนบ้านผู้เบิก)</label>
+                        <div class="d-flex px-sm text-center">
+                          ชื่อ-นามสกุล<span style="max-width: 150px; width: 150px;"
+                            class="<%= body?.deceasedType == 6 && body?.deceased ? 'text-dot-pl text-center' : 'text-dot-no-value' %>">
+                            <%= body?.deceasedType == 6 && body?.deceased ? body.deceased : "" %></span>
                         </div>
                       </div>
                     </div>
+                    
                   </div>
                 </div>
               </div>
@@ -433,37 +419,29 @@
               </div>
             </div>
             <div class="row py-md" style="gap: 8px">
-              <span class="px-md text-white">๒.</span>
-              <div style="flex: 1">
+              <span class="px-sm text-white">๒.</span>
+              <div style="flex: 1" class="d-flex">
                 <span>จำนวนเงิน</span>
-                <span class="<%= body?.fundSumRequest ? 'text-dot' : '' %>">
-                  <%=
-                  toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US',{
-                  minimumFractionDigits:
-                  body?.fundSumRequest % 1===0 ? 0 : 2, maximumFractionDigits:
-                  2, })) %>
+                <span style="max-width: 150px; width: 150px;" class="<%= body?.fundSumRequest ? 'text-dot text-center' : 'text-dot-no-value' %>">
+                  <%=  toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US',{ minimumFractionDigits:
+                    body?.fundSumRequest % 1===0 ? 0 : 2, maximumFractionDigits: 2, })) %>
                 </span> <span>บาท</span>
-                ( <span class="<%= body?.fundSumRequest ? 'text-dot' : '' %>">
+                ( <span style="max-width: 200px; width: 200px;" class="<%= body?.fundSumRequest ? 'text-dot text-center' : 'text-dot-no-value' %>">
                   <%= bahttext(Number(body?.fundSumRequest)) %>
                 </span> ) จริง
               </div>
             </div>
-            <div class="row px-md py-sm"
-              style="gap: 8px; align-items: flex-end">
+            <div class="row px-md py-sm" style="gap: 8px; align-items: flex-end">
               <div class="col"></div>
               <div class="col row">
                 <div class="col-sign2">
-                  ลงชื่อ.........................................................ผู้ขอรับเงินสวัสดิการ
+                  ลงชื่อ <div class="text-dot-no-value" style="max-width: 170px;"></div>ผู้ขอรับเงินสวัสดิการ
+                </div>
+                <div class="col-sign2 py-sm text-center" style="padding-left: 32px; width: 100%;">
+                  ( <div class="text-dot text-center" style="max-width: 80%;"><%= body?.user?.name %> </div> )
                 </div>
                 <div class="col-sign2 py-sm" style="padding-left: 32px;">
-                  <div>
-                    ( <span class="text-dot">
-                      <%= body?.user?.name %>
-                    </span> )
-                  </div>
-                </div>
-                <div class="col-sign2" style="padding-left: 32px;">
-                  วันที่..........เดือน............ พ.ศ. ............
+                  วันที่<div class="text-dot-no-value" style="max-width: 50px;"> </div>เดือน <div class="text-dot-no-value" style="max-width: 50px;"> </div> พ.ศ. <div class="text-dot-no-value" style="max-width: 50px;"> </div>
                 </div>
               </div>
             </div>
@@ -472,13 +450,11 @@
         <tr>
           <td>
             <div class="row" style="gap: 8px">
-              <span class="font-semi-bold px-md"
-                class="col-12 px-md">การตรวจสอบ</span>
-              <div class="col-12 px-md">
+              <span class="font-semi-bold px-md" class="col-12 px-md">การตรวจสอบ</span>
+              <div class="col-12 px-md d-flex">
                 <span class="font-semi-bold px-md">เสนอ</span>
-                <span class="text-dot">
-                  <%= body?.user?.positionId==2 || body?.user?.positionId==3 ?
-                  "อธิการบดี" : "คณบดี" %>
+                <span style="max-width: 100px; width: 100px;" class="text-dot text-center">
+                  <%= body?.user?.positionId==2 || body?.user?.positionId==3 ? "อธิการบดี" : "คณบดี" %>
                 </span>
               </div>
             </div>
@@ -490,32 +466,27 @@
                   ขอรับรองว่าผู้ขอเบิกสวัสดิการฯ มีสิทธิเบิกสวัสดิการฯ
                   ได้ตามประกาศ คณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา
                 </div>
-                <div class="col-12 pl-sm ml-sm">
-                  ๒. ผู้ขับรับสวัสดิการฯ
-                  มีสิทธิเบิกตามจำนวนเงินที่ขอเบิก..............................บาท
+                <div class="col-12 pl-sm ml-sm row">
+                  ๒. ผู้ขอรับสวัสดิการฯ
+                  มีสิทธิเบิกตามจำนวนเงินที่ขอเบิก <div class="text-dot-no-value" style="max-width: 100px !important; width: 100px !important;"></div> บาท
                   จริง ไม่เกินอัตราที่กำหนดต่อปี
                 </div>
               </div>
             </div>
-            <div class="row px-md py-sm"
-              style="gap: 8px; align-items: flex-end">
+            <div class="row px-md py-sm" style="gap: 8px; align-items: flex-end">
               <div class="col"></div>
               <div class="col row justify-center">
                 <div class="col-sign">
-                  ลงชื่อ.........................................................ผู้ตรวจสอบ
+                  ลงชื่อ <div class="text-dot-no-value" style="max-width: 200px;"></div>ผู้ตรวจสอบ
                 </div>
                 <div class="col-sign py-sm">
-                  (..............................................................)
+                  ( <div class="text-dot" style="max-width: 220px;"> </div> )
                 </div>
                 <div class="col-position px-md">
-                  <div>ตำแหน่ง</div>
-                  <div class="text-dot">
-                    <%= body?.user?.positionId==2 || body?.user?.positionId==3 ?
-                    "อธิการบดี" : "คณบดี" %>
-                  </div>
+                  ตำแหน่ง <div class="text-dot-no-value" style="max-width: 170px;"> <%= body?.user?.positionId==2 || body?.user?.positionId==3 ? "อธิการบดี" : "คณบดี" %></div>
                 </div>
                 <div class="col-sign py-sm">
-                  วันที่..........เดือน............ พ.ศ. ............
+                  วันที่<div class="text-dot-no-value" style="max-width: 50px;"> </div>เดือน <div class="text-dot-no-value" style="max-width: 50px;"> </div> พ.ศ. <div class="text-dot-no-value" style="max-width: 50px;"> </div>
                 </div>
               </div>
             </div>
@@ -524,8 +495,7 @@
         <tr>
           <td>
             <div class="row" style="gap: 8px">
-              <span class="font-semi-bold px-md"
-                class="col-12 px-md">คำอนุมัติ</span>
+              <span class="font-semi-bold px-md" class="col-12 px-md">คำอนุมัติ</span>
             </div>
             <div class="d-flex py-sm" style="width: 100%;">
               <div style="width: 5%;"></div>
@@ -533,21 +503,20 @@
                 <div class="pl-md ml-md"> อนุมัติเบิกจ่ายได้</div>
               </div>
             </div>
-            <div class="row px-md py-sm"
-              style="gap: 8px; align-items: flex-end">
+            <div class="row px-md py-sm" style="gap: 8px; align-items: flex-end">
               <div class="col"></div>
               <div class="col row justify-center">
                 <div class="col-sign">
-                  ลงชื่อ.........................................................ผู้อนุมัติ
+                  ลงชื่อ <div class="text-dot-no-value" style="max-width: 200px;"></div>ผู้อนุมัติ
                 </div>
                 <div class="col-sign py-sm">
-                  (..............................................................)
+                  ( <div class="text-dot" style="max-width: 220px;"> </div> )
                 </div>
                 <div class="col-sign px-md">
-                  ตำแหน่ง..........................................
+                  ตำแหน่ง <div class="text-dot-no-value" style="max-width: 170px;"></div>
                 </div>
                 <div class="col-sign py-sm">
-                  วันที่..........เดือน............ พ.ศ. ............
+                  วันที่<div class="text-dot-no-value" style="max-width: 50px;"> </div>เดือน <div class="text-dot-no-value" style="max-width: 50px;"> </div> พ.ศ. <div class="text-dot-no-value" style="max-width: 50px;"> </div>
                 </div>
               </div>
             </div>
@@ -556,10 +525,9 @@
         <tr>
           <td>
             <div class="row" style="gap: 8px">
-              <span class="font-semi-bold px-md"
-                class="col-12 px-md">ใบรับเงิน</span>
+              <span class="font-semi-bold px-md" class="col-12 px-md">ใบรับเงิน</span>
             </div>
-            <div class="d-flex" style="width: 100%;">
+            <div class="d-flex pb-sm" style="width: 100%;">
               <div style="width: 5%;"></div>
               <div style="width: 95%;">
                 <div class="row px-md ml-md pt-md" style="gap: 8px">
@@ -568,38 +536,33 @@
                     มหาวิทยาลัยบูรพา
                   </div>
                 </div>
-                <div class="row px-md ml-md" style="gap: 8px">
-                  <div style="flex: 1" class="pl-md ml-md">
+                <div class="row px-md ml-md pt-sm" style="gap: 8px">
+                  <div style="flex: 1" class="pl-md ml-md d-flex">
                     <span>
                       จำนวนเงิน
                     </span>
-                    <span class="<%= body?.fundSumRequest ? 'text-dot' : '' %>">
-                      <%=
-                      toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US',{
-                      minimumFractionDigits:
-                      body?.fundSumRequest % 1===0 ? 0 : 2,
-                      maximumFractionDigits: 2, })) %>
+                    <span style="max-width: 150px; width: 150px;" class="<%= body?.fundSumRequest ? 'text-dot text-center' : 'text-dot-no-value' %>">
+                      <%= toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US',{ minimumFractionDigits:
+                        body?.fundSumRequest % 1===0 ? 0 : 2, maximumFractionDigits: 2, })) %>
                     </span>
                     <span>
                       บาท
                     </span>
-                    ( <span
-                      class="<%= body?.fundSumRequest ? 'text-dot' : '' %>">
+                    ( <span style="max-width: 200px; width: 200px;" class="<%= body?.fundSumRequest ? 'text-dot text-center' : 'text-dot-no-value' %>">
                       <%= bahttext(Number(body?.fundSumRequest)) %>
                     </span> ) ไว้ถูกต้องแล้ว/ครบถ้วนแล้ว
                   </div>
                 </div>
               </div>
             </div>
-            <div class="row px-md py-md"
-              style="gap: 8px; align-items: flex-end">
+            <div class="row px-md py-md" style="gap: 8px; align-items: flex-end">
               <div class="col"></div>
               <div class="col row justify-center">
                 <div class="col-sign">
-                  ลงชื่อ.........................................................ผู้รับเงิน
+                  ลงชื่อ <div class="text-dot-no-value" style="max-width: 200px;"></div>ผู้รับเงิน
                 </div>
                 <div class="col-sign py-sm">
-                  (..............................................................)
+                  ( <div class="text-dot" style="max-width: 220px;"> </div> )
                 </div>
               </div>
             </div>
@@ -607,13 +570,13 @@
               <div class="col"></div>
               <div class="col row justify-center">
                 <div class="col-sign">
-                  ลงชื่อ.........................................................ผู้จ่ายเงิน
+                  ลงชื่อ <div class="text-dot-no-value" style="max-width: 200px;"></div>ผู้จ่ายเงิน
                 </div>
                 <div class="col-sign py-sm">
-                  (..............................................................)
+                  ( <div class="text-dot" style="max-width: 220px;"> </div> )
                 </div>
                 <div class="col-sign py-sm">
-                  วันที่..........เดือน............ พ.ศ. ............
+                  วันที่<div class="text-dot-no-value" style="max-width: 50px;"> </div>เดือน <div class="text-dot-no-value" style="max-width: 50px;"> </div> พ.ศ. <div class="text-dot-no-value" style="max-width: 50px;"> </div>
                 </div>
                 <div class="col-sign py-sm">
                   ลงชื่อต่อเมื่อได้รับเงินแล้วเท่านั้น
@@ -649,6 +612,6 @@
     <div class="page-break"></div>
     <div class="py-sm"></div>
     <%- receipt %>
-  </body>
+</body>
 
 </html>

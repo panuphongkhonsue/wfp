@@ -143,6 +143,11 @@ div{
     flex: 1 1 0%;
     max-width: 100%;
 }
+.col-5 {
+    flex: 0 0 40%;  
+    max-width: 40%;
+}
+
 .col-12 {
     flex: 0 0 100%;
     max-width: 100%;
@@ -191,6 +196,22 @@ div{
     position: absolute;
     left: 0;
     bottom: 3px;
+    width: 100%;
+    height: 1px;
+    border-bottom: 1.5px dotted black;
+}
+.text-dot-pl {
+    position: relative;
+    flex-grow: 1;
+    min-width: fit-content; 
+    padding : 0 4px 0 4px;
+    margin : 0 4px 0 4px;
+}
+.text-dot-pl::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
     width: 100%;
     height: 1px;
     border-bottom: 1.5px dotted black;
