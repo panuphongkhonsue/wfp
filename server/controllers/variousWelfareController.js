@@ -121,7 +121,7 @@ class Controller extends BaseController {
                 let matched = bindData.find(item => item.categoryId === cat.categoryId);
 
                 return {
-                    categoryName: cat.categoryName, 
+                    categoryName: cat.categoryName,
                     categoryId: cat.categoryId,
                     totalSumRequested: matched ? matched.totalSumRequested : 0,
                     fund: cat.fundRemaining,
@@ -130,8 +130,10 @@ class Controller extends BaseController {
                     perYears: cat.requestsRemaining,
                     requestsRemaining: matched ? matched.requestsRemaining : cat.requestsRemaining,
                     perTimesRemaining: cat.perTimesRemaining,
-                    canRequest: (matched ? matched.fundRemaining : cat.fundRemaining) > 0 &&
-                        ((matched ? matched.requestsRemaining : cat.requestsRemaining) !== 0)
+                    canRequest:
+                        ((matched ? matched.fundRemaining : cat.fundRemaining) === null || (matched ? matched.fundRemaining : cat.fundRemaining) > 0) &&
+                        ((matched ? matched.requestsRemaining : cat.requestsRemaining) === null || (matched ? matched.requestsRemaining : cat.requestsRemaining) > 0)
+
 
                 };
             });

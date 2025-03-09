@@ -56,14 +56,14 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
-                {{ remaining[4]?.categoryName  ?? "ค่าสมรส" }} :
+                {{ remaining[4]?.categoryName ?? "ค่าสมรส" }} :
                 {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
                   remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"  
-                  }}
+                  "(ไม่จำกัดครั้ง)"
+                }}
               </p>
               <p class="col-12 q-mb-none">
                 {{ remaining[5]?.categoryName ?? "ค่าอุปสมบทหรือประกอบพิธีฮัจญ์" }} :
@@ -72,8 +72,8 @@
                     "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"  
-                   }}
+                  "(ไม่จำกัดครั้ง)"
+                }}
               </p>
               <p class="col-12 q-mb-none">
                 {{ remaining[6]?.categoryName ?? "ค่ารับขวัญบุตร" }} :
@@ -82,8 +82,8 @@
                     "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"  
-                   }}
+                  "(ไม่จำกัดครั้ง)"
+                }}
               </p>
               <p class="col-12 q-mb-none">
                 {{ remaining[7]?.categoryName ?? "กรณีประสบภัยพิบัติ" }} :
@@ -92,8 +92,8 @@
                     "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"  
-                  }}
+                  "(ไม่จำกัดครั้ง)"
+                }}
               </p>
             </q-card-section>
           </q-card>
@@ -151,11 +151,15 @@
               <div class="col-lg-4 col-12 ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundEligible" :data="model.fundEligible ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number"
-                  class="q-py-xs-md q-py-lg-none" :is-view="isView"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ'
-                    , (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemaining || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง']"
-                  :error-message="isError?.fundEligible" :error="!!isError?.fundEligible">
+                  class="q-py-xs-md q-py-lg-none" :is-view="isView" :rules="[
+                    (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
+                    (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
+                    (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
+                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง',
+                    (val) => isOverfundRemaining !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
+                  ]" :error-message="isError?.fundEligible" :error="!!isError?.fundEligible">
                 </InputGroup>
+
               </div>
             </q-card-section>
           </q-card>
@@ -192,12 +196,12 @@
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'various_welfare_list' }" />
-        <q-btn :disable="isValidate" id="button-draft"
+        <q-btn :disable="isButtonDisabled || isValidate" id="button-draft"
           class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
           label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
-        <q-btn :disable="isValidate" id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense
-          type="submit" style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
-          v-if="!isView && !isLoading" />
+        <q-btn :disable="isButtonDisabled || isValidate" id="button-approve"
+          class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
+          label="ส่งคำร้องขอ" no-caps @click="submit(2)" v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -269,20 +273,22 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   model.value = null;
 });
+const isButtonDisabled = computed(() => {
+  return !remaining.value[model.value.categoryId]?.canRequest;
+});
 
 watch(
   () => model.value.categoryId,
   (newValue) => {
-    console.log(isFetch.value)
-    if (newValue !== null && !isFetch.value ) {
-      isError.value = {}; 
+    if (newValue !== null && !isFetch.value) {
+      isError.value = {};
       model.value.fundEligible = null;
       model.value.fundReceipt = null;
+
     }
     isFetch.value = false;
   }
 );
-
 
 watch(
   () => model.value.createFor,
@@ -336,12 +342,15 @@ const isOverfundRemaining = computed(() => {
 
   const perTimes = categoryData.perTimesRemaining ? parseFloat(categoryData.perTimesRemaining.replace(/,/g, "")) : null;
   const fundRemaining = categoryData.fundRemaining ? parseFloat(categoryData.fundRemaining.replace(/,/g, "")) : null;
+  const canRequest = categoryData.canRequest ?? true;
   let check = false;
   if (Number(fundSumRequest) > perTimes && categoryData.perTimesRemaining) {
     check = 1;
   }
   if (Number(fundSumRequest) > fundRemaining && categoryData.fundRemaining) {
     check = 2;
+  } if (!canRequest) {
+    check = 3;
   }
   return check;
 });
@@ -409,7 +418,7 @@ async function fetchRemaining() {
     const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
     if (Array.isArray(fetchRemaining.data?.datas)) {
       fetchRemaining.data.datas.forEach((item) => {
-        remaining.value[item.categoryId] = { ...item }; 
+        remaining.value[item.categoryId] = { ...item };
 
         if (item.fundRemaining !== null && !isNaN(Number(item.fundRemaining))) {
           remaining.value[item.categoryId].fundRemaining = formatNumber(item.fundRemaining);
@@ -424,8 +433,16 @@ async function fetchRemaining() {
           remaining.value[item.categoryId].fund = formatNumber(item.fund);
         }
       });
+
+      if (Array.isArray(fetchRemaining.data?.datas)) {
+        canRequest.value = fetchRemaining.data.datas.some(item => item.canRequest === true);
+
+      } else {
+        canRequest.value = false;
+      }
+
     }
-    canRequest.value = fetchRemaining.data?.canRequest;
+
   } catch (error) {
     Promise.reject(error);
   }

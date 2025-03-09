@@ -292,7 +292,7 @@ async function fetchDataDashboard(filters) {
         }));
       chartOptions.value = {
         ...chartOptions.value,
-        xaxis: { categories: years },
+        xaxis: { categories: years.map(year => toThaiYear(year)) },
         series: series,
       };
 

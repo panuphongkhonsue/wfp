@@ -56,27 +56,34 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
-                {{ remaining[3]?.subCategoriesName ?? "บิดา" }} : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาทต่อปี" :
+                {{ remaining[3]?.subCategoriesName ?? "บิดา" }} : {{ remaining[3]?.fundRemaining ?
+                  remaining[3]?.fundRemaining +
+                  " บาทต่อปี" :
                   remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                {{ remaining[4]?.subCategoriesName ?? "มารดา" }} : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
+                {{ remaining[4]?.subCategoriesName ?? "มารดา" }} : {{ remaining[4]?.fundRemaining ?
+                  remaining[4]?.fundRemaining
+                  + " บาทต่อปี" :
                   remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                {{ remaining[5]?.subCategoriesName ?? "คู่สมรส" }} : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
+                {{ remaining[5]?.subCategoriesName ?? "คู่สมรส" }} : {{ remaining[5]?.fundRemaining ?
+                  remaining[5]?.fundRemaining + " บาทต่อปี" :
                   remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
                     "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
               <p class="col-12 q-mb-none">
-                {{ remaining[6]?.subCategoriesName ?? "บุตร" }} : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
+                {{ remaining[6]?.subCategoriesName ?? "บุตร" }} : {{ remaining[6]?.fundRemaining ?
+                  remaining[6]?.fundRemaining +
+                  " บาทต่อปี" :
                   remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                "ไม่จำกัดจำนวนเงิน"
                 }}
               </p>
             </q-card-section>
@@ -105,7 +112,8 @@
                 <span> Export</span>
               </a>
             </q-card-section>
-            <q-card-section v-show="isView || isEdit" class="row wrap font-medium q-pb-sm q-pt-none font-16 text-grey-9">
+            <q-card-section v-show="isView || isEdit"
+              class="row wrap font-medium q-pb-sm q-pt-none font-16 text-grey-9">
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
               <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
               </p>
@@ -135,11 +143,15 @@
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund-request" is-dense v-model="model.fundDecease" :data="model.fundDecease ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number"
-                  class="q-py-xs-md q-py-lg-none" :is-view="isView"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOverDecease || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ'
-                    , (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemaining || 'สามารถเบิกได้สูงสุด ' + remaining[3, 4, 5, 6].perTimesRemaining + ' บาทต่อครั้ง']"
-                  :error-message="isError?.fundDecease" :error="!!isError?.fundDecease">
+                  class="q-py-xs-md q-py-lg-none" :is-view="isView" :rules="[
+                    (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
+                    (val) => !isOverDecease || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ',
+                    (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
+                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + (remaining[model.value.deceasedType]?.perTimesRemaining ?? '-') + ' บาทต่อครั้ง',
+                    (val) => isOverfundRemaining !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
+                  ]" :error-message="isError?.fundDecease" :error="!!isError?.fundDecease">
                 </InputGroup>
+
               </div>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
@@ -259,9 +271,9 @@
         <q-btn :disable="isValidate" id="button-draft"
           class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
           label="บันทึกฉบับร่าง" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
-        <q-btn :disable="(!canRequest.wreath && !canRequest.vechicle) || isValidate" id="button-approve"
-          class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
-          label="ส่งคำร้องขอ" no-caps @click="submit(2)" v-if="!isView && !isLoading" />
+        <q-btn :disable="isValidate" id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense
+          type="submit" style="background-color: #43a047" label="ส่งคำร้องขอ" no-caps @click="submit(2)"
+          v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -411,27 +423,33 @@ const isOverfundRemaining = computed(() => {
   const fundSumRequest = Number(model.value.fundDecease ?? 0);
   let perTimes = 0;
   let fundRemaining = 0;
+  let canRequest = true;
   if (model.value.deceasedType) {
     switch (model.value.deceasedType) {
       case 3: // บิดา
         perTimes = remaining.value[3]?.perTimesRemaining ? parseFloat(remaining.value[3]?.perTimesRemaining.replace(/,/g, "")) : null;
         fundRemaining = remaining.value[3]?.fundRemaining ? parseFloat(remaining.value[3]?.fundRemaining.replace(/,/g, "")) : null;
+        canRequest = remaining.value[3]?.canRequest ?? true;
         break;
       case 4: // มารดา
         perTimes = remaining.value[4]?.perTimesRemaining ? parseFloat(remaining.value[4]?.perTimesRemaining.replace(/,/g, "")) : null;
         fundRemaining = remaining.value[4]?.fundRemaining ? parseFloat(remaining.value[4]?.fundRemaining.replace(/,/g, "")) : null;
+        canRequest = remaining.value[4]?.canRequest ?? true;
         break;
       case 5: // คู่สมรส
         perTimes = remaining.value[5]?.perTimesRemaining ? parseFloat(remaining.value[5]?.perTimesRemaining.replace(/,/g, "")) : null;
         fundRemaining = remaining.value[5]?.fundRemaining ? parseFloat(remaining.value[5]?.fundRemaining.replace(/,/g, "")) : null;
+        canRequest = remaining.value[5]?.canRequest ?? true;
         break;
       case 6: // บุตร
         perTimes = remaining.value[6]?.perTimesRemaining ? parseFloat(remaining.value[6]?.perTimesRemaining.replace(/,/g, "")) : null;
         fundRemaining = remaining.value[6]?.fundRemaining ? parseFloat(remaining.value[6]?.fundRemaining.replace(/,/g, "")) : null;
+        canRequest = remaining.value[6]?.canRequest ?? true;
         break;
       default:
         perTimes = 0;
         fundRemaining = 0;
+        canRequest = true;
     }
   }
   let check = false;
@@ -440,6 +458,9 @@ const isOverfundRemaining = computed(() => {
   }
   if (Number(fundSumRequest) > fundRemaining && remaining.value[3, 4, 5, 6]?.fundRemaining) {
     check = 2;
+  }
+  if (!canRequest) {
+    check = 3;
   }
   return check;
 });
@@ -514,8 +535,8 @@ watch(
   () => model.value.deceasedType,
   (newValue) => {
     console.log(isFetch.value)
-    if (newValue !== null && !isFetch.value ) {
-      isError.value = {}; 
+    if (newValue !== null && !isFetch.value) {
+      isError.value = {};
       model.value.decease = null;
     }
     isFetch.value = false;
@@ -589,7 +610,7 @@ async function fetchDataEdit() {
     try {
       const result = await variousWelfareFuneralFamilyService.dataById(route.params.id);
       var returnedData = result.data.datas;
-      
+
       if (returnedData) {
         model.value = {
           ...model,
@@ -658,7 +679,7 @@ async function fetchRemaining() {
 
     deceaseData.forEach((item) => {
       remaining.value[item.subCategoriesId] = {
-        subCategoriesName: item.subCategoriesName, 
+        subCategoriesName: item.subCategoriesName,
         requestsRemaining: formatNumber(item.requestsRemaining),
         fundRemaining: item.fundRemaining === "0" ? null : formatNumber(item.fundRemaining),
         perTimesRemaining: item.perTimesRemaining === "0" ? null : formatNumber(item.perTimesRemaining),

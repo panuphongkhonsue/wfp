@@ -128,7 +128,7 @@ const byIdMiddleWare = async (req, res, next) => {
 const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, fundEligible, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
             return next();
         }
         const errorObj = {};
@@ -275,9 +275,9 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
                 const dataBinding = {
-                    status : actionId,
+                    status: actionId,
                     updated_by: id,
                     categories_id: categoryId,
                 }
@@ -330,7 +330,7 @@ const getRemaining = async (req, res, next) => {
         const { id } = req.user;
         const { createFor } = req.query;
         const { created_by, createByData, categories_id, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
             return next();
         }
         req.query.filter = {};
@@ -387,7 +387,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_sum_request, categories_id, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
             return next();
         }
         const results = await reimbursementsAssist.findOne({
@@ -422,7 +422,7 @@ const checkUpdateRemaining = async (req, res, next) => {
             if (fund_sum_request < oldWelfareData.fund_sum_request) {
                 return next();
             }
-            else if (fund_sum_request > datas.perTimes && datas.perTimes) {
+            else if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
@@ -447,7 +447,7 @@ const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
         const { fund_sum_request, categories_id, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
             return next();
         }
         const getFund = await categories.findOne({
@@ -486,18 +486,18 @@ const checkRemaining = async (req, res, next) => {
         if (!categories_id) {
             return res.status(400).json({ message: "Category ID is missing or invalid" });
         }
+
         const { filter } = req.query;
         let whereObj = { ...filter };
         if (!isNullOrEmpty(categories_id)) {
             whereObj['$category.id$'] = { [Op.in]: [3, 4, 5, 6] };
         }
-        // 
 
         const results = await reimbursementsAssist.findAll({
             attributes: [
-                [literal("category.fund - SUM(reimbursementsAssist.fund_sum_request)"), "fundRemaining"],
+                [literal("COALESCE(category.fund - SUM(reimbursementsAssist.fund_sum_request), 0)"), "fundRemaining"],
                 [col("category.per_times"), "perTimes"],
-                [literal("category.per_years - COUNT(reimbursementsAssist.fund_sum_request)"), "requestsRemaining"]
+                [literal("GREATEST(0, COALESCE(category.per_years, 0) - COUNT(reimbursementsAssist.fund_sum_request))"), "requestsRemaining"]
             ],
             include: [
                 {
@@ -510,35 +510,37 @@ const checkRemaining = async (req, res, next) => {
             group: ["category.id"]
         });
 
-        if (results) {
+        if (results && results.length > 0) {
             const datas = JSON.parse(JSON.stringify(results));
+            const remainingData = datas[0] || {}; 
             if (status === 1) {
                 return next();
             }
-            if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+            if (remainingData.fundRemaining === 0 || remainingData.requestsRemaining === 0) {
                 logger.info('No Remaining', { method });
                 return res.status(400).json({
                     message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
                 });
             };
-            if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
+            if (fund_sum_request > remainingData.perTimes && !isNullOrEmpty(remainingData.perTimes)) {
                 return res.status(400).json({
-                    message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
+                    message: "คุณสามารถเบิกได้สูงสุด " + remainingData.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request > datas.fundRemaining && !isNullOrEmpty(datas.fundRemaining)) {
+            if (fund_sum_request > remainingData.fundRemaining && !isNullOrEmpty(remainingData.fundRemaining)) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
                 });
             }
-        };
+        }
         next();
     } catch (error) {
         logger.error(`Error in ${method}: ${error.message}`, { method });
         return res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 };
+
 const deletedMiddleware = async (req, res, next) => {
     const method = 'DeletedMiddleware';
     try {
