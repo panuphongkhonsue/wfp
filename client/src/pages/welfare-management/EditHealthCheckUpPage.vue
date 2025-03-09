@@ -42,7 +42,9 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col q-ma-none">{{ remaining.categoryName ?? "ตรวจสุขภาพประจำปี" }} : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาทต่อปี" :
+              <p class="col q-ma-none">{{ remaining.categoryName ?? "ตรวจสุขภาพประจำปี" }} : {{ remaining?.fundRemaining
+                ?
+                remaining?.fundRemaining + " บาทต่อปี" :
                 remaining?.perTimesRemaining ? remaining?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : '(ไม่จำกัดครั้ง)' }}
@@ -72,10 +74,15 @@
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'" is-require
-                label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" compclass="col-md-4 col-12" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ', (val) => !isOver || 'จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ'
-                  , (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemaining || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง'
+                label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" compclass="col-md-4 col-12" :rules="[
+                  (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ',
+                  (val) => !isOver || 'จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ',
+                  (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
+                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง',
+                    (val) => isOverfundRemaining !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                 ]" :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
+
               <InputGroup for-id="fund" is-dense :data="model.fundSumRequest ?? '-'" is-require
                 label="จำนวนที่ต้องการเบิก (บาท)" type="number" compclass="col-md-4 col-12" :is-view="isView"
                 v-if="isView">
@@ -136,9 +143,9 @@
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'welfare_management_list' }" />
         <q-btn :disable="isValidate" id="button-draft"
           class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
-          label="บันทึก" no-caps @click="submit(0)" v-if="!isView && !isLoading" />
+          label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
         <q-btn id="button-approve"
-        class="font-medium font-16 weight-8 text-white q-px-md" dense style="background-color: #E52020"
+        class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #E52020"
         label="ไม่อนุมัติ" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
         <q-btn :disable="!canRequest || isValidate" id="button-approve"
           class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
@@ -258,6 +265,9 @@ const isOverfundRemaining = computed(() => {
   if (Number(fundSumRequest) > fundRemaining && remaining.value.fundRemaining) {
     check = 2;
   }
+  if (!canRequest.value) {
+    check = 3;
+  }
   return check;
 });
 
@@ -324,7 +334,7 @@ watch(
         await fetchRemaining();
       }
     }
-  );
+);
 async function fetchDataEdit() {
   setTimeout(async () => {
     try {
@@ -410,7 +420,7 @@ async function fetchRemaining() {
     if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
       remaining.value.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
     }
-    if(fetchRemaining.data?.datas?.categoryName != null){
+    if (fetchRemaining.data?.datas?.categoryName != null) {
       remaining.value.categoryName = fetchRemaining.data?.datas?.categoryName;
     }
     canRequest.value = fetchRemaining.data?.canRequest;
@@ -479,20 +489,22 @@ async function submit(actionId) {
     validate = true;
   }
   if (isOverfundRemaining.value) {
-    validate = true;
-    isError.value.fundReceipt = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
     if (isOverfundRemaining.value === 2) {
-      isError.value.fundReceipt = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+      isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
     }
-    else {
-      isError.value.fundReceipt = "สามารถเบิกได้สูงสุด " + remaining.value.perTimesRemaining + " บาทต่อครั้ง";
+    else if(isOverfundRemaining.value === 1) {
+      isError.value.fundEligible = "สามารถเบิกได้สูงสุด " + remaining.value.perTimesRemaining + " บาทต่อครั้ง";
     }
+    else{
+      isError.value.fundEligible = "คุณใช้จำนวนการเบิกครบแล้ว";
+    }
+    validate = true;
   }
   if (isOver.value) {
     isError.value.fundReceipt = "จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
     validate = true;
   }
-  if (validate === true & actionId !== 4) {
+  if (validate === true && actionId !== 4) {
     Notify.create({
       message: "กรุณากรอกข้อมูลให้ครบถ้วน",
       position: "bottom-left",

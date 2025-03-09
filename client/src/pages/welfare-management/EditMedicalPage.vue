@@ -84,7 +84,8 @@
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedAccident" />
-              <p class="q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ {{ remaining?.accident.fund ? remaining?.accident.fund + " บาท ต่อปี" :
+              <p class="q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ {{ remaining?.accident.fund ?
+                remaining?.accident.fund + " บาท ต่อปี" :
                 remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาท ต่อครั้ง" :
                   "ไม่จำกัดจำนวนเงิน"
               }})</p>
@@ -97,23 +98,31 @@
                 :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
                 :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
-              <InputGroup for-id="fund-claim-accident" is-dense v-model="model.fundEligible" class="q-py-xs-md q-py-lg-none"
-                :data="model.fundEligible ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท"
-                type="number" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl"
-                :disable="!model.selectedAccident" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => model.selectedAccident && !isOverAccident || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
-                  , (val) => isOverfundRemainingAccident !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemainingAccident || 'สามารถเบิกได้สูงสุด ' + remaining.accident.perTimesRemaining + ' บาทต่อครั้ง'
+              <InputGroup for-id="fund-claim-accident" is-dense v-model="model.fundEligible"
+                class="q-py-xs-md q-py-lg-none" :data="model.fundEligible ?? '-'" is-require
+                label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" :is-view="isView"
+                compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl" :disable="!model.selectedAccident" :rules="[
+                  (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
+                  (val) => model.selectedAccident && !isOverAccident || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ',
+                  (val) => isOverfundRemainingAccident !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
+                  (val) => isOverfundRemainingAccident !== 1 || 'สามารถเบิกได้สูงสุด ' + (remaining.accident?.perTimesRemaining ?? '-') + ' บาทต่อครั้ง',
+                  (val) => isOverfundRemainingAccident !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                 ]" :error-message="isError?.fundEligible" :error="!!isError?.fundEligible">
               </InputGroup>
+
             </q-card-section>
             <q-card-section class="row wrap q-pt-none font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedPatientVisit" />
-              <p class="q-mb-none">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน {{ remaining?.patientVisit.fund ? remaining?.patientVisit.fund + " บาท ต่อปี" :
-                remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาท ต่อครั้ง" :
+              <p class="q-mb-none">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน {{ remaining?.patientVisit.fund
+                ?
+                remaining?.patientVisit.fund + " บาท ต่อปี" :
+                remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาท ต่อครั้ง"
+                  :
                   "ไม่จำกัดจำนวนเงิน"
               }} {{ remaining?.patientVisit.perYears ? "ปีนึงไม่เกิน " + remaining?.patientVisit.perYears +
-              " ครั้ง" :
-              'ไม่จำกัดครั้ง' }}</p>
+                  " ครั้ง" :
+                  'ไม่จำกัดครั้ง' }}</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-sm font-16 text-grey-9">
               <InputGroup label="ตั้งแต่วันที่" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl"
@@ -141,10 +150,13 @@
               </InputGroup>
               <InputGroup for-id="fund-claim-visit" is-dense v-model="model.fundSumRequestPatientVisit"
                 :data="model.fundSumRequestPatientVisit ?? '-'" is-require label="จำนวนเงินที่ต้องการเบิก (บาท)"
-                placeholder="บาท" type="number" :is-view="isView" class="q-py-xs-md q-py-lg-none" compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl"
-                :disable="!model.selectedPatientVisit" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
-                (val) => model.selectedPatientVisit && !isOverPatientVisit || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
-                  , (val) => isOverfundRemainingPatientVisit !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemainingPatientVisit || 'สามารถเบิกได้สูงสุด ' + remaining.patientVisit.perTimesRemaining + ' บาทต่อครั้ง'
+                placeholder="บาท" type="number" :is-view="isView" class="q-py-xs-md q-py-lg-none"
+                compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl" :disable="!model.selectedPatientVisit" :rules="[
+                  (val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
+                  (val) => model.selectedPatientVisit && !isOverPatientVisit || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ',
+                  (val) => isOverfundRemainingPatientVisit !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
+                  (val) => isOverfundRemainingPatientVisit !== 1 || 'สามารถเบิกได้สูงสุด ' + (remaining.patientVisit?.perTimesRemaining ?? '-') + ' บาทต่อครั้ง',
+                  (val) => isOverfundRemainingPatientVisit !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                 ]" :error-message="isError?.fundSumRequestPatientVisit" :error="!!isError?.fundSumRequestPatientVisit">
               </InputGroup>
             </q-card-section>
@@ -204,9 +216,9 @@
           class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
           label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
         <q-btn id="button-approve"
-        class="font-medium font-16 weight-8 text-white q-px-md" dense style="background-color: #E52020"
+        class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #E52020"
         label="ไม่อนุมัติ" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
-        <q-btn :disable="(!canRequest.accident && !canRequest.patientVisit) || isValidate" id="button-approve"
+        <q-btn :disable="!canRequest || isValidate" id="button-approve"
           class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
           label="อนุมัติ" no-caps @click="submit(3)" v-if="!isView && !isLoading" />
       </div>
@@ -339,6 +351,8 @@ const isOverfundRemainingAccident = computed(() => {
   }
   if (fundSumRequest > fundRemaining && remaining.value.accident?.fundRemaining) {
     check = 2;
+  } if (!canRequest.value.accident) {
+    check = 3;
   }
   return check;
 });
@@ -352,6 +366,8 @@ const isOverfundRemainingPatientVisit = computed(() => {
   }
   else if (fundSumRequest > fundRemaining && remaining.value.patientVisit?.fundRemaining) {
     check = 2;
+  } if (!canRequest.value.patientVisit) {
+    check = 3;
   }
   return check;
 });
@@ -412,7 +428,7 @@ watch(
         await fetchRemaining();
       }
     }
-  );
+);
 async function fetchDataEdit() {
   setTimeout(async () => {
     try {
@@ -828,7 +844,7 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US",{
+        return number.toLocaleString("en-US", {
           minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
           maximumFractionDigits: 2, // Limit to 2 decimal places
         }); // Format as '3,000'
