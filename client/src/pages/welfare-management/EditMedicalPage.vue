@@ -351,7 +351,7 @@ const isOverfundRemainingAccident = computed(() => {
   }
   if (fundSumRequest > fundRemaining && remaining.value.accident?.fundRemaining) {
     check = 2;
-  } if (!canRequest.value.accident) {
+  } if (!canRequest.value.accident && isFetchRemaining.value) {
     check = 3;
   }
   return check;
@@ -366,7 +366,7 @@ const isOverfundRemainingPatientVisit = computed(() => {
   }
   else if (fundSumRequest > fundRemaining && remaining.value.patientVisit?.fundRemaining) {
     check = 2;
-  } if (!canRequest.value.patientVisit) {
+  } if (!canRequest.value.patientVisit && isFetchRemaining.value) {
     check = 3;
   }
   return check;
@@ -535,6 +535,7 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
+const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await medicalWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -610,6 +611,7 @@ async function fetchRemaining() {
         },
       ]
     }
+    isFetchRemaining.value = true;
   } catch (error) {
     Promise.reject(error);
   }

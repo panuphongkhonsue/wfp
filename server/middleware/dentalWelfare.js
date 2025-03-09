@@ -333,7 +333,8 @@ const getRemaining = async (req, res, next) => {
         }
         req.query.filter[Op.and].push(
             { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
-            { '$reimbursementsGeneral.categories_id$': category.dentalWelfare }
+            { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
+            { '$reimbursementsGeneral.status$': { [Op.ne]: status.NotApproved }}
         );
         next();
     }
@@ -479,7 +480,7 @@ const checkRemaining = async (req, res, next) => {
             if (status === 1) {
                 return next();
             }
-            if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+            if (datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
                 logger.info('No Remaining', { method });
                 return res.status(400).json({
                     message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",

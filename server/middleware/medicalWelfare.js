@@ -414,7 +414,8 @@ const getRemaining = async (req, res, next) => {
         }
         req.query.filter[Op.and].push(
             { '$reimbursements_general.request_date$': getFiscalYearWhere },
-            { '$reimbursements_general.categories_id$': category.medicalWelfare }
+            { '$reimbursements_general.categories_id$': category.medicalWelfare },
+            { '$reimbursements_general.status$': { [Op.ne]: status.NotApproved }}
         );
         next();
     }
@@ -702,7 +703,7 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(accidentRemaining)) {
                 const datas = JSON.parse(JSON.stringify(accidentRemaining[0]));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+                if (datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธ์ขอเบิกสวัสดิการประสบอุบัติเหตุขณะปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
@@ -722,7 +723,7 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(patientVisitRemaining)) {
                 const datas = JSON.parse(JSON.stringify(patientVisitRemaining[0]));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+                if (datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธ์ขอเบิกสวัสดิการเยี่ยมไข้ผู้ปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",

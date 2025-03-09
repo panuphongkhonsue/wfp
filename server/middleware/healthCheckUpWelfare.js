@@ -127,7 +127,7 @@ const byIdMiddleWare = async (req, res, next) => {
 const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, fundDecree, fundUniversity, fundEligible, fundEligibleName, actionId } = req.body;
-        // todo [Mos]
+        
         if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
             return next();
         }
@@ -286,7 +286,7 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            // todo [Mos]
+            
             if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
                 const dataBinding = {
                     status : actionId,
@@ -344,7 +344,7 @@ const getRemaining = async (req, res, next) => {
         const { createFor } = req.query;
         const { created_by, createByData } = req.body;
         const { actionId } = req.body;
-        // todo [Mos]
+        
         if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
             return next();
         }
@@ -373,7 +373,8 @@ const getRemaining = async (req, res, next) => {
         }
         req.query.filter[Op.and].push(
             { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
-            { '$reimbursementsGeneral.categories_id$': category.healthCheckup }
+            { '$reimbursementsGeneral.categories_id$': category.healthCheckup },
+            { '$reimbursementsGeneral.status$': { [Op.ne]: status.NotApproved }}
         );
         next();
     }
@@ -388,7 +389,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const { filter } = req.query;
         const dataId = req.params['id'];
         var whereObj = { ...filter }
-        // todo [Mos]
+        
         const { fund_sum_request, actionId } = req.body;
         if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
            return next();
@@ -454,7 +455,7 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        // todo [Mos]
+        
         const { fund_sum_request, actionId } = req.body;
         if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
             return next();
@@ -521,7 +522,7 @@ const checkRemaining = async (req, res, next) => {
             if (status === 1) {
                 return next();
             }
-            if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+            if (datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
                 logger.info('No Remaining', { method });
                 return res.status(400).json({
                     message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",

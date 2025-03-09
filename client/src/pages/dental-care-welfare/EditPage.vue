@@ -252,7 +252,7 @@ const isOverfundRemaining = computed(() => {
   if (fundSumRequest > fundRemaining && remaining.value.fundRemaining) {
     check = 2;
   }
-  if (!canRequest.value) {
+  if (!canRequest.value && isFetchRemaining.value) {
     check = 3;
   }
   return check;
@@ -397,6 +397,7 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
+const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await dentalWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -451,6 +452,7 @@ async function fetchRemaining() {
         },
       ]
     }
+    isFetchRemaining.value = true;
   } catch (error) {
     Promise.reject(error);
   }
