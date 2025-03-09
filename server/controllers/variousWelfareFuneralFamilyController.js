@@ -230,7 +230,7 @@ class Controller extends BaseController {
                         totalSumRequested: 0,
                         totalCountRequested: 0,
                         fundRemaining: item.fund, 
-                        canRequest: item.fundRemaining !== 0 && item.requestsRemaining !== 0
+                        canRequest: item.fundRemaining > 0 && item.requestsRemaining > 0
                     });
                 });
                 datas.forEach(item => {
@@ -244,12 +244,12 @@ class Controller extends BaseController {
                             totalSumRequested: totalSumRequested,
                             totalCountRequested: item.totalCountRequested,
                             fundRemaining: calculatedFundRemaining < 0 ? 0 : calculatedFundRemaining, 
-                            canRequest: item.fundRemaining !== 0 && item.requestsRemaining !== 0
+                            canRequest: item.fundRemaining > 0 && item.requestsRemaining > 0
                         });
                     } else {
                         dataMap.set(item.subCategoriesId, {
                             ...item,
-                            canRequest: item.fundRemaining !== 0 && item.requestsRemaining !== 0
+                            canRequest: item.fundRemaining > 0 && item.requestsRemaining > 0
                         });
                     }
                 });
@@ -258,7 +258,8 @@ class Controller extends BaseController {
                 if (!isNullOrEmpty(wreathRemaining)) {
                     const datas = JSON.parse(JSON.stringify(wreathRemaining));
                     datas.forEach(item => {
-                        item.canRequest = (item.fundRemaining !== 0 && item.requestsRemaining !== 0);
+                        item.canRequest = (item.fundRemaining > 0 && item.requestsRemaining > 0);
+
                     });
                     bindData.push(...datas);
                 }
@@ -275,7 +276,7 @@ class Controller extends BaseController {
                     })
                     const datas = JSON.parse(JSON.stringify(getFund));
                     datas.forEach(item => {
-                        if (item.fundRemaining === 0 || item.requestsRemaining === 0) item.canRequest = false;
+                        if (item.fundRemaining === 0 || item.fundRemaining < 0 || item.requestsRemaining === 0 || item.requestsRemaining < 0) item.canRequest = false;
                         else item.canRequest = true;
                     });
                     bindData.push(datas);
@@ -289,7 +290,8 @@ class Controller extends BaseController {
                     if (datas.requestsRemaining == null) {
                         datas.requestsRemaining = datas.perYears;
                     }
-                    if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) datas.canRequest = false;
+                    
+                    if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) datas.canRequest = false;
                     else datas.canRequest = true;
                     bindData.push(datas);
                 }

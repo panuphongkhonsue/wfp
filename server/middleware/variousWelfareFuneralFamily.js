@@ -438,7 +438,8 @@ const getRemaining = async (req, res, next) => {
         }
         req.query.filter[Op.and].push(
             { '$reimbursements_assist.request_date$': getFiscalYearWhere },
-            { '$reimbursements_assist.categories_id$': category.variousFuneralFamily }
+            { '$reimbursements_assist.categories_id$': category.variousFuneralFamily },
+            { '$reimbursements_assist.status$':{ [Op.ne]: status.NotApproved} },
         );
         next();
     }
@@ -907,7 +908,7 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(decreaseRemaining)) {
                 const datas = JSON.parse(JSON.stringify(decreaseRemaining));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+                if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธ์ขอเบิกสวัสดิการเสียชีวิตครอบครัว เนื่องจากได้ทำการขอเบิกครบแล้ว",
@@ -927,7 +928,7 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(wreathRemaining)) {
                 const datas = JSON.parse(JSON.stringify(wreathRemaining[0]));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+                if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธ์ขอเบิกสวัสดิการการเสียชีวิตครอบครัว สนับสนุนค่าพวงหลีด เนื่องจากได้ทำการขอเบิกครบแล้ว",
@@ -958,7 +959,7 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(vechicleRemaining)) {
                 const datas = JSON.parse(JSON.stringify(vechicleRemaining[0]));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
+                if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธ์ขอเบิกสวัสดิการเสียชีวิตครอบครัว สนับสนุนค่าพาหนะ เนื่องจากได้ทำการขอเบิกครบแล้ว",

@@ -371,6 +371,8 @@ const getRemaining = async (req, res, next) => {
 
         req.query.filter[Op.and].push(
             { '$reimbursementsAssist.request_date$': getFiscalYearWhere },
+            { '$reimbursementsAssist.status$':{ [Op.ne]: status.NotApproved} },
+
         );
 
         next();
@@ -516,7 +518,7 @@ const checkRemaining = async (req, res, next) => {
             if (status === 1) {
                 return next();
             }
-            if (remainingData.fundRemaining === 0 || remainingData.requestsRemaining === 0) {
+            if (remainingData.fundRemaining === 0 || remainingData.requestsRemaining === 0 || remainingData.requestsRemaining < 0) {
                 logger.info('No Remaining', { method });
                 return res.status(400).json({
                     message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",

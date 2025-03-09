@@ -233,7 +233,7 @@ class Controller extends BaseController {
                         fundRemaining: datas.fundRemaining,
                         requestsRemaining: datas.requestsRemaining,
                         perTimesRemaining: datas.perTimesRemaining,
-                        canRequest: datas.fundRemaining > 0 ? true : false
+                        canRequest: false
                     });
                 } else {
                     const getFund = await categories.findAll({
@@ -254,7 +254,7 @@ class Controller extends BaseController {
                             fundRemaining: item.fundRemaining,
                             requestsRemaining: item.requestsRemaining,
                             perTimesRemaining: item.perTimesRemaining,
-                            canRequest: item.fundRemaining > 0 ? true : false
+                            canRequest: true
                         });
                     });
                 }
@@ -268,7 +268,7 @@ class Controller extends BaseController {
                         fundRemaining: datas.fundRemaining,
                         requestsRemaining: datas.requestsRemaining,
                         perTimesRemaining: datas.perTimesRemaining,
-                        canRequest: datas.fundRemaining > 0 ? true : false
+                        canRequest: isNullOrEmpty(decreaseRemaining) ? true : false
                     });
                 } else {
                     const getFund = await categories.findAll({
@@ -289,7 +289,7 @@ class Controller extends BaseController {
                             fundRemaining: item.fundRemaining,
                             requestsRemaining: item.requestsRemaining,
                             perTimesRemaining: item.perTimesRemaining,
-                            canRequest: item.fundRemaining > 0 ? true : false
+                            canRequest: isNullOrEmpty(decreaseRemaining) ? true : false
                         });
                     });
                 }
@@ -303,7 +303,7 @@ class Controller extends BaseController {
                         fundRemaining: datas.fundRemaining,
                         requestsRemaining: datas.requestsRemaining,
                         perTimesRemaining: datas.perTimesRemaining,
-                        canRequest: datas.fundRemaining > 0 ? true : false
+                        canRequest: isNullOrEmpty(decreaseRemaining) ? true : false
                     });
                 } else {
                     const getFund = await categories.findAll({
@@ -324,7 +324,7 @@ class Controller extends BaseController {
                             fundRemaining: item.fundRemaining,
                             requestsRemaining: item.requestsRemaining,
                             perTimesRemaining: item.perTimesRemaining,
-                            canRequest: item.fundRemaining > 0 ? true : false
+                            canRequest: isNullOrEmpty(decreaseRemaining) ? true : false
                         });
                     });
                 }
@@ -498,7 +498,6 @@ class Controller extends BaseController {
         }
     }
     create = async (req, res, next) => {
-        console.log("📌 Received payload:", req.body);
         const method = 'CreateFuneralWelfareEmployeeDeceased';
         const { id } = req.user;
         const selectedWreath = req.body.selected_wreath ?? false;

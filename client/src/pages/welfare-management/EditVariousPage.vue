@@ -322,7 +322,7 @@ const isOverfundRemaining = computed(() => {
   }
   if (Number(fundSumRequest) > fundRemaining && categoryData.fundRemaining) {
     check = 2;
-  } if (!canRequest) {
+  } if (!canRequest && isFetchRemaining.value) {
     check = 3;
   }
   return check;
@@ -386,6 +386,7 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
+const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -415,7 +416,7 @@ async function fetchRemaining() {
       }
 
     }
-
+    isFetchRemaining.value = true;
   } catch (error) {
     Promise.reject(error);
   }

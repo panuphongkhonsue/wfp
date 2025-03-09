@@ -134,7 +134,7 @@ const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, deceased, organizer, fundRequest, fundReceiptWreath, fundWreathUniversity, fundWreathArrange,
             fundReceiptVehicle, fundVehicle, selectedWreath, selectedVehicle, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
             return next();
         }
         const errorObj = {};
@@ -147,7 +147,7 @@ const checkNullValue = async (req, res, next) => {
                 message: "จำนวนเงินตามใบเสร็จน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
         }
-        
+
         if (isNullOrEmpty(fundRequest)) {
             errorObj["fundRequest"] = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก";
         } else if (isInvalidNumber(fundRequest)) {
@@ -340,10 +340,10 @@ const bindUpdate = async (req, res, next) => {
             attributes: ["status", "created_by"],
             where: { id: dataId, },
         });
-        var createByData;
+        var checkData;
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
-            createByData = datas.created_by;
+            checkData = datas.deceased;
             if (!req.access && datas.created_by !== id) {
                 return res.status(400).json({
                     message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
@@ -359,9 +359,9 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
                 const dataBinding = {
-                    status : actionId,
+                    status: actionId,
                     updated_by: id,
                 }
                 req.body = dataBinding;
@@ -403,8 +403,8 @@ const bindUpdate = async (req, res, next) => {
         if (!isNullOrEmpty(createFor) && !req.access) {
             dataBinding.created_by = createFor;
         }
-        if (!isNullOrEmpty(createByData) && req.access) {
-            dataBinding.createByData = createByData;
+        if (!isNullOrEmpty(checkData) && req.access) {
+            dataBinding.checkData = checkData;
         }
         req.body = dataBinding;
 
@@ -420,36 +420,32 @@ const getRemaining = async (req, res, next) => {
     const method = 'RemainingMiddleware';
     try {
         const { id } = req.user;
-        const { createFor } = req.query;
-        const { created_by, createByData, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        const { deceasedId } = req.query;
+        const { deceased, checkData, actionId } = req.body;
+        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
             return next();
         }
         req.query.filter = {};
         req.query.filter[Op.and] = [];
         const getFiscalYearWhere = getFiscalYear();
-        if (req.access && !isNullOrEmpty(createByData)) {
+        if (req.access && !isNullOrEmpty(checkData)) {
             req.query.filter[Op.and].push(
-                { '$reimbursements_employee_deceased.created_by$': createByData },
+                { '$reimbursements_employee_deceased.deceased$': checkData },
             );
         }
-        else if (!isNullOrEmpty(created_by) && req.isEditor) {
+        else if (!isNullOrEmpty(deceasedId) ) {
             req.query.filter[Op.and].push(
-                { '$reimbursements_employee_deceased.created_by$': created_by },
-            );
-        }
-        else if (!isNullOrEmpty(createFor) && req.isEditor) {
-            req.query.filter[Op.and].push(
-                { '$reimbursements_employee_deceased.created_by$': createFor },
+                { '$reimbursements_employee_deceased.deceased$': deceasedId },
             );
         }
         else {
             req.query.filter[Op.and].push(
-                { '$reimbursements_employee_deceased.created_by$': id },
+                { '$reimbursements_employee_deceased.deceased$':  deceased ?? id },
             );
         }
         req.query.filter[Op.and].push(
             { '$reimbursements_employee_deceased.request_date$': getFiscalYearWhere },
+            { '$reimbursements_employee_deceased.status$': { [Op.ne]: status.NotApproved } },
         );
         next();
     }
@@ -465,7 +461,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_request, fund_wreath_university, fund_wreath_arrange, fund_vehicle, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
             return next();
         }
         whereObj[Op.and].push(
@@ -696,7 +692,7 @@ const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
         const { fund_request, fund_wreath_university, fund_wreath_arrange, fund_vehicle, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
             return next();
         }
         const getFund = await categories.findAll({
@@ -732,36 +728,36 @@ const checkFullPerTimes = async (req, res, next) => {
 
             if (fund_wreath_university > datasWreath.perTimes && datasWreath.perTimes) {
                 return res.status(400).json({
-                    message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว ค่าพวงหลีด ในนามมหาวิทยาลัยได้สูงสุด " + datasWreath.perTimes + " ต่อครั้ง",
+                    message: "คุณสามารถเบิกสวัสดิการเสียชีวิตของผู้ปฎิบัติงาน ค่าพวงหลีด ในนามมหาวิทยาลัยได้สูงสุด " + datasWreath.perTimes + " ต่อครั้ง",
                 });
             }
             if (fund_wreath_university > datasWreath.fundRemaining && datasWreath.fundRemaining) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
-                    message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว ค่าพวงหลีด ในนามมหาวิทยาลัย เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
+                    message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตของผู้ปฎิบัติงาน ค่าพวงหลีด ในนามมหาวิทยาลัย เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
                 });
             }
             if (fund_wreath_arrange > datasWreath.perTimes && datasWreath.perTimes) {
                 return res.status(400).json({
-                    message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว ค่าพวงหลีด ในนามส่วนงานได้สูงสุด " + datasWreath.perTimes + " ต่อครั้ง",
+                    message: "คุณสามารถเบิกสวัสดิการเสียชีวิตของผู้ปฎิบัติงาน ค่าพวงหลีด ในนามส่วนงานได้สูงสุด " + datasWreath.perTimes + " ต่อครั้ง",
                 });
             }
             if (fund_wreath_arrange > datasWreath.fundRemaining && datasWreath.fundRemaining) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
-                    message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว ค่าพวงหลีด ในนามส่วนงาน เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
+                    message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตของผู้ปฎิบัติงาน ค่าพวงหลีด ในนามส่วนงาน เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
                 });
             }
 
             if (fund_vehicle > datasVehicle.perTimes && datasVehicle.perTimes) {
                 return res.status(400).json({
-                    message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว ค่าพาหนะเหมาจ่าย" + datasVehicle.perTimes + " ต่อครั้ง",
+                    message: "คุณสามารถเบิกสวัสดิการเสียชีวิตของผู้ปฎิบัติงาน ค่าพาหนะเหมาจ่าย" + datasVehicle.perTimes + " ต่อครั้ง",
                 });
             }
             if (fund_vehicle > datasVehicle.fundRemaining && datasVehicle.fundRemaining) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
-                    message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว ค่าพาหนะเหมาจ่าย เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
+                    message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตของผู้ปฎิบัติงาน ค่าพาหนะเหมาจ่าย เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
                 });
             }
         }
@@ -775,7 +771,7 @@ const checkFullPerTimes = async (req, res, next) => {
 const checkRemaining = async (req, res, next) => {
     const method = 'CheckRemainingMiddleware';
     try {
-        const { status, fund_request, fund_wreath_university, fund_wreath_arrange, fund_vehicle } = req.body;
+        const { status } = req.body;
         const { filter } = req.query;
         var whereObj = { ...filter }
         whereObj[Op.and].push(
@@ -816,179 +812,13 @@ const checkRemaining = async (req, res, next) => {
             group: ["category.id"],
         });
 
-        whereObj[Op.and].push({ '$category.id$': { [Op.in]: [10, 11] } });
-
-        const wreathRemaining = await reimbursementsEmployeeDeceasedHasCategories.findAll({
-            attributes: [
-                [col("category.id"), "categoriesId"],
-                [col("category.name"), "categoriesName"],
-                [col("category.fund"), "fund"],
-                [col("category.per_years"), "perYears"],
-                [col("category.per_times"), "perTimesRemaining"],
-                // fund_wreath_arrange
-                [
-                    fn("SUM", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE 0 END")),
-                    "totalSumRequestedArrange"
-                ],
-                [
-                    fn("SUM", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE 0 END")),
-                    "fundRemainingArrange"
-                ],
-                [
-                    fn("COUNT", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE NULL END")),
-                    "totalCountRequestedArrange"
-                ],
-                [
-                    fn("category.per_years - COUNT", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE NULL END")),
-                    "requestsRemainingArrange"
-                ],
-                // fund_wreath_university
-                [
-                    fn("SUM", literal("CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE 0 END")),
-                    "totalSumRequestedUniversity"
-                ],
-                [
-                    fn("SUM", literal("CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE 0 END")),
-                    "fundRemainingUniversity"
-                ],
-                [
-                    fn("COUNT", literal("CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE NULL END")),
-                    "totalCountRequestedUniversity"
-                ],
-                [
-                    fn("category.per_years - COUNT", literal("CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE NULL END")),
-                    "requestsRemainingUniversity"
-                ],
-            ],
-            include: [
-                {
-                    model: categories,
-                    as: "category",
-                    attributes: []
-                },
-                {
-                    model: reimbursementsEmployeeDeceased,
-                    as: "reimbursements_employee_deceased",
-                    attributes: [],
-
-                },
-            ],
-            where: whereObj,
-            group: ["category.id"],
-        });
-
-        whereObj[Op.and] = whereObj[Op.and].filter(item => [10, 11].includes(item['$category.id$']));
-        whereObj[Op.and].push({ '$category.id$': 12 });
-
-        const vehicleRemaining = await reimbursementsEmployeeDeceasedHasCategories.findAll({
-            attributes: [
-                [col("category.id"), "categoriesId"],
-                [col("category.name"), "categoriesName"],
-                [fn("SUM", col("reimbursements_employee_deceased.fund_vehicle")), "totalSumRequested"],
-                [col("category.fund"), "fund"],
-                [
-                    literal("category.fund - SUM(reimbursements_employee_deceased.fund_vehicle)"),
-                    "fundRemaining"
-                ],
-                [fn("COUNT", col("reimbursements_employee_deceased.fund_vehicle")), "totalCountRequested"],
-                [col("category.per_years"), "perYears"],
-                [
-                    literal("category.per_years - COUNT(reimbursements_employee_deceased.fund_vehicle)"),
-                    "requestsRemaining"
-                ],
-                [col("category.per_times"), "perTimesRemaining"],
-            ],
-            include: [
-                {
-                    model: categories,
-                    as: "category",
-                    attributes: []
-                },
-                {
-                    model: reimbursementsEmployeeDeceased,
-                    as: "reimbursements_employee_deceased",
-                    attributes: [],
-
-                },
-            ],
-            where: whereObj,
-            group: ["category.id"],
-        });
-        if (!isNullOrEmpty(decreaseRemaining) || !isNullOrEmpty(wreathRemaining) || !isNullOrEmpty(vehicleRemaining)) {
+        if (!isNullOrEmpty(decreaseRemaining)) {
             if (status === 1) {
                 return next();
             }
-            if (!isNullOrEmpty(decreaseRemaining)) {
-                const datas = JSON.parse(JSON.stringify(decreaseRemaining));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
-                    logger.info('No Remaining', { method });
-                    return res.status(400).json({
-                        message: "ไม่มีสิทธ์ขอเบิกสวัสดิการเสียชีวิตครอบครัว เนื่องจากได้ทำการขอเบิกครบแล้ว",
-                    });
-                };
-                if (fund_request > datas.perTimes && datas.perTimes) {
-                    return res.status(400).json({
-                        message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว " + datas.perTimes + " ต่อครั้ง",
-                    });
-                }
-                if (fund_request > datas.fundRemaining && datas.fundRemaining) {
-                    logger.info('Request Over', { method });
-                    return res.status(400).json({
-                        message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
-                    });
-                }
-            }
-            if (!isNullOrEmpty(wreathRemaining)) {
-                const datas = JSON.parse(JSON.stringify(wreathRemaining[0]));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
-                    logger.info('No Remaining', { method });
-                    return res.status(400).json({
-                        message: "ไม่มีสิทธ์ขอเบิกสวัสดิการการเสียชีวิตครอบครัว สนับสนุนค่าพวงหลีด เนื่องจากได้ทำการขอเบิกครบแล้ว",
-                    });
-                };
-                if (fund_wreath_university > datas.perTimes && datas.perTimes) {
-                    return res.status(400).json({
-                        message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว สนับสนุนค่าพวงหลีด ในนามมหาวิทยาลัยได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
-                    });
-                }
-                if (fund_wreath_university > datas.fundRemaining && datas.fundRemaining) {
-                    logger.info('Request Over', { method });
-                    return res.status(400).json({
-                        message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว สนับสนุนค่าพวงหลีด ในนามมหาวิทยาลัย เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
-                    });
-                }
-                if (fund_wreath_arrange > datas.perTimes && datas.perTimes) {
-                    return res.status(400).json({
-                        message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว สนับสนุนค่าพวงหลีด ในนามส่วนงานได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
-                    });
-                }
-                if (fund_wreath_arrange > datas.fundRemaining && datas.fundRemaining) {
-                    logger.info('Request Over', { method });
-                    return res.status(400).json({
-                        message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว สนับสนุนค่าพวงหลีด ในนามส่วนงาน เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
-                    });
-                }
-            }
-            if (!isNullOrEmpty(vehicleRemaining)) {
-                const datas = JSON.parse(JSON.stringify(vehicleRemaining[0]));
-                if (datas.fundRemaining === 0 || datas.requestsRemaining === 0) {
-                    logger.info('No Remaining', { method });
-                    return res.status(400).json({
-                        message: "ไม่มีสิทธ์ขอเบิกสวัสดิการเสียชีวิตครอบครัว สนับสนุนค่าพาหนะ เนื่องจากได้ทำการขอเบิกครบแล้ว",
-                    });
-                };
-                if (fund_vehicle > datas.perTimes && datas.perTimes) {
-                    return res.status(400).json({
-                        message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว สนับสนุนค่าพาหนะ " + datas.perTimes + " ต่อครั้ง",
-                    });
-                }
-                if (fund_vehicle > datas.fundRemaining && datas.fundRemaining) {
-                    logger.info('Request Over', { method });
-                    return res.status(400).json({
-                        message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว สนับสนุนค่าพาหนะ เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
-                    });
-                }
-            }
+            return res.status(400).json({
+                message: "ไม่มีสิทธ์ขอเบิกสวัสดิการเสียชีวิตของผู้ปฎิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
+            });
         };
         next();
     }

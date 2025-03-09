@@ -142,8 +142,13 @@
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund-request" is-dense v-model="model.fundRequest" :data="model.fundRequest ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
-                  :is-view="isView"  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก', (val) => !isOverRequest || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ'
-                    , (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้', (val) => !isOverfundRemaining || 'สามารถเบิกได้สูงสุด ' + remaining[9].perTimesRemaining + ' บาทต่อครั้ง']"
+                  :is-view="isView"  :rules="[
+                    (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
+                    (val) => !isOverRequest || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
+                    (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
+                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง',
+                    (val) => isOverfundRemaining !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
+                  ]"
                   :error-message="isError?.fundRequest" :error="!!isError?.fundRequest">
                 </InputGroup>
               </div>
@@ -365,6 +370,9 @@ const isValidate = computed(() => {
   if (!model.value.selectedWreath && !model.value.selectedVehicle && !model.value.deceased) {
     validate = true;
   }
+  if (!model.value.deceased) {
+    return true;
+  }
   if (model.value.deceased) {
     if (!model.value.organizer) {
       validate = true;
@@ -386,7 +394,7 @@ const isValidate = computed(() => {
     if (!model.value.fundReceiptWreath) {
       validate = true;
     }
-    if (!model.value.fundWreathArrange && !model.value.fundWreathUniversity) {
+    if (!model.value.fundWreathArrange || !model.value.fundWreathUniversity) {
       validate = true;  
     }
     if (isOverWreathArrange.value) {
@@ -416,9 +424,9 @@ const isValidate = computed(() => {
       validate = true;
     }
   }
-  if (!model.value.createFor && canCreateFor.value) {
-    validate = true;
-  }
+  // if (!model.value.createFor && canCreateFor.value) {
+  //   validate = true;
+  // }
   return validate;
 });
 const isOverfundRemaining = computed(() => {
@@ -431,6 +439,9 @@ const isOverfundRemaining = computed(() => {
   }
   if (Number(fundSumRequest) > fundRemaining && remaining.value[9]?.fundRemaining) {
     check = 2;
+  }
+  if (!canRequest.value.deceased && isFetchRemaining.value) {
+    check = 3;
   }
   return check;
 });
@@ -507,7 +518,6 @@ watch(
     try {
       if (canCreateFor.value) {
         if ((newValue !== null && newValue !== undefined) && !isView.value) {
-          // fetchRemaining();
           fetchUserData(newValue);
         }
       }
@@ -617,16 +627,10 @@ watch(
   async (newValue) => {
     if (newValue) {
       await fetchRemaining(newValue);
-    } else {
-      resetRemaining();
-    }
+    } 
   }
 );
-async function resetRemaining() {
-  remaining.value = {
-    9: { perTimesRemaining: null },
-  };
-}
+
 async function fetchDataEdit() {
   setTimeout(async () => {
     try {
@@ -693,18 +697,19 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
+const isFetchRemaining = ref(false);
 async function fetchRemaining(deceasedId) {
   try {
     const fetchedData = await funeralWelfareEmployeeDeceasedService.getRemaining({
-      createFor: model.value.createFor,
       deceasedId: deceasedId,
     });
 
     const deceaseData = fetchedData.data?.datas;
 
     // กำหนด canRequest สำหรับแต่ละประเภท
-    canRequest.value.wreath = deceaseData.some(item => item.subCategoriesId === 7 || item.subCategoriesId === 8);
-    canRequest.value.vehicle = deceaseData.some(item => item.subCategoriesId === 9);
+    canRequest.value.deceased = deceaseData.some(item => item.categoriesId === 9);
+    canRequest.value.wreath = deceaseData.some(item => item.categoriesId === 10 || item.categoriesId === 11);
+    canRequest.value.vehicle = deceaseData.some(item => item.categoriesId === 12);
 
     // ตรวจสอบและอัปเดต remaining สำหรับแต่ละ subCategoriesId
     if (Array.isArray(deceaseData)) {
@@ -715,7 +720,7 @@ async function fetchRemaining(deceasedId) {
       });
     }
 
-
+    isFetchRemaining.value = true;
   } catch (error) {
     console.error("Error fetching remaining data:", error);
     Notify.create({
