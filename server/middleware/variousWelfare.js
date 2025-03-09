@@ -6,7 +6,6 @@ const permissionType = require('../enum/permission')
 const statusText = require('../enum/statusText')
 const status = require('../enum/status')
 const welfareType = require('../enum/welfareType');
-const roleType = require('../enum/role')
 const category = require('../enum/category')
 const { permissionsHasRoles, reimbursementsAssist, categories, sequelize } = require('../models/mariadb')
 
@@ -129,6 +128,9 @@ const byIdMiddleWare = async (req, res, next) => {
 const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, fundEligible, actionId } = req.body;
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            return next();
+        }
         const errorObj = {};
         if (isNullOrEmpty(fundReceipt)) {
             errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
@@ -273,6 +275,16 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
+            if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+                const dataBinding = {
+                    status : actionId,
+                    updated_by: id,
+                    categories_id: categoryId,
+                }
+                req.body = dataBinding;
+                return next();
+            }
+            //To Do
             var reimNumber;
             reimNumber = getYear2Digits() + formatNumber(welfareType.Assist) + formatNumber(categoryId) + formatNumber(datas.id);
         }
@@ -317,7 +329,10 @@ const getRemaining = async (req, res, next) => {
     try {
         const { id } = req.user;
         const { createFor } = req.query;
-        const { created_by, createByData, categories_id } = req.body;
+        const { created_by, createByData, categories_id, actionId } = req.body;
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            return next();
+        }
         req.query.filter = {};
         req.query.filter[Op.and] = [];
         const getFiscalYearWhere = getFiscalYear();
@@ -371,7 +386,10 @@ const checkUpdateRemaining = async (req, res, next) => {
         const { filter } = req.query;
         const dataId = req.params['id'];
         var whereObj = { ...filter }
-        const { fund_sum_request, categories_id } = req.body;
+        const { fund_sum_request, categories_id, actionId } = req.body;
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            return next();
+        }
         const results = await reimbursementsAssist.findOne({
             attributes: [
                 [
@@ -428,7 +446,10 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { fund_sum_request, categories_id } = req.body;
+        const { fund_sum_request, categories_id, actionId } = req.body;
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            return next();
+        }
         const getFund = await categories.findOne({
             attributes: [
                 [col("fund"), "fundRemaining"],

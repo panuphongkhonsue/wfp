@@ -201,7 +201,7 @@ class Controller extends BaseController {
                 var welfareData = {
                     ...datas,
                     user: {
-                        id: datas.id,
+                        userId: datas.userId,
                         name: datas.name,
                         position: datas.position,
                         employeeType: datas.employeeType,
@@ -209,7 +209,7 @@ class Controller extends BaseController {
                         department: datas.department,
                     }
                 }
-                delete welfareData.id;
+                delete welfareData.userId;
                 delete welfareData.name;
                 delete welfareData.position;
                 delete welfareData.employeeType;

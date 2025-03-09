@@ -127,6 +127,9 @@ const byIdMiddleWare = async (req, res, next) => {
 const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, fundEligible, fundReceiptPatientVisit, fundSumRequestPatientVisit, selectedAccident, selectedPatientVisit, startDate, endDate, actionId } = req.body;
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            return next();
+        }
         const errorObj = {};
         if (!selectedAccident && !selectedPatientVisit) {
             return res.status(400).json({
@@ -325,6 +328,14 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
+            if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+                const dataBinding = {
+                    status : actionId,
+                    updated_by: id,
+                    }
+                req.body = dataBinding;
+                return next();
+            }
         }
         else {
             return res.status(400).json({
@@ -374,7 +385,10 @@ const getRemaining = async (req, res, next) => {
     try {
         const { id } = req.user;
         const { createFor } = req.query;
-        const { created_by, createByData } = req.body;
+        const { created_by, createByData, actionId } = req.body;
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            return next();
+        }
         req.query.filter = {};
         req.query.filter[Op.and] = [];
         const getFiscalYearWhere = getFiscalYear();
@@ -415,7 +429,10 @@ const checkUpdateRemaining = async (req, res, next) => {
         const { filter } = req.query;
         const dataId = req.params['id'];
         var whereObj = { ...filter }
-        const { fund_eligible, fund_sum_request_patient_visit } = req.body;
+        const { fund_eligible, fund_sum_request_patient_visit, actionId } = req.body;
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            return next();
+        }
         whereObj[Op.and].push(
             { '$sub_category.id$': 1 },
         );
@@ -549,7 +566,10 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { fund_eligible, fund_sum_request_patient_visit } = req.body;
+        const { fund_eligible, fund_sum_request_patient_visit, actionId } = req.body;
+        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            return next();
+        }
         const getFund = await subCategories.findAll({
             attributes: [
                 [col("id"), "subCategoriesId"],
