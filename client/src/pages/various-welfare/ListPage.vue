@@ -3,7 +3,7 @@
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
-          <InputGroup more-class="font-16 font-medium" for-id="requesId" is-dense clearable v-model="filter.keyword"
+          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense v-model="filter.keyword"
             label="ค้นหา" placeholder="ค้นหาจากเลขที่ใบเบิก">
           </InputGroup>
         </div>
@@ -24,7 +24,7 @@
             </template>
           </q-select>
         </div>
-        <div class="content-center q-pt-md-xs col-2 q-pt-xs-md q-pt-md-none">
+        <div class="content-end col-md-2 col-12 q-pt-xs-md q-pt-md-none">
           <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs" dense
             type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>
@@ -72,7 +72,7 @@
             "(ไม่จำกัดครั้ง)"
           }}
         </p>
-        <div class="col-12 col-md-2 flex justify-end">
+        <div class="col-12 col-md-12 col-lg-2 flex items-center justify-end">
           <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
             icon="add" :to="{ name: 'various_welfare_new' }" />
         </div>

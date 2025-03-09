@@ -24,7 +24,7 @@
             </template>
           </q-select>
         </div>
-        <div class="content-center q-pt-md-xs col-2 q-pt-xs-md q-pt-md-none">
+        <div class="content-end col-md-2 col-12 q-pt-xs-md q-pt-md-none">
           <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs" dense
             type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>
