@@ -134,47 +134,61 @@
         <q-separator />
       </div>
     </div>
-    <div class="row">
       <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
         row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
         table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
-        @request="onRequest" @row-click="(evt, row, index) => viewData(row.requestId)" class="col-12 ">
+        @request="onRequest" @row-click="(evt, row, index) => viewData(row.id, row.categoryName, row.welfareType)">
+
         <template v-slot:body-cell-index="props">
           <q-td :props="props">
             {{ props.rowIndex + 1 }}
           </q-td>
         </template>
+
         <template v-slot:no-data="{ icon }">
           <div class="full-width row flex-center text-negative q-gutter-sm">
             <q-icon size="2em" :name="icon" />
-            <span class="font-14 font-regular ">
-              Sorry, There isn't data from server.
+            <span class="font-remark font-regular ">
+              ไม่พบข้อมูล
             </span>
           </div>
         </template>
+
+        <template v-slot:body-cell-tools="props">
+          <q-td :props="props" class="">
+            <a @click.stop.prevent="viewData(props.row.id, props.row.categoryName, props.row.welfareType)"
+              class="text-dark q-py-sm q-px-xs cursor-pointer">
+              <q-icon :name="outlinedVisibility" size="xs" />
+            </a>
+            <a v-show="props.row.status.statusId == 2"
+              @click.stop.prevent="goto(props.row.id, props.row.categoryName, props.row.welfareType)"
+              class="text-dark q-py-sm q-px-xs cursor-pointer">
+              <q-icon :name="outlinedEdit" size="xs" color="blue" />
+            </a>
+            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="
+              deleteData(props.row.requestId)
+              " class="text-dark q-py-sm q-px-xs cursor-pointer">
+              <q-icon :name="outlinedDelete" size="xs" color="red" />
+            </a>
+            <a v-show="props.row.status.statusId == 2" @click.stop.prevent="
+              downloadData(props.row.id, props.row.categoryName, props.row.welfareType)
+              " class="text-dark q-py-sm q-px-xs cursor-pointer">
+              <q-icon :name="outlinedDownload" size="xs" color="blue" />
+            </a>
+          </q-td>
+        </template>
+
         <template v-slot:body-cell-statusName="props">
           <q-td :props="props" class="text-center">
-            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width" :color="statusColor(props.row.status)">
-              <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.status)">
+            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width"
+              :color="statusColor(props.row.statusName)">
+              <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.statusName)">
                 {{ props.row.status.name }}
               </p>
             </q-badge>
           </q-td>
         </template>
-        <template v-slot:body-cell-tools="props">
-          <q-td :props="props" class="">
-            <a v-show="props.row.status.statusId == 2" @click.stop.prevent="viewData(props.row.requestId)"
-              class="text-dark q-py-sm q-px-xs cursor-pointer">
-              <q-icon :name="outlinedVisibility" size="xs" />
-            </a>
-            <a v-show="props.row.status.statusId == 3" @click.stop.prevent="goto(props.row.requestId)"
-              class="text-dark q-py-sm q-px-xs cursor-pointer">
-              <q-icon :name="outlinedEdit" size="xs" color="blue" />
-            </a>
-          </q-td>
-        </template>
       </q-table>
-    </div>
   </q-page>
 </template>
 
@@ -183,7 +197,7 @@ import DynamicBreadcrumb from "components/DynamicBreadcrumb.vue";
 import { statusColor, textStatusColor } from "src/components/status";
 import { ref, onMounted } from "vue";
 import { useListStore } from "src/stores/listStore";
-import { formatDateThaiSlash, formatNumber } from "src/components/format";
+import { formatDateThaiSlash, formatNumber, formatDateServer } from "src/components/format";
 import { Notify } from "quasar";
 import { useAuthStore } from "src/stores/authStore";
 import healthCheckUpWelfareService from "src/boot/service/healthCheckUpWelfareService";
@@ -194,12 +208,25 @@ import {
   outlinedEdit,
   outlinedVisibility,
 } from "@quasar/extras/material-icons-outlined";
+import reimbursementWelfareService from "src/boot/service/reimbursementWelfareService";
+import { useRouter } from "vue-router";
+import Swal from "sweetalert2";
+import exportService from "src/boot/service/exportService";
+
+const fileData = ref();
+const router = useRouter();
 const tableRef = ref();
 const listStore = useListStore();
 const isLoading = ref(false);
 const isEditing = ref(false);
 
 const authStore = useAuthStore();
+const filter = ref({
+  keyword: null,
+  dateSelected: null,
+  welfareName: null,
+  statusName: null,
+});
 
 function toggleEdit() {
   isEditing.value = !isEditing.value;
@@ -311,8 +338,6 @@ async function fetchRemainingVarious() {
   }
 }
 
-
-
 async function init() {
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
@@ -322,17 +347,19 @@ async function init() {
   await fetchRemainingVarious();
 }
 
-async function fetchFromServer() {
+async function fetchFromServer(page, rowPerPage, filters) {
   try {
-    // const result = await GspcApproveSerivce.list({
-    //   pageNo: page,
-    //   itemPerPage: count,
-    //   keyword: filter.value.keyword,
-    //   dateSelected: formatDateServer(filter.value.dateSelected),
-    //   endDate: formatDateServer(filter.value.endDate),
-    // });
-    pagination.value.rowsNumber = 5;
-    return;
+    const allReimbursementWelfare = await reimbursementWelfareService.getReimbursementWelfare({
+      keyword: filters.value.keyword ?? '',
+      welfareName: filters.value.welfareName ?? '',
+      statusName: filters.value.statusName ?? '',
+      from: formatDateServer(filters.value.dateSelected?.from) ?? formatDateServer(filters.value.dateSelected),
+      to: formatDateServer(filters.value.dateSelected?.to) ?? null,
+      page: page,
+      itemPerPage: rowPerPage,
+    });
+    pagination.value.rowsNumber = allReimbursementWelfare.data.total;
+    return allReimbursementWelfare.data.docs;
   } catch (error) {
     Notify.create({
       message:
@@ -353,137 +380,255 @@ function onRequest(props) {
       const returnedData = await fetchFromServer(
         page,
         rowsPerPage,
+        filter,
         sortBy,
         descending
       );
-      if (returnedData) model.value.splice(0, model.value.length, ...returnedData);
+      model.value = returnedData.map(item => ({
+        reimNumber: item.reim_number,
+        createdByName: item.created_by_user_name,
+        requestDate: formatDateThaiSlash(item.request_date),
+        updatedAt: formatDateThaiSlash(item.updated_at),
+        welfareType: item.welfare_type ?? "-",
+        categoryName: item.category_name,
+        subCategoryName: item.sub_category_name,
+        statusName: item.status,
+        status: {
+          name: item.status,
+          statusId: item.status === "บันทึกฉบับร่าง"
+            ? 1
+            : item.status === "รอตรวจสอบ"
+              ? 2
+              : 3
+        },
+        id: item.id,
+      }));
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
-      pagination.value.sortBy = sortBy;
-      pagination.value.descending = descending;
     } catch (error) {
       Promise.reject(error)
     }
     isLoading.value = false;
   }, 100);
 }
-function deleteFile() {
-  console.log("delete")
+
+function goto(requestId, categoryName, welfareType) {
+  if (categoryName == "ตรวจสุขภาพ") {
+    router.push({
+      name: "financial_health_check_up_welfare_edit",
+      params: { id: requestId },
+    });
+  }
+  else if (categoryName == "กรณีเจ็บป่วย") {
+    router.push({
+      name: "financial_medical_welfare_edit",
+      params: { id: requestId },
+    });
+  }
+  else if (categoryName == "ทำฟัน") {
+    router.push({
+      name: "financial_dental_welfare_edit",
+      params: { id: requestId },
+    });
+  }
+  else if (welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
+    if (categoryName == "เสียชีวิตคนในครอบครัว") {
+      router.push({
+        name: "financial_family_funeral_welfare_edit",
+        params: { id: requestId },
+      });
+    }
+    else {
+      router.push({
+        name: "financial_various_welfare_edit",
+        params: { id: requestId },
+      });
+    }
+  }
+  else if (welfareType == "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
+    router.push({
+      name: "financial_funeral_welfare_edit",
+      params: { id: requestId },
+    });
+  }
 }
+
+function viewData(requestId, categoryName, welfareType) {
+  if (categoryName == "ตรวจสุขภาพ") {
+    router.push({
+      name: "financial_health_check_up_welfare_view",
+      params: { id: requestId },
+    });
+  }
+  else if (categoryName == "กรณีเจ็บป่วย") {
+    router.push({
+      name: "financial_medical_welfare_view",
+      params: { id: requestId },
+    });
+  }
+  else if (categoryName == "ทำฟัน") {
+    router.push({
+      name: "financial_dental_welfare_view",
+      params: { id: requestId },
+    });
+  }
+  else if (welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
+    if (categoryName == "เสียชีวิตคนในครอบครัว") {
+      router.push({
+        name: "financial_family_funeral_welfare_view",
+        params: { id: requestId },
+      });
+    }
+    else {
+      router.push({
+        name: "financial_various_welfare_view",
+        params: { id: requestId },
+      });
+    }
+  }
+  else if (welfareType == "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
+    router.push({
+      name: "financial_funeral_welfare_view",
+      params: { id: requestId },
+    });
+  }
+}
+
+async function deleteData(id) {
+  Swal.fire({
+    title: "Do you want to save the changes??",
+    html: `You won't be able to revert this!`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes",
+    cancelButtonText: "Cancel",
+    showLoaderOnConfirm: true,
+    reverseButtons: true,
+    customClass: {
+      confirmButton: "save-button",
+      cancelButton: "cancel-button",
+    },
+    preConfirm: async () => {
+      try {
+        // await GspcRequestService.delete(id);
+      } catch (error) {
+        Swal.showValidationMessage(`Delete Request Failed.`);
+        Notify.create({
+          message:
+            error?.response?.data?.message ??
+            "Delete Request Failed, Something wrong please try again later.",
+          position: "bottom-left",
+          type: "negative",
+        });
+      }
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        html: `Request code <b>${id}</b> deleted.`,
+        icon: "success",
+        confirmButtonText: "OK",
+        customClass: {
+          confirmButton: "save-button",
+        },
+      }).then(() => {
+        location.reload();
+      });
+    }
+  });
+}
+
 
 
 const pagination = ref({
   sortBy: "desc",
   descending: false,
   page: 1,
-  rowsPerPage: 20,
+  rowsPerPage: 5,
 });
-const model = ref([
+const model = ref([]);
+const columns = [
+  { name: "index", label: "ลำดับ", align: "left", field: "index" },
+  { name: "reimNumber", label: "เลขที่ใบเบิก", align: "left", field: (row) => row.reimNumber ?? "-" },
+  { name: "createdBy", label: "ผู้ร้องขอ", align: "left", field: (row) => row.createdByName ?? "-" },
+  { name: "sendDate", label: "วันที่ร้องขอ", align: "left", field: (row) => row.requestDate ?? "-" },
+  { name: "updatedAt", label: "วันที่แก้ไขล่าสุด", align: "left", field: (row) => row.updatedAt ?? "-" },
+  { name: "welfareType", label: "ประเภท", align: "left", field: (row) => row.welfareType ?? "-" },
   {
-    requestId: '670001',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    type: "สวัสดิการทั่วไป",
-    status: {
-      statusId: 2,
-      name: "รอตรวจสอบ"
-    },
+    name: "subCategory", label: "ประเภทย่อย", align: "left", field: (row) => row.categoryName
+      ? row.categoryName
+      : (row.subCategoryName ? row.subCategoryName : "-")
   },
-  {
-    requestId: '670002',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    type: "สวัสดิการทั่วไป",
-    status: {
-      statusId: 2,
-      name: "รอตรวจสอบ"
-    },
-  },
-  {
-    requestId: '670003',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    type: "สวัสดิการทั่วไป",
-    status: {
-      statusId: 3,
-      name: "อนุมัติ"
-    },
-  },
-  {
-    requestId: '670004',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    type: "สวัสดิการทั่วไป",
-    status: {
-      statusId: 3,
-      name: "อนุมัติ"
-    },
-  },
-  {
-    requestId: '670005',
-    requestDate: new Date(),
-    updateDate: new Date(),
-    type: "สวัสดิการทั่วไป",
-    status: {
-      statusId: 3,
-      name: "อนุมัติ"
-    },
-  },
-]);
-const columns = ref([
-  {
-    name: "index",
-    label: "ลำดับ",
-    align: "center",
-    field: "index",
-    classes: "ellipsis",
-  },
-  {
-    name: "requestId",
-    label: "เลขที่ใบเบิก",
-    align: "left",
-    field: (row) => row.requestId ?? "-",
-    format: (val) => `${val}`,
-    classes: "ellipsis",
-  },
-  {
-    name: "requestDate",
-    label: "วันที่ร้องขอ",
-    align: "left",
-    field: (row) => row.requestDate ?? "-",
-    format: (val) => formatDateThaiSlash(val),
-    classes: "ellipsis",
-  },
-  {
-    name: "updateDate",
-    label: "วันที่แก้ไขล่าสุด",
-    align: "left",
-    field: (row) => row.updateDate ?? "-",
-    format: (val) => formatDateThaiSlash(val),
-    classes: "ellipsis",
-  },
-  {
-    name: "type",
-    label: "ประเภท",
-    align: "center",
-    field: (row) => row.type ?? "-",
-    classes: "ellipsis",
-  },
-  {
-    name: "statusName",
-    label: "สถานะ",
-    align: "center",
-    field: (row) => row.status?.name ?? "-",
-    classes: "ellipsis",
-  },
-  {
-    name: "tools",
-    label: "จัดการ",
-    align: "center",
-    field: (row) => row.tools ?? "-",
-    classes: "ellipsis",
-  },
-]);
+  { name: "statusName", label: "สถานะ", align: "center", field: (row) => row.status?.name ?? "-" },
+  { name: "tools", label: "จัดการ", align: "left", field: "tools" },
+];
+
+
+async function downloadData(requestId, categoryName, welfareType) {
+  const notify = Notify.create({
+    message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",
+    position: "top-right",
+    spinner: true,
+    type: 'info',
+  });
+  try {
+    if (categoryName == "ตรวจสุขภาพ") {
+      fileData.value = await exportService.healthCheckup(requestId);
+    }
+    else if (categoryName == "กรณีเจ็บป่วย") {
+      fileData.value = await exportService.medical(requestId);
+    }
+    else if (categoryName == "ทำฟัน") {
+      fileData.value = await exportService.dental(requestId);
+    }
+    else if (welfareType == "สวัสดิการค่าสงเคราะห์ต่าง ๆ") {
+      if (categoryName == "เสียชีวิตคนในครอบครัว") {
+        fileData.value = await exportService.variousFuneralFamily(requestId);
+      }
+      else {
+        fileData.value = await exportService.various(requestId);
+      }
+    }
+    else if (welfareType == "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
+      fileData.value = await exportService.funeralDeceaseEmployee(requestId);
+    }
+    const result = fileData.value;
+    let filename = null;
+    const contentDisposition = result.headers["content-disposition"];
+    if (contentDisposition) {
+      const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (matches && matches[1]) {
+        filename = decodeURIComponent(matches[1]);
+      }
+    }
+
+    const blob = new Blob([result.data], { type: "application/pdf" });
+
+    const a = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  catch (error) {
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "ดาวน์โหลดไม่สำเร็จกรุณาลองอีกครั้ง",
+      position: "top-right",
+      type: "primary",
+    });
+  }
+  finally {
+    notify();
+  }
+}
+
+
 </script>
 
 <style scoped>
