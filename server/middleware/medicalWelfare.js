@@ -127,7 +127,7 @@ const byIdMiddleWare = async (req, res, next) => {
 const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, fundEligible, fundReceiptPatientVisit, fundSumRequestPatientVisit, selectedAccident, selectedPatientVisit, startDate, endDate, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         const errorObj = {};
@@ -242,7 +242,7 @@ const bindCreate = async (req, res, next) => {
         const { id } = req.user;
         if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
-                message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
+                message: "ไม่มีสิทธิ์สร้างให้คนอื่นได้",
             });
         }
         if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
@@ -296,7 +296,7 @@ const bindUpdate = async (req, res, next) => {
         const { id } = req.user;
         if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
-                message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+                message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
             });
         }
         if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
@@ -315,7 +315,7 @@ const bindUpdate = async (req, res, next) => {
             createByData = datas.created_by;
             if (!req.access && datas.created_by !== id) {
                 return res.status(400).json({
-                    message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+                    message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
                 });
             }
             if (!req.access && datas.status !== statusText.draft) {
@@ -328,7 +328,7 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
                 const dataBinding = {
                     status : actionId,
                     updated_by: id,
@@ -386,7 +386,7 @@ const getRemaining = async (req, res, next) => {
         const { id } = req.user;
         const { createFor } = req.query;
         const { created_by, createByData, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         req.query.filter = {};
@@ -431,7 +431,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_eligible, fund_sum_request_patient_visit, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         whereObj[Op.and].push(
@@ -568,7 +568,7 @@ const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
         const { fund_eligible, fund_sum_request_patient_visit, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         const getFund = await subCategories.findAll({
@@ -703,10 +703,10 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(accidentRemaining)) {
                 const datas = JSON.parse(JSON.stringify(accidentRemaining[0]));
-                if (datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
+                if ((datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) && fund_eligible) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
-                        message: "ไม่มีสิทธ์ขอเบิกสวัสดิการประสบอุบัติเหตุขณะปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
+                        message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการประสบอุบัติเหตุขณะปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
                     });
                 };
                 if (fund_eligible > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
@@ -723,10 +723,10 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(patientVisitRemaining)) {
                 const datas = JSON.parse(JSON.stringify(patientVisitRemaining[0]));
-                if (datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
+                if ((datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) && fund_sum_request_patient_visit) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
-                        message: "ไม่มีสิทธ์ขอเบิกสวัสดิการเยี่ยมไข้ผู้ปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
+                        message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการเยี่ยมไข้ผู้ปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
                     });
                 };
                 if (fund_sum_request_patient_visit > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {

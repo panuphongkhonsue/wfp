@@ -259,7 +259,6 @@ class Controller extends BaseController {
                     const datas = JSON.parse(JSON.stringify(wreathRemaining));
                     datas.forEach(item => {
                         item.canRequest = (item.fundRemaining > 0 && item.requestsRemaining > 0);
-
                     });
                     bindData.push(...datas);
                 }
@@ -268,7 +267,7 @@ class Controller extends BaseController {
                         attributes: [
                             [col("id"), "subCategoriesId"],
                             [col("name"), "subCategoriesName"],
-                            [col("fund"), "fundRemaining"],
+                            [col("fund"), "fund"],
                             [col("per_years"), "requestsRemaining"],
                             [col("per_times"), "perTimesRemaining"],
                         ],
@@ -341,7 +340,7 @@ class Controller extends BaseController {
             }
             logger.info('Data not Found', { method, data: { id } });
             res.status(200).json({
-                message: "มีสิทธ์คงเหลือเท่ากับเพดานเงิน"
+                message: "มีสิทธิ์คงเหลือเท่ากับเพดานเงิน"
             });
         }
         catch (error) {

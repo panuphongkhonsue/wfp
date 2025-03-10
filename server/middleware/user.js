@@ -179,36 +179,39 @@ const bindUpdate = async (req, res, next) => {
 		if (isNullOrEmpty(req.body.child)) {
 			delete dataBinding.child;
 		}
-		if (!isNullOrEmpty(deleteChild)) {
-			req.deleteChild = deleteChild;
-		}
-		else {
+		else{
 			if (!isNullOrEmpty(dataBinding.child)) {
 				dataBinding.child = dataBinding.child.filter(item =>
 					!Object.values(item).some(value => value.name === null || value.name === "" || value.birthday === null || value.birthday === "" || value.prefix === null || value.prefix === "")
 				);
 				if (dataBinding.child.length === 0) {
+					console.log(true);
+					console.log(dataBinding);
 					delete dataBinding.child;
 				}
 				else {
+					console.log("else");
 					const newChild = dataBinding.child.map((child) => {
 						const childId = child.id;
 						const childName = child.prefix + ' ' + child.name;
-
+	
 						const result = {
 							name: childName,
 							birthday: formatDateSlash(child?.birthday),
 						};
-
+	
 						if (childId) {
 							result.id = childId;
 						}
-
+	
 						return result;
 					});
 					dataBinding.child = newChild;
 				}
 			}
+		}
+		if (!isNullOrEmpty(deleteChild)) {
+			req.deleteChild = deleteChild;
 		}
 		req.body = dataBinding;
 		next();

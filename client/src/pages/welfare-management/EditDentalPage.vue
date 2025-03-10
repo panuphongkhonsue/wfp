@@ -45,8 +45,8 @@
               <p class="col q-ma-none">{{ remaining.categoryName ?? "ทำฟัน" }} : {{ remaining?.fundRemaining ?
                 remaining?.fundRemaining + " บาทต่อปี" :
                 remaining?.perTimesRemaining ?
-                  remaining?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน" }}
-                {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : "(ไม่จำกัดครั้ง)" }}
+                  remaining?.perTimesRemaining + " บาทต่อครั้ง" : remaining?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน" }}
+                {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : remaining?.requestsRemaining ?? "(ไม่จำกัดครั้ง)" }}
               </p>
             </q-card-section>
           </q-card>
@@ -69,7 +69,7 @@
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
               <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
               </p>
-              <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">สถานะ : <span :class="textStatusColor(model.status)">{{ model.status ?? "-" }}</span> </p>
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-x-md font-medium q-pb-xs font-16 text-grey-9">
               <div class="col-12 col-lg">
@@ -85,9 +85,6 @@
                   type="number" class="q-py-xs-md q-py-lg-none" :is-view="isView" :rules="[
                     (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
                     (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ',
-                    (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
-                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + (remaining.perTimesRemaining ?? '-') + ' บาทต่อครั้ง',
-                    (val) => isOverfundRemaining !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                   ]" :error-message="isError?.fundSumRequest" :error="!!isError?.fundSumRequest">
                 </InputGroup>
 
@@ -150,7 +147,7 @@
         <q-btn id="button-approve"
         class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #E52020"
         label="ไม่อนุมัติ" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
-        <q-btn :disable="!canRequest || isValidate" id="button-approve"
+        <q-btn :disable="isValidate" id="button-approve"
           class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
           label="อนุมัติ" no-caps @click="submit(3)" v-if="!isView && !isLoading" />
       </div>
@@ -178,7 +175,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
 import welfareManagementService from "src/boot/service/welfareManagementService";
-
+import { textStatusColor } from "src/components/status";
 defineOptions({
   name: "DentalCareWelfareEdit",
 });
@@ -214,9 +211,6 @@ const isValidate = computed(() => {
   if (!model.value.fundSumRequest) {
     validate = true;
   }
-  if (isOverfundRemaining.value) {
-    validate = true;
-  }
   if (!model.value.createFor) {
     validate = true;
   }
@@ -228,25 +222,6 @@ const isValidate = computed(() => {
 
 const isOver = computed(() => {
   return Number(model.value.fundSumRequest) > Number(model.value.fundReceipt);
-});
-
-const isOverfundRemaining = computed(() => {
-
-  const fundSumRequest = Number(model.value.fundSumRequest ?? 0);
-
-  const perTimes = remaining.value.perTimesRemaining ? parseFloat(remaining.value.perTimesRemaining.replace(/,/g, "")) : null;
-  const fundRemaining = remaining.value.fundRemaining ? parseFloat(remaining.value.fundRemaining.replace(/,/g, "")) : null;
-  let check = false;
-  if (fundSumRequest > perTimes && remaining.value.perTimesRemaining) {
-    check = 1;
-  }
-  if (fundSumRequest > fundRemaining && remaining.value.fundRemaining) {
-    check = 2;
-  }
-  if (!canRequest.value && isFetchRemaining.value) {
-    check = 3;
-  }
-  return check;
 });
 
 onMounted(async () => {
@@ -370,7 +345,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await dentalWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -425,7 +399,6 @@ async function fetchRemaining() {
         },
       ]
     }
-    isFetchRemaining.value = true;
   } catch (error) {
     Promise.reject(error);
   }
@@ -496,18 +469,6 @@ async function submit(actionId) {
     let navigate = document.getElementById("fund-receipt");
     window.location.hash = "fund-receipt";
     navigate.scrollIntoView(false);
-    validate = true;
-  }
-  if (isOverfundRemaining.value) {
-    if (isOverfundRemaining.value === 2) {
-      isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
-    }
-    else if(isOverfundRemaining.value === 1) {
-      isError.value.fundEligible = "สามารถเบิกได้สูงสุด " + remaining.value.perTimesRemaining + " บาทต่อครั้ง";
-    }
-    else{
-      isError.value.fundEligible = "คุณใช้จำนวนการเบิกครบแล้ว";
-    }
     validate = true;
   }
   if (isOver.value) {

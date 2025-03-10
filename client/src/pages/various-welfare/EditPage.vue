@@ -59,40 +59,40 @@
                 {{ remaining[4]?.categoryName ?? "ค่าสมรส" }} :
                 {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
                   remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                  remaining[4]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"
+                  remaining[4]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
                 }}
               </p>
               <p class="col-12 q-mb-none">
                 {{ remaining[5]?.categoryName ?? "ค่าอุปสมบทหรือประกอบพิธีฮัจญ์" }} :
                 {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
                   remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                  remaining[5]?.perTimesRemaining ??  "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"
+                  remaining[5]?.requestsRemaining  ?? "(ไม่จำกัดครั้ง)"
                 }}
               </p>
               <p class="col-12 q-mb-none">
                 {{ remaining[6]?.categoryName ?? "ค่ารับขวัญบุตร" }} :
                 {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
                   remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                  remaining[6]?.perTimesRemaining ??  "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"
+                remaining[6]?.requestsRemaining ??  "(ไม่จำกัดครั้ง)"
                 }}
               </p>
               <p class="col-12 q-mb-none">
                 {{ remaining[7]?.categoryName ?? "กรณีประสบภัยพิบัติ" }} :
                 {{ remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาทต่อปี" :
                   remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                  remaining[7]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"
+                  remaining[7]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
                 }}
               </p>
             </q-card-section>
@@ -116,7 +116,7 @@
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
               <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
               </p>
-              <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">สถานะ : <span :class="textStatusColor(model.status)">{{ model.status ?? "-" }}</span> </p>
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
               <p class="col-12 q-mb-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
@@ -125,18 +125,14 @@
                   :disable="isView" :rules="[(val) => !!val || '']" />
               </div>
               <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[4]?.fund ? remaining[4]?.fund + " บาท" :
-                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน" }})</p>
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[5]?.fund ? remaining[5]?.fund + " บาท" :
-                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน" }})</p>
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[6]?.fund ? remaining[6]?.fund + " บาท" :
-                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน" }})</p>
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[7]?.fund ? remaining[7]?.fund + " บาท" :
-                  remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน" }})</p>
+                <p class="col-12 q-mb-none">({{ remaining[4]?.fund ? "จ่ายไม่เกินคนละ " + remaining[4]?.fund + " บาทต่อปี" :
+                    "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
+                <p class="col-12 q-mb-none">({{ remaining[5]?.fund ? "จ่ายไม่เกินคนละ " + remaining[5]?.fund + " บาทต่อปี" :
+                    "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
+                <p class="col-12 q-mb-none">({{ remaining[6]?.fund ? "จ่ายไม่เกินคนละ " + remaining[6]?.fund + " บาทต่อปี" :
+                    "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
+                <p class="col-12 q-mb-none">({{ remaining[7]?.fund ? "จ่ายไม่เกินคนละ " + remaining[7]?.fund + " บาทต่อปี" :
+                    "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
               </div>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
@@ -219,6 +215,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
 import variousWelfareService from "src/boot/service/variousWelfareService";
 import exportService from "src/boot/service/exportService";
+import { textStatusColor } from "src/components/status";
 defineOptions({
   name: "various_welfare_edit",
 });
@@ -626,7 +623,8 @@ async function init() {
   isLoading.value = true;
   try {
     if (isView.value) {
-      fetchDataEdit();
+      await fetchDataEdit();
+      await fetchRemaining();
     }
     else if (isEdit.value) {
       if (!canCreateFor.value) {

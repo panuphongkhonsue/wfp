@@ -9,57 +9,18 @@
         <div class="col-12">
           <q-card flat bordered class="full-height">
             <q-card-section
-              class="row wrap q-col-gutter-y-md q-col-gutter-x-md font-medium q-pb-xs font-16 text-grey-9"
-            >
-              <InputGroup
-                for-id="username"
-                is-dense
-                v-model="model.username"
-                :data="model.username ?? '-'"
-                is-require
-                label="บัญชีผู้ใช้งาน"
-                placeholder=""
-                type="text"
-                :is-view="isView"
-                :error-message="isError?.username"
-                :error="!!isError?.username"
-                :rules="[(val) => !!val || 'กรุณากรอกบัญชีผู้ใช้งาน']"
-                lazy-rules
-              >
+              class="row wrap q-col-gutter-y-md q-col-gutter-x-md font-medium q-pb-xs font-16 text-grey-9">
+              <InputGroup for-id="username" is-dense v-model="model.username" :data="model.username ?? '-'" is-require
+                label="บัญชีผู้ใช้งาน" placeholder="" type="text" :is-view="isView" :error-message="isError?.username"
+                :error="!!isError?.username" :rules="[(val) => !!val || 'กรุณากรอกบัญชีผู้ใช้งาน']" lazy-rules>
               </InputGroup>
-              <InputGroup
-                for-id="prefix"
-                is-dense
-                :data="model.prefix ?? '-'"
-                is-require
-                label="คำนำหน้า"
-                placeholder=""
-                type="text"
-                :is-view="isView"
-              >
-                <q-select
-                  use-input
-                  hide-selected
-                  hide-bottom-space
-                  hide-dropdown-icon
-                  clearable
-                  new-value-mode="add-unique"
-                  fill-input
-                  input-debounce="0"
-                  popup-content-class="font-14 font-regular"
-                  class="font-14 font-regular"
-                  :loading="isLoading"
-                  id="selected-prefix"
-                  outlined
-                  v-model="model.prefix"
-                  :options="optionPrefix"
-                  dense
-                  map-options
-                  :error-message="isError?.prefix"
-                  :error="!!isError?.prefix"
-                  :rules="[(val) => !!val || 'กรุณากรอกคำนำหน้า']"
-                  lazy-rules
-                >
+              <InputGroup for-id="prefix" is-dense :data="model.prefix ?? '-'" is-require label="คำนำหน้า"
+                placeholder="" type="text" :is-view="isView">
+                <q-select use-input hide-selected hide-bottom-space hide-dropdown-icon clearable
+                  new-value-mode="add-unique" fill-input input-debounce="0" popup-content-class="font-14 font-regular"
+                  class="font-14 font-regular" :loading="isLoading" id="selected-prefix" outlined v-model="model.prefix"
+                  :options="optionPrefix" dense map-options :error-message="isError?.prefix" :error="!!isError?.prefix"
+                  :rules="[(val) => !!val || 'กรุณากรอกคำนำหน้า']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -69,49 +30,17 @@
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup
-                for-id="name"
-                is-dense
-                v-model="model.name"
-                :data="model.name ?? '-'"
-                is-require
-                label="ชื่อ - นามสกุล"
-                placeholder=""
-                type="text"
-                :is-view="isView"
-                :error-message="isError?.name"
-                :error="!!isError?.name"
-                :rules="[(val) => !!val || 'กรุณากรอกชื่อ - นามสกุล']"
-                lazy-rules
-              >
+              <InputGroup for-id="name" is-dense v-model="model.name" :data="model.name ?? '-'" is-require
+                label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView" :error-message="isError?.name"
+                :error="!!isError?.name" :rules="[(val) => !!val || 'กรุณากรอกชื่อ - นามสกุล']" lazy-rules>
               </InputGroup>
-              <InputGroup
-                for-id="position"
-                :data="model.positionsName ?? '-'"
-                is-require
-                label="ตำแหน่ง"
-                :is-view="isView"
-              >
-                <q-select
-                  hide-bottom-space
-                  popup-content-class="font-14 font-regular"
-                  class="font-14 font-regular"
-                  :loading="isLoading"
-                  for="selected-status"
-                  outlined
-                  v-model="model.positionId"
-                  :options="optionsPosition"
-                  dense
-                  clearable
-                  option-value="id"
-                  emit-value
-                  map-options
-                  option-label="name"
-                  :error-message="isError?.positionId"
-                  :error="!!isError?.positionId"
-                  :rules="[(val) => !!val || 'กรุณาเลือกตำแหน่ง']"
-                  lazy-rules
-                >
+              <InputGroup for-id="position" :data="model.positionsName ?? '-'" is-require label="ตำแหน่ง"
+                :is-view="isView">
+                <q-select hide-bottom-space popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                  :loading="isLoading" for="selected-status" outlined v-model="model.positionId"
+                  :options="optionsPosition" dense clearable option-value="id" emit-value map-options
+                  option-label="name" :error-message="isError?.positionId" :error="!!isError?.positionId"
+                  :rules="[(val) => !!val || 'กรุณาเลือกตำแหน่ง']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -121,33 +50,13 @@
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup
-                for-id="employee-type"
-                :data="model.employeeTypeName ?? '-'"
-                is-require
-                label="ประเภทบุคลากร"
-                :is-view="isView"
-              >
-                <q-select
-                  hide-bottom-space
-                  popup-content-class="font-14 font-regular"
-                  class="font-14 font-regular"
-                  :loading="isLoading"
-                  for="selected-employee-type"
-                  outlined
-                  v-model="model.employeeTypeId"
-                  :options="optionsemployeeType"
-                  dense
-                  clearable
-                  option-value="id"
-                  emit-value
-                  map-options
-                  option-label="name"
-                  :error-message="isError?.employeeTypeId"
-                  :error="!!isError?.employeeTypeId"
-                  :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']"
-                  lazy-rules
-                >
+              <InputGroup for-id="employee-type" :data="model.employeeTypeName ?? '-'" is-require label="ประเภทบุคลากร"
+                :is-view="isView">
+                <q-select hide-bottom-space popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                  :loading="isLoading" for="selected-employee-type" outlined v-model="model.employeeTypeId"
+                  :options="optionsemployeeType" dense clearable option-value="id" emit-value map-options
+                  option-label="name" :error-message="isError?.employeeTypeId" :error="!!isError?.employeeTypeId"
+                  :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -157,33 +66,13 @@
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup
-                for-id="department"
-                :data="model.departmentName ?? '-'"
-                is-require
-                label="ส่วนงาน"
-                :is-view="isView"
-              >
-                <q-select
-                  hide-bottom-space
-                  popup-content-class="font-14 font-regular"
-                  class="font-14 font-regular"
-                  :loading="isLoading"
-                  id="selected-department"
-                  outlined
-                  v-model="model.departmentId"
-                  :options="optionsDepartment"
-                  dense
-                  clearable
-                  option-value="id"
-                  emit-value
-                  map-options
-                  option-label="name"
-                  :error-message="isError?.departmentId"
-                  :error="!!isError?.departmentId"
-                  :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']"
-                  lazy-rules
-                >
+              <InputGroup for-id="department" :data="model.departmentName ?? '-'" is-require label="ส่วนงาน"
+                :is-view="isView">
+                <q-select hide-bottom-space popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                  :loading="isLoading" id="selected-department" outlined v-model="model.departmentId"
+                  :options="optionsDepartment" dense clearable option-value="id" emit-value map-options
+                  option-label="name" :error-message="isError?.departmentId" :error="!!isError?.departmentId"
+                  :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -193,33 +82,12 @@
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup
-                for-id="sector"
-                :data="model.sectorName ?? '-'"
-                is-require
-                label="ภาควิชา"
-                :is-view="isView"
-              >
-                <q-select
-                  hide-bottom-space
-                  popup-content-class="font-14 font-regular"
-                  class="font-14 font-regular"
-                  :loading="isLoading"
-                  id="selected-sector"
-                  outlined
-                  v-model="model.sectorId"
-                  :options="optionsSection"
-                  dense
-                  clearable
-                  option-value="id"
-                  emit-value
-                  map-options
-                  option-label="name"
-                  :error-message="isError?.sectorId"
-                  :error="!!isError?.sectorId"
-                  :rules="[(val) => !!val || 'กรุณาเลือกภาควิชา']"
-                  lazy-rules
-                >
+              <InputGroup for-id="sector" :data="model.sectorName ?? '-'" is-require label="ภาควิชา" :is-view="isView">
+                <q-select hide-bottom-space popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                  :loading="isLoading" id="selected-sector" outlined v-model="model.sectorId" :options="optionsSection"
+                  dense clearable option-value="id" emit-value map-options option-label="name"
+                  :error-message="isError?.sectorId" :error="!!isError?.sectorId"
+                  :rules="[(val) => !!val || 'กรุณาเลือกภาควิชา']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -229,110 +97,40 @@
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup
-                for-id="first-working-date"
-                label="วันที่เข้าปฏิบัติงาน"
-                is-require
-                :is-view="isView"
-                clearable
-                :data="model.firstWorkingDate ?? '-'"
-              >
-                <DatePicker
-                  is-dense
-                  hide-bottom-space
-                  v-model:model="model.firstWorkingDate"
-                  v-model:dateShow="model.firstWorkingDate"
-                  for-id="first-working-date"
-                  :no-time="true"
-                  :err="isError?.firstWorkingDate"
-                  :error-message="isError?.firstWorkingDate"
-                  :rules="[(val) => !!val || 'กรุณาเลือกวันที่เข้าปฏิบัติงาน']"
-                />
+              <InputGroup for-id="first-working-date" label="วันที่เข้าปฏิบัติงาน" is-require :is-view="isView"
+                clearable :data="model.firstWorkingDate ?? '-'">
+                <DatePicker is-dense hide-bottom-space v-model:model="model.firstWorkingDate"
+                  v-model:dateShow="model.firstWorkingDate" for-id="first-working-date" :no-time="true"
+                  :err="isError?.firstWorkingDate" :error-message="isError?.firstWorkingDate"
+                  :rules="[(val) => !!val || 'กรุณาเลือกวันที่เข้าปฏิบัติงาน']" />
               </InputGroup>
             </q-card-section>
             <q-card-section class="row column wrap font-medium q-pt-none font-16 text-grey-9">
               <p class="q-mb-sm require">บทบาท</p>
-              <q-option-group
-                v-if="!isView && !isLoading"
-                v-model="model.roleId"
-                :options="optionRole"
-                option-value="id"
-                option-label="name"
-                :color="isError.roleId ? 'red' : 'primary'"
-                :keep-color="isError.roleId ?? false"
-                id="role"
-              />
+              <q-option-group v-if="!isView && !isLoading" v-model="model.roleId" :options="optionRole"
+                option-value="id" option-label="name" :color="isError.roleId ? 'red' : 'primary'"
+                :keep-color="isError.roleId ?? false" id="role" />
               <p v-else class="font-regular">{{ model.roleName }}</p>
             </q-card-section>
-            <q-card-section
-              class="row wrap font-medium q-pb-sm font-16 text-grey-9 q-col-gutter-md"
-            >
+            <q-card-section class="row wrap font-medium q-pb-sm font-16 text-grey-9 q-col-gutter-md">
               <p class="col-12 q-mb-md require">ที่อยู่</p>
-              <InputGroup
-                for-id="house-number"
-                is-dense
-                v-model="model.houseNumber"
-                :data="model.houseNumber ?? '-'"
-                is-require
-                label="บ้านเลขที่"
-                placeholder=""
-                type="text"
-                :is-view="isView"
-                :error-message="isError?.houseNumber"
-                :error="!!isError?.houseNumber"
-                :rules="[(val) => !!val || 'กรุณากรอกบ้านเลขที่']"
-                lazy-rules
-              >
+              <InputGroup for-id="house-number" is-dense v-model="model.houseNumber" :data="model.houseNumber ?? '-'"
+                is-require label="บ้านเลขที่" placeholder="" type="text" :is-view="isView"
+                :error-message="isError?.houseNumber" :error="!!isError?.houseNumber"
+                :rules="[(val) => !!val || 'กรุณากรอกบ้านเลขที่']" lazy-rules>
               </InputGroup>
-              <InputGroup
-                for-id="street"
-                is-dense
-                v-model="model.street"
-                :data="model.street ?? '-'"
-                is-require
-                label="ถนน"
-                placeholder=""
-                type="text"
-                :is-view="isView"
-                :error-message="isError?.street"
-                :error="!!isError?.street"
-                :rules="[(val) => !!val || 'กรุณากรอกถนน']"
-                lazy-rules
-              >
+              <InputGroup for-id="street" is-dense v-model="model.street" :data="model.street ?? '-'" is-require
+                label="ถนน" placeholder="" type="text" :is-view="isView" :error-message="isError?.street"
+                :error="!!isError?.street" :rules="[(val) => !!val || 'กรุณากรอกถนน']" lazy-rules>
               </InputGroup>
-              <InputGroup
-                for-id="province"
-                is-dense
-                :data="model.province ?? '-'"
-                is-require
-                label="จังหวัด"
-                placeholder=""
-                type="text"
-                :is-view="isView"
-              >
-                <q-select
-                  @filter="filterFn"
-                  @filter-abort="abortFilterFn"
-                  hide-bottom-space
-                  use-input
-                  input-debounce="100"
-                  clearable
-                  popup-content-class="font-14 font-regular"
-                  class="font-14 font-regular"
-                  :loading="isLoading"
-                  id="selected-province"
-                  outlined
-                  v-model="model.province"
-                  :options="optionProvinceSelected"
-                  dense
-                  option-value="name_th"
-                  emit-value
-                  map-options
-                  option-label="name_th"
-                  :error="!!isError?.province"
-                  :rules="[(val) => !!val || 'กรุณากรอกจังหวัด']"
-                  lazy-rules
-                >
+              <InputGroup for-id="province" is-dense :data="model.province ?? '-'" is-require label="จังหวัด"
+                placeholder="" type="text" :is-view="isView">
+                <q-select @filter="filterFn" @filter-abort="abortFilterFn" hide-bottom-space use-input
+                  input-debounce="100" clearable popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                  :loading="isLoading" id="selected-province" outlined v-model="model.province"
+                  :options="optionProvinceSelected" dense option-value="name_th" emit-value map-options
+                  option-label="name_th" :error="!!isError?.province" :rules="[(val) => !!val || 'กรุณากรอกจังหวัด']"
+                  lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -342,40 +140,14 @@
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup
-                for-id="district"
-                is-dense
-                :data="model.district ?? '-'"
-                is-require
-                label="อำเภอ / เขต"
-                placeholder=""
-                type="text"
-                :is-view="isView"
-              >
-                <q-select
-                  @filter="filterFnDistrict"
-                  @filter-abort="abortFilterFnDistrict"
-                  use-input
-                  hide-bottom-space
-                  input-debounce="100"
-                  clearable
-                  popup-content-class="font-14 font-regular"
-                  class="font-14 font-regular"
-                  :loading="isLoading"
-                  id="selected-district"
-                  outlined
-                  v-model="model.district"
-                  :options="optionsDistrict"
-                  dense
-                  option-value="name_th"
-                  emit-value
-                  map-options
-                  option-label="name_th"
-                  :error="!!isError?.district"
-                  :error-message="isError?.district"
-                  :rules="[(val) => !!val || 'กรุณากรอกอำเภอ / เขต']"
-                  lazy-rules
-                >
+              <InputGroup for-id="district" is-dense :data="model.district ?? '-'" is-require label="อำเภอ / เขต"
+                placeholder="" type="text" :is-view="isView">
+                <q-select @filter="filterFnDistrict" @filter-abort="abortFilterFnDistrict" use-input hide-bottom-space
+                  input-debounce="100" clearable popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                  :loading="isLoading" id="selected-district" outlined v-model="model.district"
+                  :options="optionsDistrict" dense option-value="name_th" emit-value map-options option-label="name_th"
+                  :error="!!isError?.district" :error-message="isError?.district"
+                  :rules="[(val) => !!val || 'กรุณากรอกอำเภอ / เขต']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -385,40 +157,14 @@
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup
-                for-id="sub-district"
-                is-dense
-                :data="model.subDistrict ?? '-'"
-                is-require
-                label="ตำบล / แขวง"
-                placeholder=""
-                type="text"
-                :is-view="isView"
-              >
-                <q-select
-                  @filter="filterFnSubDistrict"
-                  @filter-abort="abortFilterFnSubDistrict"
-                  use-input
-                  hide-bottom-space
-                  input-debounce="100"
-                  clearable
-                  popup-content-class="font-14 font-regular"
-                  class="font-14 font-regular"
-                  :loading="isLoading"
-                  id="selected-sub-district"
-                  outlined
-                  v-model="model.subDistrict"
-                  :options="optionsSubDistrict"
-                  dense
-                  option-value="name_th"
-                  emit-value
-                  map-options
-                  option-label="name_th"
-                  :error-message="isError?.subDistrict"
-                  :error="!!isError?.subDistrict"
-                  :rules="[(val) => !!val || 'กรุณากรอกตำบล / แขวง']"
-                  lazy-rules
-                >
+              <InputGroup for-id="sub-district" is-dense :data="model.subDistrict ?? '-'" is-require label="ตำบล / แขวง"
+                placeholder="" type="text" :is-view="isView">
+                <q-select @filter="filterFnSubDistrict" @filter-abort="abortFilterFnSubDistrict" use-input
+                  hide-bottom-space input-debounce="100" clearable popup-content-class="font-14 font-regular"
+                  class="font-14 font-regular" :loading="isLoading" id="selected-sub-district" outlined
+                  v-model="model.subDistrict" :options="optionsSubDistrict" dense option-value="name_th" emit-value
+                  map-options option-label="name_th" :error-message="isError?.subDistrict"
+                  :error="!!isError?.subDistrict" :rules="[(val) => !!val || 'กรุณากรอกตำบล / แขวง']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -428,74 +174,32 @@
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup
-                for-id="postal-code"
-                is-dense
-                v-model="model.postalCode"
-                :data="model.postalCode ?? '-'"
-                is-require
-                label="รหัสไปรษณีย์"
-                placeholder=""
-                type="text"
-                :is-view="isView"
-                :error-message="isError?.postalCode"
-                :error="!!isError?.postalCode"
-                :rules="[(val) => !!val || 'กรุณากรอกรหัสไปรษณีย์']"
-                lazy-rules
-              >
+              <InputGroup for-id="postal-code" is-dense v-model="model.postalCode" :data="model.postalCode ?? '-'"
+                is-require label="รหัสไปรษณีย์" placeholder="" type="text" :is-view="isView"
+                :error-message="isError?.postalCode" :error="!!isError?.postalCode"
+                :rules="[(val) => !!val || 'กรุณากรอกรหัสไปรษณีย์']" lazy-rules>
               </InputGroup>
             </q-card-section>
           </q-card>
         </div>
         <div class="col-12 row justify-between font-18 font-bold">
           <p class="q-mb-none">จัดการข้อมูลบุตร</p>
-          <q-btn
-            v-if="!isView && !isLoading"
-            icon="add"
-            id="add-req"
-            @click="addChildForm"
-            class="bg-blue-10 text-white"
-            >เพิ่ม</q-btn
-          >
+          <q-btn v-if="!isView && !isLoading" icon="add" id="add-req" @click="addChildForm"
+            class="bg-blue-10 text-white">เพิ่ม</q-btn>
         </div>
         <!-- Child Section -->
         <div class="col-12">
           <q-card flat bordered class="full-height">
             <q-card-section
               class="row items-center wrap q-col-gutter-md wrap font-medium q-pt-sm q-pb-none font-16 text-grey-9"
-              v-for="(item, index) in model.child"
-              :key="index"
-            >
+              v-for="(item, index) in model.child" :key="index">
               <p class="col-12 q-mb-none">บุตรคนที่ {{ index + 1 }}</p>
-              <InputGroup
-                for-id="prefix-child"
-                is-dense
-                :data="item.prefix ?? '-'"
-                is-require
-                label="คำนำหน้า"
-                placeholder=""
-                type="text"
-                :is-view="isView"
-                :class="!isView ? 'q-pt-md q-pt-sm-none q-pb-xs' : ''"
-              >
-                <q-select
-                  use-input
-                  hide-selected
-                  hide-dropdown-icon
-                  clearable
-                  new-value-mode="add-unique"
-                  fill-input
-                  input-debounce="0"
-                  popup-content-class="font-14 font-regular"
-                  class="font-14 font-regular"
-                  :loading="isLoading"
-                  id="selected-prefix"
-                  outlined
-                  v-model="item.prefix"
-                  :options="optionPrefixChild"
-                  dense
-                  map-options
-                >
+              <InputGroup for-id="prefix-child" is-dense :data="item.prefix ?? '-'" is-require label="คำนำหน้า"
+                placeholder="" type="text" :is-view="isView" :class="!isView ? 'q-pt-md q-pt-sm-none q-pb-xs' : ''">
+                <q-select use-input hide-selected hide-dropdown-icon clearable new-value-mode="add-unique" fill-input
+                  input-debounce="0" popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                  :loading="isLoading" id="selected-prefix" outlined v-model="item.prefix" :options="optionPrefixChild"
+                  dense map-options>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -505,44 +209,19 @@
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup
-                for-id="child-name"
-                is-dense
-                v-model="item.name"
-                :hide-bottom="false"
-                :data="item.name ?? '-'"
-                label="ชื่อ - นามสกุล"
-                placeholder=""
-                type="text"
-                :is-view="isView"
-              >
+              <InputGroup for-id="child-name" is-dense v-model="item.name" :hide-bottom="false" :data="item.name ?? '-'"
+                label="ชื่อ - นามสกุล" placeholder="" type="text" :is-view="isView">
               </InputGroup>
-              <InputGroup
-                label="เกิดเมื่อ"
-                :is-view="isView"
-                clearable
-                :data="formatDateThaiSlash(item.birthday) ?? '-'"
-              >
-                <DatePicker
-                  is-dense
-                  v-model:model="item.birthday"
-                  :hide-bottom="false"
-                  v-model:dateShow="item.birthday"
-                  for-id="birthday"
-                  :no-time="true"
-                />
+              <InputGroup label="เกิดเมื่อ" :is-view="isView" clearable
+                :data="formatDateThaiSlash(item.birthday) ?? '-'">
+                <DatePicker is-dense v-model:model="item.birthday" :hide-bottom="false" v-model:dateShow="item.birthday"
+                  for-id="birthday" :no-time="true" />
               </InputGroup>
               <div>
-                <q-btn
-                  v-if="
-                    (index > 0 && !isView && !isLoading) ||
-                    (isEdit && !isView && item?.id && !isLoading)
-                  "
-                  color="red"
-                  @click="removeChildForm(index)"
-                  class="q-mt-sm"
-                  >ลบ</q-btn
-                >
+                <q-btn v-if="
+                  (index > 0 && !isView && !isLoading) ||
+                  (isEdit && !isView && item?.id && !isLoading)
+                " color="red" @click="removeChildForm(index)" class="q-mt-sm">ลบ</q-btn>
               </div>
             </q-card-section>
           </q-card>
@@ -552,26 +231,10 @@
     <!--Action Slot -->
     <template v-slot:action>
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
-        <q-btn
-          id="button-back"
-          class="text-white font-medium font-16 weight-8 q-px-md"
-          dense
-          type="button"
-          style="background: #bfbfbf"
-          label="ย้อนกลับ"
-          no-caps
-          :to="{ name: 'user_management_list' }"
-        />
-        <q-btn
-          id="button-save"
-          class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg"
-          dense
-          type="submit"
-          label="บันทึก"
-          no-caps
-          @click="submit()"
-          v-if="!isView && !isLoading"
-        />
+        <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-md" dense type="button"
+          style="background: #bfbfbf" label="ย้อนกลับ" no-caps :to="{ name: 'user_management_list' }" />
+        <q-btn id="button-save" class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense
+          type="submit" label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -640,7 +303,7 @@ const isLoading = ref()
 const isError = ref({})
 const isView = ref(false)
 const optionPrefix = ref(['นาย', 'นาง', 'นางสาว'])
-const optionPrefixChild = ref(['นาย', 'นาง', 'นางสาว', 'ด.ช', 'ด.ญ'])
+const optionPrefixChild = ref(['นาย', 'นาง', 'นางสาว', 'ด.ช.', 'ด.ญ.'])
 
 const optionsProvince = computed(() => {
   if (!isView.value) return data
@@ -746,18 +409,34 @@ function addChildForm() {
   })
 }
 function removeChildForm(index) {
-  model.value.child.splice(index, 1)
-  if (isEdit.value && model.value.child[index]?.id) {
-    if (!Array.isArray(model.value.deleteChild)) {
-      model.value.deleteChild = []
+  Swal.fire({
+    title: 'ยืนยันการทำรายการหรือไม่ ???',
+    html: `ไม่ต้องห่วง ข้อมูลบุตรจะถูกลบเมื่อคุณคลิกปุ่ม "บันทึก"`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'ยืนยัน',
+    cancelButtonText: 'ยกเลิก',
+    reverseButtons: true,
+    customClass: {
+      confirmButton: 'save-button',
+      cancelButton: 'cancel-button',
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      if (isEdit.value && model.value.child[index]?.id) {
+        if (!Array.isArray(model.value.deleteChild)) {
+          model.value.deleteChild = []
+        }
+        if (model.value && Array.isArray(model.value.deleteChild)) {
+          model.value.deleteChild.push({ id: model.value.child[index].id })
+        }
+      }
+      model.value.child.splice(index, 1)
+      if (model.value.child.length == 0) {
+        addChildForm()
+      }
     }
-    if (model.value && Array.isArray(model.value.deleteChild)) {
-      model.value.deleteChild.push({ id: model.value.child[index].id })
-    }
-  }
-  if (model.value.child.length == 0) {
-    addChildForm()
-  }
+  })
 }
 
 watch(

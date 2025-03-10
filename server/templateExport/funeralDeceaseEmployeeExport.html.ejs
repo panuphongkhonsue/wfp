@@ -85,28 +85,27 @@
                   <div style="width: 5%;"></div>
                   <div style="width: 95%;">
                     <div class="row pt-md px-md" style="gap: 8px">
-                      <div style="flex: 1" class="row px-sm font-semi-bold">
-                        <div>ชื่อ-นามสกุล (ผู้ปฏิบัติงานเสียชีวิต) <span style="max-width: 150px; width: 150px;"
+                      <div style="flex: 1" class="d-flex px-sm font-semi-bold">
+                        <label>ชื่อ-นามสกุล (ผู้ปฏิบัติงานเสียชีวิต)</label> <span style="max-width: 250px; width: 250px;"
                             class="<%= body?.deceased?.name ?  'text-dot text-center' : 'text-dot-no-value' %>">
                             <%= body?.deceased?.name ? body.deceased.name
                             :
                             ""
                             %></span>
-                        </div>
-                        <div class="px-xl">ตำแหน่ง <span style="max-width: 100px; width: 100px;"
+                        <label>ตำแหน่ง</label><span style="max-width: 195px; width: 195px;"
                             class="<%= body?.deceased?.position?.name ?  'text-dot text-center' : 'text-dot-no-value' %>">
                             <%= body?.deceased?.position?.name ?
                             body.deceased.position?.name
                             :
                             ""
                             %></span>
-                        </div>
+                        
                       </div>
                     </div>
                     <div class="row pt-sm px-md" style="gap: 8px">
-                      <div style="flex: 1" class="row px-sm font-semi-bold">
-                        <div>สังกัด ภาควิชา/ส่วนงาน
-                          <span style="max-width: 250px; width: 250px;"
+                      <div style="flex: 1" class="d-flex px-sm font-semi-bold">
+                        <label>สังกัด ภาควิชา/ส่วนงาน</label>
+                          <span style="max-width: 550px; width: 550px;"
                             class="<%= (body?.deceased?.sector?.name || body?.deceased?.department?.name) ? 'text-dot text-center' : 'text-dot-no-value' %>">
                             <%= (body?.deceased?.sector?.name ||
                             body?.deceased?.department?.name)
@@ -118,19 +117,19 @@
                             ""
                             %>
                           </span>
-                        </div>
+                        
                       </div>
                     </div>
-                    <div class="row pt-sm px-md" style="gap: 8px">
-                      <div style="flex: 1" class="row px-sm font-semi-bold">
-                        <div>โดยค่าสงเคราะห์การเสียชีวิตของผู้ปฎิบัติงานให้จ่ายให้กับผู้จัดการงานศพชื่อ-นามสกุล
-                          <span style="max-width: 130px; width: 130px;"
+                    <div class="row pt-sm px-md " style="gap: 8px">
+                      <div style="flex: 1" class="d-flex px-sm font-semi-bold ">
+                        <label>โดยค่าสงเคราะห์การเสียชีวิตของผู้ปฎิบัติงานให้จ่ายให้กับผู้จัดการงานศพชื่อ-นามสกุล</label>
+                          <span style="max-width: 200px; width: 200px;"
                             class="<%= body?.organizer ?  'text-dot text-center' : 'text-dot-no-value' %>">
                             <%= body?.organizer ? body.organizer
                             :
                             ""
                             %></span>
-                        </div>
+                        
                       </div>
                     </div>
                     <div class="row pl-md py-sm" style="gap: 8px">
@@ -170,16 +169,14 @@
                   <div style="width: 5%;"></div>
                   <div style="width: 95%;">
                     <div class="row pl-md py-sm" style="gap: 8px">
-                      <div style="flex: 1" class="py-sm" >
-                        <div style="flex: 1" class="pl-sm">
-                          <span
-                          style="padding-left: 24px;"></span><span>ข้าพเจ้าขอรับรองว่า
-                          <span
+                      <div  class="py-sm" >
+                        <div style="flex: 1" class="pl-sm d-flex" >
+                          <span style="padding-left: 24px;"></span><span>ข้าพเจ้าขอรับรองว่า</span>
+                          <span style="max-width: 100px; width: 100px;"
                             class="<%= body?.organizer ? 'text-dot text-center' : 'text-dot-no-value' %>">
-                            <%= body?.organizer ? body.organizer
-                            :
-                            ""
-                            %></span></span>
+                            <%= body?.organizer ? body.organizer : "" %>
+                          </span>
+                          
                         <span>(ชื่อ-นามสกุล ผู้จัดการงานศพ)
                           ได้เป็นผู้จัดการการงานศพและรับเงินค่าสงเคราะห์</span>
                         </div>
@@ -344,7 +341,7 @@
                   ( <div class="text-dot" style="max-width: 220px;"> </div> )
                 </div>
                 <div class="col-position px-md">
-                  ตำแหน่ง <div class="text-dot-no-value" style="max-width: 170px;"> <%= body?.user?.positionId==2 || body?.user?.positionId==3 ? "อธิการบดี" : "คณบดี" %></div>
+                  ตำแหน่ง <div class="text-dot text-center" style="max-width: 170px;"> <%= body?.user?.positionId==2 || body?.user?.positionId==3 ? "อธิการบดี" : "คณบดี" %></div>
                 </div>
                 <div class="col-sign py-sm">
                   วันที่<div class="text-dot-no-value" style="max-width: 50px;"> </div>เดือน <div class="text-dot-no-value" style="max-width: 50px;"> </div> พ.ศ. <div class="text-dot-no-value" style="max-width: 50px;"> </div>

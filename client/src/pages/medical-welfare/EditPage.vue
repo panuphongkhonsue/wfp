@@ -58,18 +58,18 @@
               <p class="col-12 q-ma-none">{{ remaining?.accident?.categoryName ?? "ประสุบอุบัติเหตุ" }} :
                 {{ remaining?.accident.fundRemaining ? remaining?.accident.fundRemaining + " บาทต่อปี" :
                   remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                    remaining?.accident.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining?.accident.requestsRemaining ? "( " + remaining?.accident.requestsRemaining + " ครั้ง)" :
-                  '(ไม่จำกัดครั้ง)' }}</p>
+                  remaining?.accident.requestsRemaining ?? '(ไม่จำกัดครั้ง)' }}</p>
               <p class="col-12 q-ma-none">{{ remaining?.patientVisit?.categoryName ?? "ประสุบอุบัติเหตุ" }} :
                 {{ remaining?.patientVisit.fundRemaining
                   ? remaining?.patientVisit.fundRemaining + " บาทต่อปี" :
                   remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน" }}
+                   remaining?.patientVisit.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน" }}
                 {{ remaining?.patientVisit.requestsRemaining ? "( " + remaining?.patientVisit.requestsRemaining +
                   " ครั้ง) " :
-                  'ไม่จำกัดครั้ง' }}
+                  remaining?.patientVisit.requestsRemaining ?? 'ไม่จำกัดครั้ง' }}
               </p>
             </q-card-section>
           </q-card>
@@ -92,15 +92,15 @@
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
               <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
               </p>
-              <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">สถานะ : <span :class="textStatusColor(model.status)">{{ model.status ?? "-" }}</span> </p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedAccident" />
               <p class="q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ {{ remaining?.accident.fund ?
-                remaining?.accident.fund + " บาท ต่อปี" :
-                remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาท ต่อครั้ง" :
-                  "ไม่จำกัดจำนวนเงิน"
+                remaining?.accident.fund + " บาทต่อปี" :
+                remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาทต่อครั้ง" :
+                remaining?.accident.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
               }})</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
@@ -129,13 +129,13 @@
               <q-checkbox v-if="!isView" v-model="model.selectedPatientVisit" />
               <p class="q-mb-none">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน {{ remaining?.patientVisit.fund
                 ?
-                remaining?.patientVisit.fund + " บาท ต่อปี" :
-                remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาท ต่อครั้ง"
+                remaining?.patientVisit.fund + " บาทต่อปี" :
+                remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาทต่อครั้ง"
                   :
-                  "ไม่จำกัดจำนวนเงิน"
+                  remaining?.patientVisit.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
               }} {{ remaining?.patientVisit.perYears ? "ปีนึงไม่เกิน " + remaining?.patientVisit.perYears +
                   " ครั้ง" :
-                  'ไม่จำกัดครั้ง' }}</p>
+                  remaining?.patientVisit.perYears ?? 'ไม่จำกัดครั้ง' }}</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-sm font-16 text-grey-9">
               <InputGroup label="ตั้งแต่วันที่" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl"
@@ -254,7 +254,7 @@ import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
-
+import { textStatusColor } from "src/components/status";
 defineOptions({
   name: "MedicalfareEdit",
 });
@@ -576,6 +576,12 @@ async function fetchRemaining() {
     if (accidentData.perTimesRemaining != null && !isNaN(Number(accidentData.perTimesRemaining))) {
       remaining.value.accident.perTimesRemaining = formatNumber(accidentData.perTimesRemaining);
     }
+    if (accidentData.fund != null && !isNaN(Number(accidentData.fund))) {
+      remaining.value.accident.fund = formatNumber(accidentData.fund);
+    }
+    if (accidentData.perYears != null && !isNaN(Number(accidentData.perYears))) {
+      remaining.value.accident.perYears = formatNumber(accidentData.perYears);
+    }
     if (accidentData.subCategoriesName != null) {
       remaining.value.accident.categoryName = accidentData.subCategoriesName;
     }
@@ -587,6 +593,12 @@ async function fetchRemaining() {
     }
     if (patientVisitData.perTimesRemaining != null && !isNaN(Number(patientVisitData.perTimesRemaining))) {
       remaining.value.patientVisit.perTimesRemaining = formatNumber(patientVisitData.perTimesRemaining);
+    }
+    if (patientVisitData.fund != null && !isNaN(Number(patientVisitData.fund))) {
+      remaining.value.patientVisit.fund = formatNumber(patientVisitData.fund);
+    }
+    if (patientVisitData.perYears != null && !isNaN(Number(patientVisitData.perYears))) {
+      remaining.value.patientVisit.perYears = formatNumber(patientVisitData.perYears);
     }
     if (patientVisitData.subCategoriesName != null) {
       remaining.value.patientVisit.categoryName = patientVisitData.subCategoriesName;
@@ -916,6 +928,7 @@ async function init() {
   isLoading.value = true;
   try {
     if (isView.value) {
+      fetchRemaining();
       fetchDataEdit();
     }
     else if (isEdit.value) {

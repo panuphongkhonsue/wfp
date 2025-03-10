@@ -128,7 +128,7 @@ const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, fundDecree, fundUniversity, fundEligible, fundEligibleName, actionId } = req.body;
         
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         const errorObj = {};
@@ -208,7 +208,7 @@ const bindCreate = async (req, res, next) => {
         const { id } = req.user;
         if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
-                message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
+                message: "ไม่มีสิทธิ์สร้างให้คนอื่นได้",
             });
         }
         if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
@@ -254,7 +254,7 @@ const bindUpdate = async (req, res, next) => {
         const { id } = req.user;
         if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
-                message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+                message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
             });
         }
         if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
@@ -273,7 +273,7 @@ const bindUpdate = async (req, res, next) => {
             createByData = datas.created_by;
             if (!req.access && datas.created_by !== id) {
                 return res.status(400).json({
-                    message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+                    message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
                 });
             }
             if (!req.access && datas.status !== statusText.draft) {
@@ -287,7 +287,7 @@ const bindUpdate = async (req, res, next) => {
                 });
             }
             
-            if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
                 const dataBinding = {
                     status : actionId,
                     updated_by: id,
@@ -345,7 +345,7 @@ const getRemaining = async (req, res, next) => {
         const { created_by, createByData } = req.body;
         const { actionId } = req.body;
         
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         req.query.filter = {};
@@ -391,7 +391,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         var whereObj = { ...filter }
         
         const { fund_sum_request, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
            return next();
         }
         const results = await reimbursementsGeneral.findOne({
@@ -457,7 +457,7 @@ const checkFullPerTimes = async (req, res, next) => {
     try {
         
         const { fund_sum_request, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         const getFund = await categories.findOne({
@@ -525,7 +525,7 @@ const checkRemaining = async (req, res, next) => {
             if (datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
                 logger.info('No Remaining', { method });
                 return res.status(400).json({
-                    message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
+                    message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
                 });
             };
             if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {

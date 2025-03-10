@@ -15,6 +15,7 @@ const { fn, col, literal, Op } = require("sequelize");
 const { initLogger } = require("../logger");
 const category = require("../enum/category");
 const logger = initLogger("medicalWelfareController");
+const status = require('../enum/status');
 const {
   getFiscalYearDynamic,
   getFiscalYear
@@ -243,7 +244,8 @@ class Controller extends BaseController {
             {
               "$reimbursements_general.created_by$": req.query.createFor ?? id
             },
-            { "$sub_category.id$": 2 }
+            { "$sub_category.id$": 2 },
+            { '$reimbursements_general.status$': { [Op.ne]: status.NotApproved } },
           );
           const getRequestData =
             await reimbursementsGeneralHasSubCategories.findAll({
@@ -320,7 +322,7 @@ class Controller extends BaseController {
       }
       logger.info("Data not Found", { method, data: { id } });
       res.status(200).json({
-        message: "มีสิทธ์คงเหลือเท่ากับเพดานเงิน"
+        message: "มีสิทธิ์คงเหลือเท่ากับเพดานเงิน"
       });
     } catch (error) {
       logger.error(`Error ${error.message}`, {
@@ -404,7 +406,8 @@ class Controller extends BaseController {
           { "$reimbursements_general.categories_id$": category.medicalWelfare },
           { "$reimbursements_general.created_by$": datas.userId },
           { "$reimbursements_general.id$": { [Op.lte]: datas.id } },
-          { "$sub_category.id$": 2 }
+          { "$sub_category.id$": 2 },
+          { '$reimbursements_general.status$': { [Op.ne]: status.NotApproved } },
         );
         const getRequestData =
           await reimbursementsGeneralHasSubCategories.findAll({
