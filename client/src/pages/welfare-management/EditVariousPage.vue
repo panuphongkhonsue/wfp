@@ -46,40 +46,40 @@
                 {{ remaining[4]?.categoryName ?? "ค่าสมรส" }} :
                 {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
                   remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                  remaining[4]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"
+                  remaining[4]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
                 }}
               </p>
               <p class="col-12 q-mb-none">
                 {{ remaining[5]?.categoryName ?? "ค่าอุปสมบทหรือประกอบพิธีฮัจญ์" }} :
                 {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
                   remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                  remaining[5]?.perTimesRemaining ??  "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"
+                  remaining[5]?.requestsRemaining  ?? "(ไม่จำกัดครั้ง)"
                 }}
               </p>
               <p class="col-12 q-mb-none">
                 {{ remaining[6]?.categoryName ?? "ค่ารับขวัญบุตร" }} :
                 {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
                   remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                  remaining[6]?.perTimesRemaining ??  "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"
+                remaining[6]?.requestsRemaining ??  "(ไม่จำกัดครั้ง)"
                 }}
               </p>
               <p class="col-12 q-mb-none">
                 {{ remaining[7]?.categoryName ?? "กรณีประสบภัยพิบัติ" }} :
                 {{ remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาทต่อปี" :
                   remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                  remaining[7]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
-                  "(ไม่จำกัดครั้ง)"
+                  remaining[7]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
                 }}
               </p>
             </q-card-section>
@@ -112,18 +112,14 @@
                   :disable="isView" :rules="[(val) => !!val || '']" />
               </div>
               <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[4]?.fund ? remaining[4]?.fund + " บาท" :
-                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน" }})</p>
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[5]?.fund ? remaining[5]?.fund + " บาท" :
-                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน" }})</p>
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[6]?.fund ? remaining[6]?.fund + " บาท" :
-                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน" }})</p>
-                <p class="col-12 q-mb-none">(จ่ายไม่เกินคนละ {{ remaining[7]?.fund ? remaining[7]?.fund + " บาท" :
-                  remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน" }})</p>
+                <p class="col-12 q-mb-none">({{ remaining[4]?.fund ? "จ่ายไม่เกินคนละ " + remaining[4]?.fund + " บาทต่อปี" :
+                    "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
+                <p class="col-12 q-mb-none">({{ remaining[5]?.fund ? "จ่ายไม่เกินคนละ " + remaining[5]?.fund + " บาทต่อปี" :
+                    "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
+                <p class="col-12 q-mb-none">({{ remaining[6]?.fund ? "จ่ายไม่เกินคนละ " + remaining[6]?.fund + " บาทต่อปี" :
+                    "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
+                <p class="col-12 q-mb-none">({{ remaining[7]?.fund ? "จ่ายไม่เกินคนละ " + remaining[7]?.fund + " บาทต่อปี" :
+                    "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
               </div>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
@@ -141,9 +137,6 @@
                   class="q-py-xs-md q-py-lg-none" :is-view="isView" :rules="[
                     (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
                     (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
-                    (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
-                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง',
-                    (val) => isOverfundRemaining !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                   ]" :error-message="isError?.fundEligible" :error="!!isError?.fundEligible">
                 </InputGroup>
 
@@ -183,15 +176,15 @@
       <div class="justify-end row q-py-xs font-medium q-gutter-lg">
         <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
           style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'welfare_management_list' }" />
-        <q-btn :disable="isButtonDisabled || isValidate" id="button-draft"
+        <q-btn :disable="isValidate" id="button-draft"
           class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
-          label="บันทึก" no-caps @click="submit(1)" v-if="!isView && !isLoading" />
+          label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
         <q-btn id="button-approve"
         class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #E52020"
         label="ไม่อนุมัติ" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
-        <q-btn :disable="isButtonDisabled || isValidate" id="button-approve"
+        <q-btn :disable="isValidate" id="button-approve"
           class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
-          label="อนุมัติ" no-caps @click="submit(2)" v-if="!isView && !isLoading" />
+          label="อนุมัติ" no-caps @click="submit(3)" v-if="!isView && !isLoading" />
       </div>
     </template>
   </PageLayout>
@@ -262,9 +255,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   model.value = null;
 });
-const isButtonDisabled = computed(() => {
-  return !remaining.value[model.value.categoryId]?.canRequest;
-});
+
 
 watch(
   () => model.value.categoryId,
@@ -297,9 +288,6 @@ const isValidate = computed(() => {
   if (!model.value.fundEligible) {
     validate = true;
   }
-  if (isOverfundRemaining.value) {
-    validate = true;
-  }
   if (!model.value.createFor) {
     validate = true;
   }
@@ -309,26 +297,6 @@ const isValidate = computed(() => {
 const isOver = computed(() => {
   return Number(model.value.fundEligible) > Number(model.value.fundReceipt);
 });
-
-const isOverfundRemaining = computed(() => {
-  const fundSumRequest = Number(model.value.fundEligible ?? 0);
-  const categoryData = remaining.value[model.value.categoryId] || {};
-
-  const perTimes = categoryData.perTimesRemaining ? parseFloat(categoryData.perTimesRemaining.replace(/,/g, "")) : null;
-  const fundRemaining = categoryData.fundRemaining ? parseFloat(categoryData.fundRemaining.replace(/,/g, "")) : null;
-  const canRequest = categoryData.canRequest ?? true;
-  let check = false;
-  if (Number(fundSumRequest) > perTimes && categoryData.perTimesRemaining) {
-    check = 1;
-  }
-  if (Number(fundSumRequest) > fundRemaining && categoryData.fundRemaining) {
-    check = 2;
-  } if (!canRequest && isFetchRemaining.value) {
-    check = 3;
-  }
-  return check;
-});
-
 
 async function fetchDataEdit() {
   setTimeout(async () => {
@@ -387,7 +355,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -417,7 +384,6 @@ async function fetchRemaining() {
       }
 
     }
-    isFetchRemaining.value = true;
   } catch (error) {
     Promise.reject(error);
   }
@@ -474,18 +440,6 @@ async function submit(actionId) {
     let navigate = document.getElementById("fund");
     window.location.hash = "fund";
     navigate.scrollIntoView(false);
-    validate = true;
-  }
-  if (isOverfundRemaining.value) {
-    if (isOverfundRemaining.value === 2) {
-      isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
-    }
-    else if(isOverfundRemaining.value === 1) {
-      isError.value.fundEligible = "สามารถเบิกได้สูงสุด " + remaining.value.perTimesRemaining + " บาทต่อครั้ง";
-    }
-    else{
-      isError.value.fundEligible = "คุณใช้จำนวนการเบิกครบแล้ว";
-    }
     validate = true;
   }
   if (isOver.value) {

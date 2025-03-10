@@ -146,7 +146,7 @@
                     (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
                     (val) => !isOverRequest || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
                     (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
-                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง',
+                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + remaining[9].perTimesRemaining + ' บาทต่อครั้ง',
                     (val) => isOverfundRemaining !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                   ]"
                   :error-message="isError?.fundRequest" :error="!!isError?.fundRequest">
@@ -166,9 +166,9 @@
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
                   :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
-                  placeholder="บาท" type="number" class="" :is-view="isView" :disable="!model.selectedWreath"
-                  :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
-                  :error-message="isError?.fundReceiptWreath" :error="!!isError?.fundReceiptWreath">
+                  placeholder="บาท" type="number" class="" :is-view="isView" :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน',
+                  (val) => val && (Number(model.fundWreathArrange) + (Number(model.fundWreathUniversity) || 0)) <= Number(val) || 'จำนวนเงินรวมของค่าพวงหรีด ต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน'
+                  ]" :error-message="isError?.fundReceiptWreath" :error="!!isError?.fundReceiptWreath">
                 </InputGroup>
               </div>
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
@@ -275,7 +275,7 @@ import { Notify } from "quasar";
 import { formatDateThaiSlash, formatNumber } from "src/components/format";
 import userManagementService from "src/boot/service/userManagementService";
 import { outlinedDownload } from "@quasar/extras/material-icons-outlined";
-import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
 import funeralWelfareEmployeeDeceasedService from "src/boot/service/funeralWelfareEmployeeDeceasedService";
@@ -368,6 +368,9 @@ function hasClaimed(userId) {
 
 const isValidate = computed(() => {
   let validate = false;
+  if (isError.value.fundReceiptWreath) {
+    validate = true;  
+  }
   if (!model.value.selectedWreath && !model.value.selectedVehicle && !model.value.deceased) {
     validate = true;
   }
@@ -425,9 +428,7 @@ const isValidate = computed(() => {
       validate = true;
     }
   }
-  // if (!model.value.createFor && canCreateFor.value) {
-  //   validate = true;
-  // }
+
   return validate;
 });
 const isOverfundRemaining = computed(() => {
@@ -499,6 +500,17 @@ const isOverWreathUniversity = computed(() => {
 });
 const isOverVehicle = computed(() => {
   return Number(model.value.fundVehicle) > Number(model.value.fundReceiptVehicle);
+});
+watch([() => model.value.fundWreathArrange, () => model.value.fundWreathUniversity], () => {
+  const totalWreath = (Number(model.value.fundWreathArrange) || 0) + (Number(model.value.fundWreathUniversity) || 0);
+  
+  nextTick(() => {
+    if (model.value.fundReceiptWreath && totalWreath > Number(model.value.fundReceiptWreath)) {
+      isError.value.fundReceiptWreath = "จำนวนเงินรวมของค่าพวงหรีด ต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน";
+    } else {
+      isError.value.fundReceiptWreath = null; 
+    }
+  });
 });
 watch(
   model,
@@ -849,6 +861,13 @@ async function submit(actionId) {
   if (isDeceasedClaimed.value) {
     isError.value.deceased = "ผู้เสียชีวิตเคยเบิกสิทธิ์ไปแล้ว";
     validate = true;
+  }
+  if (model.value.selectedWreath) {
+    const totalWreath = (Number(model.value.fundWreathArrange) || 0) + (Number(model.value.fundWreathUniversity) || 0);
+    if (totalWreath > Number(model.value.fundReceiptWreath)) {
+      isError.value.fundReceiptWreath = "จำนวนเงินรวมของค่าพวงหรีดต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน";
+      validate = true;
+    }
   }
   if (validate === true) {
     Notify.create({

@@ -134,7 +134,7 @@ const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, deceased, organizer, fundRequest, fundReceiptWreath, fundWreathUniversity, fundWreathArrange,
             fundReceiptVehicle, fundVehicle, selectedWreath, selectedVehicle, actionId } = req.body;
-        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         const errorObj = {};
@@ -359,7 +359,7 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
+            if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
                 const dataBinding = {
                     status: actionId,
                     updated_by: id,
@@ -422,7 +422,7 @@ const getRemaining = async (req, res, next) => {
         const { id } = req.user;
         const { deceasedId } = req.query;
         const { deceased, checkData, actionId } = req.body;
-        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         req.query.filter = {};
@@ -461,7 +461,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_request, fund_wreath_university, fund_wreath_arrange, fund_vehicle, actionId } = req.body;
-        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         whereObj[Op.and].push(
@@ -692,7 +692,7 @@ const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
         const { fund_request, fund_wreath_university, fund_wreath_arrange, fund_vehicle, actionId } = req.body;
-        if (req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)) {
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         const getFund = await categories.findAll({

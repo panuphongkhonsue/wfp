@@ -32,25 +32,32 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-10 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none"> {{ remaining[3]?.subCategoriesName ?? "บิดา" }} : {{ remaining[3]?.fundRemaining ? remaining[3]?.fundRemaining + " บาทต่อปี" :
+        <p class="col q-ma-none"> {{ remaining[3]?.subCategoriesName ?? "บิดา" }} : {{ remaining[3]?.fundRemaining ?
+          remaining[3]?.fundRemaining + " บาทต่อปี" :
           remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาทต่อครั้ง" :
-            "ไม่จำกัดจำนวนเงิน"
+          remaining[3]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
         }}
         </p>
-        <p class="col q-ma-none">  {{ remaining[4]?.subCategoriesName ?? "มารดา" }} : {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
-                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
-                }}
+        <p class="col q-ma-none">
+          {{ remaining[4]?.subCategoriesName ?? "มารดา" }} : {{ remaining[4]?.fundRemaining ?
+            remaining[4]?.fundRemaining + " บาทต่อปี" :
+            remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
+            remaining[4]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
+          }}
         </p>
-        <p class="col q-ma-none">  {{ remaining[5]?.subCategoriesName ?? "คู่สมรส" }} : {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
-                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
-                }}
+        <p class="col q-ma-none">
+          {{ remaining[5]?.subCategoriesName ?? "คู่สมรส" }} : {{ remaining[5]?.fundRemaining ?
+            remaining[5]?.fundRemaining + " บาทต่อปี" :
+            remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
+            remaining[5]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
+          }}
         </p>
-        <p class="col q-ma-none"> {{ remaining[6]?.subCategoriesName ?? "บุตร" }} : {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
-                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
-                }}
+        <p class="col q-ma-none">
+          {{ remaining[6]?.subCategoriesName ?? "บุตร" }} : {{ remaining[6]?.fundRemaining ?
+            remaining[6]?.fundRemaining + " บาทต่อปี" :
+            remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
+            remaining[6]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
+          }}
         </p>
       </div>
       <div class="col-12 col-md-2 flex justify-end">
@@ -248,7 +255,7 @@ async function init() {
 
     deceaseData.forEach((item) => {
       remaining.value[item.subCategoriesId] = {
-        subCategoriesName: item.subCategoriesName, 
+        subCategoriesName: item.subCategoriesName,
         requestsRemaining: formatNumber(item.requestsRemaining),
         fundRemaining: item.fundRemaining === "0" ? null : formatNumber(item.fundRemaining),
         perTimesRemaining: item.perTimesRemaining === "0" ? null : formatNumber(item.perTimesRemaining),
@@ -419,7 +426,7 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US",{
+        return number.toLocaleString("en-US", {
           minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
           maximumFractionDigits: 2, // Limit to 2 decimal places
         }); // Format as '3,000'
@@ -436,7 +443,7 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US",{
+        return number.toLocaleString("en-US", {
           minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
           maximumFractionDigits: 2, // Limit to 2 decimal places
         }); // Format as '3,000'

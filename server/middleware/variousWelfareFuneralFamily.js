@@ -128,7 +128,7 @@ const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, decease, fundDecease, fundReceiptWreath, fundWreathUniversity, fundWreathArrange,
             fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, actionId, deceasedType } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         const errorObj = {};
@@ -185,7 +185,7 @@ const checkNullValue = async (req, res, next) => {
                     message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
                 });
             }
-            if (Number(fundSumWreathRequest) > Number(fundReceiptWreath)) {
+            if (Number(fundWreathArrange + fundWreathUniversity) > Number(fundReceiptWreath)) {
                 return res.status(400).json({
                     message: "จำนวนเงินที่ต้องการเบิกไม่สามารถมากกว่าจำนวนเงินตามใบสำคัญรับเงินได้",
                 });
@@ -349,7 +349,7 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
                 const dataBinding = {
                     status : actionId,
                     updated_by: id,
@@ -410,7 +410,7 @@ const getRemaining = async (req, res, next) => {
         const { id } = req.user;
         const { createFor } = req.query;
         const { created_by, createByData, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         req.query.filter = {};
@@ -455,7 +455,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_decease, fund_wreath_university, fund_wreath_arrange, fund_vechicle, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         whereObj[Op.and].push(
@@ -684,8 +684,8 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { fund_decease, fund_wreath_university, fund_wreath_arrange, fund_vechicle, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        const { fund_decease, fund_wreath_university, fund_wreath_arrange, fund_vechicle,fundReceiptWreath, actionId } = req.body;
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         const getFund = await subCategories.findAll({
@@ -745,6 +745,12 @@ const checkFullPerTimes = async (req, res, next) => {
             if (fund_vechicle > datasVechicle.perTimes && datasVechicle.perTimes) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว ค่าพาหนะเหมาจ่าย" + datasVechicle.perTimes + " ต่อครั้ง",
+                });
+            }
+            if ((fund_wreath_arrange + fund_wreath_university) > datasWreath.perTimes && datasWreath.perTimes) {
+                logger.info('Request Over', { method });
+                return res.status(400).json({
+                    message: "จำนวนเงินรวมของค่าพวงหรีด ต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน",
                 });
             }
             // if (fund_vechicle > datasVechicle.fundRemaining && datasVechicle.fundRemaining) {
