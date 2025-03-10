@@ -104,7 +104,7 @@
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
               <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
               </p>
-              <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">สถานะ : <span :class="textStatusColor(model.status)">{{ model.status ?? "-" }}</span> </p>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
               <div v-for="option in deceaseOptions" :key="option.value" class="col-12 row q-mb-none ">
@@ -281,6 +281,7 @@ import { useAuthStore } from "src/stores/authStore";
 import variousWelfareFuneralFamilyService from "src/boot/service/variousWelfareFuneralFamilyService";
 import exportService from "src/boot/service/exportService";
 import welfareManagementService from "src/boot/service/welfareManagementService";
+import { textStatusColor } from "src/components/status";
 defineOptions({
   name: "various_welfare_funeral_family_edit",
 });

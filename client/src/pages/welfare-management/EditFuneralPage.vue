@@ -80,7 +80,7 @@
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
               <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
               </p>
-              <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">สถานะ : <span :class="textStatusColor(model.status)">{{ model.status ?? "-" }}</span> </p>
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
               <div class="col-lg-5 col-xl-4 col-12 q-mb-none q-pr-lg-xl">
@@ -270,6 +270,7 @@ import { useAuthStore } from "src/stores/authStore";
 import funeralWelfareEmployeeDeceasedService from "src/boot/service/funeralWelfareEmployeeDeceasedService";
 import exportService from "src/boot/service/exportService";
 import welfareManagementService from "src/boot/service/welfareManagementService";
+import { textStatusColor } from "src/components/status";
 defineOptions({
   name: "funeral_welfare_edit",
 });

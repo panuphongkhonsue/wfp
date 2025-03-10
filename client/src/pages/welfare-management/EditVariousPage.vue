@@ -103,7 +103,7 @@
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
               <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
               </p>
-              <p class="col-md-4 col-12 q-mb-none">สถานะ : {{ model.status ?? "-" }}</p>
+              <p class="col-md-4 col-12 q-mb-none">สถานะ : <span :class="textStatusColor(model.status)">{{ model.status ?? "-" }}</span> </p>
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
               <p class="col-12 q-mb-none">การเบิกสวัสดิการค่าสงเคราะห์ เนื่องในโอกาสต่างๆ</p>
@@ -210,6 +210,7 @@ import { useAuthStore } from "src/stores/authStore";
 import variousWelfareService from "src/boot/service/variousWelfareService";
 import exportService from "src/boot/service/exportService";
 import welfareManagementService from "src/boot/service/welfareManagementService";
+import { textStatusColor } from "src/components/status";
 defineOptions({
   name: "various_welfare_edit",
 });

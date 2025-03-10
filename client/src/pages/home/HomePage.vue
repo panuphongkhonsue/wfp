@@ -15,19 +15,18 @@
                   <p class="q-mb-none text-white font-16 q-pb-sm">เงินคงเหลือ {{ items?.fundRemaining ?
                     items?.fundRemaining + " บาทต่อปี" :
                     items?.perTimesRemaining ? items?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน"
-                    }}</p>
+                  }}</p>
                   <p class="q-mb-none text-white font-16">{{ items?.requestsRemaining ? "จำนวน " +
                     items?.requestsRemaining + " ครั้ง" : 'ไม่จำกัดครั้ง' }}</p>
                 </div>
                 <!-- รูปภาพ -->
-                <q-img :src="items?.src" class="q-mt-xl" fit="fill" :ratio="16/9" width="4rem" height="4rem"
-                >
-                <template v-slot:error>
-                  <div class="absolute-full flex flex-center bg-negative text-white">
-                    ไม่พบรูป
-                  </div>
-                </template>
-              </q-img>
+                <q-img :src="items?.src" class="q-mt-xl" fit="fill" :ratio="16 / 9" width="4rem" height="4rem">
+                  <template v-slot:error>
+                    <div class="absolute-full flex flex-center bg-negative text-white">
+                      ไม่พบรูป
+                    </div>
+                  </template>
+                </q-img>
               </q-card-section>
             </q-card>
           </div>
@@ -190,6 +189,7 @@ import { useAuthStore } from "src/stores/authStore";
 import healthCheckUpWelfareService from "src/boot/service/healthCheckUpWelfareService";
 import dentalWelfareService from "src/boot/service/dentalWelfareService";
 import medicalWelfareService from "src/boot/service/medicalWelfareService";
+import variousWelfareService from "src/boot/service/variousWelfareService";
 import {
   outlinedEdit,
   outlinedVisibility,
@@ -276,13 +276,41 @@ async function fetchRemainingMedical() {
     if (accidentData?.subCategoriesName != null) {
       remaining.categoryName = accidentData?.subCategoriesName;
     }
-    remaining.src = "src/assets/medical.png";
+    remaining.src = "src/assets/medical.svg";
     remainingAll.value.push(remaining);
   }
   catch (error) {
     Promise.reject(error);
   }
 }
+
+async function fetchRemainingVarious() {
+  try {
+    const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
+
+    if (Array.isArray(fetchRemaining.data?.datas)) {
+      const marriageData = fetchRemaining.data.datas.find(item => item.categoryName === "สมรส");
+
+      if (marriageData) {
+        let remaining = {
+          categoryName: marriageData.categoryName,
+          fundRemaining: marriageData.fundRemaining ? formatNumber(marriageData.fundRemaining) : null,
+          perTimesRemaining: marriageData.perTimesRemaining ? formatNumber(marriageData.perTimesRemaining) : null,
+          requestsRemaining: marriageData.requestsRemaining !== null && marriageData.requestsRemaining !== undefined 
+            ? formatNumber(marriageData.requestsRemaining) 
+            : null,
+          src: "src/assets/marriage.svg"
+        };
+
+        remainingAll.value.push(remaining);
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching various welfare:", error);
+    return Promise.reject(error);
+  }
+}
+
 
 
 async function init() {
@@ -291,6 +319,7 @@ async function init() {
   await fetchRemainingHealthCheckup();
   await fetchRemainingDental();
   await fetchRemainingMedical();
+  await fetchRemainingVarious();
 }
 
 async function fetchFromServer() {
