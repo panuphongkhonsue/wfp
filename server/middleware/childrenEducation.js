@@ -237,6 +237,7 @@ const checkRemaining = async (req, res, next) => {
 const bindCreate = async (req, res, next) => {
     try {
         const {
+            prefix,
             spouse,
             marryRegis,
             role,
@@ -304,7 +305,7 @@ const bindCreate = async (req, res, next) => {
             fund_sum_receipt: fundSumReceipt,
             fund_other: childfundOther,
             status: actionId,
-            spouse: spouse,
+            spouse: prefix + ' ' + spouse,
             eligible: eligible,
             marry_regis: marryRegis,
             role: role,
@@ -339,6 +340,7 @@ const bindCreate = async (req, res, next) => {
 const bindUpdate = async (req, res, next) => {
     try {
         const {
+            prefix,
             spouse,
             marryRegis,
             role,
@@ -419,7 +421,7 @@ const bindUpdate = async (req, res, next) => {
             fund_sum_receipt: fundSumReceipt,
             fund_other: childfundOther,
             status: actionId,
-            spouse: spouse,
+            spouse: prefix + ' ' + spouse,
             marry_regis: marryRegis,
             eligible: eligible,
             role: role,
