@@ -242,7 +242,7 @@ const bindCreate = async (req, res, next) => {
         const { id } = req.user;
         if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
-                message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
+                message: "ไม่มีสิทธิ์สร้างให้คนอื่นได้",
             });
         }
         if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
@@ -296,7 +296,7 @@ const bindUpdate = async (req, res, next) => {
         const { id } = req.user;
         if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
-                message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+                message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
             });
         }
         if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
@@ -315,7 +315,7 @@ const bindUpdate = async (req, res, next) => {
             createByData = datas.created_by;
             if (!req.access && datas.created_by !== id) {
                 return res.status(400).json({
-                    message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+                    message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
                 });
             }
             if (!req.access && datas.status !== statusText.draft) {
@@ -706,7 +706,7 @@ const checkRemaining = async (req, res, next) => {
                 if ((datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) && fund_eligible) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
-                        message: "ไม่มีสิทธ์ขอเบิกสวัสดิการประสบอุบัติเหตุขณะปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
+                        message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการประสบอุบัติเหตุขณะปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
                     });
                 };
                 if (fund_eligible > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
@@ -726,7 +726,7 @@ const checkRemaining = async (req, res, next) => {
                 if ((datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) && fund_sum_request_patient_visit) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
-                        message: "ไม่มีสิทธ์ขอเบิกสวัสดิการเยี่ยมไข้ผู้ปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
+                        message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการเยี่ยมไข้ผู้ปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
                     });
                 };
                 if (fund_sum_request_patient_visit > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {

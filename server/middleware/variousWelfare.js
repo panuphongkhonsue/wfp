@@ -188,7 +188,7 @@ const bindCreate = async (req, res, next) => {
         const { id, roleId } = req.user;
         if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
-                message: "ไม่มีสิทธ์สร้างให้คนอื่นได้",
+                message: "ไม่มีสิทธิ์สร้างให้คนอื่นได้",
             });
         }
         if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
@@ -233,7 +233,7 @@ const bindUpdate = async (req, res, next) => {
         const { id, } = req.user;
         if (!isNullOrEmpty(createFor) && !req.isEditor) {
             return res.status(400).json({
-                message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+                message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
             });
         }
         if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
@@ -262,7 +262,7 @@ const bindUpdate = async (req, res, next) => {
             createByData = datas.created_by;
             if (!req.access && datas.created_by !== id) {
                 return res.status(400).json({
-                    message: "ไม่มีสิทธ์แก้ไขให้คนอื่นได้",
+                    message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
                 });
             }
             if (!req.access && datas.status !== statusText.draft) {
@@ -520,7 +520,7 @@ const checkRemaining = async (req, res, next) => {
             if (remainingData.fundRemaining === 0 || remainingData.requestsRemaining === 0 || remainingData.requestsRemaining < 0) {
                 logger.info('No Remaining', { method });
                 return res.status(400).json({
-                    message: "ไม่มีสิทธ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
+                    message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",
                 });
             };
             if (fund_sum_request > remainingData.perTimes && !isNullOrEmpty(remainingData.perTimes)) {

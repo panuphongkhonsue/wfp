@@ -340,7 +340,7 @@ class Controller extends BaseController {
             }
             logger.info('Data not Found', { method, data: { id } });
             res.status(200).json({
-                message: "มีสิทธ์คงเหลือเท่ากับเพดานเงิน"
+                message: "มีสิทธิ์คงเหลือเท่ากับเพดานเงิน"
             });
         }
         catch (error) {
