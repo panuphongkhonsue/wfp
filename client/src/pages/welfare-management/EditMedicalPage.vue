@@ -45,18 +45,18 @@
               <p class="col-12 q-ma-none">{{ remaining?.accident?.categoryName ?? "ประสุบอุบัติเหตุ" }} :
                 {{ remaining?.accident.fundRemaining ? remaining?.accident.fundRemaining + " บาทต่อปี" :
                   remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน"
+                    remaining?.accident.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
                 }}
                 {{ remaining?.accident.requestsRemaining ? "( " + remaining?.accident.requestsRemaining + " ครั้ง)" :
-                  '(ไม่จำกัดครั้ง)' }}</p>
+                  remaining?.accident.requestsRemaining ?? '(ไม่จำกัดครั้ง)' }}</p>
               <p class="col-12 q-ma-none">{{ remaining?.patientVisit?.categoryName ?? "ประสุบอุบัติเหตุ" }} :
                 {{ remaining?.patientVisit.fundRemaining
                   ? remaining?.patientVisit.fundRemaining + " บาทต่อปี" :
                   remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาทต่อครั้ง" :
-                    "ไม่จำกัดจำนวนเงิน" }}
+                   remaining?.patientVisit.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน" }}
                 {{ remaining?.patientVisit.requestsRemaining ? "( " + remaining?.patientVisit.requestsRemaining +
                   " ครั้ง) " :
-                  'ไม่จำกัดครั้ง' }}
+                  remaining?.patientVisit.requestsRemaining ?? 'ไม่จำกัดครั้ง' }}
               </p>
             </q-card-section>
           </q-card>
@@ -85,9 +85,9 @@
               :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedAccident" />
               <p class="q-mb-none">ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่ (จ่ายไม่เกินคนละ {{ remaining?.accident.fund ?
-                remaining?.accident.fund + " บาท ต่อปี" :
-                remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาท ต่อครั้ง" :
-                  "ไม่จำกัดจำนวนเงิน"
+                remaining?.accident.fund + " บาทต่อปี" :
+                remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาทต่อครั้ง" :
+                remaining?.accident.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
               }})</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
@@ -104,9 +104,6 @@
                 compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl" :disable="!model.selectedAccident" :rules="[
                   (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
                   (val) => model.selectedAccident && !isOverAccident || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ',
-                  (val) => isOverfundRemainingAccident !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
-                  (val) => isOverfundRemainingAccident !== 1 || 'สามารถเบิกได้สูงสุด ' + (remaining.accident?.perTimesRemaining ?? '-') + ' บาทต่อครั้ง',
-                  (val) => isOverfundRemainingAccident !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                 ]" :error-message="isError?.fundEligible" :error="!!isError?.fundEligible">
               </InputGroup>
 
@@ -116,13 +113,13 @@
               <q-checkbox v-if="!isView" v-model="model.selectedPatientVisit" />
               <p class="q-mb-none">ค่าเยี่ยมไข้ผู้ปฏิบัติงาน (กรณีผู้ป่วยใน) คนละไม่เกิน {{ remaining?.patientVisit.fund
                 ?
-                remaining?.patientVisit.fund + " บาท ต่อปี" :
-                remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาท ต่อครั้ง"
+                remaining?.patientVisit.fund + " บาทต่อปี" :
+                remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาทต่อครั้ง"
                   :
-                  "ไม่จำกัดจำนวนเงิน"
+                  remaining?.patientVisit.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
               }} {{ remaining?.patientVisit.perYears ? "ปีนึงไม่เกิน " + remaining?.patientVisit.perYears +
                   " ครั้ง" :
-                  'ไม่จำกัดครั้ง' }}</p>
+                  remaining?.patientVisit.perYears ?? 'ไม่จำกัดครั้ง' }}</p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-sm font-16 text-grey-9">
               <InputGroup label="ตั้งแต่วันที่" :is-view="isView" compclass="col-xs-12 col-lg-4 col-xl-2 q-mr-lg-xl"
@@ -154,9 +151,6 @@
                 compclass="col-xs-12 col-lg-4 col-xl-2 q-ml-lg-xl" :disable="!model.selectedPatientVisit" :rules="[
                   (val) => !!val || 'กรุณากรอกข้อมูลจำนวนที่ต้องการเบิก',
                   (val) => model.selectedPatientVisit && !isOverPatientVisit || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ',
-                  (val) => isOverfundRemainingPatientVisit !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
-                  (val) => isOverfundRemainingPatientVisit !== 1 || 'สามารถเบิกได้สูงสุด ' + (remaining.patientVisit?.perTimesRemaining ?? '-') + ' บาทต่อครั้ง',
-                  (val) => isOverfundRemainingPatientVisit !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                 ]" :error-message="isError?.fundSumRequestPatientVisit" :error="!!isError?.fundSumRequestPatientVisit">
               </InputGroup>
             </q-card-section>
@@ -218,7 +212,7 @@
         <q-btn id="button-approve"
         class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #E52020"
         label="ไม่อนุมัติ" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
-        <q-btn :disable="!canRequest || isValidate" id="button-approve"
+        <q-btn :disable="isValidate" id="button-approve"
           class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
           label="อนุมัติ" no-caps @click="submit(3)" v-if="!isView && !isLoading" />
       </div>
@@ -304,9 +298,6 @@ const isValidate = computed(() => {
     if (isOverAccident.value) {
       validate = true;
     }
-    if (isOverfundRemainingAccident.value) {
-      validate = true;
-    }
   }
   if (model.value.selectedPatientVisit) {
     if (!model.value.fundReceiptPatientVisit) {
@@ -324,9 +315,6 @@ const isValidate = computed(() => {
     if (isOverPatientVisit.value) {
       validate = true;
     }
-    if (isOverfundRemainingPatientVisit.value) {
-      validate = true;
-    }
   }
   if (!model.value.createFor) {
     validate = true;
@@ -341,36 +329,6 @@ const isOverPatientVisit = computed(() => {
   return Number(model.value.fundSumRequestPatientVisit) > Number(model.value.fundReceiptPatientVisit);
 });
 
-const isOverfundRemainingAccident = computed(() => {
-  const fundSumRequest = Number(model.value.fundEligible ?? 0);
-  const perTimes = remaining.value.accident?.perTimesRemaining ? parseFloat(remaining.value.accident?.perTimesRemaining.replace(/,/g, "")) : null;
-  const fundRemaining = remaining.value.accident?.fundRemaining ? parseFloat(remaining.value.accident?.fundRemaining.replace(/,/g, "")) : null;
-  let check = false;
-  if (fundSumRequest > perTimes && remaining.value.accident?.perTimesRemaining) {
-    check = 1;
-  }
-  if (fundSumRequest > fundRemaining && remaining.value.accident?.fundRemaining) {
-    check = 2;
-  } if (!canRequest.value.accident && isFetchRemaining.value) {
-    check = 3;
-  }
-  return check;
-});
-const isOverfundRemainingPatientVisit = computed(() => {
-  const fundSumRequest = Number(model.value.fundSumRequestPatientVisit ?? 0);
-  const perTimes = remaining.value.patientVisit?.perTimesRemaining ? parseFloat(remaining.value.patientVisit?.perTimesRemaining.replace(/,/g, "")) : null;
-  const fundRemaining = remaining.value.patientVisit?.fundRemaining ? parseFloat(remaining.value.patientVisit?.fundRemaining.replace(/,/g, "")) : null;
-  let check = false;
-  if (fundSumRequest > perTimes && remaining.value.patientVisit?.perTimesRemaining) {
-    check = 1;
-  }
-  else if (fundSumRequest > fundRemaining && remaining.value.patientVisit?.fundRemaining) {
-    check = 2;
-  } if (!canRequest.value.patientVisit && isFetchRemaining.value) {
-    check = 3;
-  }
-  return check;
-});
 watch(
   model,
   () => {
@@ -535,7 +493,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await medicalWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -550,6 +507,12 @@ async function fetchRemaining() {
     if (accidentData.perTimesRemaining != null && !isNaN(Number(accidentData.perTimesRemaining))) {
       remaining.value.accident.perTimesRemaining = formatNumber(accidentData.perTimesRemaining);
     }
+    if (accidentData.fund != null && !isNaN(Number(accidentData.fund))) {
+      remaining.value.accident.fund = formatNumber(accidentData.fund);
+    }
+    if (accidentData.perYears != null && !isNaN(Number(accidentData.perYears))) {
+      remaining.value.accident.perYears = formatNumber(accidentData.perYears);
+    }
     if (accidentData.subCategoriesName != null) {
       remaining.value.accident.categoryName = accidentData.subCategoriesName;
     }
@@ -561,6 +524,12 @@ async function fetchRemaining() {
     }
     if (patientVisitData.perTimesRemaining != null && !isNaN(Number(patientVisitData.perTimesRemaining))) {
       remaining.value.patientVisit.perTimesRemaining = formatNumber(patientVisitData.perTimesRemaining);
+    }
+    if (patientVisitData.fund != null && !isNaN(Number(patientVisitData.fund))) {
+      remaining.value.patientVisit.fund = formatNumber(patientVisitData.fund);
+    }
+    if (patientVisitData.perYears != null && !isNaN(Number(patientVisitData.perYears))) {
+      remaining.value.patientVisit.perYears = formatNumber(patientVisitData.perYears);
     }
     if (patientVisitData.subCategoriesName != null) {
       remaining.value.patientVisit.categoryName = patientVisitData.subCategoriesName;
@@ -611,7 +580,6 @@ async function fetchRemaining() {
         },
       ]
     }
-    isFetchRemaining.value = true;
   } catch (error) {
     Promise.reject(error);
   }
@@ -679,15 +647,6 @@ async function submit(actionId) {
       isError.value.fundEligible = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก";
       validate = true;
     }
-    if (isOverfundRemainingAccident.value) {
-      if (isOverfundRemainingPatientVisit.value === 2) {
-        isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
-      }
-      else {
-        isError.value.fundEligible = "สามารถเบิกได้สูงสุด " + remaining.value.accident?.perTimesRemaining + " บาทต่อครั้ง";
-      }
-      validate = true;
-    }
   }
   if (model.value.selectedPatientVisit) {
     if (!model.value.fundReceiptPatientVisit) {
@@ -704,15 +663,6 @@ async function submit(actionId) {
     }
     if (!model.value.endDate) {
       isError.value.endDate = "กรุณากรอก วัน/เดือน/ปี ถึงวันที่";
-      validate = true;
-    }
-    if (isOverfundRemainingPatientVisit.value) {
-      if (isOverfundRemainingPatientVisit.value === 2) {
-        isError.value.fundSumRequestPatientVisit = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
-      }
-      else {
-        isError.value.fundSumRequestPatientVisit = "สามารถเบิกได้สูงสุด " + remaining.value.patientVisit?.perTimesRemaining + " บาทต่อครั้ง";
-      }
       validate = true;
     }
   }
@@ -861,6 +811,7 @@ async function init() {
   isLoading.value = true;
   try {
     if (isView.value) {
+      fetchRemaining();
       fetchDataEdit();
     }
     else if (isEdit.value) {

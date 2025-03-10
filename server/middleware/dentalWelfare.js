@@ -127,7 +127,7 @@ const byIdMiddleWare = async (req, res, next) => {
 const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, fundSumRequest, dateReceipt, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         const errorObj = {};
@@ -253,7 +253,7 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+            if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
                 const dataBinding = {
                     status : actionId,
                     updated_by: id,
@@ -305,7 +305,7 @@ const getRemaining = async (req, res, next) => {
         const { id } = req.user;
         const { createFor } = req.query;
         const { created_by, createByData, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         req.query.filter = {};
@@ -350,7 +350,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_sum_request, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         const results = await reimbursementsGeneral.findOne({
@@ -415,7 +415,7 @@ const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
         const { fund_sum_request, actionId } = req.body;
-        if(req.access && actionId === status.NotApproved && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
             return next();
         }
         const getFund = await categories.findOne({

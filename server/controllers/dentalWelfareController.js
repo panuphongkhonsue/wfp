@@ -3,6 +3,7 @@ const { reimbursementsGeneral, categories, users, positions, sector, employeeTyp
 const { fn, col, literal, Op } = require("sequelize");
 const { initLogger } = require('../logger');
 const category = require('../enum/category');
+const status = require('../enum/status')
 const logger = initLogger('dentalWelfareController');
 const { getFiscalYearDynamic, getFiscalYear } = require('../middleware/utility');
 
@@ -107,6 +108,7 @@ class Controller extends BaseController {
                     { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
                     { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
                     { '$reimbursementsGeneral.created_by$': req.query.createFor ?? id },
+                    { '$reimbursementsGeneral.status$': { [Op.ne]: status.NotApproved } },
                 );
                 const getRequestData = await reimbursementsGeneral.findAll({
                     attributes: [
@@ -219,6 +221,7 @@ class Controller extends BaseController {
                     { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
                     { '$reimbursementsGeneral.created_by$': datas.userId },
                     { '$reimbursementsGeneral.id$': { [Op.lte]: datas.id } },
+                    { '$reimbursementsGeneral.status$': { [Op.ne]: status.NotApproved } },
                 );
                 const getRequestData = await reimbursementsGeneral.findAll({
                     attributes: [

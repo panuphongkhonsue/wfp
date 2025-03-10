@@ -6,7 +6,12 @@
         <p class="q-mb-none col-8 q-mb-md">สิทธิ์คงเหลือ</p>
         <!-- card แถวที่ 1 -->
         <div class="row q-pb-md q-col-gutter-md q-pr-md">
-          <div class="col-12 col-lg-6" v-for="(items) in remainingAll" :key="items.categoryName">
+          <template v-if="isLoading">
+            <div v-for="index in 4" :key="index" class="col-12 col-lg-6">
+              <q-skeleton height="150px" />
+            </div>
+          </template>
+          <div v-else class="col-12 col-lg-6" v-for="(items) in remainingAll" :key="items.categoryName">
             <q-card class="border-card bg-blue-9 q-ms-md">
               <q-card-section class="q-px-lg row items-center justify-between">
                 <!-- ข้อความ -->
@@ -15,7 +20,7 @@
                   <p class="q-mb-none text-white font-16 q-pb-sm">เงินคงเหลือ {{ items?.fundRemaining ?
                     items?.fundRemaining + " บาทต่อปี" :
                     items?.perTimesRemaining ? items?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน"
-                  }}</p>
+                    }}</p>
                   <p class="q-mb-none text-white font-16">{{ items?.requestsRemaining ? "จำนวน " +
                     items?.requestsRemaining + " ครั้ง" : 'ไม่จำกัดครั้ง' }}</p>
                 </div>
@@ -134,61 +139,55 @@
         <q-separator />
       </div>
     </div>
-      <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
-        row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
-        table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
-        @request="onRequest" @row-click="(evt, row, index) => viewData(row.id, row.categoryName, row.welfareType)">
+    <q-table v-if="authStore.isEditor" :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []"
+      :columns="columns" row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
+      table-header-class="font-bold bg-blue-10 text-white" v-model:pagination="pagination" ref="tableRef"
+      @request="onRequest" @row-click="(evt, row, index) => viewData(row.id, row.categoryName, row.welfareType)">
 
-        <template v-slot:body-cell-index="props">
-          <q-td :props="props">
-            {{ props.rowIndex + 1 }}
-          </q-td>
-        </template>
+      <template v-slot:body-cell-index="props">
+        <q-td :props="props">
+          {{ props.rowIndex + 1 }}
+        </q-td>
+      </template>
 
-        <template v-slot:no-data="{ icon }">
-          <div class="full-width row flex-center text-negative q-gutter-sm">
-            <q-icon size="2em" :name="icon" />
-            <span class="font-remark font-regular ">
-              ไม่พบข้อมูล
-            </span>
-          </div>
-        </template>
+      <template v-slot:no-data="{ icon }">
+        <div class="full-width row flex-center text-negative q-gutter-sm">
+          <q-icon size="2em" :name="icon" />
+          <span class="font-remark font-regular ">
+            ไม่พบข้อมูล
+          </span>
+        </div>
+      </template>
 
-        <template v-slot:body-cell-tools="props">
-          <q-td :props="props" class="">
-            <a @click.stop.prevent="viewData(props.row.id, props.row.categoryName, props.row.welfareType)"
-              class="text-dark q-py-sm q-px-xs cursor-pointer">
-              <q-icon :name="outlinedVisibility" size="xs" />
-            </a>
-            <a v-show="props.row.status.statusId == 2"
-              @click.stop.prevent="goto(props.row.id, props.row.categoryName, props.row.welfareType)"
-              class="text-dark q-py-sm q-px-xs cursor-pointer">
-              <q-icon :name="outlinedEdit" size="xs" color="blue" />
-            </a>
-            <a v-show="props.row.status.statusId == 1" @click.stop.prevent="
-              deleteData(props.row.requestId)
-              " class="text-dark q-py-sm q-px-xs cursor-pointer">
-              <q-icon :name="outlinedDelete" size="xs" color="red" />
-            </a>
-            <a v-show="props.row.status.statusId == 2" @click.stop.prevent="
-              downloadData(props.row.id, props.row.categoryName, props.row.welfareType)
-              " class="text-dark q-py-sm q-px-xs cursor-pointer">
-              <q-icon :name="outlinedDownload" size="xs" color="blue" />
-            </a>
-          </q-td>
-        </template>
+      <template v-slot:body-cell-tools="props">
+        <q-td :props="props" class="">
+          <a @click.stop.prevent="viewData(props.row.id, props.row.categoryName, props.row.welfareType)"
+            class="text-dark q-py-sm q-px-xs cursor-pointer">
+            <q-icon :name="outlinedVisibility" size="xs" />
+          </a>
+          <a v-show="props.row.status.statusId == 2"
+            @click.stop.prevent="goto(props.row.id, props.row.categoryName, props.row.welfareType)"
+            class="text-dark q-py-sm q-px-xs cursor-pointer">
+            <q-icon :name="outlinedEdit" size="xs" color="blue" />
+          </a>
+          <a v-show="props.row.status.statusId == 2" @click.stop.prevent="
+            downloadData(props.row.id, props.row.categoryName, props.row.welfareType)
+            " class="text-dark q-py-sm q-px-xs cursor-pointer">
+            <q-icon :name="outlinedDownload" size="xs" color="blue" />
+          </a>
+        </q-td>
+      </template>
 
-        <template v-slot:body-cell-statusName="props">
-          <q-td :props="props" class="text-center">
-            <q-badge class="font-regular font-14 weight-5 q-py-xs full-width"
-              :color="statusColor(props.row.statusName)">
-              <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.statusName)">
-                {{ props.row.status.name }}
-              </p>
-            </q-badge>
-          </q-td>
-        </template>
-      </q-table>
+      <template v-slot:body-cell-statusName="props">
+        <q-td :props="props" class="text-center">
+          <q-badge class="font-regular font-14 weight-5 q-py-xs full-width" :color="statusColor(props.row.statusName)">
+            <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.statusName)">
+              {{ props.row.status.name }}
+            </p>
+          </q-badge>
+        </q-td>
+      </template>
+    </q-table>
   </q-page>
 </template>
 
@@ -207,10 +206,10 @@ import variousWelfareService from "src/boot/service/variousWelfareService";
 import {
   outlinedEdit,
   outlinedVisibility,
+  outlinedDownload,
 } from "@quasar/extras/material-icons-outlined";
 import reimbursementWelfareService from "src/boot/service/reimbursementWelfareService";
 import { useRouter } from "vue-router";
-import Swal from "sweetalert2";
 import exportService from "src/boot/service/exportService";
 
 const fileData = ref();
@@ -323,8 +322,8 @@ async function fetchRemainingVarious() {
           categoryName: marriageData.categoryName,
           fundRemaining: marriageData.fundRemaining ? formatNumber(marriageData.fundRemaining) : null,
           perTimesRemaining: marriageData.perTimesRemaining ? formatNumber(marriageData.perTimesRemaining) : null,
-          requestsRemaining: marriageData.requestsRemaining !== null && marriageData.requestsRemaining !== undefined 
-            ? formatNumber(marriageData.requestsRemaining) 
+          requestsRemaining: marriageData.requestsRemaining !== null && marriageData.requestsRemaining !== undefined
+            ? formatNumber(marriageData.requestsRemaining)
             : null,
           src: "src/assets/marriage.svg"
         };
@@ -340,7 +339,7 @@ async function fetchRemainingVarious() {
 
 async function init() {
   pagination.value.rowsPerPage = listStore.getState();
-  await tableRef.value.requestServerInteraction();
+  if (authStore.isEditor) await tableRef.value.requestServerInteraction();
   await fetchRemainingHealthCheckup();
   await fetchRemainingDental();
   await fetchRemainingMedical();
@@ -493,52 +492,6 @@ function viewData(requestId, categoryName, welfareType) {
     });
   }
 }
-
-async function deleteData(id) {
-  Swal.fire({
-    title: "Do you want to save the changes??",
-    html: `You won't be able to revert this!`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes",
-    cancelButtonText: "Cancel",
-    showLoaderOnConfirm: true,
-    reverseButtons: true,
-    customClass: {
-      confirmButton: "save-button",
-      cancelButton: "cancel-button",
-    },
-    preConfirm: async () => {
-      try {
-        // await GspcRequestService.delete(id);
-      } catch (error) {
-        Swal.showValidationMessage(`Delete Request Failed.`);
-        Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "Delete Request Failed, Something wrong please try again later.",
-          position: "bottom-left",
-          type: "negative",
-        });
-      }
-    },
-  }).then((result) => {
-    if (result.isConfirmed) {
-      Swal.fire({
-        html: `Request code <b>${id}</b> deleted.`,
-        icon: "success",
-        confirmButtonText: "OK",
-        customClass: {
-          confirmButton: "save-button",
-        },
-      }).then(() => {
-        location.reload();
-      });
-    }
-  });
-}
-
-
 
 const pagination = ref({
   sortBy: "desc",

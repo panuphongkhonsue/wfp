@@ -58,9 +58,9 @@
               <p class="col q-ma-none">{{ remaining.categoryName ?? "ตรวจสุขภาพประจำปี" }} : {{ remaining?.fundRemaining
                 ?
                 remaining?.fundRemaining + " บาทต่อปี" :
-                remaining?.perTimesRemaining ? remaining?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน"
+                remaining?.perTimesRemaining ? remaining?.perTimesRemaining + " บาทต่อครั้ง" : remaining?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
                 }}
-                {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : '(ไม่จำกัดครั้ง)' }}
+                {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : remaining?.requestsRemaining ??'(ไม่จำกัดครั้ง)' }}
               </p>
             </q-card-section>
           </q-card>

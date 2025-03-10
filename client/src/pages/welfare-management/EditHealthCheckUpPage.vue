@@ -45,9 +45,9 @@
               <p class="col q-ma-none">{{ remaining.categoryName ?? "ตรวจสุขภาพประจำปี" }} : {{ remaining?.fundRemaining
                 ?
                 remaining?.fundRemaining + " บาทต่อปี" :
-                remaining?.perTimesRemaining ? remaining?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน"
+                remaining?.perTimesRemaining ? remaining?.perTimesRemaining + " บาทต่อครั้ง" : remaining?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
                 }}
-                {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : '(ไม่จำกัดครั้ง)' }}
+                {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : remaining?.requestsRemaining ??'(ไม่จำกัดครั้ง)' }}
               </p>
             </q-card-section>
           </q-card>
@@ -77,9 +77,6 @@
                 label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" compclass="col-md-4 col-12" :rules="[
                   (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ',
                   (val) => !isOver || 'จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ',
-                  (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
-                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง',
-                    (val) => isOverfundRemaining !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                 ]" :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
 
@@ -147,7 +144,7 @@
         <q-btn id="button-approve"
         class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #E52020"
         label="ไม่อนุมัติ" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
-        <q-btn :disable="!canRequest || isValidate" id="button-approve"
+        <q-btn :disable="isValidate" id="button-approve"
           class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
           label="อนุมัติ" no-caps @click="submit(3)" v-if="!isView && !isLoading" />
       </div>
@@ -235,9 +232,6 @@ const isValidate = computed(() => {
   if (isOver.value) {
     validate = true;
   }
-  if (isOverfundRemaining.value) {
-    validate = true;
-  }
   return validate;
 });
 
@@ -247,30 +241,6 @@ const isOver = computed(() => {
   return fundSumRequest <= 0;
 });
 
-
-const isOverfundRemaining = computed(() => {
-
-  const fundEligibleSum =
-    Number(model.value.claimByEligible?.[0]?.fundEligible ?? 0) +
-    Number(model.value.claimByEligible?.[1]?.fundEligible ?? 0) +
-    Number(model.value.claimByEligible?.[2]?.fundEligible ?? 0);
-
-  const fundSumRequest = Number(model.value.fundReceipt ?? 0) - fundEligibleSum;
-
-  const perTimes = remaining.value.perTimesRemaining ? parseFloat(remaining.value.perTimesRemaining.replace(/,/g, "")) : null;
-  const fundRemaining = remaining.value.fundRemaining ? parseFloat(remaining.value.fundRemaining.replace(/,/g, "")) : null;
-  let check = false;
-  if (Number(fundSumRequest) > perTimes && remaining.value.perTimesRemaining) {
-    check = 1;
-  }
-  if (Number(fundSumRequest) > fundRemaining && remaining.value.fundRemaining) {
-    check = 2;
-  }
-  if (!canRequest.value && isFetchRemaining.value) {
-    check = 3;
-  }
-  return check;
-});
 
 
 watch(
@@ -409,7 +379,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await healthCheckUpWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -426,7 +395,6 @@ async function fetchRemaining() {
       remaining.value.categoryName = fetchRemaining.data?.datas?.categoryName;
     }
     canRequest.value = fetchRemaining.data?.canRequest;
-    isFetchRemaining.value = true;
   } catch (error) {
     Promise.reject(error);
   }
@@ -489,18 +457,6 @@ async function submit(actionId) {
     validate = true;
   }
   if (!model.value.claimByEligible[2].fundEligible && model.value.claimByEligible[2].fundEligibleName) {
-    validate = true;
-  }
-  if (isOverfundRemaining.value) {
-    if (isOverfundRemaining.value === 2) {
-      isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
-    }
-    else if(isOverfundRemaining.value === 1) {
-      isError.value.fundEligible = "สามารถเบิกได้สูงสุด " + remaining.value.perTimesRemaining + " บาทต่อครั้ง";
-    }
-    else{
-      isError.value.fundEligible = "คุณใช้จำนวนการเบิกครบแล้ว";
-    }
     validate = true;
   }
   if (isOver.value) {
