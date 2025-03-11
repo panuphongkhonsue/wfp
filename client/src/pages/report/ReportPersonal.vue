@@ -4,6 +4,20 @@
       <q-form class="col-12 row q-col-gutter-x-md q-ml-md-md items-end" @submit="search">
         <div class="col-12 col-md-4 col-lg-2">
           <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense label="ตั้งแต่ปี">
+            <q-select clearable :loading="isLoading" id="selected-welfares" class="q-pt-sm font-14 font-regular"
+              popup-content-class="font-14 font-regular" outlined v-model="filters.name" :options="optionNameUser"
+              label="ชื่อ - นามสกุล" dense option-value="name" emit-value map-options option-label="name">
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey">No option</q-item-section>
+                </q-item>
+              </template>
+            </q-select>
+          </InputGroup>
+        </div>
+        <div class="col-12 col-md-4 col-lg-2">
+
+          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense label="ตั้งแต่ปี">
             <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm font-14 font-regular"
               popup-content-class="font-14 font-regular" outlined v-model="filters.year" :options="optionStartYear"
               label="ปีงบประมาณ" dense option-value="name" emit-value map-options option-label="name">
@@ -20,22 +34,17 @@
             dense type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>
         <div class="col-12 col-md-12 row items-center justify-center text-bold text-grey-8 text-h4 q-pt-xl">
-            <div class="col text-center">
-                    รายละเอียดการเบิกจ่ายสวัสดิการรายบุคคลของปีงบประมาณ {{ filters.year }}
+          <div class="col text-center">
+            รายละเอียดการเบิกจ่ายสวัสดิการรายบุคคลของปีงบประมาณ {{ filters.year }}
+          </div>
+          <div class="col-auto">
+            <q-btn id="button-export-excel"
+              class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs q-mr-md" dense label="Export"
+              no-caps :loading="isLoading" @click="exportToExcel()">
+              <q-icon :name="outlinedDownload" size="sm"></q-icon>
+            </q-btn>
+          </div>
         </div>
-        <div class="col-auto">
-          <q-btn id="button-export-excel"
-            class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs q-mr-md" dense label="Export"
-            no-caps :loading="isLoading" @click="exportToExcel()">
-            <q-icon :name="outlinedDownload" size="sm"></q-icon>
-          </q-btn>
-        </div>
-        </div>
-
-        
-
-
-        
       </q-form>
 
 
@@ -120,6 +129,7 @@ import configWelfareService from "src/boot/service/configWelfareService";
 import { useRoute, useRouter } from "vue-router";
 import { useListStore } from "src/stores/listStore";
 
+let checkfirstPage = true;
 let checkSendYearDup = true;
 let checkSearch = false;
 const listStore = useListStore();
@@ -131,6 +141,7 @@ const isLoading = ref(false);
 const currentYear = toThaiYear(new Date().getFullYear());
 const filters = ref({
   year: currentYear,
+  name: '',
 });
 const dataTable = ref([{
 
@@ -142,9 +153,10 @@ const optionStartYear = ref([
   { id: 4, name: currentYear - 3 }
 ]);
 
-const model = ref([
-
+const optionNameUser = ref([
 ]);
+
+const model = ref([]);
 
 const columns = ref([
   { name: "createdByName", label: "ชื่อ - สกุล", align: "left", field: (row) => row.createdByName ?? "-" },
@@ -160,7 +172,6 @@ onMounted(async () => {
 watch(
   () => filters.value.year,
   (newValue) => {
-    checkSendYearDup = false;
     optionStartYear.value = [
       { id: 1, name: currentYear },
       { id: 2, name: currentYear - 1 },
@@ -169,7 +180,6 @@ watch(
     ].filter(item => item.name !== newValue);
   }
 );
-
 
 watch(
   () => route.query,
@@ -190,6 +200,7 @@ function search() {
     query: {
       startYear: toEngYear(filters.value.year - 1),
       endYear: toEngYear(filters.value.year),
+      keyword: filters.value.name,
     },
   });
 }
@@ -197,9 +208,11 @@ function search() {
 async function init() {
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
+  
 }
 
 function onRequest(props) {
+  dataTable.value = [];
   const { page, rowsPerPage, sortBy, descending } = props.pagination;
   listStore.setState(rowsPerPage);
   isLoading.value = true;
@@ -267,6 +280,14 @@ function onRequest(props) {
               field: "กรณีเจ็บป่วย" + "fund"
             });
           }
+          else if (allWelfareData[i].category_name === "ผู้ปฏิบัติงานเสียชีวิต") {
+            columns.value.push({
+              name: "ผู้ปฏิบัติงานเสียชีวิต",
+              label: "ผู้ปฏิบัติงานเสียชีวิต",
+              align: "left",
+              field: "ผู้ปฏิบัติงานเสียชีวิต" + "fund"
+            });
+          }
           else {
             columns.value.push({
               name: allWelfareData[i].category_name,
@@ -318,6 +339,9 @@ function onRequest(props) {
               }
               if (allWelfareData[i].sub_category_name !== "เยี่ยมไข้") {
                 newEntry["กรณีเจ็บป่วย" + "fund"] = '';
+              }
+              if (allWelfareData[i].category_name !== "ผู้ปฏิบัติงานเสียชีวิต") {
+                newEntry["ผู้ปฏิบัติงานเสียชีวิต" + "fund"] = '';
               }
             }
           }
@@ -387,7 +411,7 @@ function onRequest(props) {
         dataTable.value.forEach(item => {
           delete item.nullfund; // Delete the 'nullfund' key from each item
         });
-        model.value = dataTable.value.slice(1).map(item => {
+        model.value = dataTable.value.map(item => {
           // Iterate over each item and replace empty strings with '-'
           for (let key in item) {
             if (item[key] === '') {
@@ -397,7 +421,6 @@ function onRequest(props) {
           return item;
         });
       }
-
       console.log("modelValue: ", model.value);
       console.log("dataTables:", dataTable.value);
       columns.value.push(
@@ -406,6 +429,12 @@ function onRequest(props) {
       console.log("viewDashboardData: ", viewDashboardData);
       console.log("userData: ", userData);
       console.log("allWelfare: ", allWelfareData);
+      if(checkfirstPage == true){
+      optionNameUser.value = dataTable.value.map(item => ({
+      name: item.userName
+      }));
+      checkfirstPage = false;
+      }
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
     } catch (error) {
@@ -456,9 +485,11 @@ async function fetchFromServer(page, rowPerPage, filters) {
 async function fetchUserData() {
   try {
     const result = await userManagementService.listOrderName({
+      keyword: filters.value.name,
       page: 1,
       itemPerPage: 10000,
     });
+    console.log(optionNameUser.value);
     return result.data.datas;
   } catch (error) {
     Notify.create({

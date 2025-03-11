@@ -9,6 +9,29 @@ class Controller extends BaseController {
         super(viewDashboard);
     } 
 
+    listAll = async (req, res, next) => {
+        const method = 'GetAllViewDashboard';
+        const { userId } = req.user;
+        try {
+            const { filter, page, itemPerPage } = req.query;
+            var whereObj = { ...filter }
+            const dashboardDataList = await viewDashboard.paginate({
+                page: page && !isNaN(page) ? Number(page) : 1,
+                paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 10,
+                where: whereObj
+            });
+            logger.info('Complete', { method, data: { userId } });
+            res.status(200).json(dashboardDataList);
+        }
+        catch (error) {
+            logger.error(`Error ${error.message}`, {
+                method,
+                data: { userId },
+            });
+            next(error);
+        }
+    }
+
     list = async (req, res, next) => {
         const method = 'GetCustomDashboardData';
         const { userId } = req.user;
@@ -89,7 +112,7 @@ class Controller extends BaseController {
                   ],
                   where: {
                     updated_at: {
-                      [Op.between]: ["2024-10-01", "2025-09-30"]
+                        [Op.between]: [`${parseInt(year) - 1}-10-01`, `${year}-09-30`]
                     }
                   },
                   group: ["welfare_type"],
