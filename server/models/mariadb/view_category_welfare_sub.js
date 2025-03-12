@@ -25,6 +25,10 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.DECIMAL(10, 0),
       allowNull: true
     },
+    category_per_users: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     category_per_years: {
       type: DataTypes.INTEGER,
       allowNull: true
@@ -44,6 +48,10 @@ module.exports = function (sequelize, DataTypes) {
     },
     sub_category_per_times: {
       type: DataTypes.DECIMAL(10, 0),
+      allowNull: true
+    },
+    sub_category_per_users: {
+      type: DataTypes.INTEGER,
       allowNull: true
     },
     sub_category_per_years: {

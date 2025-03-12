@@ -163,7 +163,7 @@ const columns = [
   { name: "reimNumber", label: "เลขที่ใบเบิก", align: "left", field: (row) => row.reimNumber ?? "-" },
   { name: "createdBy", label: "ผู้ร้องขอ", align: "left", field: (row) => row.createdByName ?? "-" },
   { name: "sendDate", label: "วันที่ร้องขอ", align: "left", field: (row) => row.requestDate ?? "-" },
-  { name: "updatedAt", label: "วันที่แก้ไขล่าสุด", align: "left", field: (row) => row.updatedAt ?? "-" },
+  { name: "updatedAt", label: "วันที่บันทึก", align: "left", field: (row) => row.updatedAt ?? "-" },
   { name: "welfareType", label: "ประเภท", align: "left", field: (row) => row.welfareType ?? "-" },
   {
     name: "subCategory", label: "ประเภทย่อย", align: "left", field: (row) => row.categoryName
