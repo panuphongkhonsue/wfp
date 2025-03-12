@@ -75,12 +75,28 @@ exports.login = async (req, res, next) => {
                 user.position = positions;
                 user.department = department;
                 user.sector = sector;
-                const isAccess = await permissionsHasRoles.count({
+                const [isAccess, isStaff,userPermission] = await Promise.all([
+                  permissionsHasRoles.count({
                     where: {
-                        [Op.and]: [{ roles_id: user.roleId }, { permissions_id: permissionType.welfareManagement }],
+                      [Op.and]: [{ roles_id: user.roleId }, { permissions_id: permissionType.welfareManagement }],
                     },
-                });
+                  }),
+                  permissionsHasRoles.count({
+                    where: {
+                      [Op.and]: [{ roles_id: user.roleId }, { permissions_id: permissionType.funeralWelfare }],
+                    },
+                  }),
+                  permissionsHasRoles.findAll({
+                    where: { roles_id: user.roleId },
+                    attributes: ['permissions_id'],
+                  })
+                ]);
+                
                 user.isEditor = isAccess ? true : false;
+                user.isStaff = isStaff ? true : false;
+                if(isEditor){
+                  user.redirectTo = "welfare_management_list";
+                }
                 delete user.role;
                 const token = jwt.sign(
                     {
@@ -90,12 +106,6 @@ exports.login = async (req, res, next) => {
                     process.env.secretKey,
                     {
                         expiresIn: '1d',
-                    }
-                );
-                const userPermission = await permissionsHasRoles.findAll(
-                    {
-                        where: { roles_id: user.roleId },
-                        attributes: ['permissions_id'],
                     }
                 );
                 const path = [

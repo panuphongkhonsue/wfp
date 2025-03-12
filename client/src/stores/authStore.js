@@ -11,6 +11,7 @@ export const useAuthStore = defineStore('auth', {
     roleName: null,
     id: null,
     isEditor: null,
+    isStaff : null,
   }),
   actions: {
     setToken(token) {
