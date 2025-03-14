@@ -86,7 +86,11 @@ class Controller extends BaseController {
                         "requestsRemaining"
                     ],
                     [col("category.per_times"), "perTimesRemaining"],
-                    [col("category.name"), "categoryName"]
+                    [col("category.name"), "categoryName"],
+                    [
+                        literal("category.per_users - COALESCE(COUNT(reimbursementsAssist.fund_sum_request), 0)"),
+                        "perUsersRemaining"
+                    ]
                 ],
                 include: [
                     {
@@ -110,16 +114,14 @@ class Controller extends BaseController {
                     [col("fund"), "fundRemaining"],
                     [col("per_years"), "requestsRemaining"],
                     [col("per_times"), "perTimesRemaining"],
+                    [col("per_users"), "perUsersRemaining"]
                 ],
                 where: { id: [4, 5, 6, 7] }
             });
-
             const categoryData = JSON.parse(JSON.stringify(allCategories));
-
             // รวมข้อมูล categories กับ reimbursementsAssist
             const finalData = categoryData.map(cat => {
                 let matched = bindData.find(item => item.categoryId === cat.categoryId);
-
                 return {
                     categoryName: cat.categoryName,
                     categoryId: cat.categoryId,
@@ -130,11 +132,11 @@ class Controller extends BaseController {
                     perYears: cat.requestsRemaining,
                     requestsRemaining: matched ? matched.requestsRemaining : cat.requestsRemaining,
                     perTimesRemaining: cat.perTimesRemaining,
+                    perUsersRemaining: matched ? matched.perUsersRemaining : cat.perUsersRemaining,
                     canRequest:
                         ((matched ? matched.fundRemaining : cat.fundRemaining) === null || (matched ? matched.fundRemaining : cat.fundRemaining) > 0) &&
-                        ((matched ? matched.requestsRemaining : cat.requestsRemaining) === null || (matched ? matched.requestsRemaining : cat.requestsRemaining) > 0)
-
-
+                        ((matched ? matched.requestsRemaining : cat.requestsRemaining) === null || (matched ? matched.requestsRemaining : cat.requestsRemaining) > 0) &&
+                        ((matched ? matched.perUsersRemaining : cat.perUsersRemaining) === null || (matched ? matched.perUsersRemaining : cat.perUsersRemaining) > 0)
                 };
             });
 

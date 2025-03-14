@@ -34,48 +34,40 @@
       <div class="col-12  row font-bold font-14 q-col-gutter-x-md full-width">
         <p class="col-12 col-md-2 q-py-sm q-ma-none row  items-center ">
           {{ remaining[4]?.categoryName ?? "ค่าสมรส" }} :
-          {{ remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาทต่อปี" :
-            remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
-              remaining[4]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-          }}
-          {{ remaining[4]?.requestsRemaining ? "( " + remaining[4]?.requestsRemaining + " ครั้ง)" :
-            remaining[4]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
-          }}
-        </p>
-        <p class="col-12 col-md-3 q-py-sm q-ma-none row  items-center ">
-          {{ remaining[5]?.categoryName ?? "ค่าอุปสมบทหรือประกอบพิธีฮัจญ์" }} :
-          {{ remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาทต่อปี" :
-            remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
-              remaining[5]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-          }}
-          {{ remaining[5]?.requestsRemaining ? "( " + remaining[5]?.requestsRemaining + " ครั้ง)" :
-            remaining[5]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
-          }}
-        </p>
-        <p class="col-12 col-md-2 q-py-sm q-ma-none row  items-center">
-          {{ remaining[6]?.categoryName ?? "ค่ารับขวัญบุตร" }} :
-          {{ remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาทต่อปี" :
-            remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-              remaining[6]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-          }}
-          {{ remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
-            remaining[6]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
-          }}
-        </p>
-        <p class="col-12 col-md-3 q-py-sm q-ma-none row  items-center">
-          {{ remaining[7]?.categoryName ?? "กรณีประสบภัยพิบัติ" }} :
-          {{ remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาทต่อปี" :
-            remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
-              remaining[7]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-          }}
-          {{ remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
-            remaining[7]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
-          }}
-        </p>
-        <div class="col-12 col-md-12 col-lg-2 flex items-center justify-end">
-          <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
-            icon="add" :to="{ name: 'various_welfare_new' }" />
-        </div>
+          {{ remaining[4]?.perUsersRemaining <= 0 || remaining[4]?.perUsersRemaining === null ? "ใช้สิทธิ์ครบแล้ว" :
+            remaining[4]?.fundRemaining + " บาท" }} </p>
+            <p class="col-12 col-md-3 q-py-sm q-ma-none row  items-center ">
+              {{ remaining[5]?.categoryName ?? "ค่าอุปสมบทหรือประกอบพิธีฮัจญ์" }} :
+              {{ remaining[5]?.perUsersRemaining <= 0 || remaining[5]?.perUsersRemaining === null ? "ใช้สิทธิ์ครบแล้ว" :
+                remaining[5]?.fundRemaining + " บาท" }} </p>
+                <p class="col-12 col-md-2 q-py-sm q-ma-none row  items-center">
+                  {{ remaining[6]?.categoryName ?? "ค่ารับขวัญบุตร" }} :
+                  {{ remaining[6]?.fundRemaining == 0 ? "" :
+                    remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
+                      remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
+                        remaining[6]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
+                  }}
+                  {{ remaining[6]?.fundRemaining == 0 ? "ใช้สิทธิ์ครบแล้ว" :
+                    remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
+                      remaining[6]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
+                  }}
+                </p>
+                <p class="col-12 col-md-3 q-py-sm q-ma-none row  items-center">
+                  {{ remaining[7]?.categoryName ?? "กรณีประสบภัยพิบัติ" }} :
+                  {{ remaining[7]?.fundRemaining == 0 ? "" :
+                    remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาท" :
+                      remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
+                        remaining[7]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
+                  }}
+                  {{ remaining[7]?.fundRemaining == 0 ? "ใช้สิทธิ์ครบแล้ว" :
+                    remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
+                      remaining[7]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
+                  }}
+                </p>
+                <div class="col-12 col-md-12 col-lg-2 flex items-center justify-end">
+                  <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm"
+                    label="เพิ่มใบเบิกสวัสดิการ" icon="add" :to="{ name: 'various_welfare_new' }" />
+                </div>
       </div>
     </template>
 
@@ -290,6 +282,9 @@ async function init() {
         if (item.fund !== null && !isNaN(Number(item.fund))) {
           remaining.value[item.categoryId].fund = formatNumber(item.fund);
         }
+        if (item.perUsersRemaining !== null && !isNaN(Number(item.perUsersRemaining))) {
+          remaining.value[item.categoryId].perUsersRemaining = formatNumber(item.perUsersRemaining);
+        }
       });
     }
   } catch (error) {
@@ -438,7 +433,7 @@ const columns = ref([
   },
   {
     name: "updatedAt",
-    label: "วันที่แก้ไขล่าสุด",
+    label: "วันที่บันทึก/อนุมัติ",
     align: "left",
     field: (row) => row.updatedAt ?? "-",
     format: (val) => formatDateThaiSlash(val),

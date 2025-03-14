@@ -361,7 +361,7 @@ const columns = ref([
   },
   {
     name: "updatedAt",
-    label: "วันที่แก้ไขล่าสุด",
+    label: "วันที่บันทึก/อนุมัติ",
     align: "left",
     field: (row) => row?.updatedAt ?? "-",
     format: (val) => formatDateThaiSlash(val),

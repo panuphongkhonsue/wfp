@@ -128,7 +128,7 @@ const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, decease, fundDecease, fundReceiptWreath, fundWreathUniversity, fundWreathArrange,
             fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, actionId, deceasedType } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         const errorObj = {};
@@ -137,17 +137,17 @@ const checkNullValue = async (req, res, next) => {
             errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
         } else if (isInvalidNumber(fundReceipt)) {
             errorObj["fundReceipt"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-        } else if (fundReceipt <= 0) {
+        } else if (fundReceipt < 0) {
             return res.status(400).json({
-                message: "จำนวนเงินตามใบเสร็จน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
+                message: "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้",
             });
         }
 
         if (isInvalidNumber(fundDecease)) {
             errorObj["fundDecease"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-        } else if (fundDecease <= 0) {
+        } else if (fundDecease < 0) {
             return res.status(400).json({
-                message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
+                message: "จำนวนเงินที่ต้องการเบิกน้อยกว่า 0 ไม่ได้",
             });
         }
 
@@ -302,7 +302,7 @@ const bindCreate = async (req, res, next) => {
         req.body = dataBinding;
         next();
     } catch (error) {
-        console.error('Error in bindCreate middleware:', error);  
+        console.error('Error in bindCreate middleware:', error);
         res.status(500).json({
             message: 'Internal Server Error',
             error: error.message,
@@ -349,9 +349,9 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+            if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
                 const dataBinding = {
-                    status : actionId,
+                    status: actionId,
                     updated_by: id,
                 }
                 req.body = dataBinding;
@@ -410,7 +410,7 @@ const getRemaining = async (req, res, next) => {
         const { id } = req.user;
         const { createFor } = req.query;
         const { created_by, createByData, actionId } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         req.query.filter = {};
@@ -439,7 +439,7 @@ const getRemaining = async (req, res, next) => {
         req.query.filter[Op.and].push(
             { '$reimbursements_assist.request_date$': getFiscalYearWhere },
             { '$reimbursements_assist.categories_id$': category.variousFuneralFamily },
-            { '$reimbursements_assist.status$':{ [Op.ne]: status.NotApproved} },
+            { '$reimbursements_assist.status$': { [Op.ne]: status.NotApproved } },
         );
         next();
     }
@@ -455,7 +455,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_decease, fund_wreath_university, fund_wreath_arrange, fund_vechicle, actionId } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         whereObj[Op.and].push(
@@ -684,8 +684,8 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { fund_decease, fund_wreath_university, fund_wreath_arrange, fund_vechicle,fundReceiptWreath, actionId } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        const { fund_decease, fund_wreath_university, fund_wreath_arrange, fund_vechicle, fundReceiptWreath, actionId } = req.body;
+        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         const getFund = await subCategories.findAll({
@@ -776,6 +776,8 @@ const checkRemaining = async (req, res, next) => {
         whereObj[Op.and].push(
             { '$sub_category.id$': { [Op.in]: [3, 4, 5, 6] } }
         );
+        logger.info('Filter from request:', req.query.filter);
+        logger.info('Final Where Object before query:', whereObj);
         const decreaseRemaining = await reimbursementsAssistHasSubCategories.findAll({
             attributes: [
                 [col("sub_category.id"), "subCategoriesId"],
@@ -793,6 +795,10 @@ const checkRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [col("sub_category.per_times"), "perTimesRemaining"],
+                [
+                    literal("sub_category.per_users - COUNT(reimbursements_assist.fund_decease)"),
+                    "perUsersRemaining"
+                ]
             ],
             include: [
                 {
@@ -803,11 +809,12 @@ const checkRemaining = async (req, res, next) => {
                 {
                     model: reimbursementsAssist,
                     as: "reimbursements_assist",
-                    attributes: []
+                    attributes: [],
+                    required: false
                 }
             ],
             where: whereObj,
-            group: ["sub_category.id"],
+            group: ["sub_category.id", "sub_category.name", "sub_category.fund", "sub_category.per_years", "sub_category.per_times", "sub_category.per_users"]
         });
         whereObj[Op.and].push(
             { '$sub_category.id$': { [Op.in]: [7, 8] } }
@@ -855,6 +862,10 @@ const checkRemaining = async (req, res, next) => {
                     fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
                     "requestsRemainingUniversity"
                 ],
+                [
+                    literal("sub_category.per_users - COUNT(reimbursements_assist.fund_decease)"),
+                    "perUsersRemaining"
+                ]
             ],
             include: [
                 {
@@ -892,6 +903,10 @@ const checkRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [col("sub_category.per_times"), "perTimesRemaining"],
+                [
+                    literal("sub_category.per_users - COUNT(reimbursements_assist.fund_decease)"),
+                    "perUsersRemaining"
+                ]
             ],
             include: [
                 {
@@ -914,18 +929,20 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(decreaseRemaining)) {
                 const datas = JSON.parse(JSON.stringify(decreaseRemaining));
-                if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
+                const remainingData = datas;
+                if (remainingData.fundRemaining === 0 || remainingData.fundRemaining < 0 || remainingData.requestsRemaining === 0 || remainingData.requestsRemaining < 0
+                    || remainingData.perUsersRemaining === 0 || remainingData.perUsersRemaining < 0) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการเสียชีวิตครอบครัว เนื่องจากได้ทำการขอเบิกครบแล้ว",
                     });
                 };
-                if (fund_decease > datas.perTimes && datas.perTimes) {
+                if (fund_decease > remainingData.perTimes && remainingData.perTimes) {
                     return res.status(400).json({
-                        message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว " + datas.perTimes + " ต่อครั้ง",
+                        message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว " + remainingData.perTimes + " ต่อครั้ง",
                     });
                 }
-                if (fund_decease > datas.fundRemaining && datas.fundRemaining) {
+                if (fund_decease > remainingData.fundRemaining && remainingData.fundRemaining) {
                     logger.info('Request Over', { method });
                     return res.status(400).json({
                         message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
@@ -934,7 +951,8 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(wreathRemaining)) {
                 const datas = JSON.parse(JSON.stringify(wreathRemaining[0]));
-                if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
+                if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0 
+                    || datas.perUsersRemaining === 0 || datas.perUsersRemaining < 0) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการการเสียชีวิตครอบครัว สนับสนุนค่าพวงหลีด เนื่องจากได้ทำการขอเบิกครบแล้ว",
@@ -965,7 +983,8 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(vechicleRemaining)) {
                 const datas = JSON.parse(JSON.stringify(vechicleRemaining[0]));
-                if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
+                if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0 
+                    || datas.perUsersRemaining === 0 || datas.perUsersRemaining < 0) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการเสียชีวิตครอบครัว สนับสนุนค่าพาหนะ เนื่องจากได้ทำการขอเบิกครบแล้ว",

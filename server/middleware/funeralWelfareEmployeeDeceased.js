@@ -142,7 +142,7 @@ const checkNullValue = async (req, res, next) => {
             errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
         } else if (isInvalidNumber(fundReceipt)) {
             errorObj["fundReceipt"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-        } else if (fundReceipt <= 0) {
+        } else if (fundReceipt < 0) {
             return res.status(400).json({
                 message: "จำนวนเงินตามใบเสร็จน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
@@ -152,7 +152,7 @@ const checkNullValue = async (req, res, next) => {
             errorObj["fundRequest"] = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก";
         } else if (isInvalidNumber(fundRequest)) {
             errorObj["fundRequest"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-        } else if (fundRequest <= 0) {
+        } else if (fundRequest < 0) {
             return res.status(400).json({
                 message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
             });
@@ -163,9 +163,9 @@ const checkNullValue = async (req, res, next) => {
             });
         }
 
-        if (isNullOrEmpty(organizer)) {
-            errorObj["decease"] = "กรุณากรอกเลือก ชื่อ - นามสกุล ของผู้จัดงาน";
-        }
+        // if (isNullOrEmpty(organizer)) {
+        //     errorObj["decease"] = "กรุณากรอกเลือก ชื่อ - นามสกุล ของผู้จัดงาน";
+        // }
 
         if (isNullOrEmpty(deceased)) {
             errorObj["deceased"] = "กรุณากรอกเลือก ชื่อ - นามสกุล ของผู้เสียชีวิต";
@@ -291,7 +291,7 @@ const bindCreate = async (req, res, next) => {
         }
         const dataBinding = {
             reim_number: reimNumber,
-            organizer: organizer,
+            organizer: organizer ? organizer : null,
             deceased: deceased,
             selected_wreath: selectedWreath,
             selected_vehicle: selectedVehicle,

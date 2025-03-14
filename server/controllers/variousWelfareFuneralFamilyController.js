@@ -71,19 +71,23 @@ class Controller extends BaseController {
                 attributes: [
                     [col("sub_category.id"), "subCategoriesId"],
                     [col("sub_category.name"), "subCategoriesName"],
-                    [fn("SUM", literal("IFNULL(reimbursements_assist.fund_decease, 0)")), "totalSumRequested"],
+                    [fn("SUM", col("reimbursements_assist.fund_decease")), "totalSumRequested"],
                     [col("sub_category.fund"), "fund"],
                     [
-                        literal("IFNULL(sub_category.fund - SUM(IFNULL(reimbursements_assist.fund_decease, 0)), sub_category.fund)"),
+                        literal("sub_category.fund - SUM(reimbursements_assist.fund_decease)"),
                         "fundRemaining"
                     ],
-                    [fn("COUNT", literal("IFNULL(reimbursements_assist.fund_decease, 0)")), "totalCountRequested"],
+                    [fn("COUNT", col("reimbursements_assist.fund_decease")), "totalCountRequested"],
                     [col("sub_category.per_years"), "perYears"],
                     [
-                        literal("IFNULL(sub_category.per_years - COUNT(IFNULL(reimbursements_assist.fund_decease, 0)), sub_category.per_years)"),
+                        literal("sub_category.per_years - COUNT(reimbursements_assist.fund_decease)"),
                         "requestsRemaining"
                     ],
                     [col("sub_category.per_times"), "perTimesRemaining"],
+                    [
+                        literal("sub_category.per_users - COUNT(reimbursements_assist.fund_decease)"),
+                        "perUsersRemaining"
+                    ]
                 ],
                 include: [
                     {
@@ -99,7 +103,7 @@ class Controller extends BaseController {
                     }
                 ],
                 where: whereObj,
-                group: ["sub_category.id", "sub_category.name", "sub_category.fund", "sub_category.per_years", "sub_category.per_times"]
+                group: ["sub_category.id", "sub_category.name", "sub_category.fund", "sub_category.per_years", "sub_category.per_times", "sub_category.per_users"]
             });
             whereObj[Op.and].push(
                 { '$sub_category.id$': { [Op.in]: [7, 8] } }
@@ -147,6 +151,10 @@ class Controller extends BaseController {
                         fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
                         "requestsRemainingUniversity"
                     ],
+                    [
+                        literal("sub_category.per_users - COUNT(reimbursements_assist.fund_decease)"),
+                        "perUsersRemaining"
+                    ]
                 ],
                 include: [
                     {
@@ -184,6 +192,10 @@ class Controller extends BaseController {
                         "requestsRemaining"
                     ],
                     [col("sub_category.per_times"), "perTimesRemaining"],
+                    [
+                        literal("sub_category.per_users - COUNT(reimbursements_assist.fund_decease)"),
+                        "perUsersRemaining"
+                    ]
                 ],
                 include: [
                     {
@@ -200,61 +212,45 @@ class Controller extends BaseController {
                 where: whereObj,
                 group: ["sub_category.id"],
             });
-
             if (!isNullOrEmpty(decreaseRemaining) || !isNullOrEmpty(wreathRemaining) || !isNullOrEmpty(vechicleRemaining)) {
                 let bindData = [];
-
-                let datas = [];
                 if (!isNullOrEmpty(decreaseRemaining)) {
-                    datas = JSON.parse(JSON.stringify(decreaseRemaining));
+                    bindData = JSON.parse(JSON.stringify(decreaseRemaining));
                 }
-
-                const getFund = await subCategories.findAll({
+                // ดึงข้อมูลจาก subCategories
+                const allCategories = await subCategories.findAll({
                     attributes: [
                         [col("id"), "subCategoriesId"],
                         [col("name"), "subCategoriesName"],
-                        [col("fund"), "fund"],
+                        [col("fund"), "fundRemaining"],
                         [col("per_years"), "requestsRemaining"],
                         [col("per_times"), "perTimesRemaining"],
+                        [col("per_users"), "perUsersRemaining"]
                     ],
                     where: { id: [3, 4, 5, 6] }
                 });
-
-                const fundDatas = JSON.parse(JSON.stringify(getFund));
-
-                let dataMap = new Map();
-
-                fundDatas.forEach(item => {
-                    dataMap.set(item.subCategoriesId, {
-                        ...item,
-                        totalSumRequested: 0,
-                        totalCountRequested: 0,
-                        fundRemaining: item.fund, 
-                        canRequest: item.fundRemaining > 0 && item.requestsRemaining > 0
-                    });
+                const categoryData = JSON.parse(JSON.stringify(allCategories));
+                // รวมข้อมูล categories กับ reimbursementsAssist
+                const finalData = categoryData.map(cat => {
+                    const matched = bindData.find(item => item.subCategoriesId === cat.subCategoriesId);
+                    return {
+                        subCategoriesName: cat.subCategoriesName,
+                        subCategoriesId: cat.subCategoriesId,
+                        totalSumRequested: matched ? matched.totalSumRequested : 0,
+                        fund: cat.fundRemaining,
+                        fundRemaining: matched ? matched.fundRemaining : cat.fundRemaining,
+                        totalCountRequested: matched ? matched.totalCountRequested : 0,
+                        perYears: cat.requestsRemaining,
+                        requestsRemaining: matched ? matched.requestsRemaining : cat.requestsRemaining,
+                        perTimesRemaining: cat.perTimesRemaining,
+                        perUsersRemaining: matched ? matched.perUsersRemaining : cat.perUsersRemaining,
+                        canRequest: 
+                            ((matched ? matched.fundRemaining : cat.fundRemaining) === null || (matched ? matched.fundRemaining : cat.fundRemaining) > 0) &&
+                            ((matched ? matched.requestsRemaining : cat.requestsRemaining) === null || (matched ? matched.requestsRemaining : cat.requestsRemaining) > 0) &&
+                            ((matched ? matched.perUsersRemaining : cat.perUsersRemaining) === null || (matched ? matched.perUsersRemaining : cat.perUsersRemaining) > 0)
+                    };
                 });
-                datas.forEach(item => {
-                    if (dataMap.has(item.subCategoriesId)) {
-                        let existing = dataMap.get(item.subCategoriesId);
-                        let totalSumRequested = item.totalSumRequested ? parseFloat(item.totalSumRequested) : 0;
-                        let calculatedFundRemaining = parseFloat(existing.fund) - totalSumRequested;
-        
-                        dataMap.set(item.subCategoriesId, {
-                            ...existing,
-                            totalSumRequested: totalSumRequested,
-                            totalCountRequested: item.totalCountRequested,
-                            fundRemaining: calculatedFundRemaining < 0 ? 0 : calculatedFundRemaining, 
-                            canRequest: item.fundRemaining > 0 && item.requestsRemaining > 0
-                        });
-                    } else {
-                        dataMap.set(item.subCategoriesId, {
-                            ...item,
-                            canRequest: item.fundRemaining > 0 && item.requestsRemaining > 0
-                        });
-                    }
-                });
-                bindData = Array.from(dataMap.values());
-
+                bindData = finalData;
                 if (!isNullOrEmpty(wreathRemaining)) {
                     const datas = JSON.parse(JSON.stringify(wreathRemaining));
                     datas.forEach(item => {
@@ -270,17 +266,18 @@ class Controller extends BaseController {
                             [col("fund"), "fund"],
                             [col("per_years"), "requestsRemaining"],
                             [col("per_times"), "perTimesRemaining"],
+                            [col("per_users"), "perUsersRemaining"]
                         ],
                         where: { id: [7, 8] }
                     })
                     const datas = JSON.parse(JSON.stringify(getFund));
                     datas.forEach(item => {
-                        if (item.fundRemaining === 0 || item.fundRemaining < 0 || item.requestsRemaining === 0 || item.requestsRemaining < 0) item.canRequest = false;
+                        if (item.fundRemaining === 0 || item.fundRemaining < 0 || item.requestsRemaining === 0 || item.requestsRemaining < 0
+                            || item.perUsersRemaining === 0 || item.perUsersRemaining < 0) item.canRequest = false;
                         else item.canRequest = true;
                     });
                     bindData.push(datas);
                 }
-
                 if (!isNullOrEmpty(vechicleRemaining)) {
                     const datas = JSON.parse(JSON.stringify(vechicleRemaining[0]));
                     if (datas.fundRemaining == null) {
@@ -289,8 +286,9 @@ class Controller extends BaseController {
                     if (datas.requestsRemaining == null) {
                         datas.requestsRemaining = datas.perYears;
                     }
-                    
-                    if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) datas.canRequest = false;
+
+                    if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0
+                        || datas.perUsersRemaining === 0 || datas.perUsersRemaining < 0) datas.canRequest = false;
                     else datas.canRequest = true;
                     bindData.push(datas);
                 }
@@ -321,6 +319,7 @@ class Controller extends BaseController {
                     [col("fund"), "fundRemaining"],
                     [col("per_years"), "requestsRemaining"],
                     [col("per_times"), "perTimesRemaining"],
+                    [col("per_users"), "perUsersRemaining"]
                 ],
                 where: {
                     id: {

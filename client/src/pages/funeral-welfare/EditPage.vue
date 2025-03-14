@@ -125,7 +125,7 @@
                 </q-card-section>
               </q-card-section>
             </q-card-section>
-            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
+            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund" is-dense v-model="model.organizer" :data="model.organizer ?? '-'" is-require
                   label="จ่ายให้กับผู้จัดการงานศพ" placeholder="ชื่อ-นามสกุล" type="text" class="" :is-view="isView"
@@ -133,17 +133,16 @@
                 </InputGroup>
               </div>
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl  ">
-                <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'"
+                <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fundReceipt === 0 ? '-' : model.fundReceipt ?? '-'"
                   is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)" placeholder="บาท" type="number" class="q-py-xs-md q-py-lg-none"
-                  :is-view="isView" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน']"
+                  :is-view="isView" 
                   :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
                 </InputGroup>
               </div>
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
-                <InputGroup for-id="fund-request" is-dense v-model="model.fundRequest" :data="model.fundRequest ?? '-'"
+                <InputGroup for-id="fund-request" is-dense v-model="model.fundRequest" :data="model.fundRequest === 0 ? '-' : model.fundRequest ?? '-'"
                   is-require label="จำนวนเงินที่ต้องการเบิก (บาท)" placeholder="บาท" type="number" class=""
                   :is-view="isView"  :rules="[
-                    (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
                     (val) => !isOverRequest || 'จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบเสร็จ',
                     (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
                     (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + remaining[9].perTimesRemaining + ' บาทต่อครั้ง',
@@ -153,7 +152,9 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-card-section class="row wrap q-pt-none font-medium q-pb-xs font-16 text-grey-9 items-center "
+            <q-separator v-show="thisStaff && !canCreateFor" inset />
+
+            <q-card-section v-show="thisStaff && !canCreateFor" class="row wrap  font-medium q-pb-xs font-16 text-grey-9 items-center "
               :class="isView ? '' : 'q-pl-sm '">
               <q-checkbox v-model="model.selectedWreath" v-if="!isView" />
               <p class="q-mb-none ">ค่าสนับสนุนค่าพวงหรีด (จ่ายไม่เกินคนละ {{ remaining[10]?.fund ? remaining[10]?.fund
@@ -162,7 +163,8 @@
                 {{ remaining[11]?.fund ? remaining[11]?.fund
                 + " บาท" : remaining[11]?.perTimesRemaining ? remaining[11]?.perTimesRemaining + " บาท" : "กรุณาเลือกผู้เสียชีวิต" }} ในนามส่วนงาน)</p>
             </q-card-section>
-            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none q-pb-sm">
+            <q-card-section v-show="thisStaff && !canCreateFor"
+            class="row wrap font-medium font-16 text-grey-9 q-pt-none  q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
                   :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
@@ -193,9 +195,9 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-separator inset />
+            <q-separator v-show="thisStaff && !canCreateFor" inset />
 
-            <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
+            <q-card-section v-show="thisStaff && !canCreateFor" class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
               :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedVehicle" />
               <p class="q-mb-none">ค่าสนับสนุนค่าพาหนะเหมาจ่าย (จ่ายจริงคนละไม่เกิน
@@ -203,7 +205,7 @@
                 + " บาท" : remaining[12]?.perTimesRemaining ? remaining[12]?.perTimesRemaining + " บาท" : "กรุณาเลือกผู้เสียชีวิต" }})</p>
             </q-card-section>
 
-            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
+            <q-card-section v-show="thisStaff && !canCreateFor" class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl ">
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceiptVehicle"
                   :data="model.fundReceiptVehicle ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
@@ -301,6 +303,9 @@ const model = ref({
   selectedWreath: false,
   selectedVehicle: false,
 });
+const thisStaff = computed(() => {
+  return authStore.isStaff;
+});
 const options = ref([]);
 const deceasedName = computed(() => {
   if (isView.value && model.value.deceased) {
@@ -377,6 +382,7 @@ const isValidate = computed(() => {
   if (!model.value.deceased) {
     return true;
   }
+  if (!thisStaff.value) {
   if (model.value.deceased) {
     if (!model.value.organizer) {
       validate = true;
@@ -388,6 +394,7 @@ const isValidate = computed(() => {
       validate = true;
     }
   }
+}
   if (isOverfundRemaining.value) {
     validate = true;
   }
@@ -879,17 +886,17 @@ async function submit(actionId) {
   }
   let isValid = false;
   let payload = {
-    fundReceipt: model.value.fundReceipt,
-    fundRequest: model.value.fundRequest,
+    fundReceipt: Number(model.value.fundReceipt),
+    fundRequest: Number(model.value.fundRequest),
     organizer: model.value.organizer,
     deceased: model.value.deceased,
     selectedWreath: model.value.selectedWreath,
     selectedVehicle: model.value.selectedVehicle,
-    fundReceiptWreath: model.value.fundReceiptWreath,
-    fundWreathUniversity: model.value.fundWreathUniversity,
-    fundWreathArrange: model.value.fundWreathArrange,
-    fundReceiptVehicle: model.value.fundReceiptVehicle,
-    fundVehicle: model.value.fundVehicle,
+    fundReceiptWreath: Number(model.value.fundReceiptWreath),
+    fundWreathUniversity: Number(model.value.fundWreathUniversity),
+    fundWreathArrange: Number(model.value.fundWreathArrange),
+    fundReceiptVehicle: Number(model.value.fundReceiptVehicle),
+    fundVehicle: Number(model.value.fundVehicle),
     createFor: canCreateFor.value ? model.value.createFor : null,
     actionId: actionId
   }
