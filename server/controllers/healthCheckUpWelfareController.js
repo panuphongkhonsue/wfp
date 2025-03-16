@@ -13,6 +13,7 @@ const { fn, col, literal } = require("sequelize");
 const { initLogger } = require("../logger");
 const category = require("../enum/category");
 const logger = initLogger("healthCheckUpWelfareController");
+const { dynamicCheckRemaining } = require("../middleware/utility");
 
 class Controller extends BaseController {
   constructor() {
@@ -100,7 +101,14 @@ class Controller extends BaseController {
             ),
             "requestsRemaining"
           ],
-          [col("category.per_times"), "perTimesRemaining"]
+          [col("category.per_times"), "perTimesRemaining"],
+          [col("category.per_users"), "perUsers"],
+          [
+            literal(
+              "category.per_users - COUNT(reimbursementsGeneral.fund_sum_request)"
+            ),
+            "perUsersRemaining"
+          ]
         ],
         include: [
           {
@@ -114,13 +122,7 @@ class Controller extends BaseController {
       });
       if (results) {
         const datas = JSON.parse(JSON.stringify(results));
-        if (
-          datas.fundRemaining < 0 ||
-          datas.fundRemaining === 0 ||
-          datas.requestsRemaining < 0 ||
-          datas.requestsRemaining === 0
-        )
-          datas.canRequest = false;
+        if (dynamicCheckRemaining(datas)) datas.canRequest = false;
         logger.info("Complete", { method, data: { id } });
         return res.status(200).json({
           datas: datas,
@@ -132,7 +134,8 @@ class Controller extends BaseController {
           [col("name"), "categoryName"],
           [col("fund"), "fundRemaining"],
           [col("per_years"), "requestsRemaining"],
-          [col("per_times"), "perTimesRemaining"]
+          [col("per_times"), "perTimesRemaining"],
+          [col("per_users"), "perUsers"],
         ],
         where: { id: category.healthCheckup }
       });

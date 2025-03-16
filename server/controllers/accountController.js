@@ -94,7 +94,7 @@ exports.login = async (req, res, next) => {
                 
                 user.isEditor = isAccess ? true : false;
                 user.isStaff = isStaff ? true : false;
-                if(isEditor){
+                if(isAccess){
                   user.redirectTo = "welfare_management_list";
                 }
                 delete user.role;

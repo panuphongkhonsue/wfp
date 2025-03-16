@@ -32,10 +32,9 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-6 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none">สิทธิ์คงเหลือ : {{ remaining?.fundRemaining ? remaining?.fundRemaining + " บาทต่อปี" :
-          remaining?.perTimesRemaining ?
-            remaining?.perTimesRemaining + " บาทต่อครั้ง" : remaining?.perTimesRemaining ??  "ไม่จำกัดจำนวนเงิน" }}
-          {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : remaining?.requestsRemaining ?? "(ไม่จำกัดครั้ง)" }}</p>
+        <p class="col q-ma-none">
+          {{ remainingText(remaining , "สิทธิ์คงเหลือ") }}
+        </p>
       </div>
       <div class="col-12 col-md-6 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -109,8 +108,8 @@ import exportService from "src/boot/service/exportService";
 
 import { useListStore } from "src/stores/listStore";
 import { useRoute, useRouter } from "vue-router";
-
 import { ref, onMounted, watch, onBeforeUnmount } from "vue";
+import { remainingText } from "src/components/remaining";
 
 import {
   outlinedEdit,

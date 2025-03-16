@@ -55,11 +55,8 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col q-ma-none">{{ remaining.categoryName ?? "ทำฟัน" }} : {{ remaining?.fundRemaining ?
-                remaining?.fundRemaining + " บาทต่อปี" :
-                remaining?.perTimesRemaining ?
-                  remaining?.perTimesRemaining + " บาทต่อครั้ง" : remaining?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน" }}
-                {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : remaining?.requestsRemaining ?? "(ไม่จำกัดครั้ง)" }}
+              <p class="col q-ma-none">
+                {{ remainingText(remaining , remaining.categoryName) }}
               </p>
             </q-card-section>
           </q-card>
@@ -188,6 +185,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
 import { textStatusColor } from "src/components/status";
+import { remainingText } from "src/components/remaining";
 
 defineOptions({
   name: "DentalCareWelfareEdit",
@@ -247,11 +245,11 @@ const isOverfundRemaining = computed(() => {
   const perTimes = remaining.value.perTimesRemaining ? parseFloat(remaining.value.perTimesRemaining.replace(/,/g, "")) : null;
   const fundRemaining = remaining.value.fundRemaining ? parseFloat(remaining.value.fundRemaining.replace(/,/g, "")) : null;
   let check = false;
-  if (fundSumRequest > perTimes && remaining.value.perTimesRemaining) {
-    check = 1;
-  }
   if (fundSumRequest > fundRemaining && remaining.value.fundRemaining) {
     check = 2;
+  }
+  else if (fundSumRequest > perTimes && remaining.value.perTimesRemaining) {
+    check = 1;
   }
   if (!canRequest.value && isFetchRemaining.value) {
     check = 3;

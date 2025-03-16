@@ -15,10 +15,11 @@ const { fn, col, literal, Op } = require("sequelize");
 const { initLogger } = require("../logger");
 const category = require("../enum/category");
 const logger = initLogger("medicalWelfareController");
-const status = require('../enum/status');
+const status = require("../enum/status");
 const {
   getFiscalYearDynamic,
-  getFiscalYear
+  getFiscalYear,
+  dynamicCheckRemaining
 } = require("../middleware/utility");
 const { isNullOrEmpty } = require("../controllers/utility");
 
@@ -109,7 +110,14 @@ class Controller extends BaseController {
               ),
               "requestsRemaining"
             ],
-            [col("sub_category.per_times"), "perTimesRemaining"]
+            [col("sub_category.per_times"), "perTimesRemaining"],
+            [col("sub_category.per_users"), "perUsers"],
+            [
+              literal(
+                "sub_category.per_users - COUNT(reimbursements_general.fund_eligible)"
+              ),
+              "perUsersRemaining"
+            ]
           ],
           include: [
             {
@@ -163,7 +171,14 @@ class Controller extends BaseController {
               ),
               "requestsRemaining"
             ],
-            [col("sub_category.per_times"), "perTimesRemaining"]
+            [col("sub_category.per_times"), "perTimesRemaining"],
+            [col("sub_category.per_users"), "perUsers"],
+            [
+              literal(
+                "sub_category.per_users - COUNT(reimbursements_general.fund_sum_request_patient_visit)"
+              ),
+              "perUsersRemaining"
+            ]
           ],
           include: [
             {
@@ -193,13 +208,10 @@ class Controller extends BaseController {
           if (datas.requestsRemaining == null) {
             datas.requestsRemaining = datas.perYears;
           }
-          if (
-            datas.fundRemaining < 0 ||
-            datas.fundRemaining === 0 ||
-            datas.requestsRemaining < 0 ||
-            datas.requestsRemaining === 0
-          )
-            datas.canRequest = false;
+          if (datas.perUsersRemaining == null) {
+            datas.perUsersRemaining = datas.perUsers;
+          }
+          if (dynamicCheckRemaining(datas)) datas.canRequest = false;
           else datas.canRequest = true;
           bindData.push(datas);
         } else {
@@ -209,7 +221,8 @@ class Controller extends BaseController {
               [col("name"), "subCategoriesName"],
               [col("fund"), "fundRemaining"],
               [col("per_years"), "requestsRemaining"],
-              [col("per_times"), "perTimesRemaining"]
+              [col("per_times"), "perTimesRemaining"],
+              [col("per_users"), "perUsers"]
             ],
             where: { id: 1 }
           });
@@ -225,13 +238,10 @@ class Controller extends BaseController {
           if (datas.requestsRemaining == null) {
             datas.requestsRemaining = datas.perYears;
           }
-          if (
-            datas.fundRemaining < 0 ||
-            datas.fundRemaining === 0 ||
-            datas.requestsRemaining < 0 ||
-            datas.requestsRemaining === 0
-          )
-            datas.canRequest = false;
+          if (datas.perUsersRemaining == null) {
+            datas.perUsersRemaining = datas.perUsers;
+          }
+          if (dynamicCheckRemaining(datas)) datas.canRequest = false;
           else datas.canRequest = true;
           whereObj = {};
           whereObj[Op.and] = [];
@@ -245,7 +255,7 @@ class Controller extends BaseController {
               "$reimbursements_general.created_by$": req.query.createFor ?? id
             },
             { "$sub_category.id$": 2 },
-            { '$reimbursements_general.status$': { [Op.ne]: status.NotApproved } },
+            { "$reimbursements_general.status$": { [Op.eq]: status.approve } }
           );
           const getRequestData =
             await reimbursementsGeneralHasSubCategories.findAll({
@@ -281,7 +291,8 @@ class Controller extends BaseController {
               [col("name"), "subCategoriesName"],
               [col("fund"), "fundRemaining"],
               [col("per_years"), "requestsRemaining"],
-              [col("per_times"), "perTimesRemaining"]
+              [col("per_times"), "perTimesRemaining"],
+              [col("per_users"), "perUsers"]
             ],
             where: { id: 2 }
           });
@@ -301,7 +312,8 @@ class Controller extends BaseController {
           [col("name"), "subCategoriesName"],
           [col("fund"), "fundRemaining"],
           [col("per_years"), "requestsRemaining"],
-          [col("per_times"), "perTimesRemaining"]
+          [col("per_times"), "perTimesRemaining"],
+          [col("per_users"), "perUsers"]
         ],
         where: {
           id: {
@@ -313,11 +325,10 @@ class Controller extends BaseController {
         const datas = JSON.parse(JSON.stringify(getFund));
         datas[0].canRequest = true;
         datas[1].canRequest = true;
+        datas[1].requestData = null;
         logger.info("Complete", { method, data: { id } });
         return res.status(200).json({
-          datas: datas,
-          canRequest: datas.canRequest ?? true,
-          requestData: null
+          datas: datas
         });
       }
       logger.info("Data not Found", { method, data: { id } });
@@ -407,7 +418,7 @@ class Controller extends BaseController {
           { "$reimbursements_general.created_by$": datas.userId },
           { "$reimbursements_general.id$": { [Op.lte]: datas.id } },
           { "$sub_category.id$": 2 },
-          { '$reimbursements_general.status$': { [Op.ne]: status.NotApproved } },
+          { "$reimbursements_general.status$": { [Op.eq]: status.approve } }
         );
         const getRequestData =
           await reimbursementsGeneralHasSubCategories.findAll({

@@ -55,12 +55,8 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col q-ma-none">{{ remaining.categoryName ?? "ตรวจสุขภาพประจำปี" }} : {{ remaining?.fundRemaining
-                ?
-                remaining?.fundRemaining + " บาทต่อปี" :
-                remaining?.perTimesRemaining ? remaining?.perTimesRemaining + " บาทต่อครั้ง" : remaining?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-                }}
-                {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : remaining?.requestsRemaining ??'(ไม่จำกัดครั้ง)' }}
+              <p class="col q-ma-none">
+                {{ remainingText(remaining, remaining.categoryName) }}
               </p>
             </q-card-section>
           </q-card>
@@ -83,16 +79,15 @@
               <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
               <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
               </p>
-              <p class="col-md-4 col-12 q-mb-none">สถานะ : <span :class="textStatusColor(model.status)">{{ model.status ?? "-" }}</span> </p>
+              <p class="col-md-4 col-12 q-mb-none">สถานะ : <span :class="textStatusColor(model.status)">{{ model.status
+                ?? "-"
+                  }}</span> </p>
             </q-card-section>
             <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9">
               <InputGroup for-id="fund" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'" is-require
                 label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="บาท" type="number" compclass="col-md-4 col-12" :rules="[
                   (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ',
                   (val) => !isOver || 'จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ',
-                  (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
-                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง',
-                    (val) => isOverfundRemaining !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                 ]" :is-view="isView" :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
               </InputGroup>
 
@@ -127,7 +122,13 @@
                     <q-input class="font-14 font-regular" dense
                       v-model="model.claimByEligible[props.row.id - 1].fundEligible" outlined autocomplete="off"
                       hide-bottom-space color="dark" type="number" :forId="'input-fundEligible' + props.row.id"
-                      placeholder="0">
+                      placeholder="0" :rules="[
+                        (val) => (props.row.id === 2 && !val ? 'กรุณากรอกข้อมูลที่ต้องการเบิก' : true),
+                        (val) => (props.row.id === 2 && isOverfundRemaining === 2 ? 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้': true),
+                        (val) => (props.row.id === 2 && isOverfundRemaining === 1 ? 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง': true),
+                        (val) => (props.row.id === 2 && isOverfundRemaining === 3 ? 'คุณใช้จำนวนการเบิกครบแล้ว': true),
+                        (val) => (props.row.id === 2 && isOverfundRemaining === 4 ? 'สามารถเบิกได้สูงสุด ' + fundEligibleSumValue + ' บาท': true),
+                      ]">
                     </q-input>
                   </q-td>
                 </template>
@@ -183,6 +184,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
 import { textStatusColor } from "src/components/status";
+import { remainingText } from "src/components/remaining";
 
 defineOptions({
   name: "healthCheckUpWelfareEdit",
@@ -255,29 +257,27 @@ const isValidate = computed(() => {
 });
 
 const isOver = computed(() => {
-  const fundEligibleSum = Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[1].fundEligible) + Number(model.value.claimByEligible[2].fundEligible);
-  const fundSumRequest = Number(model.value.fundReceipt) - Number(fundEligibleSum);
-  return fundSumRequest <= 0;
+  const fundEligibleSum = Number(model.value.fundReceipt) - (Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[2].fundEligible));
+  return fundEligibleSum <= 0;
 });
 
+const fundEligibleSumValue = computed(() => {
+  return Number(model.value.fundReceipt) - (Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[2].fundEligible));
+});
 
 const isOverfundRemaining = computed(() => {
-
-  const fundEligibleSum =
-    Number(model.value.claimByEligible?.[0]?.fundEligible ?? 0) +
-    Number(model.value.claimByEligible?.[1]?.fundEligible ?? 0) +
-    Number(model.value.claimByEligible?.[2]?.fundEligible ?? 0);
-
-  const fundSumRequest = Number(model.value.fundReceipt ?? 0) - fundEligibleSum;
-
+  let check = false;
+  const fundEligibleSum = Number(model.value.fundReceipt) - (Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[2].fundEligible));
   const perTimes = remaining.value.perTimesRemaining ? parseFloat(remaining.value.perTimesRemaining.replace(/,/g, "")) : null;
   const fundRemaining = remaining.value.fundRemaining ? parseFloat(remaining.value.fundRemaining.replace(/,/g, "")) : null;
-  let check = false;
-  if (Number(fundSumRequest) > perTimes && remaining.value.perTimesRemaining) {
+  if (Number(model.value.claimByEligible[1].fundEligible) > fundRemaining && remaining.value.fundRemaining) {
+    check = 2;
+  }
+  else if (Number(model.value.claimByEligible[1].fundEligible) > perTimes && remaining.value.perTimesRemaining) {
     check = 1;
   }
-  if (Number(fundSumRequest) > fundRemaining && remaining.value.fundRemaining) {
-    check = 2;
+  else if (model.value.claimByEligible[1].fundEligible > fundEligibleSum) {
+    return check = 4;
   }
   if (!canRequest.value && isFetchRemaining.value) {
     check = 3;
@@ -316,6 +316,9 @@ watch(
     if (isOver.value) {
       isError.value.fundReceipt = "จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
     }
+    else {
+      isError.value.fundReceipt = null;
+    }
   },
   { deep: true }
 );
@@ -326,20 +329,6 @@ watch(
       delete isError.value.fundReceipt;
     }
   }
-);
-watch(
-  () => model.value.claimByEligible,
-  () => {
-    const fundEligibleSum = Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[1].fundEligible) + Number(model.value.claimByEligible[2].fundEligible);
-    const fundSumRequest = Number(model.value.fundReceipt) - Number(fundEligibleSum);
-    if (fundSumRequest <= 0) {
-      isError.value.fundReceipt = "จำนวนเงินตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
-    }
-    else {
-      isError.value.fundReceipt = null;
-    }
-  },
-  { deep: true }
 );
 watch(
   () => model.value.createFor,
@@ -551,10 +540,10 @@ async function submit(actionId) {
     if (isOverfundRemaining.value === 2) {
       isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
     }
-    else if(isOverfundRemaining.value === 1) {
+    else if (isOverfundRemaining.value === 1) {
       isError.value.fundEligible = "สามารถเบิกได้สูงสุด " + remaining.value.perTimesRemaining + " บาทต่อครั้ง";
     }
-    else{
+    else {
       isError.value.fundEligible = "คุณใช้จำนวนการเบิกครบแล้ว";
     }
     validate = true;
