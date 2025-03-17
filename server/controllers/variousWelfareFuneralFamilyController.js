@@ -4,7 +4,7 @@ const { Op, fn, col, literal } = require("sequelize");
 const { initLogger } = require('../logger');
 const category = require('../enum/category');
 const logger = initLogger('variousWelfareFuneralFamilyController');
-const { getFiscalYearDynamic, getFiscalYear } = require('../middleware/utility');
+const { getFiscalYearDynamic, getFiscalYear, dynamicCheckRemaining } = require('../middleware/utility');
 const { isNullOrEmpty } = require('./utility');
 
 class Controller extends BaseController {
@@ -84,6 +84,7 @@ class Controller extends BaseController {
                         "requestsRemaining"
                     ],
                     [col("sub_category.per_times"), "perTimesRemaining"],
+                    [col("sub_category.per_users"), "perUsers"],
                     [
                         literal("sub_category.per_users - COUNT(reimbursements_assist.fund_decease)"),
                         "perUsersRemaining"
@@ -115,6 +116,7 @@ class Controller extends BaseController {
                     [col("sub_category.fund"), "fund"],
                     [col("sub_category.per_years"), "perYears"],
                     [col("sub_category.per_times"), "perTimesRemaining"],
+                    [col("sub_category.per_users"), "perUsers"],
 
                     // fund_wreath_arrange
                     [
@@ -133,11 +135,15 @@ class Controller extends BaseController {
                         fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
                         "requestsRemainingArrange"
                     ],
-
+                    [
+                        literal("sub_category.per_users - COUNT(CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END)"),
+                        "perUsersRemainingArrange"
+                    ],
+                    
                     // fund_wreath_university
                     [
-                        fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
-                        "totalSumRequestedUniversity"
+                    fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
+                    "totalSumRequestedUniversity"
                     ],
                     [
                         fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
@@ -152,9 +158,10 @@ class Controller extends BaseController {
                         "requestsRemainingUniversity"
                     ],
                     [
-                        literal("sub_category.per_users - COUNT(reimbursements_assist.fund_decease)"),
-                        "perUsersRemaining"
+                        literal("sub_category.per_users - COUNT(CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END)"),
+                        "perUsersRemainingUniversity"
                     ]
+                    
                 ],
                 include: [
                     {
@@ -192,8 +199,9 @@ class Controller extends BaseController {
                         "requestsRemaining"
                     ],
                     [col("sub_category.per_times"), "perTimesRemaining"],
+                    [col("sub_category.per_users"), "perUsers"],
                     [
-                        literal("sub_category.per_users - COUNT(reimbursements_assist.fund_decease)"),
+                        literal("sub_category.per_users - COUNT(reimbursements_assist.fund_vechicle)"),
                         "perUsersRemaining"
                     ]
                 ],
@@ -244,7 +252,7 @@ class Controller extends BaseController {
                         requestsRemaining: matched ? matched.requestsRemaining : cat.requestsRemaining,
                         perTimesRemaining: cat.perTimesRemaining,
                         perUsersRemaining: matched ? matched.perUsersRemaining : cat.perUsersRemaining,
-                        canRequest: 
+                        canRequest:
                             ((matched ? matched.fundRemaining : cat.fundRemaining) === null || (matched ? matched.fundRemaining : cat.fundRemaining) > 0) &&
                             ((matched ? matched.requestsRemaining : cat.requestsRemaining) === null || (matched ? matched.requestsRemaining : cat.requestsRemaining) > 0) &&
                             ((matched ? matched.perUsersRemaining : cat.perUsersRemaining) === null || (matched ? matched.perUsersRemaining : cat.perUsersRemaining) > 0)
@@ -266,14 +274,13 @@ class Controller extends BaseController {
                             [col("fund"), "fund"],
                             [col("per_years"), "requestsRemaining"],
                             [col("per_times"), "perTimesRemaining"],
-                            [col("per_users"), "perUsersRemaining"]
+                            [col("per_users"), "perUsers"]
                         ],
                         where: { id: [7, 8] }
                     })
                     const datas = JSON.parse(JSON.stringify(getFund));
                     datas.forEach(item => {
-                        if (item.fundRemaining === 0 || item.fundRemaining < 0 || item.requestsRemaining === 0 || item.requestsRemaining < 0
-                            || item.perUsersRemaining === 0 || item.perUsersRemaining < 0) item.canRequest = false;
+                        if (dynamicCheckRemaining(item)) item.canRequest = false;
                         else item.canRequest = true;
                     });
                     bindData.push(datas);
@@ -287,8 +294,7 @@ class Controller extends BaseController {
                         datas.requestsRemaining = datas.perYears;
                     }
 
-                    if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0
-                        || datas.perUsersRemaining === 0 || datas.perUsersRemaining < 0) datas.canRequest = false;
+                    if (dynamicCheckRemaining(datas)) datas.canRequest = false;
                     else datas.canRequest = true;
                     bindData.push(datas);
                 }
@@ -300,6 +306,7 @@ class Controller extends BaseController {
                             [col("fund"), "fundRemaining"],
                             [col("per_years"), "requestsRemaining"],
                             [col("per_times"), "perTimesRemaining"],
+                            [col("per_users"), "perUsers"]
                         ],
                         where: { id: 9 }
                     })
@@ -319,7 +326,7 @@ class Controller extends BaseController {
                     [col("fund"), "fundRemaining"],
                     [col("per_years"), "requestsRemaining"],
                     [col("per_times"), "perTimesRemaining"],
-                    [col("per_users"), "perUsersRemaining"]
+                    [col("per_users"), "perUsers"]
                 ],
                 where: {
                     id: {

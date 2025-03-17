@@ -3,7 +3,8 @@
     <template v-slot:page>
       <!--General Information Section -->
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
-        <div :class="{ 'col-12': isView || isLoading || thisStaff , 'col-md-9 col-12': !isView && !isLoading && !thisStaff || canCreateFor }">
+        <div
+          :class="{ 'col-12': isView || isLoading || thisStaff, 'col-md-9 col-12': !isView && !isLoading && !thisStaff || canCreateFor }">
           <q-card flat bordered class="full-height">
             <q-card-section class="font-18 font-bold">
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
@@ -48,7 +49,7 @@
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-md-3 col-12" v-if="!isView && !thisStaff || canCreateFor" >
+        <div class="col-md-3 col-12" v-if="!isView && !thisStaff || canCreateFor">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md font-18 font-bold">
               <p class="q-mb-none">สิทธิ์คงเหลือ</p>
@@ -56,21 +57,17 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
-                {{ remaining[3]?.subCategoriesName ?? "บิดา" }} : {{ remaining[3]?.perUsersRemaining <= 0 ||
-                  remaining[3]?.perUsersRemaining === null ? "ใช้สิทธิ์ครบแล้ว" : (remaining[3]?.fundRemaining ?
-                    remaining[3]?.fundRemaining + " บาท" : "ใช้สิทธิ์ครบแล้ว") }} </p>
-                  <p class="col-12 q-mb-none">
-                    {{ remaining[4]?.subCategoriesName ?? "มารดา" }} : {{ remaining[4]?.perUsersRemaining <= 0 ||
-                      remaining[4]?.perUsersRemaining == null ? "ใช้สิทธิ์ครบแล้ว" : (remaining[4]?.fundRemaining ?
-                        remaining[4]?.fundRemaining + " บาท" : "ใช้สิทธิ์ครบแล้ว") }} </p>
-                      <p class="col-12 q-mb-none">
-                        {{ remaining[5]?.subCategoriesName ?? "คู่สมรส" }} : {{ remaining[5]?.perUsersRemaining <= 0 ||
-                          remaining[5]?.perUsersRemaining == null ? "ใช้สิทธิ์ครบแล้ว" : (remaining[5]?.fundRemaining ?
-                            remaining[5]?.fundRemaining + " บาท" : "ใช้สิทธิ์ครบแล้ว") }} </p>
-                          <p class="col-12 q-mb-none">
-                            {{ remaining[6]?.subCategoriesName ?? "บุตร" }} : {{ remaining[6]?.perUsersRemaining <= 0 ||
-                              remaining[6]?.perUsersRemaining == null ? "ใช้สิทธิ์ครบแล้ว" : (remaining[6]?.fundRemaining
-                                ? remaining[6]?.fundRemaining + " บาท" : "ใช้สิทธิ์ครบแล้ว") }} </p>
+                {{ remainingTextOneForUsers(remaining[3], remaining[3]?.subCategoriesName) }}
+              </p>
+              <p class="col-12 q-mb-none">
+                {{ remainingTextOneForUsers(remaining[4], remaining[4]?.subCategoriesName) }}
+              </p>
+              <p class="col-12 q-mb-none">
+                {{ remainingTextOneForUsers(remaining[5], remaining[5]?.subCategoriesName) }}
+              </p>
+              <p class="col-12 q-mb-none">
+                {{ remainingTextOneForUsers(remaining[6], remaining[6]?.subCategoriesName) }}
+              </p>
             </q-card-section>
           </q-card>
         </div>
@@ -106,7 +103,8 @@
                 ?? "-"
                   }}</span> </p>
             </q-card-section>
-            <q-card-section v-show="!thisStaff || canCreateFor" class="row wrap font-medium font-16 text-grey-9 q-pt-none">
+            <q-card-section v-show="!thisStaff || canCreateFor"
+              class="row wrap font-medium font-16 text-grey-9 q-pt-none">
               <div v-for="option in deceaseOptions" :key="option.value" class="col-12 row q-mb-none ">
                 <div class="col-md-2 col-6">
                   <q-radio v-model="model.deceasedType" :val="option.value" :label="option.label" class="q-mr-md"
@@ -119,7 +117,8 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-card-section v-show="!thisStaff || canCreateFor" class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
+            <q-card-section v-show="!thisStaff || canCreateFor"
+              class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'"
                   is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)" placeholder="บาท" type="number" class=""
@@ -139,8 +138,8 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-card-section v-show="thisStaff && !canCreateFor" class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
-              :class="isView ? '' : 'q-pl-sm'">
+            <q-card-section v-show="thisStaff && !canCreateFor"
+              class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center" :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedWreath" />
               <p class="q-mb-none">ค่าสนับสนุนค่าพวงหรีด (จ่ายไม่เกินคนละ {{ remaining[7]?.fund ? remaining[7]?.fund
                 + " บาท" : remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาท" :
@@ -152,7 +151,8 @@
                   remaining[8]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน" }}
                 ในนามส่วนงาน)</p>
             </q-card-section>
-            <q-card-section v-show="thisStaff && !canCreateFor" class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
+            <q-card-section v-show="thisStaff && !canCreateFor"
+              class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
                   :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
@@ -185,8 +185,8 @@
               </div>
             </q-card-section>
             <q-separator v-show="thisStaff && !canCreateFor" inset />
-            <q-card-section v-show="thisStaff && !canCreateFor" class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
-              :class="isView ? '' : 'q-pl-sm'">
+            <q-card-section v-show="thisStaff && !canCreateFor"
+              class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center" :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedVechicle" />
               <p class="q-mb-none ">ค่าสนับสนุนค่าพาหนะเหมาจ่าย (จ่ายจริงคนละไม่เกิน
                 {{ remaining[9]?.fund ? remaining[9]?.fund
@@ -194,7 +194,8 @@
                   "ไม่จำกัดจำนวนเงิน"
                 }})</p>
             </q-card-section>
-            <q-card-section v-show="thisStaff && !canCreateFor" class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
+            <q-card-section v-show="thisStaff && !canCreateFor"
+              class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceiptVechicle"
                   :data="model.fundReceiptVechicle ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
@@ -278,6 +279,7 @@ import { useAuthStore } from "src/stores/authStore";
 import variousWelfareFuneralFamilyService from "src/boot/service/variousWelfareFuneralFamilyService";
 import exportService from "src/boot/service/exportService";
 import { textStatusColor } from "src/components/status";
+import { remainingTextOneForUsers } from "src/components/remaining";
 
 defineOptions({
   name: "various_welfare_funeral_family_edit",

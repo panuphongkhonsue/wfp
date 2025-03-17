@@ -33,38 +33,16 @@
     <template v-slot:toolbar>
       <div class="col-12  row font-bold font-14 q-col-gutter-x-md full-width">
         <p class="col-12 col-md-2 q-py-sm q-ma-none row  items-center ">
-          {{ remaining[4]?.categoryName ?? "ค่าสมรส" }} :
-          {{ remaining[4]?.perUsersRemaining <= 0 || remaining[4]?.perUsersRemaining === null ? "ใช้สิทธิ์ครบแล้ว" :
-            remaining[4]?.fundRemaining + " บาท" }} </p>
-            <p class="col-12 col-md-3 q-py-sm q-ma-none row  items-center ">
-              {{ remaining[5]?.categoryName ?? "ค่าอุปสมบทหรือประกอบพิธีฮัจญ์" }} :
-              {{ remaining[5]?.perUsersRemaining <= 0 || remaining[5]?.perUsersRemaining === null ? "ใช้สิทธิ์ครบแล้ว" :
-                remaining[5]?.fundRemaining + " บาท" }} </p>
-                <p class="col-12 col-md-2 q-py-sm q-ma-none row  items-center">
-                  {{ remaining[6]?.categoryName ?? "ค่ารับขวัญบุตร" }} :
-                  {{ remaining[6]?.fundRemaining == 0 ? "" :
-                    remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
-                      remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-                        remaining[6]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-                  }}
-                  {{ remaining[6]?.fundRemaining == 0 ? "ใช้สิทธิ์ครบแล้ว" :
-                    remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
-                      remaining[6]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
-                  }}
+          {{ remainingTextOneForUsers(remaining[4], remaining[4]?.categoryName) }} </p>
+            <p class="col-12 col-md-3 col-lg-grow q-py-sm q-ma-none row  items-center ">
+              {{ remainingTextOneForUsers(remaining[5], remaining[5]?.categoryName) }} </p>
+                <p class="col-12 col-md-2 col-lg-3 q-py-sm q-ma-none row items-center ">
+                  {{ remainingText(remaining[6], remaining[6]?.categoryName) }}
                 </p>
-                <p class="col-12 col-md-3 q-py-sm q-ma-none row  items-center">
-                  {{ remaining[7]?.categoryName ?? "กรณีประสบภัยพิบัติ" }} :
-                  {{ remaining[7]?.fundRemaining == 0 ? "" :
-                    remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาท" :
-                      remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
-                        remaining[7]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-                  }}
-                  {{ remaining[7]?.fundRemaining == 0 ? "ใช้สิทธิ์ครบแล้ว" :
-                    remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
-                      remaining[7]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
-                  }}
+                <p class="col-12 col-md-3 col-lg-grow q-py-sm q-ma-none row  items-center">
+                  {{ remainingText(remaining[7], remaining[7]?.categoryName) }}
                 </p>
-                <div class="col-12 col-md-12 col-lg-2 flex items-center justify-end">
+                <div class="col-12 col-md-2 flex items-center justify-end">
                   <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm"
                     label="เพิ่มใบเบิกสวัสดิการ" icon="add" :to="{ name: 'various_welfare_new' }" />
                 </div>
@@ -131,12 +109,11 @@
 import ListLayout from "src/layouts/ListLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import DatePicker from "src/components/DatePicker.vue";
-
 import { formatDateThaiSlash, formatDateServer, formatNumber } from "src/components/format";
 import { statusColor, textStatusColor } from "src/components/status";
 import { Notify } from "quasar";
 import Swal from "sweetalert2";
-
+import { remainingText, remainingTextOneForUsers } from "src/components/remaining";
 import variousWelfareService from "src/boot/service/variousWelfareService";
 import exportService from "src/boot/service/exportService";
 import { useListStore } from "src/stores/listStore";

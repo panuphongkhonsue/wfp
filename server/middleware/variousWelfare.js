@@ -1,4 +1,4 @@
-const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
+const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber, dynamicCheckRemaining } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('UserValidator');
 const { Op, literal, col } = require('sequelize')
@@ -329,7 +329,7 @@ const getRemaining = async (req, res, next) => {
         const { id } = req.user;
         const { createFor } = req.query;
         const { created_by, createByData, categories_id, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
+        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
             return next();
         }
         req.query.filter = {};
@@ -364,13 +364,11 @@ const getRemaining = async (req, res, next) => {
             req.query.filter[Op.and].push({
                 '$category.id$': { [Op.in]: [4, 5, 6, 7] }
             });
-
-
         }
 
         req.query.filter[Op.and].push(
             { '$reimbursementsAssist.request_date$': getFiscalYearWhere },
-            { '$reimbursementsAssist.status$': { [Op.ne]: status.NotApproved } },
+            { '$reimbursementsAssist.status$': { [Op.eq]: status.approve } },
 
         );
 
@@ -388,7 +386,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_sum_request, categories_id, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
+        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
             return next();
         }
         const results = await reimbursementsAssist.findOne({
@@ -401,6 +399,10 @@ const checkUpdateRemaining = async (req, res, next) => {
                 [
                     literal("category.per_years - COUNT(reimbursementsAssist.fund_sum_request)"),
                     "requestsRemaining"
+                ],
+                [
+                    literal("category.per_users - COUNT(reimbursementsAssist.fund_sum_request)"),
+                    "perUsersRemaining"
                 ]
             ],
             include: [
@@ -419,6 +421,16 @@ const checkUpdateRemaining = async (req, res, next) => {
         });
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
+            if (actionId === status.approve) {
+                if (dynamicCheckRemaining(datas)) {
+                    return res.status(400).json({
+                        message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิก",
+                    });
+                }
+                else {
+                    return next();
+                }
+            }
             const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
             if (fund_sum_request < oldWelfareData.fund_sum_request) {
                 return next();
@@ -523,8 +535,7 @@ const checkRemaining = async (req, res, next) => {
             if (status === 1) {
                 return next();
             }
-            if (remainingData.fundRemaining === 0 || remainingData.fundRemaining < 0 || remainingData.requestsRemaining === 0 
-                || remainingData.requestsRemaining < 0 || remainingData.perUsersRemaining === 0 || remainingData.perUsersRemaining < 0) {
+            if (dynamicCheckRemaining(remainingData)) {
                 logger.info('No Remaining', { method });
                 return res.status(400).json({
                     message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",

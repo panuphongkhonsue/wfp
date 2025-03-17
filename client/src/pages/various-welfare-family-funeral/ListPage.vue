@@ -33,21 +33,13 @@
     <template v-slot:toolbar>
       <div class="col-12 col-md-10 row font-bold font-16  q-col-gutter-x-md">
         <p class="col q-ma-none"  v-if="!thisStaff">
-          {{ remaining[3]?.subCategoriesName ?? "บิดา" }} : {{ remaining[3]?.perUsersRemaining <= 0 ||
-            remaining[3]?.perUsersRemaining === null ? "ใช้สิทธิ์ครบแล้ว" : (remaining[3]?.fundRemaining ?
-              remaining[3]?.fundRemaining + " บาท" : "กรุณาเลือกผู้ที่ต้องการเบิกแทน") }} </p>
+          {{ remainingTextOneForUsers(remaining[3], remaining[3]?.subCategoriesName) }}</p>
         <p class="col q-ma-none"  v-if="!thisStaff">
-          {{ remaining[4]?.subCategoriesName ?? "มารดา" }} : {{ remaining[4]?.perUsersRemaining <= 0 ||
-            remaining[4]?.perUsersRemaining == null ? "ใช้สิทธิ์ครบแล้ว" : (remaining[4]?.fundRemaining ?
-              remaining[4]?.fundRemaining + " บาท" : "กรุณาเลือกผู้ที่ต้องการเบิกแทน") }} </p>
+          {{ remainingTextOneForUsers(remaining[4], remaining[4]?.subCategoriesName) }} </p>
         <p class="col q-ma-none"  v-if="!thisStaff">
-          {{ remaining[5]?.subCategoriesName ?? "คู่สมรส" }} : {{ remaining[5]?.perUsersRemaining <= 0 ||
-            remaining[5]?.perUsersRemaining == null ? "ใช้สิทธิ์ครบแล้ว" : (remaining[5]?.fundRemaining ?
-              remaining[5]?.fundRemaining + " บาท" : "กรุณาเลือกผู้ที่ต้องการเบิกแทน") }} </p>
+          {{ remainingTextOneForUsers(remaining[5], remaining[5]?.subCategoriesName) }}</p>
         <p class="col q-ma-none"  v-if="!thisStaff">
-          {{ remaining[6]?.subCategoriesName ?? "บุตร" }} : {{ remaining[6]?.perUsersRemaining <= 0 ||
-            remaining[6]?.perUsersRemaining == null ? "ใช้สิทธิ์ครบแล้ว" : (remaining[6]?.fundRemaining ?
-             remaining[6]?.fundRemaining + " บาท" : "กรุณาเลือกผู้ที่ต้องการเบิกแทน") }} </p>
+          {{ remainingTextOneForUsers(remaining[6], remaining[6]?.subCategoriesName) }} </p>
       </div>
       <div class="col-12 col-md-2 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -127,6 +119,7 @@ import {
 } from "@quasar/extras/material-icons-outlined";
 import variousWelfareFuneralFamilyService from "src/boot/service/variousWelfareFuneralFamilyService";
 import exportService from "src/boot/service/exportService";
+import { remainingTextOneForUsers } from "src/components/remaining";
 defineOptions({
   name: "various_welfare_funeral_family_list",
 });

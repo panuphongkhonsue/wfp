@@ -87,6 +87,11 @@ class Controller extends BaseController {
                         "requestsRemaining"
                     ],
                     [col("category.per_times"), "perTimesRemaining"],
+                    [col("category.per_users"), "perUsers"],
+                    [
+                        literal("category.per_users - COUNT(reimbursements_employee_deceased.fund_request)"),
+                        "perUsersRemaining"
+                    ]
                 ],
                 include: [
                     {
@@ -120,6 +125,7 @@ class Controller extends BaseController {
                     [col("category.fund"), "fund"],
                     [col("category.per_years"), "perYears"],
                     [col("category.per_times"), "perTimesRemaining"],
+                    [col("category.per_users"), "perUsers"],
                     // fund_wreath_arrange
                     [
                         fn("SUM", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE 0 END")),
@@ -137,6 +143,10 @@ class Controller extends BaseController {
                         fn("category.per_years - COUNT", literal("CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE NULL END")),
                         "requestsRemainingArrange"
                     ],
+                    [
+                        literal("category.per_users - COUNT(CASE WHEN category.id = 10 THEN reimbursements_employee_deceased.fund_wreath_arrange ELSE NULL END)"),
+                        "perUsersRemainingArrange"
+                    ],
                     // fund_wreath_university
                     [
                         fn("SUM", literal("CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE 0 END")),
@@ -153,6 +163,10 @@ class Controller extends BaseController {
                     [
                         fn("category.per_years - COUNT", literal("CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE NULL END")),
                         "requestsRemainingUniversity"
+                    ],
+                    [
+                        literal("category.per_users - COUNT(CASE WHEN category.id = 11 THEN reimbursements_employee_deceased.fund_wreath_university ELSE NULL END)"),
+                        "perUsersRemainingUniversity"
                     ],
                 ],
                 include: [
@@ -198,6 +212,11 @@ class Controller extends BaseController {
                         "requestsRemaining"
                     ],
                     [col("category.per_times"), "perTimesRemaining"],
+                    [col("category.per_users"), "perUsers"],
+                    [
+                        literal("category.per_users - COUNT(reimbursements_employee_deceased.fund_vehicle)"),
+                        "perUsersRemaining"
+                    ]
                 ],
                 include: [
                     {
@@ -243,6 +262,7 @@ class Controller extends BaseController {
                             [col("fund"), "fundRemaining"],
                             [col("per_years"), "requestsRemaining"],
                             [col("per_times"), "perTimesRemaining"],
+                            [col("per_users"), "perUsersRemaining"]
                         ],
                         where: { id: 9 }
                     });
@@ -278,6 +298,7 @@ class Controller extends BaseController {
                             [col("fund"), "fundRemaining"],
                             [col("per_years"), "requestsRemaining"],
                             [col("per_times"), "perTimesRemaining"],
+                            [col("per_users"), "perUsers"]
                         ],
                         where: { id: [10, 11] }
                     });
@@ -313,6 +334,7 @@ class Controller extends BaseController {
                             [col("fund"), "fundRemaining"],
                             [col("per_years"), "requestsRemaining"],
                             [col("per_times"), "perTimesRemaining"],
+                            [col("per_users"), "perUsers"]
                         ],
                         where: { id: 12 }
                     });
@@ -342,6 +364,7 @@ class Controller extends BaseController {
                     [col("fund"), "fundRemaining"],
                     [col("per_years"), "requestsRemaining"],
                     [col("per_times"), "perTimesRemaining"],
+                    [col("per_users"), "perUsers"]
                 ],
                 where: {
                     id: {
@@ -391,7 +414,7 @@ class Controller extends BaseController {
             logger.info('Received dataId:', dataId);
             const { filter } = req.query;
             var whereObj = { ...filter }
-            logger.info('Where Object:', whereObj); 
+            logger.info('Where Object:', whereObj);
             const requestData = await reimbursementsEmployeeDeceased.findByPk(dataId, {
                 attributes: [
                     [col("reim_number"), "reimNumber"],
@@ -504,12 +527,12 @@ class Controller extends BaseController {
         const selectedVehicle = req.body.selected_vehicle ?? false;
         const deceased = req.body.deceased ?? null;
         delete req.body.selected_wreath;
-        delete req.body.selected_vehicle; 
+        delete req.body.selected_vehicle;
         const dataCreate = req.body;
-        
+
         try {
             const result = await sequelize.transaction(async t => {
-                const newItem = await reimbursementsEmployeeDeceased.create(dataCreate,{ transaction: t, });
+                const newItem = await reimbursementsEmployeeDeceased.create(dataCreate, { transaction: t, });
                 var itemsReturned = {
                     ...newItem.toJSON(),
                 };
@@ -588,23 +611,23 @@ class Controller extends BaseController {
         delete req.body.selected_vehicle;
         const dataUpdate = req.body;
         const dataId = req.params['id'];
-    
+
         try {
             const result = await sequelize.transaction(async t => {
                 const [updated] = await reimbursementsEmployeeDeceased.update(dataUpdate, {
                     where: { id: dataId },
                     transaction: t,
                 });
-    
+
                 let itemsReturned = { updated };
-    
+
                 // Handle selected wreath
                 if (selectedWreath) {
                     const existingWreath = await reimbursementsEmployeeDeceasedHasCategories.count({
                         where: { reimbursements_employee_deceased_id: dataId, categories_id: { [Op.in]: [10, 11] } },
                         transaction: t,
                     });
-    
+
                     if (!existingWreath) {
                         const newWreathItems = await reimbursementsEmployeeDeceasedHasCategories.bulkCreate([
                             { reimbursements_employee_deceased_id: dataId, categories_id: 10 },
@@ -619,14 +642,14 @@ class Controller extends BaseController {
                     });
                     if (deletedWreath) itemsReturned.deleteItemWreath = deletedWreath;
                 }
-    
+
                 // Handle selected vehicle
                 if (selectedVehicle) {
                     const existingVehicle = await reimbursementsEmployeeDeceasedHasCategories.count({
                         where: { reimbursements_employee_deceased_id: dataId, categories_id: 12 },
                         transaction: t,
                     });
-    
+
                     if (!existingVehicle) {
                         const newVehicleItem = await reimbursementsEmployeeDeceasedHasCategories.create({
                             reimbursements_employee_deceased_id: dataId,
@@ -641,14 +664,14 @@ class Controller extends BaseController {
                     });
                     if (deletedVehicle) itemsReturned.deleteItemVehicle = deletedVehicle;
                 }
-    
+
                 // Handle deceased
                 if (deceased) {
                     const existingDeceased = await reimbursementsEmployeeDeceasedHasCategories.count({
                         where: { reimbursements_employee_deceased_id: dataId, categories_id: 9 },
                         transaction: t,
                     });
-    
+
                     if (!existingDeceased) {
                         const newDeceasedItem = await reimbursementsEmployeeDeceasedHasCategories.create({
                             reimbursements_employee_deceased_id: dataId,
@@ -663,10 +686,10 @@ class Controller extends BaseController {
                     });
                     if (deletedDeceased) itemsReturned.deleteItemDeceased = deletedDeceased;
                 }
-    
+
                 return updated > 0 ? itemsReturned : null;
             });
-    
+
             if (result) {
                 logger.info('Complete', { method, data: { id } });
                 return res.status(200).json({ newItem: result, message: "อัปเดตข้อมูลสำเร็จ" });
@@ -678,7 +701,7 @@ class Controller extends BaseController {
             next(error);
         }
     };
-    
+
     delete = async (req, res, next) => {
         const method = 'DeletedFuneralWelfareEmployeeDeceased';
         const { id } = req.user;

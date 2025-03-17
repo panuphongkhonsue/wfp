@@ -56,45 +56,16 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
-                {{ remaining[4]?.categoryName ?? "ค่าสมรส" }} :
-                {{ remaining[4]?.perUsersRemaining <= 0 || remaining[4]?.perUsersRemaining === null
-                  ? "ใช้สิทธิ์ครบแล้ว"
-                  : (remaining[4]?.fundRemaining ? remaining[4]?.fundRemaining + " บาท" :
-                    "กรุณาเลือกผู้ที่ต้องการเบิกแทน")
-                }}
-
+                {{ remainingTextOneForUsers (remaining[4], remaining[4]?.categoryName) }}
               </p>
               <p class="col-12 q-mb-none">
-                {{ remaining[5]?.categoryName ?? "ค่าอุปสมบทหรือประกอบพิธีฮัจญ์" }} :
-                {{ remaining[5]?.perUsersRemaining <= 0 || remaining[5]?.perUsersRemaining === null
-                  ? "ใช้สิทธิ์ครบแล้ว"
-                  : (remaining[5]?.fundRemaining ? remaining[5]?.fundRemaining + " บาท" :
-                    "กรุณาเลือกผู้ที่ต้องการเบิกแทน")
-                }}
+                {{ remainingTextOneForUsers (remaining[5], remaining[5]?.categoryName) }}
               </p>
               <p class="col-12 q-mb-none">
-                {{ remaining[6]?.categoryName ?? "ค่ารับขวัญบุตร" }} :
-                {{ remaining[6]?.fundRemaining == 0 ? "" :
-                  remaining[6]?.fundRemaining ? remaining[6]?.fundRemaining + " บาท" :
-                    remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-                      remaining[6]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-                }}
-                {{ remaining[6]?.fundRemaining == 0 ? "ใช้สิทธิ์ครบแล้ว" :
-                  remaining[6]?.requestsRemaining ? "( " + remaining[6]?.requestsRemaining + " ครั้ง)" :
-                    remaining[6]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
-                }}
+                {{ remainingText(remaining[6], remaining[6]?.categoryName) }}
               </p>
               <p class="col-12 q-mb-none">
-                {{ remaining[7]?.categoryName ?? "กรณีประสบภัยพิบัติ" }} :
-                {{ remaining[7]?.fundRemaining == 0 ? "" :
-                  remaining[7]?.fundRemaining ? remaining[7]?.fundRemaining + " บาท" :
-                    remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาทต่อครั้ง" :
-                      remaining[7]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-                }}
-                {{ remaining[7]?.fundRemaining == 0 ? "ใช้สิทธิ์ครบแล้ว" :
-                  remaining[7]?.requestsRemaining ? "( " + remaining[7]?.requestsRemaining + " ครั้ง)" :
-                    remaining[7]?.requestsRemaining ?? "(ไม่จำกัดครั้ง)"
-                }}
+                {{ remainingText(remaining[7], remaining[7]?.categoryName) }}
               </p>
             </q-card-section>
           </q-card>
@@ -219,6 +190,8 @@ import { useAuthStore } from "src/stores/authStore";
 import variousWelfareService from "src/boot/service/variousWelfareService";
 import exportService from "src/boot/service/exportService";
 import { textStatusColor } from "src/components/status";
+import { remainingText, remainingTextOneForUsers } from "src/components/remaining";
+
 defineOptions({
   name: "various_welfare_edit",
 });

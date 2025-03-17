@@ -73,6 +73,7 @@ class Controller extends BaseController {
             const results = await reimbursementsAssist.findAll({
                 attributes: [
                     [col("category.id"), "categoryId"],
+                    [col("category.name"), "categoryName"],
                     [fn("SUM", col("reimbursementsAssist.fund_sum_request")), "totalSumRequested"],
                     [col("category.fund"), "fund"],
                     [
@@ -86,7 +87,7 @@ class Controller extends BaseController {
                         "requestsRemaining"
                     ],
                     [col("category.per_times"), "perTimesRemaining"],
-                    [col("category.name"), "categoryName"],
+                    [col("category.per_users"), "perUsers"],
                     [
                         literal("category.per_users - COALESCE(COUNT(reimbursementsAssist.fund_sum_request), 0)"),
                         "perUsersRemaining"
