@@ -762,13 +762,13 @@ async function submit(actionId) {
             };
           }
         }
-        Swal.showValidationMessage(error?.response?.data?.message ?? `เกิดข้อผิดพลาด กรุณาลองอีกครั้ง`);
-        Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
-          position: "bottom-left",
-          type: "negative",
+        Swal.fire({
+          html: error?.response?.data?.message ?? เกิดข้อผิดพลาดกรุณาลองอีกครั้ง,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
         });
       }
     },

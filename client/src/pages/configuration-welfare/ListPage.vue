@@ -501,14 +501,14 @@ async function updateConfigWelfare(propsRowData) {
             await logSubCategoryService.addLogSubCategory(payloadLogSubCategory.value);
           }
         } catch (error) {
-          Swal.showValidationMessage(error?.response?.data?.message ?? `ข้อมูลไม่ได้ถูกแก้ไข.`);
-          Notify.create({
-            message:
-              error?.response?.data?.message ??
-              "แก้ไขไม่สำเร็จกรุณาลองอีกครั้ง",
-            position: "bottom-left",
-            type: "negative",
-          });
+          Swal.fire({
+          html: error?.response?.data?.message ?? เกิดข้อผิดพลาดกรุณาลองอีกครั้ง,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
+        });
         }
       },
     }).then((result) => {

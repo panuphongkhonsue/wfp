@@ -346,13 +346,13 @@ async function deleteData(id, reimNumber) {
       try {
         await variousWelfareFuneralFamilyService.delete(id);
       } catch (error) {
-        Swal.showValidationMessage(error?.response?.data?.message ?? `ไม่สามารถลบข้อมูลได้ กรุณาลองอีกครั้ง`);
-        Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "ลบไม่สำเร็จกรุณาลองอีกครั้ง",
-          position: "bottom-left",
-          type: "negative",
+        Swal.fire({
+          html: error?.response?.data?.message ?? เกิดข้อผิดพลาดกรุณาลองอีกครั้ง,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
         });
       }
     },
