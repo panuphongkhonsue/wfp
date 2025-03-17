@@ -298,7 +298,7 @@ async function deleteData(id, reimNumber) {
         await funeralWelfareEmployeeDeceasedService.delete(id);
       } catch (error) {
         Swal.fire({
-          html: error?.response?.data?.message ?? เกิดข้อผิดพลาดกรุณาลองอีกครั้ง,
+          html: error?.response?.data?.message ?? `เกิดข้อผิดพลาดกรุณาลองอีกครั้ง`,
           icon: "error",
           confirmButtonText: "ตกลง",
           customClass: {
