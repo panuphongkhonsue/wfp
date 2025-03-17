@@ -3,7 +3,7 @@
     <DynamicBreadcrumb />
     <div class="row q-pb-md">
       <div class="col-lg-8 col-12">
-        <p class="q-mb-none col-8 q-mb-md">สิทธิ์คงเหลือ</p>
+        <p class="q-mb-none col-8 q-mb-md font-medium">สิทธิ์คงเหลือ</p>
         <!-- card แถวที่ 1 -->
         <div class="row q-pb-md q-col-gutter-md q-pr-md">
           <template v-if="isLoading">
@@ -20,7 +20,7 @@
                   <p class="q-mb-none text-white font-16 q-pb-sm">เงินคงเหลือ {{ items?.fundRemaining ?
                     items?.fundRemaining + " บาทต่อปี" :
                     items?.perTimesRemaining ? items?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน"
-                    }}</p>
+                  }}</p>
                   <p class="q-mb-none text-white font-16">{{ items?.requestsRemaining ? "จำนวน " +
                     items?.requestsRemaining + " ครั้ง" : 'ไม่จำกัดครั้ง' }}</p>
                 </div>
@@ -41,101 +41,46 @@
       <!-- ส่วนที่ 2: card ที่มีปุ่มดาวน์โหลด -->
       <div class="col-lg-4 col-12 q-gutter-y-sm ">
         <div class="row q-mb-md items-center justify-between " :class="{ 'q-mt-md': $q.screen.lt.md }">
-          <p class="q-mb-none col-4 ">ระเบียบการเบิกสวัสดิการ</p>
+          <p class="q-mb-none col font-medium">ระเบียบการเบิกสวัสดิการ</p>
           <!-- แสดงปุ่มแก้ไขเมื่อไม่อยู่ในโหมดแก้ไข -->
           <q-btn v-if="!isEditing && authStore.isEditor" color="orange-4" text-color="white" label="แก้ไข"
-            class="font-14 border-button-edit" @click="toggleEdit" />
+            class="font-14 border-button-edit" @click="toggleEdit" :loading="isLoadingFile" />
           <!-- แสดงปุ่มอัปโหลดและบันทึกเมื่ออยู่ในโหมดแก้ไข -->
           <div v-else-if="isEditing && authStore.isEditor" class="row q-gutter-sm">
-            <q-btn color="blue-10" text-color="white" label="อัปโหลด" class="font-14 border-button-edit" />
+            <q-btn color="blue-10" text-color="white" label="อัปโหลด" @click="triggerFileUpload"
+              class="font-14 border-button-edit" />
+            <input type="file" ref="fileInput" multiple style="display: none" @change="handleFileChange" />
             <q-btn color="green-6" text-color="white" label="บันทึก" class="font-14 border-button-edit"
-              @click="toggleEdit" />
+              @click="saveFileChanged" :loading="isLoadingFile" />
           </div>
         </div>
-        <q-scroll-area style="height: 300px;">
-          <div class="q-gutter-y-sm">
-            <div class="col-4 col-md ">
-              <q-card class="bg-grey-11 no-shadow no-border-radius">
-                <q-card-section class="q-px-lg row items-center justify-between ">
-                  <div class="row">
-                    <!-- รูปภาพ -->
-                    <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
-                    <!-- ข้อความ -->
-                    <div class="regulation-name">
-                      <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">ระเบียบการเบิก_สวัสดิการทั่วไป.pdf</p>
-                    </div>
-                  </div>
-                  <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
-                    class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
-                  <q-icon v-else-if="isEditing && authStore.isEditor" name="remove_circle" color="red"
-                    @click="deleteFile" class="cursor-pointer btn-delete-file" />
-                </q-card-section>
-              </q-card>
-            </div>
-
-
-            <div class="col-4 col-md ">
+        <q-scroll-area style="height: 300px;" class="bg-grey-11">
+          <div v-if="Array.isArray(file) && file.length > 0">
+            <div class="col-4 col-md" v-for="(items, index) in file" :key="index">
               <q-card class="bg-grey-11 no-shadow no-border-radius">
                 <q-card-section class="q-px-lg row items-center justify-between">
                   <div class="row">
                     <!-- รูปภาพ -->
-                    <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
+                    <img src="../../assets/document.svg" alt="document-image" class="q-mr-md" />
                     <!-- ข้อความ -->
                     <div class="regulation-name">
-                      <p class="q-mb-none font-14 q-px-md  text-ellipsis ellipsis">
-                        ระเบียบการเบิก_สวัสดิการสงเคราะห์ต่างๆ.pdf</p>
+                      <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">{{ items.replace(/^\d+-/, "") ?? "-"
+                      }}</p>
                     </div>
                   </div>
-                  <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
-                    class="font-14 border-button q-px-sm  q-mt-xs-sm q-mt-md-none " />
-                  <q-icon v-else-if="isEditing && authStore.isEditor" name="remove_circle" color="red"
-                    @click="deleteFile" class="cursor-pointer btn-delete-file" />
-                </q-card-section>
-              </q-card>
-            </div>
-
-            <div class="col-4 col-md ">
-              <q-card class="bg-grey-11 no-shadow no-border-radius">
-                <q-card-section class="q-px-lg row items-center justify-between ">
-                  <div class="row">
-                    <!-- รูปภาพ -->
-                    <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
-                    <!-- ข้อความ -->
-                    <div class="regulation-name">
-                      <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">
-                        ระเบียบการเบิก_สวัสดิการเกี่ยวกับการศึกษาของบุตร.pdf</p>
-                    </div>
-                  </div>
-                  <q-btn v-if="!isEditing" color="blue-10" height="64" text-color="white" label="ดาวน์โหลด"
+                  <q-btn v-if="!isEditing" :href="fileFetch.url[index]" :download="items" color="blue-10"
+                    text-color="white" label="ดาวน์โหลด"
                     class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
                   <q-icon v-else-if="isEditing && authStore.isEditor" name="remove_circle" color="red"
-                    @click="deleteFile" class="cursor-pointer btn-delete-file" />
-                </q-card-section>
-              </q-card>
-            </div>
-
-            <div class="col-4 col-md">
-              <q-card class="bg-grey-11 no-shadow no-border-radius">
-                <q-card-section class="q-px-lg row items-center justify-between">
-                  <div class="row">
-                    <!-- รูปภาพ -->
-                    <img src="../../assets/document.svg" alt="dental-work" class="q-mr-md" />
-                    <!-- ข้อความ -->
-                    <div class="regulation-name">
-                      <p class="q-mb-none font-14 q-px-md text-ellipsis ellipsis">
-                        ระเบียบการเบิก_สวัสดิการค่าสงเคราะห์การเสียชีวิต.pdf</p>
-                    </div>
-                  </div>
-                  <q-btn v-if="!isEditing" color="blue-10" text-color="white" label="ดาวน์โหลด"
-                    class="font-14 border-button q-px-sm q-mt-xs-sm q-mt-md-none" />
-                  <q-icon v-else-if="isEditing && authStore.isEditor" name="remove_circle" color="red"
-                    @click="deleteFile" class="cursor-pointer btn-delete-file" />
+                    @click="removeFile(items, index)" class="cursor-pointer btn-delete-file" />
                 </q-card-section>
               </q-card>
             </div>
           </div>
+          <div v-else class="absolute-center">
+            <p class="text-center text-red text-bold font-20">ไม่พบข้อมูลระเบียบ</p>
+          </div>
         </q-scroll-area>
-
         <q-separator />
       </div>
     </div>
@@ -211,13 +156,27 @@ import {
 import reimbursementWelfareService from "src/boot/service/reimbursementWelfareService";
 import { useRouter } from "vue-router";
 import exportService from "src/boot/service/exportService";
+import HealthCheckImage from "../../assets/health-check.svg";
+import dentalImage from "../../assets/dentalwork.svg";
+import medicalImage from "../../assets/medical.svg";
+import marriageImage from "../../assets/marriage.svg";
+
+import HomeService from "src/boot/service/homeService";
+import Swal from "sweetalert2";
 
 const fileData = ref();
 const router = useRouter();
 const tableRef = ref();
 const listStore = useListStore();
 const isLoading = ref(false);
+const isLoadingFile = ref(false);
 const isEditing = ref(false);
+
+const file = ref([]);
+const fileInput = ref(null);
+const fileUpload = ref([]);
+const fileDelete = ref([]);
+const fileFetch = ref([]);
 
 const authStore = useAuthStore();
 const filter = ref({
@@ -252,7 +211,7 @@ async function fetchRemainingHealthCheckup() {
     if (fetchRemaining.data?.datas?.categoryName != null) {
       remaining.categoryName = fetchRemaining.data?.datas?.categoryName;
     }
-    remaining.src = "src/assets/health-check.svg";
+    remaining.src = HealthCheckImage;
     remainingAll.value.push(remaining);
   }
   catch (error) {
@@ -277,7 +236,7 @@ async function fetchRemainingDental() {
     if (fetchRemaining.data?.datas?.categoryName != null) {
       remaining.categoryName = fetchRemaining.data?.datas?.categoryName;
     }
-    remaining.src = "src/assets/dentalwork.svg";
+    remaining.src = dentalImage;
     remainingAll.value.push(remaining);
   }
   catch (error) {
@@ -302,7 +261,7 @@ async function fetchRemainingMedical() {
     if (accidentData?.subCategoriesName != null) {
       remaining.categoryName = accidentData?.subCategoriesName;
     }
-    remaining.src = "src/assets/medical.svg";
+    remaining.src = medicalImage;
     remainingAll.value.push(remaining);
   }
   catch (error) {
@@ -325,7 +284,7 @@ async function fetchRemainingVarious() {
           requestsRemaining: marriageData.requestsRemaining !== null && marriageData.requestsRemaining !== undefined
             ? formatNumber(marriageData.requestsRemaining)
             : null,
-          src: "src/assets/marriage.svg"
+          src: marriageImage
         };
 
         remainingAll.value.push(remaining);
@@ -340,11 +299,155 @@ async function fetchRemainingVarious() {
 async function init() {
   pagination.value.rowsPerPage = listStore.getState();
   if (authStore.isEditor) await tableRef.value.requestServerInteraction();
-  await fetchRemainingHealthCheckup();
-  await fetchRemainingDental();
-  await fetchRemainingMedical();
-  await fetchRemainingVarious();
+  await Promise.all([
+    fetchRemainingHealthCheckup(),
+    fetchRemainingDental(),
+    fetchRemainingMedical(),
+    fetchRemainingVarious(),
+    fetchFile()
+  ]);
 }
+
+async function fetchFile() {
+  try {
+    const getFile = await HomeService.getName();
+    file.value = getFile.data?.files ?? [];
+
+    if (Array.isArray(file.value)) {
+      fileFetch.value = [];
+      fileFetch.value.url = [];
+      for (let fileName of file.value) {
+        const res = await HomeService.getByName({ fileName: fileName });
+
+        const blob = new Blob([res.data], { type: res.headers["content-type"] });
+
+        if (!(blob instanceof Blob)) {
+          throw new Error('Response is not a valid Blob');
+        }
+
+        const contentDisposition = res.headers["content-disposition"];
+
+        const matches = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+        let fileNameFromAPI = fileName.replace(/^\d+-/, "");
+
+        if (matches && matches[1]) {
+          fileNameFromAPI = decodeURIComponent(matches[1]);
+        }
+
+        blob.lastModifiedDate = new Date();
+        blob.name = fileNameFromAPI;
+
+        fileFetch.value.push(new File([blob], blob.name, { type: blob.type }));
+        fileFetch.value.url.push(URL.createObjectURL(blob));
+      }
+    }
+  } catch (error) {
+    Promise.reject(error);
+  }
+}
+
+function triggerFileUpload() {
+  fileInput.value.click();
+};
+function handleFileChange(event) {
+  const files = event.target.files;
+  if (files.length > 0) {
+    fileUpload.value = files;
+    for (let i = 0; i < files.length; i++) {
+      file.value.push(files[i].name);
+    }
+  }
+};
+
+async function uploadFiles(files) {
+  const formData = new FormData();
+  for (let i = 0; i < files.length; i++) {
+    formData.append("files", files[i]);
+  }
+  const uploadFile = await HomeService.upload(formData);
+  if (uploadFile.status === 200) {
+    return true;
+  }
+  return false;
+}
+
+function removeFile(name, index) {
+  fileDelete.value.push(name);
+  file.value.splice(index, 1);
+}
+
+async function deleteFile(payload) {
+  const deleteFile = await HomeService.delete(payload);
+  if (deleteFile.status === 200) {
+    return true;
+  }
+  return false;
+}
+
+async function saveFileChanged() {
+  let isValid = false;
+  Swal.fire({
+    title: "ยืนยันการทำรายการหรือไม่ ???",
+    html: `โปรดตรวจสอบข้อมูลให้แน่ใจก่อนยืนยัน`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "ยืนยัน",
+    cancelButtonText: "ยกเลิก",
+    showLoaderOnConfirm: true,
+    reverseButtons: true,
+    customClass: {
+      confirmButton: "save-button",
+      cancelButton: "cancel-button",
+    },
+    preConfirm: async () => {
+      try {
+        isLoadingFile.value = true;
+        if (fileUpload.value.length > 0) {
+          const canUpload = await uploadFiles(fileUpload.value);
+          if (!canUpload) {
+            throw new Error('ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองอีกครั้ง');
+          }
+        }
+
+        if (fileDelete.value.length > 0) {
+          const canDelete = await deleteFile(fileDelete.value);
+          if (!canDelete) {
+            throw new Error('ไม่สามารถลบไฟล์ได้ กรุณาลองอีกครั้ง');
+          }
+        }
+        isValid = true;
+      } catch (error) {
+        Swal.fire({
+          html: error?.response?.data?.message ?? `เกิดข้อผิดพลาดกรุณาลองอีกครั้ง`,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
+        }).then(() => {
+          location.reload();
+          isLoadingFile.value = false;
+        });
+      }
+    },
+  }).then((result) => {
+    if (isValid && result.isConfirmed) {
+      Swal.fire({
+        html: `สำเร็จ`,
+        icon: "success",
+        confirmButtonText: "ตกลง",
+        customClass: {
+          confirmButton: "save-button",
+        },
+      }).then(() => {
+        // Reload the page after the user clicks confirm
+        location.reload();
+        isLoadingFile.value = false;
+      });
+    }
+  });
+}
+
 
 async function fetchFromServer(page, rowPerPage, filters) {
   try {
@@ -363,7 +466,7 @@ async function fetchFromServer(page, rowPerPage, filters) {
     Notify.create({
       message:
         error?.response?.data?.message ??
-        "Something wrong please try again later.",
+        "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
       position: "bottom-left",
       type: "negative",
     });
