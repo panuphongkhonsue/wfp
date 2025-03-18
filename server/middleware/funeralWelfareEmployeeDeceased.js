@@ -785,7 +785,7 @@ const checkFullPerTimes = async (req, res, next) => {
 const checkRemaining = async (req, res, next) => {
     const method = 'CheckRemainingMiddleware';
     try {
-        const { status } = req.body;
+        const { status, fund_request, fund_wreath_university, fund_wreath_arrange, fund_vehicle } = req.body;
         const { filter } = req.query;
         var whereObj = { ...filter }
         whereObj[Op.and].push(
@@ -893,13 +893,7 @@ const checkRemaining = async (req, res, next) => {
                     model: reimbursementsEmployeeDeceased,
                     as: "reimbursements_employee_deceased",
                     attributes: [],
-                    include: [
-                        {
-                            model: users,
-                            as: 'created_by_user',
-                            attributes: ['id', 'name'],
-                        },
-                    ]
+                    include: []
                 },
             ],
             where: whereObj,
@@ -942,13 +936,7 @@ const checkRemaining = async (req, res, next) => {
                     model: reimbursementsEmployeeDeceased,
                     as: "reimbursements_employee_deceased",
                     attributes: [],
-                    include: [
-                        {
-                            model: users,
-                            as: 'created_by_user',
-                            attributes: ['id', 'name'],
-                        },
-                    ]
+                    include: []
                 },
             ],
             where: whereObj,
@@ -967,12 +955,12 @@ const checkRemaining = async (req, res, next) => {
                         message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการเสียชีวิตครอบครัว เนื่องจากได้ทำการขอเบิกครบแล้ว",
                     });
                 };
-                if (fund_decease > remainingData.perTimes && remainingData.perTimes) {
+                if (fund_request > remainingData.perTimes && remainingData.perTimes) {
                     return res.status(400).json({
                         message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว " + remainingData.perTimes + " ต่อครั้ง",
                     });
                 }
-                if (fund_decease > remainingData.fundRemaining && remainingData.fundRemaining) {
+                if (fund_request > remainingData.fundRemaining && remainingData.fundRemaining) {
                     logger.info('Request Over', { method });
                     return res.status(400).json({
                         message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
