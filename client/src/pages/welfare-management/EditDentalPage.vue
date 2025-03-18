@@ -42,11 +42,8 @@
             </q-card-section>
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
-              <p class="col q-ma-none">{{ remaining.categoryName ?? "ทำฟัน" }} : {{ remaining?.fundRemaining ?
-                remaining?.fundRemaining + " บาทต่อปี" :
-                remaining?.perTimesRemaining ?
-                  remaining?.perTimesRemaining + " บาทต่อครั้ง" : remaining?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน" }}
-                {{ remaining?.requestsRemaining ? "( " + remaining?.requestsRemaining + " ครั้ง)" : remaining?.requestsRemaining ?? "(ไม่จำกัดครั้ง)" }}
+              <p class="col q-ma-none">
+                {{ remainingText(remaining , remaining.categoryName) }}
               </p>
             </q-card-section>
           </q-card>
@@ -85,6 +82,9 @@
                   type="number" class="q-py-xs-md q-py-lg-none" :is-view="isView" :rules="[
                     (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
                     (val) => !isOver || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ',
+                    (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
+                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + (remaining.perTimesRemaining ?? '-') + ' บาทต่อครั้ง',
+                    (val) => isOverfundRemaining !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                   ]" :error-message="isError?.fundSumRequest" :error="!!isError?.fundSumRequest">
                 </InputGroup>
 
@@ -147,7 +147,7 @@
         <q-btn id="button-approve"
         class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #E52020"
         label="ไม่อนุมัติ" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
-        <q-btn :disable="isValidate" id="button-approve"
+        <q-btn :disable="!canRequest || isValidate" id="button-approve"
           class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
           label="อนุมัติ" no-caps @click="submit(3)" v-if="!isView && !isLoading" />
       </div>
@@ -174,8 +174,10 @@ import exportService from "src/boot/service/exportService";
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "src/stores/authStore";
-import welfareManagementService from "src/boot/service/welfareManagementService";
 import { textStatusColor } from "src/components/status";
+import { remainingText } from "src/components/remaining";
+import welfareManagementService from "src/boot/service/welfareManagementService";
+
 defineOptions({
   name: "DentalCareWelfareEdit",
 });
@@ -211,6 +213,9 @@ const isValidate = computed(() => {
   if (!model.value.fundSumRequest) {
     validate = true;
   }
+  if (isOverfundRemaining.value) {
+    validate = true;
+  }
   if (!model.value.createFor) {
     validate = true;
   }
@@ -222,6 +227,25 @@ const isValidate = computed(() => {
 
 const isOver = computed(() => {
   return Number(model.value.fundSumRequest) > Number(model.value.fundReceipt);
+});
+
+const isOverfundRemaining = computed(() => {
+
+  const fundSumRequest = Number(model.value.fundSumRequest ?? 0);
+
+  const perTimes = remaining.value.perTimesRemaining ? parseFloat(remaining.value.perTimesRemaining.replace(/,/g, "")) : null;
+  const fundRemaining = remaining.value.fundRemaining ? parseFloat(remaining.value.fundRemaining.replace(/,/g, "")) : null;
+  let check = false;
+  if (fundSumRequest > fundRemaining && remaining.value.fundRemaining) {
+    check = 2;
+  }
+  else if (fundSumRequest > perTimes && remaining.value.perTimesRemaining) {
+    check = 1;
+  }
+  if (!canRequest.value && isFetchRemaining.value) {
+    check = 3;
+  }
+  return check;
 });
 
 onMounted(async () => {
@@ -246,12 +270,12 @@ watch(
   { deep: true }
 );
 watch(
-    () => model.value.createFor,
-    async (newValue) => {
-      if (newValue !== null) {
-        await fetchRemaining();
-      }
+  () => model.value.createFor,
+  async (newValue) => {
+    if (newValue !== null) {
+      await fetchRemaining();
     }
+  }
 );
 async function fetchDataEdit() {
   setTimeout(async () => {
@@ -345,6 +369,7 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
+const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await dentalWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -399,6 +424,7 @@ async function fetchRemaining() {
         },
       ]
     }
+    isFetchRemaining.value = true;
   } catch (error) {
     Promise.reject(error);
   }
@@ -447,7 +473,6 @@ async function downloadData() {
     notify();
   }
 }
-
 async function submit(actionId) {
   let validate = false;
   if (!model.value.fundReceipt) {
@@ -471,11 +496,23 @@ async function submit(actionId) {
     navigate.scrollIntoView(false);
     validate = true;
   }
+  if (isOverfundRemaining.value) {
+    if (isOverfundRemaining.value === 2) {
+      isError.value.fundEligible = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+    }
+    else if(isOverfundRemaining.value === 1) {
+      isError.value.fundEligible = "สามารถเบิกได้สูงสุด " + remaining.value.perTimesRemaining + " บาทต่อครั้ง";
+    }
+    else{
+      isError.value.fundEligible = "คุณใช้จำนวนการเบิกครบแล้ว";
+    }
+    validate = true;
+  }
   if (isOver.value) {
     isError.value.fundSumRequest = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิกให้น้อยกว่าหรือเท่ากับจำนวนเงินตามใบเสร็จ";
     validate = true;
   }
-  if (validate === true) {
+  if (validate === true && actionId != 4) {
     Notify.create({
       message: "กรุณากรอกข้อมูลให้ครบถ้วน",
       position: "bottom-left",
@@ -522,13 +559,13 @@ async function submit(actionId) {
             };
           }
         }
-        Swal.showValidationMessage(error?.response?.data?.message ?? `เกิดข้อผิดพลาด กรุณาลองอีกครั้ง`);
-        Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
-          position: "bottom-left",
-          type: "negative",
+        Swal.fire({
+          html: error?.response?.data?.message ?? `เกิดข้อผิดพลาดกรุณาลองอีกครั้ง`,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
         });
       }
     },
