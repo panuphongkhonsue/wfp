@@ -31,7 +31,6 @@ exports.authPermissionEditor = async (req, res, next) => {
   }
 };
 
-
 const fileFolder = path.join(__dirname, "..", "public", "upload");
 
 const storage = multer.diskStorage({
@@ -39,14 +38,16 @@ const storage = multer.diskStorage({
     callback(null, fileFolder);
   },
   filename: function (req, file, callback) {
-    const originalname = Buffer.from(file.originalname, 'latin1').toString('utf8');
-    callback(null, Date.now() + '-' + originalname);
+    const originalname = Buffer.from(file.originalname, "latin1").toString(
+      "utf8"
+    );
+    callback(null, Date.now() + "-" + originalname);
   }
 });
 
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === "application/pdf") {
-    cb(null, true);  // Allow PDF files
+    cb(null, true); // Allow PDF files
   } else {
     cb(new Error("อัปโหลดได้เฉพาะ PDF เท่านั้น"), false);
   }
@@ -56,17 +57,20 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 }
-}).array('files');
-
+}).array("files");
 
 exports.getName = async (req, res, next) => {
   const method = "getAllFile";
   try {
     fs.readdir(fileFolder, (err, files) => {
       if (err) {
-        return res.status(500).json({ message: "Error reading directory" });
+        return res.status(500).json({ message: "ไม่พบโฟลเดอร์" });
       }
-      res.json({ files: files });
+
+      // Filter out .gitignore
+      const filteredFiles = files.filter(file => file !== ".gitignore");
+
+      res.json({ files: filteredFiles });
     });
   } catch (error) {
     logger.error(`Error ${error.message}`, { method });
@@ -92,19 +96,20 @@ exports.getByName = async (req, res, next) => {
     }
 
     const fileBuffer = fs.readFileSync(filePath);
-    const sanitizedFileName = fileName.replace(/^\d+-/, ""); 
+    const sanitizedFileName = fileName.replace(/^\d+-/, "");
     const encodedFileName = encodeURIComponent(sanitizedFileName);
 
-    res.setHeader("Content-Disposition", `attachment; filename*=UTF-8''${encodedFileName}`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename*=UTF-8''${encodedFileName}`
+    );
     res.setHeader("Content-Type", "application/pdf");
     res.send(fileBuffer);
-
   } catch (error) {
     logger.error(`Error ${error.message}`, { method });
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 exports.upload = async (req, res, next) => {
   const method = "uploadFile";
@@ -133,11 +138,10 @@ exports.upload = async (req, res, next) => {
   }
 };
 
-
 exports.deleteFile = async (req, res, next) => {
   const method = "deletedFile";
   try {
-    const fileDelete = req.body; 
+    const fileDelete = req.body;
     // Check if the user has access to delete the file
     if (!req.access) {
       return res.status(400).json({ message: "คุณไม่มีสิทธิ์ในการลบไฟล์" });
@@ -147,7 +151,7 @@ exports.deleteFile = async (req, res, next) => {
     for (const fileName of fileDelete) {
       // Find the file with the timestamp prefix in the uploads folder
       const files = fs.readdirSync(fileFolder);
-      const matchedFile = files.find(file => file === fileName);
+      const matchedFile = files.find((file) => file === fileName);
 
       // If we can't find the file, return a 404
       if (!matchedFile) {
@@ -168,7 +172,6 @@ exports.deleteFile = async (req, res, next) => {
 
     // Respond with success message
     res.status(200).json({ message: "ลบไฟล์สำเร็จ" });
-
   } catch (error) {
     logger.error(`Error ${error.message}`, { method });
     res.status(500).json({
