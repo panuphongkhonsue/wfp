@@ -100,7 +100,7 @@
               <div class="col-lg-5 col-xl-4 col-12 q-mb-none q-pr-lg-xl">
                 <InputGroup label="ชื่อ - นามสกุล" is-require :is-view="isView" :data="isView ? deceasedName : null">
                   <q-select v-model="model.deceased" :options="filteredOptions" :loading="isLoading" :clearable="true"
-                    emit-value map-options option-value="id" option-label="name" :rules="[(val) => !!val || '']" dense
+                    emit-value map-options option-value="id" option-label="name" :rules="[(val) => !!val || '',(val) => isOverfundRemaining !== 3 || 'ผู้เสียชีวิตเคยเบิกสิทธิ์ไปแล้ว']" dense
                     outlined use-input hide-selected fill-input input-debounce="100" hide-bottom-space
                     :error="!!isError?.deceased" @filter="filterFn" @filter-abort="abortFilterFn" />
                 </InputGroup>
@@ -169,7 +169,6 @@
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
                   :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
                   placeholder="บาท" type="number" class="" :is-view="isView" :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน',
-                  (val) => val && (Number(model.fundWreathArrange) + (Number(model.fundWreathUniversity) || 0)) <= Number(val) || 'จำนวนเงินรวมของค่าพวงหรีด ต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน'
                   ]" :error-message="isError?.fundReceiptWreath" :error="!!isError?.fundReceiptWreath">
                 </InputGroup>
               </div>
@@ -342,8 +341,6 @@ const isView = ref(false);
 const isLoading = ref(false);
 const userData = ref({});
 const canRequest = ref({
-  wreath: false,
-  vehicle: false,
 });
 const userInitialData = ref([]);
 const isEdit = computed(() => {
@@ -352,6 +349,8 @@ const isEdit = computed(() => {
 const canCreateFor = computed(() => {
   return authStore.isEditor;
 });
+const isFetchRemaining = ref(false);
+
 onMounted(async () => {
   await init();
   isLoading.value = false;
@@ -519,6 +518,21 @@ watch([() => model.value.fundWreathArrange, () => model.value.fundWreathUniversi
     }
   });
 });
+watch(
+  () => model.value.fundWreathArrange || model.value.fundWreathUniversity,
+  () => {
+    const totalWreath = (Number(model.value.fundWreathArrange)) + (Number(model.value.fundWreathUniversity));
+    if (totalWreath > Number(model.value.fundReceiptWreath)) {
+      isError.value.fundReceiptWreath = "จำนวนเงินรวมของค่าพวงหรีดต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน";
+    } else {
+      isError.value.fundReceiptWreath = null;
+    }
+  },
+  { immediate: true }  
+);
+
+
+
 watch(
   model,
   () => {
@@ -717,7 +731,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining(deceasedId) {
   try {
     const fetchedData = await funeralWelfareEmployeeDeceasedService.getRemaining({
@@ -726,10 +739,14 @@ async function fetchRemaining(deceasedId) {
 
     const deceaseData = fetchedData.data?.datas;
 
-    // กำหนด canRequest สำหรับแต่ละประเภท
-    canRequest.value.deceased = deceaseData.some(item => item.categoriesId === 9);
-    canRequest.value.wreath = deceaseData.some(item => item.categoriesId === 10 || item.categoriesId === 11);
-    canRequest.value.vehicle = deceaseData.some(item => item.categoriesId === 12);
+    // ตรวจสอบ canRequest ของแต่ละประเภทให้ละเอียด
+    canRequest.value.deceased = deceaseData.some(item => item.categoriesId === 9 && item.canRequest === true); 
+    canRequest.value.wreath = deceaseData.some(item => (item.categoriesId === 10 || item.categoriesId === 11) && item.canRequest === true); 
+    canRequest.value.vehicle = deceaseData.some(item => item.categoriesId === 12 && item.canRequest === true); 
+
+    console.log("Can request deceased: ", canRequest.value.deceased);
+    console.log("Can request wreath: ", canRequest.value.wreath);
+    console.log("Can request vehicle: ", canRequest.value.vehicle);
 
     // ตรวจสอบและอัปเดต remaining สำหรับแต่ละ subCategoriesId
     if (Array.isArray(deceaseData)) {
@@ -750,6 +767,7 @@ async function fetchRemaining(deceasedId) {
     });
   }
 }
+
 
 
 

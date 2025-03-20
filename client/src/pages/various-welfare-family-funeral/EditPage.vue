@@ -80,7 +80,7 @@
             <q-card-section class="col row flex justify-between q-pb-none">
               <div class="row">
                 <p class="q-pb-none font-18 font-bold ">ข้อมูลการเบิกสวัสดิการ</p>
-                <p class="q-pl-md q-pb-none font-16 q-mb-none">
+                <p v-show="!thisStaff" class="q-pl-md q-pb-none font-16 q-mb-none">
                   (จ่ายไม่เกินคนละ {{ remaining[3]?.fund ? remaining[3]?.fund + " บาท" :
                     remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาทต่อครั้ง" :
                       "ไม่จำกัดจำนวนเงิน" }})
@@ -155,9 +155,8 @@
               class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
-                  :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
+                  :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)" 
                   placeholder="บาท" type="number" class="" :is-view="isView" :disable="!model.selectedWreath" :rules="[(val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน',
-                  (val) => val && (Number(model.fundWreathArrange) + (Number(model.fundWreathUniversity) || 0)) <= Number(val) || 'จำนวนเงินรวมของค่าพวงหรีด ต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน'
                   ]" :error-message="isError?.fundReceiptWreath" :error="!!isError?.fundReceiptWreath">
                 </InputGroup>
               </div>
@@ -337,6 +336,7 @@ const canCreateFor = computed(() => {
 const thisStaff = computed(() => {
   return authStore.isStaff;
 });
+const isFetchRemaining = ref(false);
 
 onMounted(async () => {
   await init();
@@ -502,14 +502,20 @@ watch(
   }
 );
 
-watch([() => model.value.fundWreathArrange, () => model.value.fundWreathUniversity], () => {
-  const totalWreath = (Number(model.value.fundWreathArrange) || 0) + (Number(model.value.fundWreathUniversity) || 0);
-  if (model.value.fundReceiptWreath && totalWreath > Number(model.value.fundReceiptWreath)) {
-    isError.value.fundReceiptWreath = "จำนวนเงินรวมของค่าพวงหรีดต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน";
-  } else {
-    isError.value.fundReceiptWreath = null;
-  }
-});
+watch(
+  () => model.value.fundWreathArrange && model.value.fundWreathUniversity,
+  () => {
+    const totalWreath = (Number(model.value.fundWreathArrange)) + (Number(model.value.fundWreathUniversity));
+    if (totalWreath > Number(model.value.fundReceiptWreath)) {
+      isError.value.fundReceiptWreath = "จำนวนเงินรวมของค่าพวงหรีดต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน";
+    } else {
+      isError.value.fundReceiptWreath = null;
+    }
+  },
+  { immediate: true }  
+);
+
+
 
 watch(
   model,
@@ -632,7 +638,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemainingData = await variousWelfareFuneralFamilyService.getRemaining({ createFor: model.value.createFor });

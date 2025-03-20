@@ -860,13 +860,14 @@ const checkRemaining = async (req, res, next) => {
                     "requestsRemainingArrange"
                 ],
                 [
-                    fn("sub_category.per_users - COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
+                    literal("sub_category.per_users - COUNT(CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END)"),
                     "perUsersRemainingArrange"
-                ]
+                ],
+                
                 // fund_wreath_university
                 [
-                    fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
-                    "totalSumRequestedUniversity"
+                fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
+                "totalSumRequestedUniversity"
                 ],
                 [
                     fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
@@ -881,9 +882,10 @@ const checkRemaining = async (req, res, next) => {
                     "requestsRemainingUniversity"
                 ],
                 [
-                    fn("sub_category.per_users - COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
+                    literal("sub_category.per_users - COUNT(CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END)"),
                     "perUsersRemainingUniversity"
                 ]
+                
             ],
             include: [
                 {

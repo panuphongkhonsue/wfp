@@ -325,7 +325,7 @@ const isEdit = computed(() => {
 const thisStaff = computed(() => {
   return authStore.isStaff;
 });
-
+const isFetchRemaining = ref(false);
 onMounted(async () => {
   await init();
   isLoading.value = false;
@@ -606,7 +606,7 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
+
 async function fetchRemaining() {
   try {
     const fetchRemainingData = await variousWelfareFuneralFamilyService.getRemaining({ createFor: model.value.createFor });

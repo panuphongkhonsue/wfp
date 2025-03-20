@@ -339,6 +339,7 @@ const userInitialData = ref([]);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
+const isFetchRemaining = ref(false);
 onMounted(async () => {
   await init();
   isLoading.value = false;
@@ -691,7 +692,7 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
+
 async function fetchRemaining(deceasedId) {
   try {
     const fetchedData = await funeralWelfareEmployeeDeceasedService.getRemaining({
@@ -700,10 +701,14 @@ async function fetchRemaining(deceasedId) {
 
     const deceaseData = fetchedData.data?.datas;
 
-    // กำหนด canRequest สำหรับแต่ละประเภท
-    canRequest.value.deceased = deceaseData.some(item => item.categoriesId === 9);
-    canRequest.value.wreath = deceaseData.some(item => item.categoriesId === 10 || item.categoriesId === 11);
-    canRequest.value.vehicle = deceaseData.some(item => item.categoriesId === 12);
+    // ตรวจสอบ canRequest ของแต่ละประเภทให้ละเอียด
+    canRequest.value.deceased = deceaseData.some(item => item.categoriesId === 9 && item.canRequest === true); 
+    canRequest.value.wreath = deceaseData.some(item => (item.categoriesId === 10 || item.categoriesId === 11) && item.canRequest === true); 
+    canRequest.value.vehicle = deceaseData.some(item => item.categoriesId === 12 && item.canRequest === true); 
+
+    console.log("Can request deceased: ", canRequest.value.deceased);
+    console.log("Can request wreath: ", canRequest.value.wreath);
+    console.log("Can request vehicle: ", canRequest.value.vehicle);
 
     // ตรวจสอบและอัปเดต remaining สำหรับแต่ละ subCategoriesId
     if (Array.isArray(deceaseData)) {
@@ -724,7 +729,6 @@ async function fetchRemaining(deceasedId) {
     });
   }
 }
-
 
 
 async function filterFn(val, update) {

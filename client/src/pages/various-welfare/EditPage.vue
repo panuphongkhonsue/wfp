@@ -239,6 +239,8 @@ const isEdit = computed(() => {
 const canCreateFor = computed(() => {
   return authStore.isEditor;
 });
+const isFetchRemaining = ref(false);
+
 onMounted(async () => {
   await init();
   isLoading.value = false;
@@ -286,6 +288,7 @@ watch(
     }
   }
 );
+
 const isValidate = computed(() => {
   let validate = false;
   if (!model.value.categoryId) {
@@ -301,6 +304,9 @@ const isValidate = computed(() => {
     validate = true;
   }
   if (!model.value.createFor && canCreateFor.value) {
+    validate = true;
+  }
+  if (isOver.value) {
     validate = true;
   }
   return validate;
@@ -328,7 +334,17 @@ const isOverfundRemaining = computed(() => {
   }
   return check;
 });
-
+watch(
+  () => model.value.fundReceipt ,
+  () => {
+    if (Number(model.value.fundEligible) > Number(model.value.fundReceipt)) {
+      isError.value.fundEligible = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิกให้น้อยกว่าหรือเท่ากับจำนวนเงินตามใบสำคัญรับเงิน";
+    } else {
+      isError.value.fundEligible = null;
+    }
+  },
+  { immediate: true }  
+);
 
 async function fetchDataEdit() {
   setTimeout(async () => {
@@ -387,7 +403,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
