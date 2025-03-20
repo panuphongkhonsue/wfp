@@ -20,6 +20,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DECIMAL(10,0),
       allowNull: true
     },
+    per_users: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     per_years: {
       type: DataTypes.INTEGER,
       allowNull: true

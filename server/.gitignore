@@ -88,3 +88,6 @@ web_modules/
 
 test.js
 processModels.js
+
+public/uploads/
+public/uploads/*

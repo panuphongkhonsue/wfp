@@ -338,13 +338,13 @@ async function deleteData(id, reimNumber) {
       try {
         await healthCheckUpWelfareService.delete(id);
       } catch (error) {
-        Swal.showValidationMessage(error?.response?.data?.message ?? `ไม่สามารถลบข้อมูลได้ กรุณาลองอีกครั้ง`);
-        Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "ลบไม่สำเร็จกรุณาลองอีกครั้ง",
-          position: "bottom-left",
-          type: "negative",
+        Swal.fire({
+          html: error?.response?.data?.message ?? `เกิดข้อผิดพลาดกรุณาลองอีกครั้ง`,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
         });
       }
     },
@@ -402,7 +402,7 @@ const columns = ref([
   },
   {
     name: "updatedAt",
-    label: "วันที่แก้ไขล่าสุด",
+    label: "วันที่บันทึก/อนุมัติ",
     align: "left",
     field: (row) => row?.updatedAt ?? "-",
     format: (val) => formatDateThaiSlash(val),

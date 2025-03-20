@@ -36,6 +36,14 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true
     },
+    per_users_old: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    per_users_new: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     created_by: {
       type: DataTypes.BIGINT,
       allowNull: false

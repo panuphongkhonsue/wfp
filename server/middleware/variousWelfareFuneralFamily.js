@@ -1,4 +1,4 @@
-const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
+const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber, dynamicCheckRemaining } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('UserValidator');
 const { Op, literal, col, fn } = require('sequelize')
@@ -128,7 +128,7 @@ const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, decease, fundDecease, fundReceiptWreath, fundWreathUniversity, fundWreathArrange,
             fundReceiptVechicle, fundVechicle, selectedWreath, selectedVechicle, actionId, deceasedType } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         const errorObj = {};
@@ -137,17 +137,17 @@ const checkNullValue = async (req, res, next) => {
             errorObj["fundReceipt"] = "กรุณากรอกข้อมูลจำนวนเงินตามใบเสร็จ";
         } else if (isInvalidNumber(fundReceipt)) {
             errorObj["fundReceipt"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-        } else if (fundReceipt <= 0) {
+        } else if (fundReceipt < 0) {
             return res.status(400).json({
-                message: "จำนวนเงินตามใบเสร็จน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
+                message: "จำนวนเงินตามใบเสร็จน้อยกว่า 0 ไม่ได้",
             });
         }
 
         if (isInvalidNumber(fundDecease)) {
             errorObj["fundDecease"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
-        } else if (fundDecease <= 0) {
+        } else if (fundDecease < 0) {
             return res.status(400).json({
-                message: "จำนวนเงินที่ต้องการเบิกน้อยกว่าหรือเท่ากับ 0 ไม่ได้",
+                message: "จำนวนเงินที่ต้องการเบิกน้อยกว่า 0 ไม่ได้",
             });
         }
 
@@ -302,7 +302,7 @@ const bindCreate = async (req, res, next) => {
         req.body = dataBinding;
         next();
     } catch (error) {
-        console.error('Error in bindCreate middleware:', error);  
+        console.error('Error in bindCreate middleware:', error);
         res.status(500).json({
             message: 'Internal Server Error',
             error: error.message,
@@ -349,9 +349,9 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+            if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
                 const dataBinding = {
-                    status : actionId,
+                    status: actionId,
                     updated_by: id,
                 }
                 req.body = dataBinding;
@@ -410,7 +410,7 @@ const getRemaining = async (req, res, next) => {
         const { id } = req.user;
         const { createFor } = req.query;
         const { created_by, createByData, actionId } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
             return next();
         }
         req.query.filter = {};
@@ -439,7 +439,7 @@ const getRemaining = async (req, res, next) => {
         req.query.filter[Op.and].push(
             { '$reimbursements_assist.request_date$': getFiscalYearWhere },
             { '$reimbursements_assist.categories_id$': category.variousFuneralFamily },
-            { '$reimbursements_assist.status$':{ [Op.ne]: status.NotApproved} },
+            { '$reimbursements_assist.status$': { [Op.eq]: status.approve } },
         );
         next();
     }
@@ -455,7 +455,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_decease, fund_wreath_university, fund_wreath_arrange, fund_vechicle, actionId } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if (req.access && (actionId === status.NotApproved ) && !isNullOrEmpty(actionId)) {
             return next();
         }
         whereObj[Op.and].push(
@@ -463,21 +463,19 @@ const checkUpdateRemaining = async (req, res, next) => {
         );
         const decreaseRemaining = await reimbursementsAssistHasSubCategories.findAll({
             attributes: [
-                [col("sub_category.id"), "subCategoriesId"],
-                [col("sub_category.name"), "subCategoriesName"],
-                [fn("SUM", col("reimbursements_assist.fund_decease")), "totalSumRequested"],
-                [col("sub_category.fund"), "fund"],
                 [
                     literal("sub_category.fund - SUM(reimbursements_assist.fund_decease)"),
                     "fundRemaining"
                 ],
-                [fn("COUNT", col("reimbursements_assist.fund_decease")), "totalCountRequested"],
-                [col("sub_category.per_years"), "perYears"],
                 [
                     literal("sub_category.per_years - COUNT(reimbursements_assist.fund_decease)"),
                     "requestsRemaining"
                 ],
-                [col("sub_category.per_times"), "perTimesRemaining"],
+                [col("sub_category.per_times"), "perTimes"],
+                [
+                    literal("sub_category.per_users - COUNT(reimbursements_assist.fund_decease)"),
+                    "perUsersRemaining"
+                ]
             ],
             include: [
                 {
@@ -499,47 +497,34 @@ const checkUpdateRemaining = async (req, res, next) => {
         );
         const wreathRemaining = await reimbursementsAssistHasSubCategories.findAll({
             attributes: [
-                [col("sub_category.id"), "subCategoriesId"],
-                [col("sub_category.name"), "subCategoriesName"],
-                [col("sub_category.fund"), "fund"],
-                [col("sub_category.per_years"), "perYears"],
-                [col("sub_category.per_times"), "perTimesRemaining"],
-
+                [col("sub_category.per_times"), "perTimes"],
                 // fund_wreath_arrange
-                [
-                    fn("SUM", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE 0 END")),
-                    "totalSumRequestedArrange"
-                ],
                 [
                     fn("SUM", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE 0 END")),
                     "fundRemainingArrange"
                 ],
                 [
-                    fn("COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
-                    "totalCountRequestedArrange"
-                ],
-                [
                     fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
                     "requestsRemainingArrange"
                 ],
-
-                // fund_wreath_university
                 [
-                    fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
-                    "totalSumRequestedUniversity"
+                    literal("sub_category.per_users - COUNT(CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END)"),
+                    "perUsersRemainingArrange"
                 ],
+                
+                // fund_wreath_university
                 [
                     fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
                     "fundRemainingUniversity"
                 ],
                 [
-                    fn("COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
-                    "totalCountRequestedUniversity"
-                ],
-                [
                     fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
                     "requestsRemainingUniversity"
                 ],
+                [
+                    literal("sub_category.per_users - COUNT(CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END)"),
+                    "perUsersRemainingUniversity"
+                ]
             ],
             include: [
                 {
@@ -562,21 +547,19 @@ const checkUpdateRemaining = async (req, res, next) => {
         );
         const vechicleRemaining = await reimbursementsAssistHasSubCategories.findAll({
             attributes: [
-                [col("sub_category.id"), "subCategoriesId"],
-                [col("sub_category.name"), "subCategoriesName"],
-                [fn("SUM", col("reimbursements_assist.fund_vechicle")), "totalSumRequested"],
-                [col("sub_category.fund"), "fund"],
                 [
                     literal("sub_category.fund - SUM(reimbursements_assist.fund_vechicle)"),
                     "fundRemaining"
                 ],
-                [fn("COUNT", col("reimbursements_assist.fund_vechicle")), "totalCountRequested"],
-                [col("sub_category.per_years"), "perYears"],
                 [
                     literal("sub_category.per_years - COUNT(reimbursements_assist.fund_vechicle)"),
                     "requestsRemaining"
                 ],
-                [col("sub_category.per_times"), "perTimesRemaining"],
+                [col("sub_category.per_times"), "perTimes"],
+                [
+                    literal("sub_category.per_users - COUNT(reimbursements_assist.fund_vechicle)"),
+                    "perUsersRemaining"
+                ]
             ],
             include: [
                 {
@@ -606,6 +589,16 @@ const checkUpdateRemaining = async (req, res, next) => {
             const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
             if (!isNullOrEmpty(decreaseRemaining)) {
                 const datas = JSON.parse(JSON.stringify(decreaseRemaining[0]));
+                if (actionId === status.approve) {
+                    if (dynamicCheckRemaining(decreaseRemaining)) {
+                        return res.status(400).json({
+                            message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิกสวัสดิการประสบอุบัติเหตุ",
+                        });
+                    }
+                    else {
+                        return next();
+                    }
+                }
                 if (fund_decease < oldWelfareData.fund_decease) {
                     return next();
                 }
@@ -626,6 +619,16 @@ const checkUpdateRemaining = async (req, res, next) => {
 
             if (!isNullOrEmpty(wreathRemaining)) {
                 const datas = JSON.parse(JSON.stringify(wreathRemaining[0]));
+                if (actionId === status.approve) {
+                    if (dynamicCheckRemaining(wreathRemaining)) {
+                        return res.status(400).json({
+                            message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิกสวัสดิการประสบอุบัติเหตุ",
+                        });
+                    }
+                    else {
+                        return next();
+                    }
+                }
                 if (fund_wreath_university < oldWelfareData.fund_wreath_university || fund_wreath_arrange < oldWelfareData.fund_wreath_arrange) {
                     return next();
                 }
@@ -656,6 +659,16 @@ const checkUpdateRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(vechicleRemaining)) {
                 const datas = JSON.parse(JSON.stringify(vechicleRemaining[0]));
+                if (actionId === status.approve) {
+                    if (dynamicCheckRemaining(vechicleRemaining)) {
+                        return res.status(400).json({
+                            message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิกสวัสดิการประสบอุบัติเหตุ",
+                        });
+                    }
+                    else {
+                        return next();
+                    }
+                }
                 if (fund_vechicle < oldWelfareData.fund_vechicle) {
                     return next();
                 }
@@ -684,8 +697,8 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { fund_decease, fund_wreath_university, fund_wreath_arrange, fund_vechicle,fundReceiptWreath, actionId } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        const { fund_decease, fund_wreath_university, fund_wreath_arrange, fund_vechicle, fundReceiptWreath, actionId } = req.body;
+        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         const getFund = await subCategories.findAll({
@@ -776,6 +789,8 @@ const checkRemaining = async (req, res, next) => {
         whereObj[Op.and].push(
             { '$sub_category.id$': { [Op.in]: [3, 4, 5, 6] } }
         );
+        logger.info('Filter from request:', req.query.filter);
+        logger.info('Final Where Object before query:', whereObj);
         const decreaseRemaining = await reimbursementsAssistHasSubCategories.findAll({
             attributes: [
                 [col("sub_category.id"), "subCategoriesId"],
@@ -793,6 +808,11 @@ const checkRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [col("sub_category.per_times"), "perTimesRemaining"],
+                [col("sub_category.per_users"), "perUsers"],
+                [
+                    literal("sub_category.per_users - COUNT(reimbursements_assist.fund_decease)"),
+                    "perUsersRemaining"
+                ]
             ],
             include: [
                 {
@@ -803,11 +823,12 @@ const checkRemaining = async (req, res, next) => {
                 {
                     model: reimbursementsAssist,
                     as: "reimbursements_assist",
-                    attributes: []
+                    attributes: [],
+                    required: false
                 }
             ],
             where: whereObj,
-            group: ["sub_category.id"],
+            group: ["sub_category.id", "sub_category.name", "sub_category.fund", "sub_category.per_years", "sub_category.per_times", "sub_category.per_users"]
         });
         whereObj[Op.and].push(
             { '$sub_category.id$': { [Op.in]: [7, 8] } }
@@ -819,6 +840,7 @@ const checkRemaining = async (req, res, next) => {
                 [col("sub_category.fund"), "fund"],
                 [col("sub_category.per_years"), "perYears"],
                 [col("sub_category.per_times"), "perTimesRemaining"],
+                [col("sub_category.per_users"), "perUsers"],
 
                 // fund_wreath_arrange
                 [
@@ -837,7 +859,10 @@ const checkRemaining = async (req, res, next) => {
                     fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
                     "requestsRemainingArrange"
                 ],
-
+                [
+                    fn("sub_category.per_users - COUNT", literal("CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END")),
+                    "perUsersRemainingArrange"
+                ]
                 // fund_wreath_university
                 [
                     fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
@@ -855,6 +880,10 @@ const checkRemaining = async (req, res, next) => {
                     fn("sub_category.per_years - COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
                     "requestsRemainingUniversity"
                 ],
+                [
+                    fn("sub_category.per_users - COUNT", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END")),
+                    "perUsersRemainingUniversity"
+                ]
             ],
             include: [
                 {
@@ -892,6 +921,11 @@ const checkRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [col("sub_category.per_times"), "perTimesRemaining"],
+                [col("sub_category.per_users"), "perUsers"],
+                [
+                    literal("sub_category.per_users - COUNT(reimbursements_assist.fund_vechicle)"),
+                    "perUsersRemaining"
+                ]
             ],
             include: [
                 {
@@ -914,18 +948,19 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(decreaseRemaining)) {
                 const datas = JSON.parse(JSON.stringify(decreaseRemaining));
-                if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
+                const remainingData = datas;
+                if ((dynamicCheckRemaining(remainingData)) ) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการเสียชีวิตครอบครัว เนื่องจากได้ทำการขอเบิกครบแล้ว",
                     });
                 };
-                if (fund_decease > datas.perTimes && datas.perTimes) {
+                if (fund_decease > remainingData.perTimes && remainingData.perTimes) {
                     return res.status(400).json({
-                        message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว " + datas.perTimes + " ต่อครั้ง",
+                        message: "คุณสามารถเบิกสวัสดิการเสียชีวิตครอบครัว " + remainingData.perTimes + " ต่อครั้ง",
                     });
                 }
-                if (fund_decease > datas.fundRemaining && datas.fundRemaining) {
+                if (fund_decease > remainingData.fundRemaining && remainingData.fundRemaining) {
                     logger.info('Request Over', { method });
                     return res.status(400).json({
                         message: "จำนวนที่ขอเบิกสวัสดิการเสียชีวิตครอบครัว เกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
@@ -934,7 +969,7 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(wreathRemaining)) {
                 const datas = JSON.parse(JSON.stringify(wreathRemaining[0]));
-                if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
+                if ((dynamicCheckRemaining(datas)) || fund_wreath_arrange || fund_wreath_university) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการการเสียชีวิตครอบครัว สนับสนุนค่าพวงหลีด เนื่องจากได้ทำการขอเบิกครบแล้ว",
@@ -965,7 +1000,7 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(vechicleRemaining)) {
                 const datas = JSON.parse(JSON.stringify(vechicleRemaining[0]));
-                if (datas.fundRemaining === 0 || datas.fundRemaining < 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
+                if ((dynamicCheckRemaining(datas)) && fund_vechicle) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการเสียชีวิตครอบครัว สนับสนุนค่าพาหนะ เนื่องจากได้ทำการขอเบิกครบแล้ว",

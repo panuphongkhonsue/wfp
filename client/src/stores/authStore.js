@@ -11,6 +11,7 @@ export const useAuthStore = defineStore('auth', {
     roleName: null,
     id: null,
     isEditor: null,
+    isStaff : null,
   }),
   actions: {
     setToken(token) {
@@ -26,6 +27,7 @@ export const useAuthStore = defineStore('auth', {
       this.id = null;
       this.RoleName = null;
       this.isEditor = null;
+      this.isStaff = null;
     },
   },
   getters: {

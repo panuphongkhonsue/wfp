@@ -65,6 +65,17 @@
           </q-td>
         </template>
 
+        <template v-slot:body-cell-perUsers="props">
+          <q-td v-if="clickEditIndex !== props.rowIndex" :props="props" class="text-center">
+            {{ props.row.perUsers }}
+          </q-td>
+          <q-td v-else :props="props">
+            <q-input class="font-14 font-regular" dense v-model="payload.perUsers" outlined autocomplete="off"
+              color="dark" type="number" :forId="'input-per-years' + props.row.id" :placeholder=props.row.perUsers>
+            </q-input>
+          </q-td>
+        </template>
+
         <template v-slot:body-cell-perTimes="props">
           <q-td v-if="clickEditIndex !== props.rowIndex" :props="props" class="text-center">
             {{ formatNumber(props.row.perTimes) }}
@@ -127,6 +138,7 @@ const payload = ref(
   {
     fund: null,
     perTimes: null,
+    perUsers: null,
     perYears: null,
   }
 );
@@ -137,6 +149,8 @@ const payloadLogCategory = ref(
     fundNew: null,
     perTimesOld: null,
     perTimesNew: null,
+    perUsersOld: null,
+    perUsersNew: null,
     perYearsOld: null,
     perYearsNew: null,
     categoryId: null,
@@ -149,6 +163,8 @@ const payloadLogSubCategory = ref(
     fundNew: null,
     perTimesOld: null,
     perTimesNew: null,
+    perUsersOld: null,
+    perUsersNew: null,
     perYearsOld: null,
     perYearsNew: null,
     subCategoryId: null,
@@ -177,6 +193,7 @@ const columns = [
   { name: "description", label: "รายละเอียดเพิ่มเติม", align: "left", field: "description" },
   { name: "fund", label: "เพดานเงิน", align: "right", field: (row) => row.fund ?? '-'},
   { name: "perYears", label: "จำนวนครั้ง (ต่อปี)", align: "right", field: "perYears" },
+  { name: "perUsers", label: "จำนวนครั้ง (ต่อผู้ใช้)", align: "right", field: "perUsers" },
   { name: "perTimes", label: "ครั้งละไม่เกิน", align: "right", field: "perTimes" },
   { name: "tools", label: "จัดการ", align: "center", field: "tools" },
 ];
@@ -232,6 +249,7 @@ async function init() {
   payload.value = {
     fund: null,
     perTimes: null,
+    perUsers: null,
     perYears: null
   };
   payloadLogCategory.value =
@@ -241,6 +259,8 @@ async function init() {
     fundNew: null,
     perTimesOld: null,
     perTimesNew: null,
+    perUsersOld: null,
+    perUsersNew: null,
     perYearsOld: null,
     perYearsNew: null,
     categoryId: null
@@ -252,6 +272,8 @@ async function init() {
     fundNew: null,
     perTimesOld: null,
     perTimesNew: null,
+    perUsersOld: null,
+    perUsersNew: null,
     perYearsOld: null,
     perYearsNew: null,
     subCategoryId: null,
@@ -299,6 +321,7 @@ function onRequest(props) {
         description: item.sub_category_name ?? '-',
         fund: item.category_fund ?? item.sub_category_fund ?? '-',
         perYears: item.category_per_years ?? item.sub_category_per_years ?? '-',
+        perUsers: item.category_per_users ?? item.sub_category_per_users ?? '-',
         perTimes: item.category_per_times ?? item.sub_category_per_times ?? '-',
         categoryId: item.category_id,
         categoryFund: item.category_fund,
@@ -347,7 +370,7 @@ async function updateConfigWelfare(propsRowData) {
           let validateMessage = "";
 
           console.log(propsRowData);
-          if (payload.value.fund == null && payload.value.perYears == null && payload.value.perTimes == null) {
+          if (payload.value.fund == null && payload.value.perYears == null && payload.value.perTimes == null && payload.value.perUsers == null) {
             validateMessage = "ข้อมูลไม่ได้ถูกแก้ไข";
           }
           else {
@@ -358,7 +381,7 @@ async function updateConfigWelfare(propsRowData) {
               else if (payload.value.fund == 0) {
                 payload.value.fund = null;
               }
-              else if (payload.value.fund < propsRowData.perTimes){
+              else if (payload.value.fund < payload.value.perTimes){
                 validateMessage = "ข้อมูลครั้งละไม่เกินสูงกว่าเพดานเงิน";
               }
             }
@@ -370,6 +393,7 @@ async function updateConfigWelfare(propsRowData) {
                 payload.value.fund = propsRowData.subCategoryFund;
               }
             }
+
             if (payload.value.perYears != null) {
               if (payload.value.perYears < 0) {
                 validateMessage = "ข้อมูลจำนวนครั้ง(ต่อปี)ไม่ถูกต้อง";
@@ -386,6 +410,24 @@ async function updateConfigWelfare(propsRowData) {
                 payload.value.perYears = propsRowData.sub_category_per_years;
               }
             }
+
+            if (payload.value.perUsers != null) {
+              if (payload.value.perUsers < 0) {
+                validateMessage = "ข้อมูลจำนวนครั้ง(ต่อผู้ใช้)ไม่ถูกต้อง";
+              }
+              else if (payload.value.perUsers == 0) {
+                payload.value.perUsers = null;
+              }
+            }
+            else {
+              if (!propsRowData.subCategoryName) {
+                payload.value.perUsers = propsRowData.category_per_users;
+              }
+              else {
+                payload.value.perUsers = propsRowData.sub_category_per_users;
+              }
+            }
+
             if (payload.value.perTimes != null) {
               if (payload.value.perTimes < 0) {
                 validateMessage = "ข้อมูลครั้งละไม่เกินไม่ถูกต้อง";
@@ -417,6 +459,8 @@ async function updateConfigWelfare(propsRowData) {
               fundNew: payload.value.fund,
               perTimesOld: propsRowData.perTimes === '-' ? null : propsRowData.perTimes,
               perTimesNew: payload.value.perTimes === '-' ? null : payload.value.perTimes,
+              perUsersOld: propsRowData.perUsers === '-' ? null : propsRowData.perUsers,
+              perUsersNew: payload.value.perUsers === '-' ? null : payload.value.perUsers,
               perYearsOld: propsRowData.perYears === '-' ? null : propsRowData.perYears,
               perYearsNew: payload.value.perYears === '-' ? null : payload.value.perYears,
               categoryId: propsRowData.categoryId === '-' ? null : propsRowData.categoryId,
@@ -431,6 +475,8 @@ async function updateConfigWelfare(propsRowData) {
               perTimesOld: propsRowData.perTimes === '-' ? null : propsRowData.perTimes,
               perTimesNew: payload.value.perTimes === '-' ? null : payload.value.perTimes,
               perYearsOld: propsRowData.perYears === '-' ? null : propsRowData.perYears,
+              perUsersNew: payload.value.perUsers === '-' ? null : payload.value.perUsers,
+              perUsersOld: propsRowData.perUsers === '-' ? null : propsRowData.perUsers,
               perYearsNew: payload.value.perYears === '-' ? null : payload.value.perYears,
               subCategoryId: propsRowData.subCategoryId === '-' ? null : propsRowData.subCategoryId,
             }
@@ -455,14 +501,14 @@ async function updateConfigWelfare(propsRowData) {
             await logSubCategoryService.addLogSubCategory(payloadLogSubCategory.value);
           }
         } catch (error) {
-          Swal.showValidationMessage(error?.response?.data?.message ?? `ข้อมูลไม่ได้ถูกแก้ไข.`);
-          Notify.create({
-            message:
-              error?.response?.data?.message ??
-              "แก้ไขไม่สำเร็จกรุณาลองอีกครั้ง",
-            position: "bottom-left",
-            type: "negative",
-          });
+          Swal.fire({
+          html: error?.response?.data?.message ?? `เกิดข้อผิดพลาดกรุณาลองอีกครั้ง`,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
+        });
         }
       },
     }).then((result) => {

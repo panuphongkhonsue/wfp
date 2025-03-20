@@ -54,7 +54,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     organizer: {
       type: DataTypes.STRING(255),
-      allowNull: false
+      allowNull: true
     },
     deceased: {
       type: DataTypes.BIGINT,

@@ -32,19 +32,12 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-9 row font-bold font-16  q-col-gutter-md">
-        <p class="col-md col-12 q-ma-none">สิทธิ์คงเหลือ (ประสบอุบัติเหตุขณะปฏิบัติหน้าที่) :
-          {{ remaining?.accident.fundRemaining ? remaining?.accident.fundRemaining + " บาทต่อปี" :
-            remaining?.accident.perTimesRemaining ? remaining?.accident.perTimesRemaining + " บาทต่อครั้ง" : remaining?.accident.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-          }}
-          {{ remaining?.accident.requestsRemaining ? "( " + remaining?.accident.requestsRemaining + " ครั้ง)" :
-            remaining?.accident.requestsRemaining ?? '(ไม่จำกัดครั้ง)' }}</p>
-        <p class="col-md col-12 q-ma-none">สิทธิ์คงเหลือ (เยี่ยมไข้) :
-          {{ remaining?.patientVisit.fundRemaining
-            ? remaining?.patientVisit.fundRemaining + " บาทต่อปี" :
-            remaining?.patientVisit.perTimesRemaining ? remaining?.patientVisit.perTimesRemaining + " บาทต่อครั้ง" :
-              remaining?.patientVisit.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน" }}
-          {{ remaining?.patientVisit.requestsRemaining ? "( " + remaining?.patientVisit.requestsRemaining + " ครั้ง)" :
-            remaining?.patientVisit.requestsRemaining ?? '(ไม่จำกัดครั้ง)' }}</p>
+        <p class="col-md col-12 q-ma-none">
+          {{ remainingText(remaining?.accident, remaining?.accident?.categoryName) }}
+        </p>
+        <p class="col-md col-12 q-ma-none">
+          {{ remainingText(remaining?.patientVisit, remaining?.patientVisit?.categoryName) }}
+        </p>
       </div>
       <div class="col-12 col-md-3 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -121,6 +114,7 @@ import { useListStore } from "src/stores/listStore";
 import { useRoute, useRouter } from "vue-router";
 
 import { ref, onMounted, watch, onBeforeUnmount } from "vue";
+import { remainingText } from "src/components/remaining";
 
 import {
   outlinedEdit,
@@ -206,7 +200,6 @@ async function init() {
       remaining.value.accident.requestsRemaining = formatNumber(accidentData.requestsRemaining);
     }
     if (accidentData.fundRemaining != null && !isNaN(Number(accidentData.fundRemaining))) {
-      console.log(true);
       remaining.value.accident.fundRemaining = formatNumber(accidentData.fundRemaining);
     }
     if (accidentData.perTimesRemaining != null && !isNaN(Number(accidentData.perTimesRemaining))) {
@@ -347,13 +340,13 @@ async function deleteData(id, reimNumber) {
       try {
         await medicalWelfareService.delete(id);
       } catch (error) {
-        Swal.showValidationMessage(error?.response?.data?.message ?? `ไม่สามารถลบข้อมูลได้ กรุณาลองอีกครั้ง`);
-        Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "ลบไม่สำเร็จกรุณาลองอีกครั้ง",
-          position: "bottom-left",
-          type: "negative",
+        Swal.fire({
+          html: error?.response?.data?.message ?? `เกิดข้อผิดพลาดกรุณาลองอีกครั้ง`,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
         });
       }
     },
@@ -411,7 +404,7 @@ const columns = ref([
   },
   {
     name: "updatedAt",
-    label: "วันที่แก้ไขล่าสุด",
+    label: "วันที่บันทึก/อนุมัติ",
     align: "left",
     field: (row) => row?.updatedAt ?? "-",
     format: (val) => formatDateThaiSlash(val),
@@ -425,7 +418,7 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US",{
+        return number.toLocaleString("en-US", {
           minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
           maximumFractionDigits: 2, // Limit to 2 decimal places
         }); // Format as '3,000'
@@ -442,7 +435,7 @@ const columns = ref([
     format: (val) => {
       const number = Number(val); // Convert to number
       if (!isNaN(number)) {
-        return number.toLocaleString("en-US",{
+        return number.toLocaleString("en-US", {
           minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
           maximumFractionDigits: 2, // Limit to 2 decimal places
         }); // Format as '3,000'

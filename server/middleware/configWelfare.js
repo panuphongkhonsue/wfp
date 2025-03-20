@@ -28,7 +28,7 @@ const bindFilter = async (req, res, next) => {
 
 const bindUpdate = async (req, res, next) => {
 	try {
-		const { fund, perYears, perTimes  } = req.body;
+		const {fund, perYears, perTimes, perUsers} = req.body;
 		const errorObj = {};
 
 		if(fund < 0){
@@ -55,9 +55,11 @@ const bindUpdate = async (req, res, next) => {
 		const dataBinding = {
 			fund: fund,
 			per_years: perYears,
-			per_times: perTimes
+			per_users: perUsers,
+			per_times: perTimes,
 		}
 		req.body = dataBinding;
+		console.log(req.body)
 		next();
 	} catch (error) {
 		res.status(500).json({

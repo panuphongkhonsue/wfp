@@ -3,7 +3,8 @@
     <template v-slot:page>
       <!--General Information Section -->
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
-        <div :class="{ 'col-12': isView || isLoading, 'col-md-9 col-12': !isView && !isLoading }">
+        <div
+          :class="{ 'col-12': isView || isLoading || thisStaff, 'col-md-9 col-12': !isView && !isLoading && !thisStaff || canCreateFor }">
           <q-card flat bordered class="full-height">
             <q-card-section class="font-18 font-bold">
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
@@ -48,7 +49,7 @@
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-md-3 col-12" v-if="!isView">
+        <div class="col-md-3 col-12" v-if="!isView && !thisStaff || canCreateFor">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md font-18 font-bold">
               <p class="q-mb-none">สิทธิ์คงเหลือ</p>
@@ -56,35 +57,16 @@
             <q-separator />
             <q-card-section class="row wrap q-col-gutter-y-md font-medium font-16 text-grey-7">
               <p class="col-12 q-mb-none">
-                {{ remaining[3]?.subCategoriesName ?? "บิดา" }} : {{ remaining[3]?.fundRemaining ?
-                  remaining[3]?.fundRemaining +
-                  " บาทต่อปี" :
-                  remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาทต่อครั้ง" :
-                  remaining[3]?.perTimesRemaining ??  "ไม่จำกัดจำนวนเงิน"
-                }}
+                {{ remainingTextOneForUsers(remaining[3], remaining[3]?.subCategoriesName) }}
               </p>
               <p class="col-12 q-mb-none">
-                {{ remaining[4]?.subCategoriesName ?? "มารดา" }} : {{ remaining[4]?.fundRemaining ?
-                  remaining[4]?.fundRemaining
-                  + " บาทต่อปี" :
-                  remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
-                  remaining[4]?.perTimesRemaining ??  "ไม่จำกัดจำนวนเงิน"
-                }}
+                {{ remainingTextOneForUsers(remaining[4], remaining[4]?.subCategoriesName) }}
               </p>
               <p class="col-12 q-mb-none">
-                {{ remaining[5]?.subCategoriesName ?? "คู่สมรส" }} : {{ remaining[5]?.fundRemaining ?
-                  remaining[5]?.fundRemaining + " บาทต่อปี" :
-                  remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
-                  remaining[5]?.perTimesRemaining ??  "ไม่จำกัดจำนวนเงิน"
-                }}
+                {{ remainingTextOneForUsers(remaining[5], remaining[5]?.subCategoriesName) }}
               </p>
               <p class="col-12 q-mb-none">
-                {{ remaining[6]?.subCategoriesName ?? "บุตร" }} : {{ remaining[6]?.fundRemaining ?
-                  remaining[6]?.fundRemaining +
-                  " บาทต่อปี" :
-                  remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-                  remaining[6]?.perTimesRemaining ??  "ไม่จำกัดจำนวนเงิน"
-                }}
+                {{ remainingTextOneForUsers(remaining[6], remaining[6]?.subCategoriesName) }}
               </p>
             </q-card-section>
           </q-card>
@@ -118,10 +100,11 @@
               <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
               </p>
               <p class="col-md-4 col-12 q-mb-none">สถานะ : <span :class="textStatusColor(model.status)">{{ model.status
-                  ?? "-"
+                ?? "-"
                   }}</span> </p>
             </q-card-section>
-            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
+            <q-card-section v-show="!thisStaff || canCreateFor"
+              class="row wrap font-medium font-16 text-grey-9 q-pt-none">
               <div v-for="option in deceaseOptions" :key="option.value" class="col-12 row q-mb-none ">
                 <div class="col-md-2 col-6">
                   <q-radio v-model="model.deceasedType" :val="option.value" :label="option.label" class="q-mr-md"
@@ -134,7 +117,8 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
+            <q-card-section v-show="!thisStaff || canCreateFor"
+              class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'"
                   is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)" placeholder="บาท" type="number" class=""
@@ -148,28 +132,27 @@
                   class="q-py-xs-md q-py-lg-none" :is-view="isView" :rules="[
                     (val) => !!val || 'กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก',
                     (val) => !isOverDecease || 'จำนวนเงินที่ต้องการเบิกห้ามมากกว่าจำนวนเงินตามใบเสร็จ',
-                    (val) => isOverfundRemaining !== 2 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
-                    (val) => isOverfundRemaining !== 1 || 'สามารถเบิกได้สูงสุด ' + (remaining[model.value.deceasedType]?.perTimesRemaining ?? '-') + ' บาทต่อครั้ง',
-                    (val) => isOverfundRemaining !== 3 || 'คุณใช้จำนวนการเบิกครบแล้ว'
+                    (val) => isOverfundRemaining !== 1 || 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้',
+                    (val) => isOverfundRemaining !== 2 || 'คุณใช้จำนวนการเบิกครบแล้ว'
                   ]" :error-message="isError?.fundDecease" :error="!!isError?.fundDecease">
                 </InputGroup>
-
               </div>
             </q-card-section>
-            <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
-              :class="isView ? '' : 'q-pl-sm'">
+            <q-card-section v-show="thisStaff && !canCreateFor"
+              class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center" :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedWreath" />
-              <p class="q-mb-none">ค่าสนับสนุนค่าพวงหรีด (จ่ายไม่เกินคนละ  {{ remaining[7]?.fund ? remaining[7]?.fund
-                  + " บาท" : remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาท" :
-                  remaining[7]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-                }}
+              <p class="q-mb-none">ค่าสนับสนุนค่าพวงหรีด (จ่ายไม่เกินคนละ {{ remaining[7]?.fund ? remaining[7]?.fund
+                + " บาท" : remaining[7]?.perTimesRemaining ? remaining[7]?.perTimesRemaining + " บาท" :
+                remaining[7]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
+              }}
                 ในนามมหาวิทยาลัย และไม่เกิน
                 {{ remaining[8]?.fund ? remaining[8]?.fund
                   + " บาท" : remaining[8]?.perTimesRemaining ? remaining[8]?.perTimesRemaining + " บาท" :
                   remaining[8]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน" }}
                 ในนามส่วนงาน)</p>
             </q-card-section>
-            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
+            <q-card-section v-show="thisStaff && !canCreateFor"
+              class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
                   :data="model.fundReceiptWreath ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
@@ -201,9 +184,9 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-separator inset />
-            <q-card-section class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center"
-              :class="isView ? '' : 'q-pl-sm'">
+            <q-separator v-show="thisStaff && !canCreateFor" inset />
+            <q-card-section v-show="thisStaff && !canCreateFor"
+              class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center" :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedVechicle" />
               <p class="q-mb-none ">ค่าสนับสนุนค่าพาหนะเหมาจ่าย (จ่ายจริงคนละไม่เกิน
                 {{ remaining[9]?.fund ? remaining[9]?.fund
@@ -211,7 +194,8 @@
                   "ไม่จำกัดจำนวนเงิน"
                 }})</p>
             </q-card-section>
-            <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
+            <q-card-section v-show="thisStaff && !canCreateFor"
+              class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceiptVechicle"
                   :data="model.fundReceiptVechicle ?? '-'" is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)"
@@ -295,6 +279,7 @@ import { useAuthStore } from "src/stores/authStore";
 import variousWelfareFuneralFamilyService from "src/boot/service/variousWelfareFuneralFamilyService";
 import exportService from "src/boot/service/exportService";
 import { textStatusColor } from "src/components/status";
+import { remainingTextOneForUsers } from "src/components/remaining";
 
 defineOptions({
   name: "various_welfare_funeral_family_edit",
@@ -342,16 +327,15 @@ const isView = ref(false);
 const isLoading = ref(false);
 const userData = ref({});
 const remaining = ref({});
-const canRequest = ref({
-  wreath: false,
-  vechicle: false,
-});
 const userInitialData = ref([]);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
 const canCreateFor = computed(() => {
   return authStore.isEditor;
+});
+const thisStaff = computed(() => {
+  return authStore.isStaff;
 });
 
 onMounted(async () => {
@@ -366,28 +350,31 @@ onBeforeUnmount(() => {
 const isValidate = computed(() => {
   let validate = false;
   if (isError.value.fundReceiptWreath) {
-    validate = true;  
+    validate = true;
   }
   if (!model.value.selectedWreath && !model.value.selectedVechicle && !model.value.deceasedType) {
     validate = true;
   }
-  if (model.value.deceasedType) {
-    if (!model.value.fundReceipt) {
-      validate = true;
-    }
-    if (!model.value.fundDecease) {
-      validate = true;
-    }
-    if (!model.value.decease) {
-      validate = true;
-    }
-    if (isOverDecease.value) {
-      validate = true;
-    }
-    if (isOverfundRemaining.value) {
-      validate = true;
+  if (!thisStaff.value) {
+    if (model.value.deceasedType) {
+      if (!model.value.fundReceipt) {
+        validate = true;
+      }
+      if (!model.value.fundDecease) {
+        validate = true;
+      }
+      if (!model.value.decease) {
+        validate = true;
+      }
+      if (isOverDecease.value) {
+        validate = true;
+      }
+      if (isOverfundRemaining.value) {
+        validate = true;
+      }
     }
   }
+
   if (model.value.selectedWreath) {
     if (!model.value.fundReceiptWreath) {
       validate = true;
@@ -430,49 +417,23 @@ const isValidate = computed(() => {
 });
 const isOverfundRemaining = computed(() => {
   const fundSumRequest = Number(model.value.fundDecease ?? 0);
-  let perTimes = 0;
   let fundRemaining = 0;
-  let canRequest = true;
-  if (model.value.deceasedType) {
-    switch (model.value.deceasedType) {
-      case 3: // บิดา
-        perTimes = remaining.value[3]?.perTimesRemaining ? parseFloat(remaining.value[3]?.perTimesRemaining.replace(/,/g, "")) : null;
-        fundRemaining = remaining.value[3]?.fundRemaining ? parseFloat(remaining.value[3]?.fundRemaining.replace(/,/g, "")) : null;
-        canRequest = remaining.value[3]?.canRequest ?? true;
-        break;
-      case 4: // มารดา
-        perTimes = remaining.value[4]?.perTimesRemaining ? parseFloat(remaining.value[4]?.perTimesRemaining.replace(/,/g, "")) : null;
-        fundRemaining = remaining.value[4]?.fundRemaining ? parseFloat(remaining.value[4]?.fundRemaining.replace(/,/g, "")) : null;
-        canRequest = remaining.value[4]?.canRequest ?? true;
-        break;
-      case 5: // คู่สมรส
-        perTimes = remaining.value[5]?.perTimesRemaining ? parseFloat(remaining.value[5]?.perTimesRemaining.replace(/,/g, "")) : null;
-        fundRemaining = remaining.value[5]?.fundRemaining ? parseFloat(remaining.value[5]?.fundRemaining.replace(/,/g, "")) : null;
-        canRequest = remaining.value[5]?.canRequest ?? true;
-        break;
-      case 6: // บุตร
-        perTimes = remaining.value[6]?.perTimesRemaining ? parseFloat(remaining.value[6]?.perTimesRemaining.replace(/,/g, "")) : null;
-        fundRemaining = remaining.value[6]?.fundRemaining ? parseFloat(remaining.value[6]?.fundRemaining.replace(/,/g, "")) : null;
-        canRequest = remaining.value[6]?.canRequest ?? true;
-        break;
-      default:
-        perTimes = 0;
-        fundRemaining = 0;
-        canRequest = true;
-    }
+  let canRequest = false;
+  const deceasedData = remaining.value[model.value.deceasedType];
+  if (deceasedData) {
+    fundRemaining = deceasedData.fundRemaining ? parseFloat(deceasedData.fundRemaining.replace(/,/g, "")) : 0;
+    canRequest = deceasedData.canRequest ?? true;
   }
   let check = false;
-  if (Number(fundSumRequest) > perTimes && remaining.value[3, 4, 5, 6]?.perTimes) {
+  if (Number(fundSumRequest) > fundRemaining && (remaining.value[3]?.fundRemaining || remaining.value[4]?.fundRemaining || remaining.value[5]?.fundRemaining || remaining.value[6]?.fundRemaining)) {
     check = 1;
   }
-  if (Number(fundSumRequest) > fundRemaining && remaining.value[3, 4, 5, 6]?.fundRemaining) {
-    check = 2;
-  }
   if (!canRequest && isFetchRemaining.value) {
-    check = 3;
+    check = 2;
   }
   return check;
 });
+
 const isOverfundRemainingWreathArrange = computed(() => {
   const fundSumRequest = Number(model.value.fundWreathArrange ?? 0);
 
@@ -490,10 +451,8 @@ const isOverfundRemainingWreathArrange = computed(() => {
   if (Number(fundSumRequest) > fundRemaining && fundRemaining !== 0) {
     return 2;
   }
-
   return false;
 });
-
 const isOverfundRemainingWreathUniversity = computed(() => {
   const fundSumRequest = Number(model.value.fundWreathUniversity ?? 0);
   const perTimes = remaining.value[8]?.perTimesRemaining ? parseFloat(remaining.value[8]?.perTimesRemaining.replace(/,/g, "")) : 0;
@@ -505,10 +464,8 @@ const isOverfundRemainingWreathUniversity = computed(() => {
   if (Number(fundSumRequest) > fundRemaining && fundRemaining !== 0) {
     return 2;
   }
-
   return false;
 });
-
 const isOverfundRemainingVechicle = computed(() => {
   const fundSumRequest = Number(model.value.fundVechicle ?? 0);
   const perTimes = remaining.value[9]?.perTimesRemaining ? parseFloat(remaining.value[9]?.perTimesRemaining.replace(/,/g, "")) : 0;
@@ -520,10 +477,8 @@ const isOverfundRemainingVechicle = computed(() => {
   if (Number(fundSumRequest) > fundRemaining && fundRemaining !== 0) {
     return 2;
   }
-
   return false;
 });
-
 const isOverDecease = computed(() => {
   return Number(model.value.fundDecease) > Number(model.value.fundReceipt);
 });
@@ -539,7 +494,6 @@ const isOverVechicle = computed(() => {
 watch(
   () => model.value.deceasedType,
   (newValue) => {
-    console.log(isFetch.value)
     if (newValue !== null && !isFetch.value) {
       isError.value = {};
       model.value.decease = null;
@@ -551,11 +505,12 @@ watch(
 watch([() => model.value.fundWreathArrange, () => model.value.fundWreathUniversity], () => {
   const totalWreath = (Number(model.value.fundWreathArrange) || 0) + (Number(model.value.fundWreathUniversity) || 0);
   if (model.value.fundReceiptWreath && totalWreath > Number(model.value.fundReceiptWreath)) {
-    isError.value.fundReceiptWreath = "จำนวนเงินรวมของค่าพวงหรีด ต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน";
+    isError.value.fundReceiptWreath = "จำนวนเงินรวมของค่าพวงหรีดต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน";
   } else {
-    isError.value.fundReceiptWreath = null; 
+    isError.value.fundReceiptWreath = null;
   }
 });
+
 watch(
   model,
   () => {
@@ -692,9 +647,10 @@ async function fetchRemaining() {
             requestsRemaining: formatNumber(subItem.requestsRemaining),
             fundRemaining: subItem.fundRemaining === "0" ? null : formatNumber(subItem.fundRemaining),
             perTimesRemaining: subItem.perTimesRemaining === "0" ? null : formatNumber(subItem.perTimesRemaining),
+            perUsersRemaining: formatNumber(subItem.perUsersRemaining),
             fund: subItem.fund ? formatNumber(subItem.fund) : null,
+            canRequest: subItem.canRequest ?? false  // เพิ่มการตั้งค่า canRequest
           };
-          canRequest.value[subItem.subCategoriesId] = subItem.canRequest ?? false;
         });
       } else {
         remaining.value[item.subCategoriesId] = {
@@ -702,11 +658,13 @@ async function fetchRemaining() {
           requestsRemaining: formatNumber(item.requestsRemaining),
           fundRemaining: item.fundRemaining === "0" ? null : formatNumber(item.fundRemaining),
           perTimesRemaining: item.perTimesRemaining === "0" ? null : formatNumber(item.perTimesRemaining),
+          perUsersRemaining: formatNumber(item.perUsersRemaining),
           fund: item.fund ? formatNumber(item.fund) : null,
+          canRequest: item.canRequest ?? false  // เพิ่มการตั้งค่า canRequest
         };
-        canRequest.value[item.subCategoriesId] = item.canRequest ?? false;
       }
     });
+
     nextTick(() => {
       isLoading.value = false;
     });
@@ -716,7 +674,6 @@ async function fetchRemaining() {
     isLoading.value = false;
   }
 }
-
 
 async function downloadData() {
   const notify = Notify.create({
@@ -787,6 +744,7 @@ function abortFilterFn() {
 }
 async function submit(actionId) {
   let validate = false;
+
   if (!model.value.selectedWreath && !model.value.selectedVechicle && !model.value.deceasedType) {
     Notify.create({
       message: "กรุณากรอกสวัสดิการที่ต้องการเบิก",
@@ -795,64 +753,69 @@ async function submit(actionId) {
     });
     return;
   }
-  if (model.value.deceasedType) {
-    if (!model.value.decease) {
-      isError.value.decease = "กรุณากรอกข้อมูลชื่อ - นามสกุลของผู้เสียชีวิต";
-      validate = true;
-    }
-    if (!model.value.fundReceipt) {
-      isError.value.fundReceipt = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน";
-      validate = true;
-    }
-    if (isOverfundRemaining.value) {
-      isError.value.fundDecease = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
-      validate = true;
+  if (!thisStaff.value) {
+    if (model.value.deceasedType) {
+      if (!model.value.decease) {
+        isError.value.decease = "กรุณากรอกข้อมูลชื่อ - นามสกุลของผู้เสียชีวิต";
+        validate = true;
+      }
+      if (!model.value.fundReceipt) {
+        isError.value.fundReceipt = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน";
+        validate = true;
+      }
+      if (isOverfundRemaining.value) {
+        isError.value.fundDecease = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+        validate = true;
+      }
     }
   }
-  if (model.value.selectedWreath) {
-    if (!model.value.fundReceiptWreath) {
-      isError.value.fundReceiptWreath = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงินสนับสนุนค่าพวงหลีด";
-      validate = true;
-    }
+  if (thisStaff.value) {
+    if (model.value.selectedWreath) {
+      if (!model.value.fundReceiptWreath) {
+        isError.value.fundReceiptWreath = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงินสนับสนุนค่าพวงหลีด";
+        validate = true;
+      }
 
-    if (isOverfundRemainingWreathArrange.value) {
-      if (isOverfundRemainingWreathArrange.value === 2) {
-        isError.value.fundWreathArrange = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+      if (isOverfundRemainingWreathArrange.value) {
+        if (isOverfundRemainingWreathArrange.value === 2) {
+          isError.value.fundWreathArrange = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+        }
+        else {
+          isError.value.fundWreathArrange = "สามารถเบิกได้สูงสุด " + remaining.value[7]?.perTimesRemaining + " บาทต่อครั้ง";
+        }
+        validate = true;
       }
-      else {
-        isError.value.fundWreathArrange = "สามารถเบิกได้สูงสุด " + remaining.value[7]?.perTimesRemaining + " บาทต่อครั้ง";
+      if (isOverfundRemainingWreathUniversity.value) {
+        if (isOverfundRemainingWreathUniversity.value === 2) {
+          isError.value.fundWreathUniversity = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+        }
+        else {
+          isError.value.fundWreathUniversity = "สามารถเบิกได้สูงสุด " + remaining.value[8]?.perTimesRemaining + " บาทต่อครั้ง";
+        }
+        validate = true;
       }
-      validate = true;
     }
-    if (isOverfundRemainingWreathUniversity.value) {
-      if (isOverfundRemainingWreathUniversity.value === 2) {
-        isError.value.fundWreathUniversity = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+    if (model.value.selectedVechicle) {
+      if (!model.value.fundReceiptVechicle) {
+        isError.value.fundReceiptVechicle = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงินสนับค่าพาหนะ";
+        validate = true;
       }
-      else {
-        isError.value.fundWreathUniversity = "สามารถเบิกได้สูงสุด " + remaining.value[8]?.perTimesRemaining + " บาทต่อครั้ง";
+      if (!model.value.fundVechicle) {
+        isError.value.fundVechicle = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก";
+        validate = true;
       }
-      validate = true;
+      if (isOverfundRemainingVechicle.value) {
+        if (isOverfundRemainingVechicle.value === 2) {
+          isError.value.fundVechicle = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
+        }
+        else {
+          isError.value.fundVechicle = "สามารถเบิกได้สูงสุด " + remaining.value[9]?.perTimesRemaining + " บาทต่อครั้ง";
+        }
+        validate = true;
+      }
     }
   }
-  if (model.value.selectedVechicle) {
-    if (!model.value.fundReceiptVechicle) {
-      isError.value.fundReceiptVechicle = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงินสนับค่าพาหนะ";
-      validate = true;
-    }
-    if (!model.value.fundVechicle) {
-      isError.value.fundVechicle = "กรุณากรอกข้อมูลจำนวนเงินที่ต้องการเบิก";
-      validate = true;
-    }
-    if (isOverfundRemainingVechicle.value) {
-      if (isOverfundRemainingVechicle.value === 2) {
-        isError.value.fundVechicle = "จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้";
-      }
-      else {
-        isError.value.fundVechicle = "สามารถเบิกได้สูงสุด " + remaining.value[9]?.perTimesRemaining + " บาทต่อครั้ง";
-      }
-      validate = true;
-    }
-  }
+
   if (!model.value.createFor && canCreateFor.value) {
     isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
     let navigate = document.getElementById("fund-receipt");
@@ -860,28 +823,32 @@ async function submit(actionId) {
     navigate.scrollIntoView(false);
     validate = true;
   }
-  if (!model.value.fundReceipt) {
-    isError.value.fundReceipt = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน";
-    let navigate = document.getElementById("fund");
-    window.location.hash = "fund";
-    navigate.scrollIntoView(false);
-    validate = true;
+  // if (!model.value.fundReceipt) {
+  //   isError.value.fundReceipt = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน";
+  //   let navigate = document.getElementById("fund");
+  //   window.location.hash = "fund";
+  //   navigate.scrollIntoView(false);
+  //   validate = true;
+  // }
+  if (!thisStaff.value) {
+    if (isOverDecease.value) {
+      isError.value.fundDecease = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
+      validate = true;
+    }
   }
-  if (isOverDecease.value) {
-    isError.value.fundDecease = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
-    validate = true;
-  }
-  if (isOverWreathArrange.value) {
-    isError.value.fundWreathArrange = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
-    validate = true;
-  }
-  if (isOverWreathUniversity.value) {
-    isError.value.fundWreathUniversity = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
-    validate = true;
-  }
-  if (isOverVechicle.value) {
-    isError.value.fundVechicle = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
-    validate = true;
+  if (!thisStaff.value) {
+    if (isOverWreathArrange.value) {
+      isError.value.fundWreathArrange = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
+      validate = true;
+    }
+    if (isOverWreathUniversity.value) {
+      isError.value.fundWreathUniversity = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
+      validate = true;
+    }
+    if (isOverVechicle.value) {
+      isError.value.fundVechicle = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
+      validate = true;
+    }
   }
   if (model.value.selectedWreath) {
     const totalWreath = (Number(model.value.fundWreathArrange) || 0) + (Number(model.value.fundWreathUniversity) || 0);
@@ -946,13 +913,13 @@ async function submit(actionId) {
             };
           }
         }
-        Swal.showValidationMessage(error?.response?.data?.message ?? `เกิดข้อผิดพลาด กรุณาลองอีกครั้ง`);
-        Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
-          position: "bottom-left",
-          type: "negative",
+        Swal.fire({
+          html: error?.response?.data?.message ?? `เกิดข้อผิดพลาดกรุณาลองอีกครั้ง`,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
         });
       }
     },

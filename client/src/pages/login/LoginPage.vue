@@ -92,10 +92,16 @@ async function login() {
             authStore.department = result.data?.user?.department;
             authStore.roleId = result.data?.user?.roleId;
             authStore.isEditor = result.data?.user?.isEditor;
+            authStore.isStaff = result.data?.user?.isStaff;
             authStore.roleName = result.data?.user?.roleName;
             menuStore.setPath(result.data?.user?.path);
             menuStore.setPathEditor(result.data?.user?.pathEditor);
-            router.push({ name: "home" });
+            if(result?.data?.user?.redirectTo){
+              router.push({ name: result?.data?.user?.redirectTo });
+            }
+            else{
+              router.push({ name: "home" });
+            }
             Notify.create({
                 message: "Success",
                 position: "bottom-left",

@@ -32,33 +32,14 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12 col-md-10 row font-bold font-16  q-col-gutter-x-md">
-        <p class="col q-ma-none"> {{ remaining[3]?.subCategoriesName ?? "บิดา" }} : {{ remaining[3]?.fundRemaining ?
-          remaining[3]?.fundRemaining + " บาทต่อปี" :
-          remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาทต่อครั้ง" :
-          remaining[3]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-        }}
-        </p>
-        <p class="col q-ma-none">
-          {{ remaining[4]?.subCategoriesName ?? "มารดา" }} : {{ remaining[4]?.fundRemaining ?
-            remaining[4]?.fundRemaining + " บาทต่อปี" :
-            remaining[4]?.perTimesRemaining ? remaining[4]?.perTimesRemaining + " บาทต่อครั้ง" :
-            remaining[4]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-          }}
-        </p>
-        <p class="col q-ma-none">
-          {{ remaining[5]?.subCategoriesName ?? "คู่สมรส" }} : {{ remaining[5]?.fundRemaining ?
-            remaining[5]?.fundRemaining + " บาทต่อปี" :
-            remaining[5]?.perTimesRemaining ? remaining[5]?.perTimesRemaining + " บาทต่อครั้ง" :
-            remaining[5]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-          }}
-        </p>
-        <p class="col q-ma-none">
-          {{ remaining[6]?.subCategoriesName ?? "บุตร" }} : {{ remaining[6]?.fundRemaining ?
-            remaining[6]?.fundRemaining + " บาทต่อปี" :
-            remaining[6]?.perTimesRemaining ? remaining[6]?.perTimesRemaining + " บาทต่อครั้ง" :
-            remaining[6]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน"
-          }}
-        </p>
+        <p class="col q-ma-none"  v-if="!thisStaff">
+          {{ remainingTextOneForUsers(remaining[3], remaining[3]?.subCategoriesName) }}</p>
+        <p class="col q-ma-none"  v-if="!thisStaff">
+          {{ remainingTextOneForUsers(remaining[4], remaining[4]?.subCategoriesName) }} </p>
+        <p class="col q-ma-none"  v-if="!thisStaff">
+          {{ remainingTextOneForUsers(remaining[5], remaining[5]?.subCategoriesName) }}</p>
+        <p class="col q-ma-none"  v-if="!thisStaff">
+          {{ remainingTextOneForUsers(remaining[6], remaining[6]?.subCategoriesName) }} </p>
       </div>
       <div class="col-12 col-md-2 flex justify-end">
         <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
@@ -128,7 +109,8 @@ import { Notify } from "quasar";
 import Swal from "sweetalert2";
 import { useListStore } from "src/stores/listStore";
 import { useRoute, useRouter } from "vue-router";
-import { ref, onMounted, watch, onBeforeUnmount } from "vue";
+import { useAuthStore } from "src/stores/authStore";
+import { ref, onMounted, watch, onBeforeUnmount, computed } from "vue";
 import {
   outlinedEdit,
   outlinedVisibility,
@@ -137,6 +119,7 @@ import {
 } from "@quasar/extras/material-icons-outlined";
 import variousWelfareFuneralFamilyService from "src/boot/service/variousWelfareFuneralFamilyService";
 import exportService from "src/boot/service/exportService";
+import { remainingTextOneForUsers } from "src/components/remaining";
 defineOptions({
   name: "various_welfare_funeral_family_list",
 });
@@ -149,12 +132,12 @@ let options = [
   { status: "อนุมัติ", name: "อนุมัติ" },
 ];;
 const remaining = ref({});
-
+const authStore = useAuthStore();
 const modelDate = ref(null);
 const filter = ref({
   keyword: null,
   dateSelected: null,
-  statusId: null,
+  status: null,
 });
 const pagination = ref({
   sortBy: "desc",
@@ -164,7 +147,9 @@ const pagination = ref({
 });
 const model = ref([]);
 const tableRef = ref();
-
+const thisStaff = computed(() => {
+  return authStore.isStaff;
+});
 onMounted(async () => {
   await init();
 });
@@ -254,18 +239,31 @@ async function init() {
     remaining.value = {};
 
     deceaseData.forEach((item) => {
-      remaining.value[item.subCategoriesId] = {
-        subCategoriesName: item.subCategoriesName,
-        requestsRemaining: formatNumber(item.requestsRemaining),
-        fundRemaining: item.fundRemaining === "0" ? null : formatNumber(item.fundRemaining),
-        perTimesRemaining: item.perTimesRemaining === "0" ? null : formatNumber(item.perTimesRemaining),
-        fund: item.fund ? formatNumber(item.fund) : null,
-      };
+      if (Array.isArray(item)) {
+        item.forEach(subItem => {
+          remaining.value[subItem.subCategoriesId] = {
+            subCategoriesName: subItem.subCategoriesName,
+            requestsRemaining: formatNumber(subItem.requestsRemaining),
+            fundRemaining: subItem.fundRemaining === "0" ? null : formatNumber(subItem.fundRemaining),
+            perTimesRemaining: subItem.perTimesRemaining === "0" ? null : formatNumber(subItem.perTimesRemaining),
+            perUsersRemaining: formatNumber(subItem.perUsersRemaining),
+            fund: subItem.fund ? formatNumber(subItem.fund) : null,
+            canRequest: subItem.canRequest ?? false  // เพิ่มการตั้งค่า canRequest
+          };
+        });
+      } else {
+        remaining.value[item.subCategoriesId] = {
+          subCategoriesName: item.subCategoriesName,
+          requestsRemaining: formatNumber(item.requestsRemaining),
+          fundRemaining: item.fundRemaining === "0" ? null : formatNumber(item.fundRemaining),
+          perTimesRemaining: item.perTimesRemaining === "0" ? null : formatNumber(item.perTimesRemaining),
+          perUsersRemaining: formatNumber(item.perUsersRemaining),
+          fund: item.fund ? formatNumber(item.fund) : null,
+          canRequest: item.canRequest ?? false  // เพิ่มการตั้งค่า canRequest
+        };
+      }
     });
 
-    // nextTick(() => {
-    //   isLoading.value = false;
-    // });
   } catch (error) {
     console.error("Error fetching remaining data:", error);
     isLoading.value = false;
@@ -348,13 +346,13 @@ async function deleteData(id, reimNumber) {
       try {
         await variousWelfareFuneralFamilyService.delete(id);
       } catch (error) {
-        Swal.showValidationMessage(error?.response?.data?.message ?? `ไม่สามารถลบข้อมูลได้ กรุณาลองอีกครั้ง`);
-        Notify.create({
-          message:
-            error?.response?.data?.message ??
-            "ลบไม่สำเร็จกรุณาลองอีกครั้ง",
-          position: "bottom-left",
-          type: "negative",
+        Swal.fire({
+          html: error?.response?.data?.message ?? `เกิดข้อผิดพลาดกรุณาลองอีกครั้ง`,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
         });
       }
     },
@@ -412,7 +410,7 @@ const columns = ref([
   },
   {
     name: "updatedAt",
-    label: "วันที่แก้ไขล่าสุด",
+    label: "วันที่บันทึก/อนุมัติ",
     align: "left",
     field: (row) => row?.updatedAt ?? "-",
     format: (val) => formatDateThaiSlash(val),

@@ -197,6 +197,7 @@ async function fetchDataFundRequestPerYearEachType(filters) {
       donutSeries.value[2] = 0;
       donutSeries.value[3] = 0;
     }
+    console.log("dataFundRequestPerYearEachType: ", result.data.docs);
     return result.data.docs;
   } catch (error) {
     Notify.create({

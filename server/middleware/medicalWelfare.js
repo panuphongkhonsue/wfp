@@ -1,4 +1,4 @@
-const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
+const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber, dynamicCheckRemaining } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('DentalValidator');
 const { Op, literal, col, fn } = require('sequelize')
@@ -127,7 +127,7 @@ const byIdMiddleWare = async (req, res, next) => {
 const checkNullValue = async (req, res, next) => {
     try {
         const { fundReceipt, fundEligible, fundReceiptPatientVisit, fundSumRequestPatientVisit, selectedAccident, selectedPatientVisit, startDate, endDate, actionId } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         const errorObj = {};
@@ -328,11 +328,11 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+            if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
                 const dataBinding = {
-                    status : actionId,
+                    status: actionId,
                     updated_by: id,
-                    }
+                }
                 req.body = dataBinding;
                 return next();
             }
@@ -386,7 +386,7 @@ const getRemaining = async (req, res, next) => {
         const { id } = req.user;
         const { createFor } = req.query;
         const { created_by, createByData, actionId } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
             return next();
         }
         req.query.filter = {};
@@ -415,7 +415,7 @@ const getRemaining = async (req, res, next) => {
         req.query.filter[Op.and].push(
             { '$reimbursements_general.request_date$': getFiscalYearWhere },
             { '$reimbursements_general.categories_id$': category.medicalWelfare },
-            { '$reimbursements_general.status$': { [Op.ne]: status.NotApproved }}
+            { '$reimbursements_general.status$': { [Op.eq]: status.approve } }
         );
         next();
     }
@@ -431,7 +431,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_eligible, fund_sum_request_patient_visit, actionId } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
             return next();
         }
         whereObj[Op.and].push(
@@ -439,21 +439,18 @@ const checkUpdateRemaining = async (req, res, next) => {
         );
         const accidentRemaining = await reimbursementsGeneralHasSubCategories.findAll({
             attributes: [
-                [col("sub_category.id"), "subCategoriesId"],
-                [col("sub_category.name"), "subCategoriesName"],
-                [fn("SUM", col("reimbursements_general.fund_eligible")), "totalSumRequested"],
-                [col("sub_category.fund"), "fund"],
                 [
                     literal("sub_category.fund - SUM(reimbursements_general.fund_eligible)"),
                     "fundRemaining"
                 ],
-                [fn("COUNT", col("reimbursements_general.fund_eligible")), "totalCountRequested"],
-                [col("sub_category.per_years"), "perYears"],
                 [
                     literal("sub_category.per_years - COUNT(reimbursements_general.fund_eligible)"),
                     "requestsRemaining"
                 ],
-                [col("sub_category.per_times"), "perTimesRemaining"],
+                [
+                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_eligible)"),
+                    "perUsersRemaining"
+                ]
             ],
             include: [
                 {
@@ -476,21 +473,18 @@ const checkUpdateRemaining = async (req, res, next) => {
         );
         const patientVisitRemaining = await reimbursementsGeneralHasSubCategories.findAll({
             attributes: [
-                [col("sub_category.id"), "subCategoriesId"],
-                [col("sub_category.name"), "subCategoriesName"],
-                [fn("SUM", col("reimbursements_general.fund_sum_request_patient_visit")), "totalSumRequested"],
-                [col("sub_category.fund"), "fund"],
                 [
                     literal("sub_category.fund - SUM(reimbursements_general.fund_sum_request_patient_visit)"),
                     "fundRemaining"
                 ],
-                [fn("COUNT", col("reimbursements_general.fund_sum_request_patient_visit")), "totalCountRequested"],
-                [col("sub_category.per_years"), "perYears"],
                 [
                     literal("sub_category.per_years - COUNT(reimbursements_general.fund_sum_request_patient_visit)"),
                     "requestsRemaining"
                 ],
-                [col("sub_category.per_times"), "perTimesRemaining"],
+                [
+                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_sum_request_patient_visit)"),
+                    "perUsersRemaining"
+                ]
             ],
             include: [
                 {
@@ -518,6 +512,23 @@ const checkUpdateRemaining = async (req, res, next) => {
         }
         if (!isNullOrEmpty(accidentRemaining) || !isNullOrEmpty(patientVisitRemaining)) {
             const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
+            const accidentRemainingData = JSON.parse(JSON.stringify(accidentRemaining[0]));
+            const patientVisitRemainingData = JSON.parse(JSON.stringify(patientVisitRemaining[0]));
+            if (actionId === status.approve) {
+                if (dynamicCheckRemaining(accidentRemainingData)) {
+                    return res.status(400).json({
+                        message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิกสวัสดิการประสบอุบัติเหตุ",
+                    });
+                }
+                if(dynamicCheckRemaining(patientVisitRemainingData)){
+                    return res.status(400).json({
+                        message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิกสวัสดิการเยี่ยมไข้",
+                    });
+                }
+                else {
+                    return next();
+                }
+            }
             if (!isNullOrEmpty(accidentRemaining)) {
                 const datas = JSON.parse(JSON.stringify(accidentRemaining[0]));
                 if (fund_eligible < oldWelfareData.fund_eligible) {
@@ -568,7 +579,7 @@ const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
         const { fund_eligible, fund_sum_request_patient_visit, actionId } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         const getFund = await subCategories.findAll({
@@ -629,21 +640,18 @@ const checkRemaining = async (req, res, next) => {
         );
         const accidentRemaining = await reimbursementsGeneralHasSubCategories.findAll({
             attributes: [
-                [col("sub_category.id"), "subCategoriesId"],
-                [col("sub_category.name"), "subCategoriesName"],
-                [fn("SUM", col("reimbursements_general.fund_eligible")), "totalSumRequested"],
-                [col("sub_category.fund"), "fund"],
                 [
                     literal("sub_category.fund - SUM(reimbursements_general.fund_eligible)"),
                     "fundRemaining"
                 ],
-                [fn("COUNT", col("reimbursements_general.fund_eligible")), "totalCountRequested"],
-                [col("sub_category.per_years"), "perYears"],
                 [
                     literal("sub_category.per_years - COUNT(reimbursements_general.fund_eligible)"),
                     "requestsRemaining"
                 ],
-                [col("sub_category.per_times"), "perTimesRemaining"],
+                [
+                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_eligible)"),
+                    "perUsersRemaining"
+                ]
             ],
             include: [
                 {
@@ -666,21 +674,18 @@ const checkRemaining = async (req, res, next) => {
         );
         const patientVisitRemaining = await reimbursementsGeneralHasSubCategories.findAll({
             attributes: [
-                [col("sub_category.id"), "subCategoriesId"],
-                [col("sub_category.name"), "subCategoriesName"],
-                [fn("SUM", col("reimbursements_general.fund_sum_request_patient_visit")), "totalSumRequested"],
-                [col("sub_category.fund"), "fund"],
                 [
                     literal("sub_category.fund - SUM(reimbursements_general.fund_sum_request_patient_visit)"),
                     "fundRemaining"
                 ],
-                [fn("COUNT", col("reimbursements_general.fund_sum_request_patient_visit")), "totalCountRequested"],
-                [col("sub_category.per_years"), "perYears"],
                 [
                     literal("sub_category.per_years - COUNT(reimbursements_general.fund_sum_request_patient_visit)"),
                     "requestsRemaining"
                 ],
-                [col("sub_category.per_times"), "perTimesRemaining"],
+                [
+                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_sum_request_patient_visit)"),
+                    "perUsersRemaining"
+                ]
             ],
             include: [
                 {
@@ -703,7 +708,7 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(accidentRemaining)) {
                 const datas = JSON.parse(JSON.stringify(accidentRemaining[0]));
-                if ((datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) && fund_eligible) {
+                if ((dynamicCheckRemaining(datas)) && fund_eligible) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการประสบอุบัติเหตุขณะปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",
@@ -723,7 +728,7 @@ const checkRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(patientVisitRemaining)) {
                 const datas = JSON.parse(JSON.stringify(patientVisitRemaining[0]));
-                if ((datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) && fund_sum_request_patient_visit) {
+                if ((dynamicCheckRemaining(datas)) && fund_sum_request_patient_visit) {
                     logger.info('No Remaining', { method });
                     return res.status(400).json({
                         message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการเยี่ยมไข้ผู้ปฏิบัติงาน เนื่องจากได้ทำการขอเบิกครบแล้ว",

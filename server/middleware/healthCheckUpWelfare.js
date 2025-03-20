@@ -1,4 +1,4 @@
-const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
+const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber , dynamicCheckRemaining } = require('../middleware/utility');
 const { initLogger } = require('../logger');
 const logger = initLogger('HealthCheckupValidator');
 const { Op, literal, col } = require('sequelize')
@@ -150,7 +150,10 @@ const checkNullValue = async (req, res, next) => {
             });
         }
 
-        if (isInvalidNumber(fundUniversity) && !isNullOrEmpty(fundUniversity)) {
+        if(isNullOrEmpty(fundUniversity)){
+            errorObj["fundUniversity"] = "กรุณากรอกข้อมูลเงินที่ต้องการเบิก";
+        }
+        else if (isInvalidNumber(fundUniversity) && !isNullOrEmpty(fundUniversity)) {
             errorObj["fundUniversity"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
         } else if (fundUniversity < 0) {
             return res.status(400).json({
@@ -175,13 +178,8 @@ const checkNullValue = async (req, res, next) => {
                 message: "กรุณากรอกจำนวนเงินที่เบิกได้จากสิทธิอื่น ๆ",
             });
         }
-        const fundEligibleSum = Number(fundDecree) + Number(fundUniversity) + Number(fundEligible);
-        const fundSumRequest = Number(fundReceipt) - Number(fundEligibleSum);
-        if (fundSumRequest <= 0) {
-            return res.status(400).json({
-                message: "จำนวนตามใบเสร็จไม่สามารถน้อยกว่าหรือเท่ากับเงินที่ได้รับจากสิทธิอื่น ๆ",
-            });
-        }
+        const fundEligibleSum = Number(fundReceipt) -  Number(fundDecree) + Number(fundEligible);
+        const fundSumRequest = Number(fundUniversity);
         if ((isNullOrEmpty(actionId) || (actionId != status.draft && actionId != status.waitApprove)) && !req.access) {
             return res.status(400).json({
                 message: "ไม่มีการกระทำที่ต้องการ",
@@ -345,7 +343,7 @@ const getRemaining = async (req, res, next) => {
         const { created_by, createByData } = req.body;
         const { actionId } = req.body;
         
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)){
             return next();
         }
         req.query.filter = {};
@@ -374,7 +372,7 @@ const getRemaining = async (req, res, next) => {
         req.query.filter[Op.and].push(
             { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
             { '$reimbursementsGeneral.categories_id$': category.healthCheckup },
-            { '$reimbursementsGeneral.status$': { [Op.ne]: status.NotApproved }}
+            { '$reimbursementsGeneral.status$': { [Op.eq]: status.approve }}
         );
         next();
     }
@@ -391,7 +389,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         var whereObj = { ...filter }
         
         const { fund_sum_request, actionId } = req.body;
-        if(req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)){
+        if(req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)){
            return next();
         }
         const results = await reimbursementsGeneral.findOne({
@@ -404,6 +402,10 @@ const checkUpdateRemaining = async (req, res, next) => {
                 [
                     literal("category.per_years - COUNT(reimbursementsGeneral.fund_sum_request)"),
                     "requestsRemaining"
+                ],
+                [
+                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_sum_request)"),
+                    "perUsersRemaining"
                 ]
             ],
             include: [
@@ -427,6 +429,16 @@ const checkUpdateRemaining = async (req, res, next) => {
         }
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
+            if(actionId === status.approve){
+                if(dynamicCheckRemaining(datas)){
+                    return res.status(400).json({
+                        message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิก",
+                    });
+                }
+                else{
+                    return next();
+                }
+            }
             const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
             if (fund_sum_request < oldWelfareData.fund_sum_request) {
                 return next();
@@ -505,6 +517,10 @@ const checkRemaining = async (req, res, next) => {
                 [
                     literal("category.per_years - COUNT(reimbursementsGeneral.fund_sum_request)"),
                     "requestsRemaining"
+                ],
+                [
+                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_sum_request)"),
+                    "perUsersRemaining"
                 ]
             ],
             include: [
@@ -522,7 +538,7 @@ const checkRemaining = async (req, res, next) => {
             if (status === 1) {
                 return next();
             }
-            if (datas.fundRemaining < 0 || datas.fundRemaining === 0 || datas.requestsRemaining === 0 || datas.requestsRemaining < 0) {
+            if (dynamicCheckRemaining(datas)) {
                 logger.info('No Remaining', { method });
                 return res.status(400).json({
                     message: "ไม่มีสิทธิ์ขอเบิกสวัสดิการดังกล่าว เนื่องจากได้ทำการขอเบิกครบแล้ว",

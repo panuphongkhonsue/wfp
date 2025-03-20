@@ -1,15 +1,15 @@
 const { Op, literal } = require("sequelize");
 const isNullOrEmpty = (value) => {
   if (value == null) return true;
-  if (typeof value === 'string') return value.trim() === '';
+  if (typeof value === "string") return value.trim() === "";
   if (Array.isArray(value)) return value.length === 0;
-  if (typeof value === 'object') return Object.keys(value).length === 0;
+  if (typeof value === "object") return Object.keys(value).length === 0;
   return false;
 };
 
-
 const checkRequire = (fieldName, obj, errorObj) => {
-  if (isNullOrEmpty(obj[fieldName])) errorObj[fieldName] = `${fieldName} is require`;
+  if (isNullOrEmpty(obj[fieldName]))
+    errorObj[fieldName] = `${fieldName} is require`;
 };
 
 const getFiscalYear = () => {
@@ -30,8 +30,8 @@ const getFiscalYear = () => {
               END
             `)
     ]
-  }
-}
+  };
+};
 
 const betweenFiscalByYear = (startYear, endYear) => {
   return {
@@ -59,16 +59,43 @@ const getFiscalYearDynamic = (date) => {
         END`
       )
     ]
-  }
-}
+  };
+};
 
 const getYear2Digits = () => {
-const getThaiYear = (year) => (year + 543).toString().slice(-2);
+  const getThaiYear = (year) => (year + 543).toString().slice(-2);
 
-const thisYear = new Date().getFullYear(); // 2025
-const thaiYearShort = getThaiYear(thisYear); // "68"
+  const thisYear = new Date().getFullYear(); // 2025
+  const thaiYearShort = getThaiYear(thisYear); // "68"
   return thaiYearShort;
-}
+};
 const formatNumber = (num) => num.toString().padStart(2, "0");
-const isInvalidNumber = (value) => isNaN(value) || value === "" || value === null;
-module.exports = { isNullOrEmpty, checkRequire, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber, betweenFiscalByYear,getFiscalYearDynamic };
+const isInvalidNumber = (value) =>
+  isNaN(value) || value === "" || value === null;
+
+const dynamicCheckRemaining = (remaining) => {
+  try {
+    return (
+      remaining.fundRemaining < 0 ||
+      remaining.fundRemaining === 0 ||
+      remaining.requestsRemaining === 0 ||
+      remaining.requestsRemaining < 0 ||
+      remaining.perUsersRemaining === 0 ||
+      remaining.perUsersRemaining < 0
+    );
+  } catch (error) {
+    return false;
+  }
+};
+
+module.exports = {
+  isNullOrEmpty,
+  checkRequire,
+  getFiscalYear,
+  getYear2Digits,
+  formatNumber,
+  isInvalidNumber,
+  betweenFiscalByYear,
+  getFiscalYearDynamic,
+  dynamicCheckRemaining
+};
