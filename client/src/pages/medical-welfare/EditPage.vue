@@ -285,6 +285,7 @@ const isEdit = computed(() => {
 const canCreateFor = computed(() => {
   return authStore.isEditor;
 });
+const isFetchRemaining = ref(false);
 
 onMounted(async () => {
   await init();
@@ -518,7 +519,7 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
+
 async function fetchRemaining() {
   try {
     const fetchRemaining = await medicalWelfareService.getRemaining({ createFor: model.value.createFor });

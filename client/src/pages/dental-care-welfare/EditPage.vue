@@ -211,6 +211,7 @@ const isView = ref(false);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
+const isFetchRemaining = ref(false);
 const isValidate = computed(() => {
   let validate = false;
   if (!model.value.fundReceipt) {
@@ -396,7 +397,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await dentalWelfareService.getRemaining({ createFor: model.value.createFor });

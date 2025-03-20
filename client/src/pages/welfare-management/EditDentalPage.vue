@@ -198,7 +198,7 @@ let options = ref([]);
 const isLoading = ref(false);
 const canRequest = ref(false);
 const isView = ref(false);
-
+const isFetchRemaining = ref(false);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
@@ -369,7 +369,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await dentalWelfareService.getRemaining({ createFor: model.value.createFor });

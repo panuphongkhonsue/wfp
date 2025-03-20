@@ -208,7 +208,7 @@ const userInitialData = ref([]);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
-
+const isFetchRemaining = ref(false);
 onMounted(async () => {
   await init();
   isLoading.value = false;
@@ -249,7 +249,7 @@ const fundEligibleSumValue = computed(() => {
   return Number(model.value.fundReceipt) - (Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[2].fundEligible));
 });
 
-const isFetchRemaining = ref(false);
+
 const isOverfundRemaining = computed(() => {
   let check = false;
   const fundEligibleSum = Number(model.value.fundReceipt) - (Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[2].fundEligible));
