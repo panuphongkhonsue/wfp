@@ -29,6 +29,11 @@ export default {
       params: options,
     });
   },
+  getDeadChild(options) {
+    return api.get(`${path}/DeadChild`, {
+      params: options,
+    });
+  },
   create(payload) {
     try {
       return api.post(`${path}/`, payload);

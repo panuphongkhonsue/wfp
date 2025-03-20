@@ -1,8 +1,8 @@
 const BaseController = require('./BaseControllers');
-const { reimbursementsChildrenEducation,users,positions, sector, employeeTypes, departments, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation, sequelize, categories } = require('../models/mariadb');
+const { reimbursementsChildrenEducation, users, positions, sector, employeeTypes, departments, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation, sequelize, categories } = require('../models/mariadb');
 const { initLogger } = require('../logger');
 const { isNullOrEmpty } = require('../controllers/utility');
-const { Op, fn, col, literal, where } = require("sequelize");
+const { Op, fn, col, literal, where, Sequelize } = require("sequelize");
 const logger = initLogger('reimbursementChildrenEducationController');
 const childType = require('../enum/childType');
 const sub_categories = require('../models/mariadb/sub_categories');
@@ -15,6 +15,7 @@ class Controller extends BaseController {
     list = async (req, res, next) => {
         const method = 'GetAllReimbursementsChildrenEducation'
         const { userId } = req.user;
+
         try {
             const { filter, page, itemPerPage } = req.query;
             var whereObj = { ...filter }
@@ -28,7 +29,7 @@ class Controller extends BaseController {
                     [col("fund_eligible"), "fundEligible"],
                     [col("fund_sum_request"), "fundSumRequest"],
                     'status',
-                    
+
                 ],
                 page: page && !isNaN(page) ? Number(page) : 1,
                 paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 10,
@@ -59,114 +60,87 @@ class Controller extends BaseController {
         }
     }
 
-
-
     getRemainingChildFund = async (req, res, next) => {
-        const method = 'getChildFundSummary';
-        const userId = req.user?.id;
-        const { subCategoriesId } = req.body;
-
+        const method = 'GetRemainingChildFund'
+        const { id } = req.user;
         try {
             const { filter } = req.query;
-            var whereObj = { ...filter };
-
-            const results = await childrenInfomation.findAll({
-                attributes: [
-                    [col("sub_category.id"), "subCategoryId"],
-                    [col("childrenInfomation.child_name"), "childName"],
-                    [col("sub_category.fund"), "fund"],
-                    [fn("SUM", col("childrenInfomation.fund_sum_request")), "totalSumRequested"],
-                    [
-                        literal("sub_category.fund - SUM(childrenInfomation.fund_sum_request)"),
-                        "fundRemaining"
+            let whereObj = { ...filter };
+              const  results = await childrenInfomation.findAll({
+                    attributes: [
+                        [col("sub_category.id"), "subCategoryId"],
+                        [col("childrenInfomation.child_name"), "childName"],
+                        [col("sub_category.fund"), "fund"],
+                        [fn("SUM", col("childrenInfomation.fund_sum_request")), "totalSumRequested"],
+                        [
+                            literal("sub_category.fund - SUM(childrenInfomation.fund_sum_request)"),
+                            "fundRemaining"
+                        ],
+                        [col("sub_category.per_times"), "perTime"],
+                        [fn("COUNT", col("childrenInfomation.fund_sum_request")), "totalCountRequested"],
+                        [col("sub_category.per_years"), "perYears"],
+                        [
+                            literal("sub_category.per_years - COUNT(childrenInfomation.fund_sum_request)"),
+                            "requestsRemaining"
+                        ]
                     ],
-                    [fn("COUNT", col("childrenInfomation.fund_sum_request")), "totalCountRequested"],
-                    [col("sub_category.per_years"), "perYears"],
-                    [
-                        literal("sub_category.per_years - COUNT(childrenInfomation.fund_sum_request)"),
-                        "requestsRemaining"
+                    include: [
+                        {
+                            model: subCategories,
+                            as: "sub_category",
+                            attributes: []
+                        },
+                        {
+                            model: reimbursementsChildrenEducationHasChildrenInfomation,
+                            as: "reimbursements_children_education_has_children_infomations",
+                            required: true,
+                            attributes: [],
+                            include: [
+                                {
+                                    model: reimbursementsChildrenEducation,
+                                    as: "reimbursements_children_education",
+                                    required: true,
+                                    attributes: [],
+                                    where: { created_by: id }
+                                }
+                            ]
+                        }
+                    ],
+                    where: whereObj,
+                    group: [
+                        "childrenInfomation.child_name",
+                        "sub_category.id"
                     ]
 
-                ],
-                include: [
-                    {
-                        model: subCategories,
-                        as: "sub_category",
-                        attributes: []
-                    },
-                    {
-                        model: reimbursementsChildrenEducationHasChildrenInfomation,
-                        as: "reimbursements_children_education_has_children_infomations",
-                        required: true,
-                        attributes: [],
-                        include: [
-                            {
-                                model: reimbursementsChildrenEducation,
-                                as: "reimbursements_children_education",
-                                required: true,
-                                attributes: [],
-                                where: { created_by: userId }
-                            }
-                        ]
-                    }
-                ],
-                where: whereObj,
-                group: [
-                    "childrenInfomation.child_name",
-                    "sub_category.id"
-                ]
-            });
 
-            if (results) {
-                const datas = JSON.parse(JSON.stringify(results));
-
-                // Loop ผ่าน array datas
-                datas.forEach(data => {
-                    if (data.fundRemaining === 0 || data.requestsRemaining === 0) {
-                        data.canRequest = false;
-                    } else {
-                        data.canRequest = true;
-                    }
                 });
+                if (results && results.length > 0) {
+                    const datas = JSON.parse(JSON.stringify(results));
+                    var reimChildrenEducation = {};
+                    reimChildrenEducation.datas = {
+                        ...datas
+                    };
+                    logger.info('Complete', { method, data: { id } });
+                    res.status(200).json(reimChildrenEducation);
+                } else {
+                    logger.info('Data not found', {
+                        method,
+                        data: { id, dataId },
+                    });
+                    res.status(404).json({
+                        message: `ไม่พบข้อมูล`,
+                    });
+                }
 
-                logger.info('Complete', { method, data: { userId } });
-                return res.status(200).json({
-                    datas: datas,
-                    canRequest: datas.some(data => data.canRequest) // ถ้ามีอย่างน้อย 1 อันที่ true ให้ return true
-                });
-            };
-
-            const getFund = await subCategories.findAll({
-                attributes: [
-                    [col("fund"), "fundRemaining"],
-                    [col("per_years"), "requestsRemaining"],
-                    [col("per_times"), "perTimesRemaining"],
-                ],
-                where: { id: subCategoriesId }
-            })
-
-            if (getFund) {
-                const datas = JSON.parse(JSON.stringify(getFund));
-                logger.info('Complete', { method, data: { userId } });
-                return res.status(200).json({
-                    datas: datas,
-                    canRequest: datas.canRequest ?? true,
-                });
-            }
-
-            logger.info('Data not Found', { method, data: { userId } });
-            res.status(400).json({
-                message: "ไม่พบข้อมูลที่ต้องการ กรุณาลองอีกครั้ง"
-            });
-        }
-        catch (error) {
+        } catch (error) {
             logger.error(`Error ${error.message}`, {
                 method,
-                data: { userId },
+                data: { id },
             });
             next(error);
         }
-    };
+    }
+
 
     create = async (req, res, next) => {
         const method = 'CreateReimbursementsChildrenEducation';
@@ -179,25 +153,32 @@ class Controller extends BaseController {
         try {
             const results = await sequelize.transaction(async t => {
                 const newReimbursementsChild = await reimbursementsChildrenEducation.create(dataCreate, { transaction: t });
+                console.log("childData before map:", JSON.stringify(child, null, 2));
                 if (!isNullOrEmpty(child)) {
                     var childData = child.map((childObj) => {
+                        console.log("childObj before convert:", JSON.stringify(childObj, null, 2));
                         let data = {
                             reimbursements_children_education_id: newReimbursementsChild.id,
-                            fund_receipt: Number(childObj.fundReceipt),
-                            fund_eligible: Number(childObj.fundEligible),
-                            fund_other: Number(childObj.fundOther),
-                            fund_university: Number(childObj.fundUniversity),
-                            fund_sum_request: (Number(childObj.fundUniversity) || 0) - (Number(childObj.fundOther) || 0),
-                            child_name: childObj.childName,
-                            child_birth_day: childObj.childBirthDay,
-                            child_father_number: childObj.childFatherNumber,
-                            child_mother_number: childObj.childMotherNumber,
+                            fund_receipt: !isNaN(Number(childObj.fundReceipt)) ? Number(childObj.fundReceipt) : 0,
+                            fund_eligible: !isNaN(Number(childObj.fundEligible)) ? Number(childObj.fundEligible) : 0,
+                            fund_other: !isNaN(Number(childObj.fundOther)) ? Number(childObj.fundOther) : 0,
+                            fund_university: !isNaN(Number(childObj.fundUniversity)) ? Number(childObj.fundUniversity) : 0,
+                            fund_sub_university: !isNaN(Number(childObj.fundSubUniversity)) ? Number(childObj.fundSubUniversity) : 0,
+                            fund_sum_request: (!isNaN(Number(childObj.fundUniversity)) ? Number(childObj.fundUniversity) : 0) +
+                                (!isNaN(Number(childObj.fundSubUniversity)) ? Number(childObj.fundSubUniversity) : 0),
+                            child_name: childObj.childName ?? null,
+                            child_number: childObj.childNumber ?? null,
+                            child_birth_day: childObj.childBirthDay ?? null,
+                            child_father_number: childObj.childFatherNumber ?? null,
+                            child_mother_number: childObj.childMotherNumber ?? null,
                             child_type: childObj.childPassedAway ? childType.DELEGATE : childType.COMMON,
-                            school_name: childObj.schoolName,
-                            district: childObj.district,
-                            province: childObj.province,
-                            sub_categories_id: childObj.subCategoriesId,
+                            school_name: childObj.schoolName ?? null,
+                            school_type: childObj.schoolType ?? null,
+                            district: childObj.district ?? null,
+                            province: childObj.province ?? null,
+                            sub_categories_id: childObj.subCategoriesId ?? null,
                         };
+                        console.log("childObj after convert:", JSON.stringify(data, null, 2));
 
                         // ถ้า childPassedAway เป็น true ให้เพิ่ม delegate_xxx
                         if (childObj.childPassedAway) {
@@ -209,18 +190,18 @@ class Controller extends BaseController {
 
                         return data;
                     });
-
-
+                    console.log("childData after map:", JSON.stringify(childData, null, 2));
                     const newItemChild = await childrenInfomation.bulkCreate(childData, {
                         fields: [
                             'reimbursements_children_education_id', 'fund_receipt', 'fund_other',
-                            'fund_eligible', 'fund_university', 'fund_sum_request', 'child_name',
-                            'child_birth_day', 'child_father_number', 'child_mother_number',
+                            'fund_eligible', 'fund_university', 'fund_sub_university', 'fund_sum_request', 'child_name',
+                            'child_birth_day', 'child_father_number', 'child_mother_number', 'child_number', 'school_type',
                             'child_type', 'school_name', 'district', 'province', 'sub_categories_id',
                             'delegate_name', 'delegate_number', 'delegate_birth_day', 'delegate_death_day' // ✅ บันทึกเฉพาะค่า delegate
                         ],
                         transaction: t,
                     });
+                    console.log("Inserted child records:", newItemChild.length);
 
                     var itemsReturned = {
                         ...newReimbursementsChild.toJSON(),
@@ -311,20 +292,24 @@ class Controller extends BaseController {
                     var childData = child.map((childObj) => {
                         let data = {
                             id: childObj.id,
-                            fund_receipt: Number(childObj.fundReceipt) || 0,
-                            fund_eligible: Number(childObj.fundEligible) || 0,
-                            fund_other: Number(childObj.fundOther) || 0,
-                            fund_university: Number(childObj.fundUniversity) || 0,
-                            fund_sum_request: (Number(childObj.fundUniversity) || 0) - (Number(childObj.fundOther) || 0),
-                            child_name: childObj.childName,
-                            child_birth_day: childObj.childBirthDay,
-                            child_father_number: childObj.childFatherNumber,
-                            child_mother_number: childObj.childMotherNumber,
+                            fund_receipt: !isNaN(Number(childObj.fundReceipt)) ? Number(childObj.fundReceipt) : 0,
+                            fund_eligible: !isNaN(Number(childObj.fundEligible)) ? Number(childObj.fundEligible) : 0,
+                            fund_other: !isNaN(Number(childObj.fundOther)) ? Number(childObj.fundOther) : 0,
+                            fund_university: !isNaN(Number(childObj.fundUniversity)) ? Number(childObj.fundUniversity) : 0,
+                            fund_sub_university: !isNaN(Number(childObj.fundSubUniversity)) ? Number(childObj.fundSubUniversity) : 0,
+                            fund_sum_request: (!isNaN(Number(childObj.fundUniversity)) ? Number(childObj.fundUniversity) : 0) +
+                                (!isNaN(Number(childObj.fundSubUniversity)) ? Number(childObj.fundSubUniversity) : 0),
+                            child_name: childObj.childName ?? null,
+                            child_number: childObj.childNumber ?? null,
+                            child_birth_day: childObj.childBirthDay ?? null,
+                            child_father_number: childObj.childFatherNumber ?? null,
+                            child_mother_number: childObj.childMotherNumber ?? null,
                             child_type: childObj.childPassedAway ? childType.DELEGATE : childType.COMMON,
-                            school_name: childObj.schoolName,
-                            district: childObj.district,
-                            province: childObj.province,
-                            sub_categories_id: childObj.subCategoriesId,
+                            school_name: childObj.schoolName ?? null,
+                            school_type: childObj.schoolType ?? null,
+                            district: childObj.district ?? null,
+                            province: childObj.province ?? null,
+                            sub_categories_id: childObj.subCategoriesId ?? null,
                         };
 
                         if (childObj.childPassedAway) {
@@ -339,8 +324,8 @@ class Controller extends BaseController {
 
                     const existingChildren = await childrenInfomation.findAll({
                         attributes: ['id', 'fund_receipt', 'fund_other',
-                            'fund_eligible', 'fund_university', 'fund_sum_request', 'child_name',
-                            'child_birth_day', 'child_father_number', 'child_mother_number',
+                            'fund_eligible', 'fund_university', 'fund_sub_university', 'fund_sum_request', 'child_name',
+                            'child_birth_day', 'child_father_number', 'child_mother_number', 'child_number', 'school_type',
                             'child_type', 'school_name', 'district', 'province', 'sub_categories_id',
                             'delegate_name', 'delegate_number', 'delegate_birth_day', 'delegate_death_day'],
                         include: [
@@ -365,8 +350,8 @@ class Controller extends BaseController {
 
                     const updatedChildren = await childrenInfomation.bulkCreate(childData, {
                         updateOnDuplicate: ['fund_receipt', 'fund_other',
-                            'fund_eligible', 'fund_university', 'fund_sum_request', 'child_name',
-                            'child_birth_day', 'child_father_number', 'child_mother_number',
+                            'fund_eligible', 'fund_university', 'fund_sub_university', 'fund_sum_request', 'child_name',
+                            'child_birth_day', 'child_father_number', 'child_mother_number', 'child_number', 'school_type',
                             'child_type', 'school_name', 'district', 'province', 'sub_categories_id',
                             'delegate_name', 'delegate_number', 'delegate_birth_day', 'delegate_death_day'],
                         transaction: t,
@@ -443,12 +428,12 @@ class Controller extends BaseController {
                 limit: 1, // จำกัดแค่รายการเดียว
             });
             console.log("Latest Education ID: ", latestEducation.id);
-    
+
             // ตรวจสอบว่าได้รับข้อมูลจาก reimbursementsChildrenEducation หรือไม่
             if (!latestEducation) {
                 return res.status(404).json({ message: "ไม่พบข้อมูลการเบิกค่าศึกษาของบุตรล่าสุด" });
             }
-    
+
             // ดึงข้อมูลล่าสุดของบุตร
             const childData = await childrenInfomation.findAll({
                 attributes: [
@@ -465,27 +450,88 @@ class Controller extends BaseController {
                     }
                 ],
             });
-    
+
             console.log("childData: ", childData);
-    
+
             // ตรวจสอบว่ามีข้อมูลหรือไม่
             if (childData && childData.length > 0) {
                 // สร้างอาร์เรย์เพื่อเก็บข้อมูลโรงเรียนของบุตรทั้งหมด
                 const ChildInformation = childData.map(child => child.dataValues);
-    
+
                 console.log("ChildInformation: ", ChildInformation);
-    
+
                 res.status(200).json({ ChildInformation });
             } else {
                 res.status(404).json({ ChildInformation: "ไม่พบข้อมูลโรงเรียนของบุตร" });
             }
-    
+
         } catch (error) {
             console.error(`Error: ${error.message}`, { method });
             next(error);
         }
     };
+
+    getTheDeadChild = async (req, res, next) => {
+        const method = "getChildDeathBydelegateNumber";
+        const { id } = req.user;
+        let { delegateNumber } = req.query;
+      
+        try {
+          // ดึงข้อมูล reimbursement ล่าสุด
+          const latestEducation = await reimbursementsChildrenEducation.findOne({
+            attributes: ["id"],
+            where: { created_by: id },
+            order: [["updated_at", "DESC"]],
+            limit: 1,
+          });
+      
+          if (!latestEducation) {
+            return res.status(404).json({ message: "ไม่พบข้อมูลการเบิกค่าศึกษาของบุตรล่าสุด" });
+          }
+      
+          // ตรวจสอบค่า delegateNumber ว่ามีข้อมูลหรือไม่
+          if (!delegateNumber) {
+            return res.status(400).json({ message: "กรุณาระบุ delegateNumber" });
+          }
+      
+          // แปลงค่าให้เป็น array เสมอ
+          const delegateNumbers = Array.isArray(delegateNumber) ? delegateNumber : [delegateNumber];
+      
+          // ดึงข้อมูลลูกที่มี delegateNumber ตรงกัน
+          const deadChildData = await childrenInfomation.findAll({
+            attributes: [
+              [col("child_name"), "childName"],
+              [col("child_birth_day"), "childBirthDay"],
+              [col("child_number"), "delegateNumber"],
+            ],
+            include: [
+              {
+                model: reimbursementsChildrenEducationHasChildrenInfomation,
+                as: "reimbursements_children_education_has_children_infomations",
+                required: true,
+                where: { reimbursements_children_education_id: latestEducation.id },
+              },
+            ],
+            where: {
+              child_number: {
+                [Op.in]: delegateNumbers, // รองรับหลาย delegateNumber
+              },
+            },
+          });
+      
+          if (deadChildData.length > 0) {
+            return res.status(200).json({ datas: deadChildData });
+          } else {
+            return res.status(404).json({ message: "ไม่พบข้อมูลโรงเรียนของบุตร" });
+          }
+        } catch (error) {
+          console.error(`❌ Error: ${error.message}`, { method });
+          next(error);
+        }
+      };
+      
     
+
 
 
 
@@ -510,6 +556,9 @@ class Controller extends BaseController {
                     'role',
                     'position',
                     'department',
+                    [col('parental_status'), "parentalStatus"],
+                    [col('eligible_benefits'), "eligibleBenefits"],
+                    [col('eligible_sub_benefits'), "eligibleSubSenefits"],
                     [col("created_by_user.id"), "userId"],
                     [col("created_by_user.name"), "name"],
                     [col("created_by_user.position.name"), "positionUser"],
@@ -555,13 +604,16 @@ class Controller extends BaseController {
                     [col('childrenInfomation.fund_other'), "fundOther"],
                     [col('childrenInfomation.fund_sum_request'), "fundSumRequest"],
                     [col('childrenInfomation.child_name'), "childName"],
+                    [col('childrenInfomation.child_number'), "childNumber"],
                     [col('childrenInfomation.child_type'), "childType"],
                     [col('childrenInfomation.child_birth_day'), "childBirthDay"],
                     [col('childrenInfomation.fund_university'), "fundUniversity"],
+                    [col('childrenInfomation.fund_sub_university'), "fundSubUniversity"],
                     [col('childrenInfomation.child_father_number'), "childFatherNumber"],
                     [col('childrenInfomation.child_mother_number'), "childMotherNumber"],
                     [col('childrenInfomation.child_type'), "childType"],
                     [col('childrenInfomation.school_name'), "schoolName"],
+                    [col('childrenInfomation.school_type'), "schoolType"],
                     [col('delegate_name'), "delegateName"],
                     [col('delegate_number'), "delegateNumber"],
                     [col('delegate_birth_day'), "delegateBirthDay"],
@@ -631,14 +683,32 @@ class Controller extends BaseController {
         }
     }
 
+
     getByCategories = async (req, res, next) => {
         const method = 'getSubCategories';
         const { id } = req.user;
         const { categories_id } = req.query;
+
         try {
             const subCategoriesData = await subCategories.findAll({
                 attributes: ['id', 'name'],
-                where: { categories_id: categories_id }
+                where: { categories_id: categories_id },
+                order: [
+                    [
+                        Sequelize.literal(`
+                            CASE 
+                                WHEN id = 12 THEN 1
+                                WHEN id = 14 THEN 2
+                                WHEN id = 15 THEN 3
+                                WHEN id = 16 THEN 4
+                                WHEN id = 13 THEN 5
+                                ELSE 6
+                            END
+                        `),
+                        'ASC'
+                    ],
+                    ['id', 'ASC'] // เรียงตาม id ต่อไปในกรณีที่ไม่ตรงกับ CASE
+                ]
             });
 
             if (subCategoriesData && subCategoriesData.length > 0) {
@@ -654,6 +724,7 @@ class Controller extends BaseController {
             next(error);
         }
     };
+
 
 
     deleteReimbursement = async (req, res, next) => {

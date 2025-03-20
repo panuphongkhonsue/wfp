@@ -9,15 +9,15 @@ module.exports = function(sequelize, DataTypes) {
       primaryKey: true
     },
     fund_receipt: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: false
     },
     fund_eligible: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: false
     },
     fund_sum_request: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: false
     },
     child_name: {
@@ -26,6 +26,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     child_birth_day: {
       type: DataTypes.DATEONLY,
+      allowNull: false
+    },
+    child_number: {
+      type: DataTypes.INTEGER,
       allowNull: false
     },
     child_father_number: {
@@ -42,6 +46,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     school_name: {
       type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    school_type: {
+      type: DataTypes.ENUM('ทั่วไป','สาธิตพิบูลบําเพ็ญ'),
       allowNull: false
     },
     district: {
@@ -69,11 +77,15 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     fund_university: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: true
+    },
+    fund_sub_university: {
+      type: DataTypes.DECIMAL(10,2),
       allowNull: true
     },
     fund_other: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: true
     },
     sub_categories_id: {

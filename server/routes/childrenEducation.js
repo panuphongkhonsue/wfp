@@ -15,16 +15,17 @@ const { authPermission,
     } = require('../middleware/childrenEducation');
 
 router.get('/', authPermission, bindFilter, reimbursementChildrenEducationController.list);
-router.get('/remaining', authPermission, getRemaining , reimbursementChildrenEducationController.getRemainingChildFund);
+router.get('/remaining/', authPermission, getRemaining , reimbursementChildrenEducationController.getRemainingChildFund);
 router.get('/subCategories', authPermission, reimbursementChildrenEducationController.getByCategories)
 router.get('/latest-school', authPermission, reimbursementChildrenEducationController.getLatestSchoolByChildName);
+router.get('/DeadChild/', authPermission , reimbursementChildrenEducationController.getTheDeadChild);
 
 router.get('/:id',authPermission, byIdMiddleWare, reimbursementChildrenEducationController.getById);
 router.get('/get-welfare/:id',authPermissionEditor, byIdMiddleWare, reimbursementChildrenEducationController.getById);
 
-router.post('/', authPermission, checkNullValue, bindCreate, getRemaining, checkRemaining, reimbursementChildrenEducationController.create);
+router.post('/', authPermission, checkNullValue, bindCreate, getRemaining,checkRemaining, reimbursementChildrenEducationController.create);
 
-router.put('/:id', authPermission, bindUpdate, getRemaining, checkRemaining, reimbursementChildrenEducationController.update);
+router.put('/:id', authPermission, bindUpdate, getRemaining, reimbursementChildrenEducationController.update);
 router.put('/get-welfare/:id', authPermissionEditor, checkNullValue, bindUpdate, getRemaining, checkUpdateRemaining, reimbursementChildrenEducationController.update);
 
 router.delete('/:id', authPermission, deletedMiddleware, reimbursementChildrenEducationController.deleteReimbursement);

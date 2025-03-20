@@ -5,10 +5,13 @@
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
         <div :class="isView ? 'col-md-12 col-12' : 'col-md-9 col-12'">
           <q-card flat bordered class="full-height">
+
             <q-card-section class="font-18 font-bold">
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
             </q-card-section>
+
             <q-separator />
+
             <q-card-section class="row wrap q-col-gutter-y-md q-pb-sm font-16 font-bold"
               :class="canCreateFor && !isView ? 'items-center' : ''">
               <div class="col-lg-5 col-12 col-xl-4 row q-gutter-y-md q-pr-sm"
@@ -46,8 +49,11 @@
                     userData?.sector ?? "-" }}</span>
               </p>
             </q-card-section>
+
           </q-card>
+
         </div>
+
         <div v-if="!isView" class="col-md-3 col-12">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md q-py-md font-18 font-bold">
@@ -56,7 +62,7 @@
             <q-separator />
             <q-card-section class="q-px-md q-py-md font-medium font-16 text-grey-7">
               <p v-for="child in displayedChildren" :key="child.index" class="q-mb-none">
-                บุตรคนที่ {{ child.index }}: {{ child.fundRemaining }} บาท
+                บุตรคนที่ {{ child.index }}: {{ child.fundRemaining || '-' }} บาท
               </p>
             </q-card-section>
           </q-card>
@@ -67,32 +73,44 @@
       <div class="row q-col-gutter-md q-pl-md q-pt-md ">
         <div class="col-md-9 col-12">
           <q-card flat bordered class="full-height">
-            <q-card-section class="q-px-md q-pt-md q-pb-none font-18 font-bold">
-              <p class="q-mb-none">ข้อมูลการเบิกสวัสดิการ</p>
+            <p class="q-mb-none font-18 font-bold q-px-md q-py-md">ข้อมูลการเบิกสวัสดิการ</p>
+
+            <q-card-section class="q-px-md q-pb-none font-18 font-bold q-pt-none">
+
               <q-card-section v-show="isView || isEdit"
-                class="row wrap font-medium q-pb-xs q-pl-none font-16 text-grey-9">
-                <p class="col-md-4 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
-                <p class="col-md-4 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
+                class="row wrap font-medium q-pb-xs q-pl-none q-pt-none q-mb-md font-16 text-grey-9">
+                <p class="col-md-3 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
+                <p class="col-md-3 col-12 q-mb-none">วันที่ร้องขอ : {{ formatDateThaiSlash(model.requestDate) ?? "-" }}
                 </p>
-                <p class="col-md-4 col-12 q-mb-none q-pl-sm">สถานะ : {{ textStatusColor(model.status) ?? "-" }}</p>
+                <p class="col-md-3 col-12 q-mb-none q-pl-sm">สถานะ : <span :class="textStatusColor(model.status)">{{
+                  model.status ?? "-" }}</span></p>
               </q-card-section>
 
-              <div class="row q-mt-lg q-mb-none">
-                <div v-if="isView" class="col-md-4 col-12 q-mb-none">
-                  <InputGroup for-id="spouse" more-class="font-16 font-medium text-grey-9" is-dense
-                    v-model="model.spouse" :data="model.spouse ?? '-'" is-require label="คู่สมรส"
-                    placeholder="ชื่อ-สกุล" type="text" class="font-14 font-regular text-grey-9" :is-view="isView">
-                  </InputGroup>
+
+              <div v-if="isView" class="row q-mt-lg q-mb-none">
+
+                <div v-if="isView" class="col-md-3 col-12 q-mb-none">
+                  <p class="font-16 require font-medium text-grey-9">สถานะ (ผู้เบิกที่มีต่อบุตร)</p>
+                  <div class="font-14 font-regular text-grey-9">
+                    {{ selectedparentalStatusLabel || '-' }}
+                  </div>
                 </div>
 
-                <div v-if="isView" class="col-md-4 col-12 q-mb-none">
+                <div v-if="isView" class="col-md-3 col-12 q-mb-none">
+                  <p class="font-16 require font-medium text-grey-9">จดทะเบียนสมรส</p>
+                  <div class="font-14 font-regular text-grey-9">
+                    {{ fullNameSpouse || '-' }}
+                  </div>
+                </div>
+
+                <div v-if="isView" class="col-md-3 col-12 q-mb-none">
                   <p class="font-16 require font-medium text-grey-9">จดทะเบียนสมรส</p>
                   <div class="font-14 font-regular text-grey-9">
                     {{ selectedMarryLabel || '-' }}
                   </div>
                 </div>
 
-                <div v-if="isView" class="col-md-4 col-12 q-mb-none">
+                <div v-if="isView" class="col-md-3 col-12 q-mb-none">
                   <p class="font-16 require font-medium text-grey-9 ">ประเภทบุคลากรคู่สมรส</p>
                   <div class="font-14 font-regular text-grey-9">
                     {{ selectedRoleLabel }}
@@ -100,17 +118,51 @@
                 </div>
               </div>
 
-              <div v-if="!isView" class="row q-mt-lg q-mb-none">
+            </q-card-section>
 
-                <div v-if="!isView" class="col-lg-3 col-12 q-mr-xl  ">
+            <!-- User information request section -->
+            <q-card-section v-if="!isView" class="q-pt-none">
+              <p v-if="!isView" class="font-16 font-medium q-mb-none">ข้อมูลผู้เบิก</p>
+              <div class="row q-py-md">
+                <div v-if="!isView" class="col-lg-4 col-12 q-mr-lg-xl q-mr-sm-none q-pl-sm">
+                  <InputGroup for-id="parentalStatus" more-class="font-16 font-medium text-grey-9"
+                    label="สถานะที่มีต่อบุตร" is-require clearable :data="model.parentalStatus ?? '-'"
+                    :is-view="isView">
+                    <q-select hide-bottom-space popup-content-class="font-14 font-regular text-grey-9"
+                      v-model="model.parentalStatus" is-dense :loading="isLoading" id="selected-status" outlined
+                      :options="optionsparentalStatus" dense clearable option-value="value" emit-value map-options
+                      option-label="name" :rules="[(val) => !!val || 'กรุณาเลือกสถานะที่มีต่อบุตร']" lazy-rules>
+                    </q-select>
+                  </InputGroup>
+                </div>
+
+                <div v-if="!isView" class="col-lg-4 col-12 ">
+                  <InputGroup for-id="marriageRegistration" more-class="font-16 font-medium text-grey-9"
+                    label="จดทะเบียนสมรส" is-require clearable :data="model.marryRegis ?? '-'" :is-view="isView">
+                    <q-select hide-bottom-space popup-content-class="font-14 font-regular text-grey-9"
+                      v-model="model.marryRegis" is-dense :loading="isLoading" id="selected-status" outlined
+                      :options="optionsMarry" dense clearable option-value="value" emit-value map-options
+                      option-label="name" :error="!!isError?.marryRegis"
+                      :rules="[(val) => !!val || 'กรุณาเลือกการจดทะเบียนสมรส']" lazy-rules>
+                    </q-select>
+                  </InputGroup>
+                </div>
+              </div>
+              <q-separator />
+            </q-card-section>
+
+            <!-- Spouse information request section -->
+            <q-card-section v-if="!isView && model.marryRegis === 'YES'" class="q-pt-none">
+              <p v-if="!isView" class="font-16 font-medium q-mb-none ">ข้อมูลคู่สมรส</p>
+              <div class="row q-py-md">
+                <div v-if="!isView" class="col-lg-4 col-12 q-mr-xl  q-pl-sm">
                   <InputGroup for-id="prefix" is-dense :data="model.prefix ?? '-'" is-require label="คำนำหน้า"
                     placeholder="" type="text" :is-view="isView">
                     <q-select use-input hide-selected hide-bottom-space hide-dropdown-icon clearable
                       new-value-mode="add-unique" fill-input input-debounce="0"
                       popup-content-class="font-14 font-regular" class="font-14 font-regular" :loading="isLoading"
                       id="selected-prefix" outlined v-model="model.prefix" :options="optionPrefix" dense map-options
-                      :error-message="isError?.prefix" :error="!!isError?.prefix"
-                      :rules="[(val) => !!val || 'กรุณากรอกคำนำหน้า']" lazy-rules>
+                      :error-message="isError?.prefix" :error="!!isError?.prefix">
                       <template v-slot:no-option>
                         <q-item>
                           <q-item-section class="text-grey font-14 font-regular">
@@ -121,149 +173,153 @@
                     </q-select>
                   </InputGroup>
                 </div>
-                <div v-if="!isView" class="col-lg-4 col-12 q-mr-xl  ">
+
+                <div v-if="!isView" class="col-lg-5 col-12">
                   <InputGroup for-id="spouse" is-dense v-model="model.spouse" :data="model.spouse ?? '-'" is-require
                     label="คู่สมรส" placeholder="ชื่อ-สกุล" type="text" class="font-16 font-regular" :is-view="isView"
                     :error="!!isError?.spouse">
                   </InputGroup>
                 </div>
-
-                <div v-if="!isView" class="col-lg-3 col-12 q-ml-lg-xl q-ml-sm-none">
-                  <InputGroup for-id="marriageRegistration" more-class="font-16 font-medium text-grey-9"
-                    label="จดทะเบียนสมรส" compclass="col-6" is-require clearable :data="model.marryRegis ?? '-'"
-                    :is-view="isView">
-                    <q-select hide-bottom-space popup-content-class="font-14 font-regular" v-model="model.marryRegis"
-                      class="font-14 font-regular text-grey-9" is-dense :loading="isLoading" id="selected-status"
-                      outlined :options="optionsMarry" dense clearable option-value="value" emit-value map-options
-                      option-label="name" :error="!!isError?.marryRegis">
-                    </q-select>
-                  </InputGroup>
-                </div>
               </div>
-            </q-card-section>
 
-
-            <q-card-section v-if="!isView"
-              class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
-              <div class="col q-mb-none font-14 q-gutter-md">
+              <div class="q-mb-none font-14 q-gutter-md q-pb-md ">
                 <div>
                   <q-radio v-model="model.role" val="ไม่เป็นข้าราชการประจำหรือลูกจ้างประจำ"
-                    label="ไม่เป็นข้าราชการประจำหรือลูกจ้างประจำ" />
+                    label="ไม่เป็นข้าราชการประจำหรือลูกจ้างประจำ" class="font-16 font-regular" />
                 </div>
 
-                <div class="row q-col-gutter-y-md ">
+                <div class="row q-col-gutter-y-md font-16 font-regular ">
                   <q-radio v-model="model.role" val="ข้าราชการ" label="ข้าราชการ" />
-
                   <div class="col-lg-4 col-12 row items-center ">
                     <p class="q-mb-none q-mx-md col-md-1 col-12">ตำแหน่ง</p>
                     <q-input for="officer-position" v-model="spouseData.officer.position" outlined dense
                       :disable="model.role !== 'ข้าราชการ'" class="col-md-8 col-12 q-mx-md" :is-view="isView" />
                   </div>
-
                   <div class="col-lg-4 col-12 row items-center q-col-gutter-y-md">
                     <p class="q-mb-none q-mx-md q-mt-xs-md q-mt-lg-none col-md-1 col-12">สังกัด</p>
                     <q-input for="officer-belongTo" v-model="spouseData.officer.department" outlined dense
                       :disable="model.role !== 'ข้าราชการ'" class="col-md-8 col-12 q-mx-md" :is-view="isView" />
                   </div>
-
-
                 </div>
 
                 <div>
-                  <q-radio v-model="model.role" val="ลูกจ้างประจำ" label="ลูกจ้างประจำ" />
+                  <q-radio v-model="model.role" val="ลูกจ้างประจำ" label="ลูกจ้างประจำ" class="font-16 font-regular" />
                 </div>
 
-                <div class="row items-center q-col-gutter-y-md">
+                <div class="row items-center q-col-gutter-y-md font-16 font-regular">
                   <q-radio v-model="model.role" val="พนักงานหรือลูกจ้างในรัฐวิสาหกิจ"
                     label="พนักงานหรือลูกจ้างในรัฐวิสาหกิจ / หน่วงานของทางราชการ ราชการส่วนท้องถิ่น กรุงเทพมหานคร องค์กรอิสระ องค์กรมหาชน หรือหน่วยงานอื่นใด" />
-
                   <div class="col-lg-4 col-12 row items-center ">
                     <p class="q-mb-none q-mx-md col-md-1 col-12">ตำแหน่ง</p>
                     <q-input for="enterprises-position" v-model="spouseData.enterprises.position" outlined dense
                       :disable="model.role !== 'พนักงานหรือลูกจ้างในรัฐวิสาหกิจ'" class="col-md-8 col-12 q-mx-md"
                       :is-view="isView" />
                   </div>
-
                   <div class="col-lg-4 col-12 row items-center q-col-gutter-y-md">
                     <p class="q-mb-none q-mx-md q-mt-xs-md q-mt-lg-none col-md-1 col-12">สังกัด</p>
                     <q-input for="enterprises-belongTo" v-model="spouseData.enterprises.department" outlined dense
                       :disable="model.role !== 'พนักงานหรือลูกจ้างในรัฐวิสาหกิจ'" class="col-md-8 col-12 q-mx-md"
                       :is-view="isView" />
                   </div>
-
-                </div>
-              </div>
-            </q-card-section>
-
-            <q-card-section>
-              <div v-if="isView" class="row q-mt-sm">
-                <div class="col-md-4 col-12 q-mb-none">
-                  <div>
-                    <p class="font-16 require font-medium text-grey-9">ขอรับเงินสวัสดิการ</p>
-                  </div>
-                  <div v-if="isView" class="font-14 font-regular text-grey-9 q-gutter-y-md q-my-md">
-                    {{ selectedEligible }}
-                  </div>
                 </div>
 
-                <div class="col-md-8 col-12 q-mb-none">
-                  <div>
-                    <p class="font-16 require font-medium text-grey-9">ขอใช้สิทธิ</p>
-                  </div>
-                  <div v-if="isView" class="font-14 font-regular text-grey-9 q-gutter-y-md q-my-md">
-                    {{ selectedCategoryLabel }}
-                  </div>
-                </div>
               </div>
-
-
-
-              <div>
-                <p v-if="!isView" class="require">ขอรับเงินสวัสดิการ</p>
-              </div>
-              <q-option-group v-if="!isView" :error="!!isError?.eligible" v-model="model.eligible" type="radio"
-                :options="optionsEligible" class="q-mt-md " />
-            </q-card-section>
-
-
-            <q-card-section>
-              <div v-if="!isView">
-                <p class="require">ขอใช้สิทธิ</p>
-              </div>
-
-              <q-option-group v-if="!isView" v-model="model.categoriesId" type="radio" :options="options"
-                class="q-gutter-y-md q-my-md" />
               <q-separator />
+            </q-card-section>
+
+            <!-- Rights exercise information request  section -->
+            <q-card-section v-if="!isView" class="q-pt-none">
+              <p v-if="!isView" class="font-16 font-medium q-mb-none">ข้อมูลการใช้สิทธิ</p>
+              <p v-if="!isView" class="require q-pt-lg q-mb-none">ขอใช้สิทธิ</p>
+              <div v-if="!isView" class="q-py-md ">
+                <div>
+                  <q-checkbox v-if="!isView" v-model="model.eligibleBenefits"
+                    label="(ก) สำหรับผู้ปฏิบัติงานที่เริ่มปฏิบัติงานตั้งแต่วันที่ 26 มีนาคม พ.ศ. 2561 หรือ ผู้ปฏิบัติงานที่ปฏิบัติงานก่อนประกาศนี้มีผลใช้บังคับและมีบุตรที่เริ่มเข้าศึกษาตั้งแต่ ปีการศึกษา 2561"
+                    color="primary" val="ก" class=" text-grey-9 items-start"
+                    :disable="model.eligibleBenefits.includes('ข')" :is-view="isView" />
+                </div>
+
+                <div> <q-checkbox v-if="!isView" v-model="model.eligibleBenefits"
+                    label="(ข) สำหรับผู้ปฏิบัติงานที่เริ่มปฏิบัติงานก่อนวันที่ 26 มีนาคม พ.ศ. 2561 หรือ ผู้ปฏิบัติงานที่ปฏิบัติงานก่อนประกาศนี้มีผลใช้บังคับ"
+                    color="primary" val="ข" class=" text-grey-9 items-start"
+                    :disable="model.eligibleBenefits.includes('ก')" :is-view="isView" />
+                </div>
+
+                <div> <q-checkbox v-if="!isView" v-model="model.eligibleSubSenefits"
+                    label="(ค) สำหรับผู้ปฏิบัติงานที่มีบุตร ที่เริ่มเข้าศึกษาในโรงเรียนสาธิต “พิบูลบำเพ็ญ” มหาวิทยาลัยบูรพา โดยเข้าศึกษาตั้งแต่ภาคปลายปีการศึกษา 2560 เป็นต้นไป"
+                    color="primary" val="ค" class=" text-grey-9 items-start" :is-view="isView" />
+                </div>
+              </div>
+              <q-separator />
+            </q-card-section>
 
 
-              <q-card-section class="row justify-between q-gutter-y-md q-px-md q-pt-md q-pb-sm font-18 font-bold">
+
+
+
+            <!-- is-views -->
+
+
+            <q-card-section v-if="isView">
+
+              <div v-if="isView" class="row q-py-md">
+                <div class="col-md-3">
+                  <p class="font-16 require font-medium text-grey-9 ">ขอรับเงินสวัสดิการ</p>
+                  <div v-if="isView">
+                    <p class="font-14 font-regular text-grey-9 text">
+                      {{ model.eligible || '-' }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="col-md-9">
+                  <p class="font-16 require font-medium text-grey-9 ">ขอใช้สิทธิ</p>
+                  <div v-if="isView">
+                    <p class="font-14 font-regular text-grey-9 text ">
+                      {{ selectedEligibleBenefits || '-' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+
+              <q-separator class="q-mb-md" />
+            </q-card-section>
+
+
+            <q-card-section class="q-pt-none">
+              <div class="row justify-between q-pb-sm font-18 font-bold">
                 <p class="q-mb-none">ข้อมูลบุตร</p>
-                <q-btn v-if="!isView" @click="addChildForm" class="q-mb-md bg-blue-10 text-white" icon="add">
+                <q-btn v-if="!isView" style="border-radius: 8px;" @click="addChildForm"
+                  class="q-mb-md bg-blue-10 text-white" icon="add">
                   เพิ่ม</q-btn>
-              </q-card-section>
+              </div>
               <q-card flat bordered class="full-height ">
                 <q-card-section class="q-px-md q-pt-md q-pb-none font-14 q-gutter-y-md">
                   <div v-for="(child, index) in model.child" :key="index">
                     <div class="row items-center justify-between">
-                      <p class="q-mb-lg">บุตรคนที่ {{ index + 1 }}</p>
-                      <q-btn v-if="(index > 0 && !isView && !isLoading) ||
-                        (isEdit && !isView && child?.id && !isLoading && model.child.length > 1)" color="red"
-                        @click="removeChildForm(index)" class="q-ml-md">ลบ</q-btn>
+                      <p class="q-mb-lg">บุตรคนที่ {{ index + 1 }} <span v-if="isPassedAway(index)">(ถึงแก่กรรม)</span>
+                      </p>
+                      <q-btn
+                        v-if="(index > 0 && !isView && !isLoading) ||
+                          (isEdit && !isView && child?.id && !isLoading && model.child.length > 1 && !isPassedAway(index))"
+                        color="red" @click="removeChildForm(index)" class="q-ml-md">ลบ</q-btn>
                     </div>
 
                     <div class="row q-mb-md">
-                      <div class="col-md-4 col-12 q-mr-xl">
+                      <div class="col-md-5 col-12 q-mr-xl">
                         <InputGroup for-id="name" more-class="font-16 font-medium text-grey-9" label="ชื่อ-นามสกุล"
                           compclass="col-6" is-require clearable :data="child.childName ?? '-'" :is-view="isView">
                           <q-select hide-bottom-space is-dense v-model="child.childName" is-require :loading="isLoading"
                             id="selected-status" popup-content-class="font-14 font-regular" class="font-14 font-regular"
                             outlined :options="availableChildOptions" dense clearable option-value="name" emit-value
-                            map-options option-label="name" :error="!!isError?.childName">
+                            map-options option-label="name" :error="!!isError?.childName"
+                            :rules="[(val) => !!val || 'กรุณาเลือกชื่อบุตร']" lazy-rules>
                           </q-select>
                         </InputGroup>
                       </div>
 
-                      <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none">
+                      <div class="col-md-5 col-12 ">
                         <InputGroup for-id="birthday" is-dense v-model="formattedChildBirthDay[index].formattedBirthDay"
                           more-class="font-16 font-medium text-grey-9"
                           :data="formattedChildBirthDay[index].formattedBirthDay ?? '-'" label="เกิดเมื่อ"
@@ -274,19 +330,21 @@
                     </div>
 
                     <div class="row q-mb-md">
-                      <div class="col-md-4 col-12 q-mr-xl">
+                      <div class="col-md-5 col-12 q-mr-xl">
                         <InputGroup for-id="fatherNumberChilden" is-dense v-model="child.childFatherNumber"
                           more-class="font-16 font-medium text-grey-9" :data="child.childFatherNumber ?? '-'" is-require
                           label="บุตรลำดับที่ (ของบิดา)" placeholder="" type="number" class="" :is-view="isView"
-                          :error="!!isError?.childFatherNumber">
+                          :error="!!isError?.childFatherNumber"
+                          :rules="[(val) => !!val || 'กรุณากรอกบุตรลำดับที (ของบิดา)']" lazy-rules>
                         </InputGroup>
                       </div>
 
-                      <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
+                      <div class="col-md-5 col-12 ">
                         <InputGroup for-id="motherNumberChilden" is-dense v-model="child.childMotherNumber"
                           more-class="font-16 font-medium text-grey-9" :data="child.childMotherNumber ?? '-'" is-require
                           label="บุตรลำดับที่ (ของมารดา)" placeholder="" type="number" class="" :is-view="isView"
-                          :error="!!isError?.childMotherNumber">
+                          :error="!!isError?.childMotherNumber"
+                          :rules="[(val) => !!val || 'กรุณากรอกบุตรลำดับที่ (ของมารดา)']" lazy-rules>
                         </InputGroup>
                       </div>
                     </div>
@@ -304,26 +362,23 @@
 
                     <div v-if="child.childPassedAway">
                       <div class="row q-mb-md">
-                        <div class="col-md-4 col-12 q-mr-xl">
+                        <div class="col-md-5 col-12 q-mr-xl">
                           <InputGroup for-id="delegateNumber" is-dense v-model="child.delegateNumber"
                             more-class="font-16 font-medium text-grey-9" :data="child.delegateNumber ?? '-'" is-require
-                            label="แทนที่บุตรลำดับที่" type="number" class="font-14" :is-view="isView" placeholder="" />
+                            label="แทนที่บุตรลำดับที่" type="number" class="font-14" :is-view="isView" placeholder=""
+                            :rules="[(val) => !!val || 'กรุณากรอกแทนที่บุตรลำดับที่']" lazy-rules />
                         </div>
 
-                        <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none">
-                          <InputGroup for-id="delegateName" more-class="font-16 font-medium text-grey-9"
-                            label="ชื่อ - นามสกุล" compclass="col-6" is-require clearable :is-view="isView"
-                            :data="child.delegateName ?? '-'">
-                            <q-select hide-bottom-space is-dense v-model="child.delegateName" :loading="isLoading"
-                              id="selected-status" popup-content-class="font-14 font-regular"
-                              class="font-14 font-regular" outlined :options="optionsChildName" dense clearable
-                              option-value="name" emit-value map-options option-label="name" />
+                        <div class="col-md-5 col-12 ">
+                          <InputGroup for-id="delegateName" is-dense v-model="child.delegateName"
+                            more-class="font-16 font-medium text-grey-9" :data="child.delegateName ?? '-'"
+                            label="ชื่อ - นามสุกล" placeholder="" type="text" :is-view="isView" disable color="dark">
                           </InputGroup>
                         </div>
                       </div>
 
                       <div class="row q-mb-md">
-                        <div class="col-12 col-md-4 q-mr-xl">
+                        <div class="col-12 col-md-5 q-mr-xl">
                           <InputGroup for-id="delegateBirthDay" more-class="font-16 font-medium text-grey-9"
                             label="เกิดเมื่อ" compclass="col-6 q-pr-none" clearable :is-view="isView"
                             :data="child.delegateBirthDay ?? '-'">
@@ -332,12 +387,13 @@
                           </InputGroup>
                         </div>
 
-                        <div class="col-12 col-md-4 q-ml-lg-xl q-ml-sm-none">
+                        <div class="col-12 col-md-5">
                           <InputGroup for-id="delegateDeathDay" more-class="font-16 font-medium text-grey-9"
                             label="ถึงแก่กรรมเมื่อ" compclass="col-6 q-pr-none" clearable :is-view="isView"
                             :data="child.delegateDeathDay ?? '-'">
                             <DatePicker is-dense v-model:model="child.delegateDeathDay"
-                              v-model:dateShow="child.delegateDeathDay" for-id="date" :no-time="true" range-time />
+                              v-model:dateShow="child.delegateDeathDay" for-id="date" :no-time="true" range-time
+                              :rules="[(val) => !!val || 'กรุณากรอกวันที่ถึงแก่กรรม']" lazy-rules />
                           </InputGroup>
                         </div>
                       </div>
@@ -348,30 +404,65 @@
 
                     <div class="row q-mb-md">
 
-                      <div class="col-md-4 col-12 q-mr-xl">
-                        <InputGroup for-id="fund" is-dense v-model="child.schoolName" :data="child.schoolName ?? '-'"
-                          more-class="font-16 font-medium text-grey-9" is-require label="สถานศึกษา" placeholder=""
-                          type="text" class="" :is-view="isView" :error="!!isError?.schoolName">
-                        </InputGroup>
+                      <div class="col-md-5 col-12 q-mr-xl q-gutter-y-md">
+                        <p class="require q-mb-none font-16 font-medium text-grey-9">สถานศึกษา</p>
+
+                        <q-input v-if="isView" v-model="child.schoolName" for="general-school"
+                          :data="child.schoolName ?? '-'" type="text" class="col-md-5 col-12 no-border q-mt-none"
+                          :is-view="isView" />
+
+                        <div v-if="!isView" class="row">
+                          <q-radio v-if="!isView" v-model="child.schoolType" :data="child.schoolType ?? '-'"
+                            val="ทั่วไป" label="โรงเรียนทั่วไป" class="col-md-5 col-12"
+                            :disable="!model.eligibleBenefits.includes('ก') && !model.eligibleBenefits.includes('ข')" />
+
+                          <q-input v-if="!isView" v-model="child.schoolNamegeneral" outlined dense type="text"
+                            :data="child.schoolNamegeneral ?? '-'" :disable="child.schoolType !== 'ทั่วไป'"
+                            class="col-md-6 col-12" :error="!!isError?.schoolNamegeneral"
+                            :rules="[(val) => !!val || 'กรุณากรอกชื่อสถานศึกษา']" lazy-rules />
+
+                        </div>
+
+                        <div v-if="!isView" class="row">
+                          <q-radio v-if="!isView" v-model="child.schoolType" :data="child.schoolType ?? '-'"
+                            val="สาธิตพิบูลบําเพ็ญ" label="โรงเรียนสาธิตพิบูลบําเพ็ญ" class="col-md-5 col-12"
+                            :disable="!model.eligibleSubSenefits.includes('ค')" />
+
+                          <q-select v-if="!isView" hide-bottom-space
+                            popup-content-class="font-14 font-regular text-grey-9"
+                            v-model="child.schoolNameDemonstration" is-dense :loading="isLoading" id="selected-status"
+                            :data="child.schoolNameDemonstration ?? '-'" outlined class="col-md-6 col-12"
+                            :disable="child.schoolType !== 'สาธิตพิบูลบําเพ็ญ'" :options="optionSchoolType" dense
+                            clearable option-value="value" emit-value map-options option-label="name"
+                            :error="!!isError?.schoolNameDemonstration"
+                            :rules="[(val) => !!val || 'กรุณาเลือกหลักสูตรโรงเรียนสาธิตพิบูลบําเพ็ญ']" lazy-rules>
+                          </q-select>
+
+                        </div>
                       </div>
 
-                      <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
+
+
+
+                      <div class="col-md-5 col-12 ">
                         <InputGroup more-class="font-16 font-medium text-grey-9" label="ระดับชั้นที่ศึกษา" is-require
                           clearable :data="isView ? child.subCategoriesName : child.subCategoriesId" :is-view="isView">
-                          <q-select v-model="child.subCategoriesId" :loading="isLoading" id="selected-status"
-                            popup-content-class="font-14 font-regular" class="font-14 font-regular" outlined
-                            :options="optionsSubCategory" dense clearable option-value="value" emit-value map-options
-                            option-label="label" v-if="!isView" :error="!!isError?.subCategoriesId" />
+                          <q-select hide-bottom-space v-model="child.subCategoriesId" :loading="isLoading"
+                            id="selected-status" popup-content-class="font-14 font-regular" class="font-14 font-regular"
+                            outlined :options="child.subCategories || []" dense clearable option-value="value"
+                            emit-value map-options option-label="label" v-if="!isView"
+                            :error="!!isError?.subCategoriesId" :rules="[(val) => !!val || 'กรุณาเลือกระดับชั้น']"
+                            lazy-rules />
                         </InputGroup>
                       </div>
                     </div>
 
                     <div class="row q-mb-md">
 
-                      <div class="col-md-4 col-12 q-mr-lg-xl q-mr-sm-none">
+                      <div class="col-md-5 col-12 q-mr-lg-xl q-mr-sm-none">
                         <InputGroup for-id="province" is-dense :data="child.province ?? '-'" is-require label="จังหวัด"
                           placeholder="" type="text" :is-view="isView">
-                          <q-select @filter="filterFnProvince" @filter-abort="abortFilterFn" use-input
+                          <q-select hide-bottom-space @filter="filterFnProvince" @filter-abort="abortFilterFn" use-input
                             input-debounce="100" clearable popup-content-class="font-14 font-regular"
                             class="font-14 font-regular" :loading="isLoading" id="selected-province" outlined
                             v-model="child.province" :options="optionProvinceSelected" dense option-value="name_th"
@@ -386,12 +477,12 @@
                         </InputGroup>
                       </div>
 
-                      <div class="col-md-4 col-12 q-ml-xl">
+                      <div class="col-md-5 col-12 ">
                         <InputGroup for-id="district" is-dense :data="child.district ?? '-'"
                           more-class="font-16 font-medium text-grey-9" is-require label="อำเภอ" placeholder=""
                           type="text" class="" :is-view="isView" :error="!!isError?.district">
-                          <q-select @filter="filterFnDistrict" @filter-abort="abortFilterFnDistrict" use-input
-                            input-debounce="100" clearable popup-content-class="font-14 font-regular"
+                          <q-select hide-bottom-space @filter="filterFnDistrict" @filter-abort="abortFilterFnDistrict"
+                            use-input input-debounce="100" clearable popup-content-class="font-14 font-regular"
                             class="font-14 font-regular" :loading="isLoading" id="selected-district" outlined
                             v-model="child.district" :options="optionsDistrict" dense option-value="name_th" emit-value
                             map-options option-label="name_th" :error="!!isError?.district"
@@ -404,25 +495,22 @@
                             </template>
                           </q-select>
                         </InputGroup>
-
-                        <div>
-
-                        </div>
                       </div>
 
 
                     </div>
 
                     <div class="row q-mb-md">
-                      <div class="col-md-4 col-12 q-mr-xl">
+                      <div class="col-md-5 col-12 q-mr-xl">
                         <InputGroup for-id="fundReceipt" is-dense v-model="child.fundReceipt"
                           more-class="font-16 font-medium text-grey-9" :data="child.fundReceipt ?? '-'" is-require
                           label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="" type="text" class="" :is-view="isView"
-                          :error="!!isError?.fundReceipt">
+                          :error="!!isError?.fundReceipt" :rules="[(val) => !!val || 'กรุณากรอกจำนวนเงินตามใบเสร็จ']"
+                          lazy-rules>
                         </InputGroup>
                       </div>
 
-                      <div class="col-md-4 col-12 q-ml-lg-xl q-ml-sm-none ">
+                      <div class="col-md-5 col-12 ">
                         <InputGroup for-id="fundOther" is-dense v-model="child.fundOther" :data="child.fundOther ?? '-'"
                           more-class="font-16 font-medium text-grey-9"
                           label="เบิกจากหน่วยงานอื่นแล้ว เป็นจำนวนเงิน (บาท)" placeholder="" type="text" class=""
@@ -432,16 +520,39 @@
                     </div>
 
                     <div class="row q-mb-md">
-                      <div class="col-md-4 col-12 q-mr-xl">
-                        <InputGroup for-id="fundUniversity" is-dense v-model="child.fundUniversity"
+                      <div class="col-md-5 col-12 q-mr-xl">
+                        <InputGroup for-id="fundReceipt" is-dense v-model="child.fundUniversity"
                           more-class="font-16 font-medium text-grey-9" :data="child.fundUniversity ?? '-'" is-require
-                          label="ขอเบิกจากสวัสดิการมหาวิทยาลัย จำนวนเงิน (บาท)" placeholder="" type="text" class=""
-                          :is-view="isView" :error="!!isError?.fundUniversity">
+                          label="ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(8) จำนวนเงิน (บาท)" placeholder="" type="text" class=""
+                          :disable="child.schoolType !== 'ทั่วไป' && child.schoolNameDemonstration !== 'สาธิตพิบูลบําเพ็ญ นานาชาติ'"
+                          :is-view="isView" :error="!!isError?.fundUniversity"
+                          :rules="[(val) => !!val || 'กรุณากรอกจำนวนเงินตามเบิกจากสวัสดิการมหาวิทยาลัย 5(8)']"
+                          lazy-rules>
+                        </InputGroup>
+                      </div>
+
+                      <div class="col-md-5 col-12 ">
+                        <InputGroup for-id="fundOther" is-dense v-model="child.fundSubUniversity"
+                          :data="child.fundSubUniversity ?? '-'" more-class="font-16 font-medium text-grey-9" is-require
+                          label="ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10) จำนวนเงิน (บาท)" placeholder="" type="text"
+                          :disable="child.schoolType !== 'สาธิตพิบูลบําเพ็ญ'" class="" :is-view="isView"
+                          :error="!!isError?.fundSubUniversity"
+                          :rules="[(val) => !!val || 'กรุณากรอกจำนวนเงินตามเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)']"
+                          lazy-rules>
                         </InputGroup>
                       </div>
                     </div>
 
-                    <q-separator />
+                    <div class="row q-mb-md">
+                      <div class="col-md-5 col-12 q-mr-xl">
+                        <InputGroup for-id="fundUniversity" is-dense v-model="child.fundSumRequest"
+                          more-class="font-16 font-medium text-grey-9" :data="child.fundSumRequest ?? '-'" is-require
+                          label="รวมเป็นจำนวนเงิน (บาท)" placeholder="" type="text" class="" :is-view="isView"
+                          :error="!!isError?.fundSumRequest" :disable="true">
+                        </InputGroup>
+                      </div>
+                    </div>
+                    <q-separator v-if="model.child.length > 1 && index < model.child.length - 1" />
                   </div>
 
                 </q-card-section>
@@ -501,7 +612,7 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash, formatNumber } from "src/components/format";
+import { formatDateThaiSlash } from "src/components/format";
 import DatePicker from "src/components/DatePicker.vue";
 import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -524,14 +635,12 @@ const userInitialData = ref([]);
 const route = useRoute();
 
 const userData = ref({});
+const remaining = ref({});
 const shcoolData = ref([]);
-const canRequest = ref(false);
 let optionsUserName = ref([]);
 let optionsChildName = ref([]);
-let optionsSubCategory = ref([]);
 const optionProvinceSelected = ref([]);
 const optionsDistrict = ref([]);
-const remaining = ref([]);
 const optionPrefix = ref(['นาย', 'นาง', 'นางสาว'])
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
@@ -567,9 +676,12 @@ const model = ref({
   fundEligible: 0,
   spouse: null,
   marryRegis: null,
+  parentalStatus: null,
   role: null,
-  eligible: null,
-  categoriesId: null,
+  eligible: "ตามสิทธิ",
+  eligibleBenefits: [],
+  eligibleSubSenefits: [],
+  categoriesId: [],
   deleteChild: [
     {
       id: null,
@@ -580,12 +692,18 @@ const model = ref({
       fundReceipt: null,
       fundEligible: 0,
       fundUniversity: null,
+      fundSubUniversity: null,
+      fundSumRequest: null,
       fundOther: null,
       childName: null,
+      childNumber: 1,
       childBirthDay: null,
       childFatherNumber: null,
       childMotherNumber: null,
       schoolName: null,
+      schoolNamegeneral: null,
+      schoolNameDemonstration: null,
+      schoolType: null,
       district: null,
       province: null,
       subCategoriesId: null,
@@ -603,12 +721,17 @@ function addChildForm() {
     fundReceipt: null,
     fundEligible: 0,
     fundUniversity: null,
+    fundSubUniversity: null,
+    fundSumRequest: null,
     fundOther: null,
     childName: null,
+    childNumber: model.value.child.length + 1,
     childBirthDay: null,
     childFatherNumber: null,
     childMotherNumber: null,
-    schoolName: null,
+    schoolNamegeneral: null,
+    schoolNameDemonstration: null,
+    schoolType: null,
     district: null,
     province: null,
     subCategoriesId: null,
@@ -618,6 +741,7 @@ function addChildForm() {
     delegateBirthDay: null,
     delegateDeathDay: null
   });
+  console.log("เพิ่มบุตรใหม่:", model.value.child.map(child => child.childNumber));
 }
 
 
@@ -632,20 +756,37 @@ const spouseData = ref({
   }
 });
 
-let optionsEligible = [
-  { label: "ตามสิทธิ", value: "ตามสิทธิ" },
-  { label: "เฉพาะส่วนที่ยังขาดจากสิทธิ", value: "เฉพาะส่วนที่ยังขาดจากสิทธิ" },
+
+let optionsMarry = [
+  { name: "จดทะเบียน", value: "YES" },
+  { name: "ไม่จดทะเบียน", value: "NO" },
 
 ];
-const selectedEligible = computed(() => {
-  const selectedOption = optionsEligible.find(opt => opt.value === model.value.eligible);
 
-  if (selectedOption) {
-    return selectedOption.label;
-  } else {
-    return "ไม่พบข้อมูล";
-  }
-});
+let optionSchoolType = [
+  { name: "ปกติ", value: "สาธิตพิบูลบําเพ็ญ" },
+  { name: "นานาชาติ", value: "สาธิตพิบูลบําเพ็ญ นานาชาติ" },
+];
+
+let optionsparentalStatus = [
+  { name: "บิดา", value: "บิดา" },
+  { name: "มารดา", value: "มารดา" },
+
+];
+
+const isPassedAway = (index) => {
+  if (!model.value || !Array.isArray(model.value.child)) return false;
+
+  const child = model.value.child[index];
+  if (!child || !child.childName) return false;
+
+  return model.value.child.some(
+    (c) => c.delegateName?.trim() === child.childName?.trim()
+  );
+};
+
+const fullNameSpouse = computed(() => model.value.prefix + " " + model.value.spouse)
+
 
 const selectedChildNames = computed(() => model.value.child.map(child => child.childName));
 
@@ -655,56 +796,117 @@ const availableChildOptions = computed(() => {
 
 async function fetchRemaining() {
   try {
-    const fetchRemaining = await reimbursementChildrenEducationService.getRemaining({
+    const fetchRemainingData = await reimbursementChildrenEducationService.getRemaining({
       createFor: model.value.createFor
     });
+    console.log("fetchRemainingData:", fetchRemainingData);
 
-    if (fetchRemaining.data?.datas && Array.isArray(fetchRemaining.data.datas)) {
-      remaining.value = fetchRemaining.data.datas.map(item => ({
+    var returnedData = fetchRemainingData.data.datas;
+
+    // แปลงเป็น array หาก `returnedData` เป็น object ที่มี key เป็นตัวเลข
+    if (returnedData) {
+      const dataArray = Object.values(returnedData);  // แปลงเป็น array
+      remaining.value = dataArray.map(item => ({
         childName: item.childName,
-        fundRemaining: formatNumber(item.fundRemaining), // ✅ ใช้ฟิลด์ที่ถูกต้อง
-        requestsRemaining: formatNumber(item.requestsRemaining)
+        fund: item?.fund,
+        totalSumRequested: item?.totalSumRequested,
+        perTime: item?.perTime,
+        fundRemaining: item?.fundRemaining
       }));
 
-      canRequest.value = fetchRemaining.data.canRequest;
-
-    } else {
-      console.warn("⚠️ ไม่มีข้อมูล remaining");
+      console.log("remaining:", JSON.stringify(remaining));
     }
+
   } catch (error) {
     console.error("❌ Error fetching remaining:", error);
   }
 }
 
 
-
-
+// ฟังก์ชันในการจัดการการแสดงผลข้อมูลเด็ก
 const displayedChildren = computed(() => {
+  const dataArray = Array.isArray(remaining.value) ? remaining.value : [];
+  console.log("dataArray:", dataArray);
+  console.log("optionsChildName", optionsChildName.value)
 
   return optionsChildName.value.map((child, index) => {
-    const foundChild = remaining.value?.find(r => r.childName?.trim() === child.name?.trim());
+    const childNameToCompare = child.name?.trim().toLowerCase();  // ตรวจสอบก่อนใช้
+    console.log("Comparing:", childNameToCompare, "with", dataArray.map(r => r.childName));
 
-    if (!child.childName) {
-      console.warn(`⚠️ พบข้อมูลบุตรที่ไม่มีชื่อ:`, child);
-    }
+    const foundChild = dataArray.find(r =>
+      r.childName?.trim().toLowerCase() === childNameToCompare
+    ) || null;
+
+    console.log("foundChild:", foundChild);
 
     return {
       index: index + 1,
-      childName: child.childName || `บุตรคนที่ ${index + 1}`,  // ✅ ป้องกัน undefined
-      fundRemaining: foundChild ? foundChild.fundRemaining : '-',
+      childName: child.childName || `บุตรคนที่ ${index + 1}`,
+      fundRemaining: foundChild ? (foundChild.totalSumRequested || '-') : '-',
     };
   });
 });
 
 
+async function fetchDeadChildByDelegateNumber(delegateNumber, childItem) {
+  if (!delegateNumber) {
+    childItem.delegateName = null;
+    childItem.delegateBirthDay = null;
+    return;
+  }
+  isLoading.value = true;
+  try {
+    const fetchDeadChild = await reimbursementChildrenEducationService.getDeadChild({ delegateNumber });
+    const deadChildData = fetchDeadChild?.data?.datas?.[0]; // คาดว่า API จะคืนข้อมูลมาเป็น array
+
+    if (deadChildData) {
+      childItem.delegateName = deadChildData.childName ?? '-';
+      childItem.delegateBirthDay = deadChildData.childBirthDay ?? '-';
+    } else {
+      childItem.delegateName = null;
+      childItem.delegateBirthDay = null;
+    }
+  } catch (error) {
+    console.error("❌ Error in fetchDeadChildByDelegateNumber:", error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+watch(
+  () => model.value.child.map(child => child.delegateNumber),
+  async (newDelegateNumbers, oldDelegateNumbers) => {
+    model.value.child.forEach(async (child, index) => {
+      if (newDelegateNumbers[index] !== oldDelegateNumbers[index]) {
+        if (child.childPassedAway) {
+          await fetchDeadChildByDelegateNumber(newDelegateNumbers[index], child);
+        } else {
+          child.delegateName = null;
+          child.delegateBirthDay = null;
+        }
+      }
+    });
+    await nextTick();
+  },
+  { deep: true }
+);
+
+
+watch(
+  () => model.value.child.map(child => child.subCategoriesId),
+  (newValue, oldValue) => {
+    if (JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
+      fetchRemaining(); // ฟังก์ชันนี้จะถูกเรียกเมื่อค่ามีการเปลี่ยนแปลง
+    }
+  }
+);
+
+
+
 async function fetchSchoolName() {
   try {
     const result = await reimbursementChildrenEducationService.getLastShcoolName();
-    console.log("📌 API Response:", result.data); // ✅ ดูโครงสร้างข้อมูลที่ได้จริง ๆ
-
     if (result.data && result.data.ChildInformation) {
       shcoolData.value = result.data.ChildInformation;
-      console.log("✅ School Data:", JSON.stringify(shcoolData.value));
     } else {
       console.warn("⚠️ ไม่มีข้อมูล shcoolData หรือ ChildInformation ไม่ถูกต้อง", result.data);
     }
@@ -713,28 +915,92 @@ async function fetchSchoolName() {
   }
 
 }
+watch(
+  () => ({
+    eligibleBenefits: [...model.value.eligibleBenefits],
+    eligibleSubSenefits: [...model.value.eligibleSubSenefits],
+    children: model.value.child.map(child => ({
+      name: child.childName,
+      schoolType: child.schoolType,
+      schoolName: child.schoolNamegeneral || child.schoolNameDemonstration,
+    }))
+  }),
+  async ({ eligibleBenefits, eligibleSubSenefits, children }) => {
 
+    if (!eligibleBenefits.length && !eligibleSubSenefits.length) {
+      console.log("⚠️ กรุณาเลือก categoriesId ก่อน...");
+      return;
+    }
+
+    const hasValidSchoolType = children.some(child => child.schoolType);
+    if (!hasValidSchoolType) {
+      console.log("⏳ รอให้เลือก schoolType อย่างน้อย 1 คน...");
+      return;
+    }
+
+    // ✅ รอ Vue อัปเดตค่าให้เสร็จก่อนเรียก API
+    await nextTick();
+
+    // ✅ หน่วงเวลาเล็กน้อยเพื่อตรวจสอบซ้ำ
+    setTimeout(() => {
+      if (!model.value.child.some(child => child.schoolType)) {
+        console.log("⏳ ค่า schoolType ยังไม่ถูกตั้งค่า รอ...");
+        return;
+      }
+      getSubCategory();
+    }, 300);
+  },
+  { deep: true, immediate: true }
+);
 
 const getSubCategory = async () => {
   try {
-    const result = await reimbursementChildrenEducationService.getSubCategories({
-      categories_id: model.value.categoriesId
-    });
+    if (!Array.isArray(model.value.child) || model.value.child.length === 0) {
+      console.log("❌ ไม่มีข้อมูลเด็ก ไม่สามารถดึงหมวดหมู่ย่อยได้");
+      return;
+    }
 
-    // แปลงข้อมูลให้ตรงกับรูปแบบที่ q-select ต้องการ
-    const returnedData = result.data.map(item => ({
-      value: item.id, // ใช้ id เป็น value
-      label: item.name // ใช้ name เป็น label
-    }));
+    for (const child of model.value.child) {
+      let categoriesId = null;
 
-    optionsSubCategory.value = returnedData;  // อัปเดต optionsSubCategory
+      if (model.value.eligibleBenefits.includes('ก') && child.schoolType === 'ทั่วไป') {
+        categoriesId = 13;
+      } else if (model.value.eligibleBenefits.includes('ข') && child.schoolType === 'ทั่วไป') {
+        categoriesId = 14;
+      } else if (model.value.eligibleSubSenefits.includes('ค') && child.schoolType === 'สาธิตพิบูลบําเพ็ญ' && child.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ') {
+        categoriesId = 15;
+      } else if (model.value.eligibleBenefits.includes('ก') && model.value.eligibleSubSenefits.includes('ค') && child.schoolType === 'สาธิตพิบูลบําเพ็ญ' && child.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ นานาชาติ') {
+        categoriesId = 16;
+      } else if (model.value.eligibleBenefits.includes('ข') && model.value.eligibleSubSenefits.includes('ค') && child.schoolType === 'สาธิตพิบูลบําเพ็ญ' && child.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ นานาชาติ') {
+        categoriesId = 17;
+      }
+
+      if (!categoriesId) {
+        console.log(`⚠️ เด็ก ${child.childName} ไม่ตรงเงื่อนไข categories_id`);
+        child.subCategories = [];
+        continue;
+      }
+
+      console.log(`📤 ดึง subCategories สำหรับเด็ก: ${child.childName} (categories_id: ${categoriesId})`);
+
+      const result = await reimbursementChildrenEducationService.getSubCategories({
+        categories_id: categoriesId
+      });
+
+      console.log(`📥 ข้อมูลที่ได้รับสำหรับ ${child.childName}:`, result.data);
+
+      // เก็บค่า subCategories ไว้ในตัวเด็ก
+      child.subCategories = result.data.map(item => ({
+        value: item.id,
+        label: item.name
+      }));
+    }
   } catch (error) {
+    console.log("❌ Error:", error);
     const errorMessage = error?.response?.data?.message ?? "กรุณาเลือกสิทธิ";
     alert(errorMessage);
   }
 };
-
-
 
 async function fetchUserData(id) {
   try {
@@ -826,16 +1092,67 @@ watch(
 
 
 watch(
-  () => model.value.child.map(child => child.fundUniversity - child.fundOther),
+  () =>
+    model.value.child?.map((child) => ({
+      childName: child.childName?.trim().toLowerCase() || "", // ป้องกัน childName เป็น undefined
+      fundSum:
+        (parseFloat(child.fundUniversity) || 0) + (parseFloat(child.fundSubUniversity) || 0),
+      fundRemaining:
+        (parseFloat(child.fundReceipt) || 0) - (parseFloat(child.fundOther) || 0),
+    })) || [],
   async (newValues) => {
     newValues.forEach((newValue, index) => {
-      model.value.child[index].fundSumRequest = newValue || 0;
+      const dataArray = Array.isArray(remaining.value) ? remaining.value : [];
+
+      // ตรวจสอบว่า newValue.childName มีค่าหรือไม่
+      if (!newValue.childName) {
+        model.value.child[index].fundSumRequest = "ไม่มีข้อมูลชื่อบุตร";
+        return;
+      }
+
+      // หาข้อมูลใน remaining.value ที่ตรงกับ childName
+      const item = dataArray.find(
+        (r) => r.childName?.trim().toLowerCase() === newValue.childName
+      );
+
+      if (!item) {
+        // กรณีไม่เจอข้อมูลใน remaining.value
+        model.value.child[index].fundSumRequest =
+          newValue.fundSum <= newValue.fundRemaining
+            ? newValue.fundSum ?? 0
+            : "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
+        return;
+      }
+
+      // ตรวจสอบค่าต่าง ๆ ให้แน่ใจว่าเป็นตัวเลข
+      const fundLimit = parseFloat((parseFloat(item.fund) || 0).toFixed(2));
+      const fundRemaining = parseFloat((parseFloat(item.fundRemaining) || 0).toFixed(2));
+      const fundSum = (newValue.fundSum || 0).toFixed(2);
+      console.log("Raw fundSum:", fundSum);
+      console.log("Parsed fundLimit:", fundLimit);
+
+      if (fundSum > fundLimit) {
+
+        model.value.child[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเพดานเงินที่กำหนด ${fundLimit}`;
+      } else if (fundSum > fundRemaining) {
+        model.value.child[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเงินคงเหลือ ${fundRemaining}`;
+      } else if (fundSum > newValue.fundRemaining) {
+        model.value.child[index].fundSumRequest = "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
+      } else {
+        model.value.child[index].fundSumRequest = fundSum;
+      }
     });
 
     await nextTick(); // อัปเดต UI หลังจากการคำนวณ
   },
   { deep: true }
 );
+
+
+
+
+
+
 
 
 async function filterFn(val, update) {
@@ -914,40 +1231,12 @@ async function fetchDataEdit() {
       const returnedData = result.data.datas;
 
       if (returnedData) {
-        // ตรวจสอบ isEdit เพื่อแยก prefix และ name
         let prefix = null;
         let name = returnedData?.spouse ?? "-";
 
-        if (isEdit.value && returnedData?.spouse) {
-          const spouseParts = returnedData.spouse.split(' ');
-          prefix = spouseParts[0] ?? null;
-          name = spouseParts.slice(1).join(' ') || null;
-
-          model.value = {
-          ...model.value,
-          createFor: returnedData?.user?.userId ?? null,
-          reimNumber: returnedData?.reimNumber ?? "-",
-          requestDate: returnedData?.requestDate ?? "-",
-          status: returnedData?.status ?? "-",
-          eligible: returnedData?.eligible ?? null,
-          prefix: prefix, // กำหนด prefix ที่แยกแล้ว
-          spouse: name,   // กำหนด name ที่แยกแล้ว
-          marryRegis: returnedData?.marryRegis ?? null,
-          role: returnedData?.role ?? null,
-          position: returnedData?.position ?? "-",
-          department: returnedData?.department ?? "-",
-          categoriesId: returnedData?.category?.id ?? null,
-          child: Array.isArray(returnedData.children)
-            ? returnedData.children.map(child => ({
-                ...child,
-                childBirthDay: child.childBirthDay ?? "-",
-                subCategoriesId: child.sub_category?.id ?? null,
-                subCategoriesName: child.sub_category?.name ?? "-",
-                childPassedAway: child.childType === "DELEGATE"
-              }))
-            : []
-        };
-        }
+        const spouseParts = returnedData.spouse.split(' ');
+        prefix = spouseParts[0] ?? null;
+        name = spouseParts.slice(1).join(' ') || null;
 
         model.value = {
           ...model.value,
@@ -955,23 +1244,33 @@ async function fetchDataEdit() {
           reimNumber: returnedData?.reimNumber ?? "-",
           requestDate: returnedData?.requestDate ?? "-",
           status: returnedData?.status ?? "-",
+          prefix: prefix,
+          spouse: name,
           eligible: returnedData?.eligible ?? null,
-          spouse: returnedData?.spouse, 
           marryRegis: returnedData?.marryRegis ?? null,
+          parentalStatus: returnedData?.parentalStatus ?? null,
           role: returnedData?.role ?? null,
           position: returnedData?.position ?? "-",
           department: returnedData?.department ?? "-",
           categoriesId: returnedData?.category?.id ?? null,
           child: Array.isArray(returnedData.children)
             ? returnedData.children.map(child => ({
-                ...child,
-                childBirthDay: child.childBirthDay ?? "-",
-                subCategoriesId: child.sub_category?.id ?? null,
-                subCategoriesName: child.sub_category?.name ?? "-",
-                childPassedAway: child.childType === "DELEGATE"
-              }))
+              ...child,
+              schoolType: child.schoolType ?? "-",
+              schoolName: child.schoolName,
+              schoolNamegeneral:
+                child.schoolType === "ทั่วไป" ? child.schoolName ?? "-" : null,
+              schoolNameDemonstration:
+                child.schoolType === "สาธิตพิบูลบําเพ็ญ" ? child.schoolName ?? "-" : null,
+              childBirthDay: child.childBirthDay ?? "-",
+              subCategoriesId: child.sub_category?.id ?? null,
+              subCategoriesName: child.sub_category?.name ?? "-",
+              childPassedAway: child.childType === "DELEGATE"
+            }))
             : []
         };
+        model.value.eligibleBenefits.push(returnedData?.eligibleBenefits)
+        model.value.eligibleSubSenefits.push(returnedData?.eligibleSubSenefits)
       }
 
     } catch (error) {
@@ -985,6 +1284,9 @@ async function fetchDataEdit() {
     isLoading.value = false;
   }, 100);
 }
+
+
+
 
 
 function removeChildForm(index) {
@@ -1036,6 +1338,50 @@ watch(
 );
 
 watch(
+  () => model.value.marryRegis,
+  async (newValue) => {
+    if (newValue === 'NO') {
+      model.value.prefix = null;
+      model.value.spouse = null;
+      model.value.role = null;
+      spouseData.value = {
+        officer: {
+          position: null,
+          department: null
+        },
+        enterprises: {
+          position: null,
+          department: null
+        }
+      };
+    }
+  },
+  { deep: true, immediate: true }
+);
+
+
+let isClear = false;
+watch(
+  () => model.value.child.map((child) => child.schoolType),
+  async (newSchoolTypes, oldSchoolTypes) => {
+    if (oldSchoolTypes) { // ตรวจสอบว่า oldSchoolTypes มีข้อมูลหรือไม่
+      newSchoolTypes.forEach((newSchoolType, index) => {
+        if ((newSchoolType !== oldSchoolTypes[index])) {
+          if (!isClear) {
+            isClear = true;
+            return;
+          }
+          model.value.child[index].schoolNameDemonstration = null;
+          model.value.child[index].schoolNamegeneral = null;
+          model.value.child[index].subCategoriesId = null;
+        }
+      });
+    }
+  }
+);
+
+
+watch(
   () => model.value.createFor,
   (newValue) => {
     try {
@@ -1060,52 +1406,46 @@ watch(
 
 
 
-const options = [
-  {
-    label: 'สำหรับผู้ปฏิบัติงานที่เริ่มปฏิบัติงานตั้งแต่วันที่ 26 มีนาคม พ.ศ. 2561 หรือ ผู้ปฏิบัติงานที่ปฏิบัติงานก่อนประกาศนี้มีผลใช้บังคับและมีบุตรที่เริ่มเข้าศึกษาตั้งแต่ ปีการศึกษา 2561',
-    value: 13
-  },
-  {
-    label: 'สำหรับผู้ปฏิบัติงานที่เริ่มปฏิบัติงานก่อนวันที่ 26 มีนาคม พ.ศ. 2561 หรือ ผู้ปฏิบัติงานที่ปฏิบัติงานก่อนประกาศนี้มีผลใช้บังคับ ',
-    value: 14
-  },
-  {
-    label: 'สำหรับผู้ปฏิบัติงานที่มีบุตร ที่เริ่มเข้าศึกษาในโรงเรียนสาธิต “พิบูลบำเพ็ญ” มหาวิทยาลัยบูรพา โดยเข้าศึกษาตั้งแต่ภาคปลายปีการศึกษา 2560 เป็นต้นไป',
-    value: 15
-  },
-  {
-    label: 'สำหรับผู้ปฏิบัติงานที่เริ่มปฏิบัติงานตั้งแต่วันที่ 26 มีนาคม พ.ศ. 2561 ที่มีบุตรเริ่มเข้าศึกษาในโรงเรียนสาธิต “พิบูลบำเพ็ญ” มหาวิทยาลัยบูรพาหลักสูตร การศึกษานานาชาติขั้นพื้นฐาน ตั้งแต่ปีการศึกษา 2561 เป็นต้นไป',
-    value: 16
-  },
-  {
-    label: 'สำหรับผู้ปฏิบัติงานที่เริ่มปฏิบัติงานก่อนวันที่ 26 มีนาคม พ.ศ. 2561 ที่มีบุตรเริ่มเข้าศึกษาในโรงเรียนสาธิต “พิบูลบำเพ็ญ” มหาวิทยาลัยบูรพาหลักสูตร การศึกษานานาชาติขั้นพื้นฐาน ตั้งแต่ปีการศึกษา 2561 เป็นต้นไป',
-    value: 17
-  },
-
-]
 
 
-const selectedCategoryLabel = computed(() => {
-  const selectedOption = options.find(opt => opt.value === model.value.categoriesId);
+const benefitsOptions = [
+  { label: "(ก) สำหรับผู้ปฏิบัติงานที่เริ่มปฏิบัติงานตั้งแต่วันที่ 26 มีนาคม พ.ศ. 2561 หรือ ผู้ปฏิบัติงานที่ปฏิบัติงานก่อนประกาศนี้มีผลใช้บังคับและมีบุตรที่เริ่มเข้าศึกษาตั้งแต่ ปีการศึกษา 2561", value: "ก" },
+  { label: "(ข) สำหรับผู้ปฏิบัติงานที่เริ่มปฏิบัติงานก่อนวันที่ 26 มีนาคม พ.ศ. 2561 หรือ ผู้ปฏิบัติงานที่ปฏิบัติงานก่อนประกาศนี้มีผลใช้บังคับ", value: "ข" }
+];
 
-  if (selectedOption) {
-    return selectedOption.label;
-  } else {
-    return "ไม่พบข้อมูล";
+const subBenefitsOptions = [
+  { label: "(ค) สำหรับผู้ปฏิบัติงานที่มีบุตร ที่เริ่มเข้าศึกษาในโรงเรียนสาธิต “พิบูลบำเพ็ญ” มหาวิทยาลัยบูรพา โดยเข้าศึกษาตั้งแต่ภาคปลายปีการศึกษา 2560 เป็นต้นไป", value: "ค" }
+];
+
+
+const selectedEligibleBenefits = computed(() => {
+  const selectedBenefits = benefitsOptions.find(opt => opt.value === model.value.eligibleBenefits[0]);
+  const selectedSubBenefits = subBenefitsOptions.find(opt => opt.value === model.value.eligibleSubSenefits[0]);
+  if (selectedBenefits && selectedSubBenefits) {
+    return `${selectedBenefits.label}\n${selectedSubBenefits.label}`;
   }
+  else if (selectedBenefits && !selectedSubBenefits) {
+    return selectedBenefits.label;
+  }
+  else if (!selectedBenefits && selectedSubBenefits) {
+    return selectedSubBenefits.label;
+  }
+  return "ไม่พบข้อมูล";
 });
 
-
-let optionsMarry = [
-  { name: "จดทะเบียน", value: "YES" },
-  { name: "ไม่จดทะเบียน", value: "NO" },
-
-];
 
 const selectedMarryLabel = computed(() => {
   if (!model.value.marryRegis) return "ไม่พบข้อมูล"; // ✅ ตรวจสอบค่าก่อน
 
   const selectedOption = optionsMarry.find(opt => opt.value === model.value.marryRegis);
+  return selectedOption ? selectedOption.name : "ไม่พบข้อมูล";
+});
+
+const selectedparentalStatusLabel = computed(() => {
+  console.log("parentalStatus" + model.value.parentalStatus)
+  if (!model.value.parentalStatus) return "ไม่พบข้อมูล"; // ✅ ตรวจสอบค่าก่อน
+
+  const selectedOption = optionsparentalStatus.find(opt => opt.value === model.value.parentalStatus);
   return selectedOption ? selectedOption.name : "ไม่พบข้อมูล";
 });
 
@@ -1136,27 +1476,21 @@ async function submit(actionId) {
     validate = true;
   }
 
-  if (!model.value.spouse) {
+  if (!model.value.spouse && model.value.marryRegis === 'YES') {
     isError.value.spouse = "กรุณากรอกชื่อคู่สมรส";
     validate = true;
+    console.log("กรุณากรอกชื่อคู่สมรส :" + validate)
   }
   if (!model.value.marryRegis) {
     isError.value.marryRegis = "โปรดเลือกการจดทะเบียนสมรส";
     validate = true;
+    console.log("โปรดเลือกการจดทะเบียนสมรส :" + validate)
   }
 
-  if (!model.value.role) {
+  if (!model.value.role && model.value.marryRegis === 'YES') {
     isError.value.role = "โปรดเลือกประเภทคู่สมรส";
     validate = true;
-  }
-
-  if (!model.value.eligible) {
-    isError.value.eligible = "โปรดเลือกสิทธิขอรับเงินสวัสดิการ";
-    validate = true;
-  }
-  if (!model.value.categoriesId) {
-    isError.value.categoriesId = "โปรดเลือกสิทธิสวัสดิการ";
-    validate = true;
+    console.log("โปรดเลือกประเภทคู่สมรส :" + validate)
   }
 
   if (model.value.child && model.value.child.length > 0) {
@@ -1165,8 +1499,12 @@ async function submit(actionId) {
         isError.value.fundReceipt = "กรุณากรอกจำนวนเงินตามใบเสร็จ";
         validate = true;
       }
-      if (!c.fundUniversity) {
-        isError.value.fundUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย";
+      if (!c.fundUniversity && c.schoolType === 'ทั่วไป' || c.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ นานาชาติ') {
+        isError.value.fundUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย 5(8)";
+        validate = true;
+      }
+      if (!c.fundSubUniversity && c.schoolType === 'สาธิตพิบูลบําเพ็ญ') {
+        isError.value.fundSubUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย 5(9), 5(10)";
         validate = true;
       }
       if (!c.childName) {
@@ -1181,8 +1519,12 @@ async function submit(actionId) {
         isError.value.childMotherNumber = "กรุณากรอกลำดับบุตรของมารดา";
         validate = true;
       }
-      if (!c.schoolName) {
-        isError.value.schoolName = "กรุณากรอกชื่อสถาบันศึกษา";
+      if (!c.schoolNamegeneral && c.schoolType === 'ทั่วไป') {
+        isError.value.schoolName = "กรุณากรอกชื่อสถาบันศึกษาทั่วไป";
+        validate = true;
+      }
+      if (!c.schoolNameDemonstration && c.schoolType === 'สาธิตพิบูลบําเพ็ญ') {
+        isError.value.schoolName = "กรุณาเลือกชื่อสถาบันศึกษา";
         validate = true;
       }
       if (!c.district) {
@@ -1196,11 +1538,13 @@ async function submit(actionId) {
       if (!c.subCategoriesId) {
         isError.value.subCategoriesId = "โปรดเลือกระดับชั้นที่ศึกษา";
         validate = true;
+
       }
     });
   }
 
   if (validate) {
+    console.log("validate" + validate)
     Notify.create({
       message: "กรุณากรอกข้อมูลให้ครบถ้วน",
       position: "bottom-left",
@@ -1217,44 +1561,49 @@ async function submit(actionId) {
     createFor: canCreateFor.value ? model.value.createFor : null,
     fundSumReceipt: model.value.fundSumReceipt,
     fundEligible: model.value.fundEligible,
-    actionId: actionId ?? null, // ป้องกัน actionId เป็น undefined
+    actionId: actionId ?? null,
     spouse: model.value.spouse,
-    eligible: model.value.eligible,
     marryRegis: model.value.marryRegis,
+    parentalStatus: model.value.parentalStatus,
     role: model.value.role,
-    position: spouseData.value.officer.position || spouseData.value.enterprises.position,
-    department: spouseData.value.officer.department || spouseData.value.enterprises.department,
-    categoriesId: model.value.categoriesId,
-    deleteChild: model.value.deleteChild,
+    eligible: model.value.eligible,
+    position: spouseData.value.officer?.position || spouseData.value.enterprises?.position,
+    department: spouseData.value.officer?.department || spouseData.value.enterprises?.department,
+    eligibleBenefits: model.value.eligibleBenefits[0],
+    eligibleSubSenefits: model.value.eligibleSubSenefits[0],
+    deleteChild: model.value.deleteChild?.filter(c => c.id !== null) || [],
     child: model.value.child.map(c => {
       let childData = {
         id: c.id,
         fundReceipt: c.fundReceipt,
         fundEligible: c.fundEligible,
-        fundOther: c.fundOther,
+        fundOther: c.fundOther ?? 0,
         childName: c.childName,
-        fundUniversity: c.fundUniversity,
+        childNumber: c.childNumber,
+        fundUniversity: c.fundUniversity ?? 0,
+        fundSubUniversity: c.fundSubUniversity ?? 0,
         childBirthDay: c.childBirthDay,
         childFatherNumber: c.childFatherNumber,
         childMotherNumber: c.childMotherNumber,
-        schoolName: c.schoolName,
+        schoolName: c.schoolNamegeneral ?? c.schoolNameDemonstration ?? null, // ✅ ป้องกัน undefined
+        schoolType: c.schoolType,
         district: c.district,
         province: c.province,
         subCategoriesId: c.subCategoriesId,
         childPassedAway: c.childPassedAway
       };
 
-      // ✅ ถ้า childPassedAway เป็น true ให้เพิ่ม delegate เข้าไป
       if (c.childPassedAway) {
-        childData.delegateName = c.delegateName;
-        childData.delegateNumber = c.delegateNumber;
-        childData.delegateBirthDay = c.delegateBirthDay;
-        childData.delegateDeathDay = c.delegateDeathDay;
+        childData.delegateName = c.delegateName ?? null;
+        childData.delegateNumber = c.delegateNumber ?? null;
+        childData.delegateBirthDay = c.delegateBirthDay ?? null;
+        childData.delegateDeathDay = c.delegateDeathDay ?? null;
       }
 
       return childData;
     })
   };
+
 
 
   let fetch; // เปลี่ยนจาก var เป็น let
@@ -1277,7 +1626,7 @@ async function submit(actionId) {
           fetch = await reimbursementChildrenEducationService.update(route.params.id, payload);
         } else {
 
-
+          console.log("Payload before sending:", JSON.stringify(payload, null, 2));
           fetch = await reimbursementChildrenEducationService.create(payload);
         }
         isValid = true;
@@ -1337,6 +1686,7 @@ async function init() {
       userInitialData.value = result.data.datas;
       optionsUserName.value = result.data.datas;
       fetchDataEdit();
+      fetchRemaining();
     }
     else {
       if (!canCreateFor.value) {
@@ -1356,3 +1706,13 @@ async function init() {
   isLoading.value = false;
 }
 </script>
+<style scoped>
+.text {
+  white-space: pre-line;
+}
+
+:deep(.no-border) .q-field__control:before,
+:deep(.no-border) .q-field__control:after {
+  display: none !important;
+}
+</style>

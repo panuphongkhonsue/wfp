@@ -13,28 +13,28 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     fund_receipt: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: false
     },
     fund_eligible: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: false
     },
     fund_sum_request: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: false
     },
     fund_sum_receipt: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: false
     },
     fund_university: {
-      type: DataTypes.DECIMAL(10,0),
+      type: DataTypes.DECIMAL(10,2),
       allowNull: false
     },
     fund_other: {
-      type: DataTypes.DECIMAL(10,0),
-      allowNull: false
+      type: DataTypes.DECIMAL(10,2),
+      allowNull: true
     },
     status: {
       type: DataTypes.ENUM('บันทึกฉบับร่าง','รอตรวจสอบ','อนุมัติ'),
@@ -42,7 +42,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     spouse: {
       type: DataTypes.STRING(255),
-      allowNull: false
+      allowNull: true
     },
     marry_regis: {
       type: DataTypes.ENUM('YES','NO'),
@@ -50,7 +50,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     role: {
       type: DataTypes.STRING(255),
-      allowNull: false
+      allowNull: true
     },
     position: {
       type: DataTypes.STRING(255),
@@ -64,6 +64,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATEONLY,
       allowNull: true
     },
+    parental_status: {
+      type: DataTypes.ENUM('บิดา','มารดา'),
+      allowNull: false
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -71,6 +75,14 @@ module.exports = function(sequelize, DataTypes) {
     },
     eligible: {
       type: DataTypes.ENUM('ตามสิทธิ', 'เฉพาะส่วนที่ยังขาดจากสิทธิ'),
+      allowNull: true
+    },
+    eligible_benefits: {
+      type: DataTypes.ENUM('ก', 'ข', 'ค'),
+      allowNull: true
+    },
+    eligible_sub_benefits: {
+      type: DataTypes.ENUM('ก', 'ข', 'ค'),
       allowNull: true
     },
     updated_at: {
@@ -92,7 +104,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     categories_id: {
       type: DataTypes.BIGINT,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'categories',
         key: 'id'

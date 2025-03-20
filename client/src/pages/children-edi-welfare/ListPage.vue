@@ -344,20 +344,20 @@ const columns = ref([
     },
     classes: "ellipsis",
   },
-  {
-    name: "fundEligible",
-    label: "จำนวนเงินที่เบิกได้ตามสิทธ",
-    align: "right",
-    field: (row) => row?.fundEligible ?? "-",
-    format: (val) => {
-      const number = Number(val); // Convert to number
-      if (!isNaN(number)) {
-        return number.toLocaleString("en-US"); // Format as '3,000'
-      }
-      return `${val}`; // If conversion fails, return a fallback value
-    },
-    classes: "ellipsis",
-  },
+  // {
+  //   name: "fundEligible",
+  //   label: "จำนวนเงินที่เบิกได้ตามสิทธ",
+  //   align: "right",
+  //   field: (row) => row?.fundEligible ?? "-",
+  //   format: (val) => {
+  //     const number = Number(val); // Convert to number
+  //     if (!isNaN(number)) {
+  //       return number.toLocaleString("en-US"); // Format as '3,000'
+  //     }
+  //     return `${val}`; // If conversion fails, return a fallback value
+  //   },
+  //   classes: "ellipsis",
+  // },
   {
     name: "fundSumRequest",
     label: "จำนวนเงินที่ขอเบิกทั้งหมด",
