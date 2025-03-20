@@ -121,13 +121,9 @@
                   <q-td v-else :props="props" class="text-grey-9">
                     <q-input class="font-14 font-regular" dense
                       v-model="model.claimByEligible[props.row.id - 1].fundEligible" outlined autocomplete="off"
-                      hide-bottom-space color="dark" type="number" :forId="'input-fundEligible' + props.row.id"
+                      hide-bottom-space color="dark" type="number" :error="!!isErrorFundSum && props.row.id === 2" :error-message="props.row.id === 2 ? isErrorFundSum : ''" :forId="'input-fundEligible' + props.row.id"
                       placeholder="0" :rules="[
                         (val) => (props.row.id === 2 && !val ? 'กรุณากรอกข้อมูลที่ต้องการเบิก' : true),
-                        (val) => (props.row.id === 2 && isOverfundRemaining === 2 ? 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้': true),
-                        (val) => (props.row.id === 2 && isOverfundRemaining === 1 ? 'สามารถเบิกได้สูงสุด ' + remaining.perTimesRemaining + ' บาทต่อครั้ง': true),
-                        (val) => (props.row.id === 2 && isOverfundRemaining === 3 ? 'คุณใช้จำนวนการเบิกครบแล้ว': true),
-                        (val) => (props.row.id === 2 && isOverfundRemaining === 4 ? 'สามารถเบิกได้สูงสุด ' + fundEligibleSumValue + ' บาท': true),
                       ]">
                     </q-input>
                   </q-td>
@@ -265,6 +261,7 @@ const fundEligibleSumValue = computed(() => {
   return Number(model.value.fundReceipt) - (Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[2].fundEligible));
 });
 
+const isFetchRemaining = ref(false);
 const isOverfundRemaining = computed(() => {
   let check = false;
   const fundEligibleSum = Number(model.value.fundReceipt) - (Number(model.value.claimByEligible[0].fundEligible) + Number(model.value.claimByEligible[2].fundEligible));
@@ -276,8 +273,8 @@ const isOverfundRemaining = computed(() => {
   else if (Number(model.value.claimByEligible[1].fundEligible) > perTimes && remaining.value.perTimesRemaining) {
     check = 1;
   }
-  else if (model.value.claimByEligible[1].fundEligible > fundEligibleSum) {
-    return check = 4;
+  else if ((model.value.claimByEligible[1].fundEligible > fundEligibleSum)) {
+    check = 4;
   }
   if (!canRequest.value && isFetchRemaining.value) {
     check = 3;
@@ -285,10 +282,33 @@ const isOverfundRemaining = computed(() => {
   return check;
 });
 
+const isErrorFundSum = computed(() => {
+  if(isOverfundRemaining.value === 2){
+    return 'จำนวนที่ขอเบิกเกินจำนวนที่สามารถเบิกได้'
+  }
+  else if (isOverfundRemaining.value === 1){
+    return 'สามารถเบิกได้สูงสุด ' + remaining.value.perTimesRemaining + ' บาทต่อครั้ง'
+  }
+  else if (isOverfundRemaining.value === 4 && !isOver.value){
+    return 'สามารถเบิกได้สูงสุด ' + fundEligibleSumValue.value + ' บาท'
+  }
+  else if (isOverfundRemaining.value === 3){
+    return 'คุณใช้จำนวนการเบิกครบแล้ว'
+  }
+  return '';
+})
+
+
 
 watch(
   () => model.value.claimByEligible,
   () => {
+    if (isOver.value) {
+      isError.value.fundReceipt = "จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
+    }
+    else {
+      isError.value.fundReceipt = null;
+    }
     if (!model.value.claimByEligible[2]?.fundEligible && !model.value.claimByEligible[2]?.fundEligibleName) return;
     setTimeout(async () => {
       try {
@@ -313,12 +333,6 @@ watch(
       }
       isLoading.value = false;
     }, 2000);
-    if (isOver.value) {
-      isError.value.fundReceipt = "จำนวนตามใบเสร็จต้องมากกว่าเงินที่ได้รับจากสิทธิอื่น ๆ";
-    }
-    else {
-      isError.value.fundReceipt = null;
-    }
   },
   { deep: true }
 );
@@ -425,7 +439,7 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
+
 async function fetchRemaining() {
   try {
     const fetchRemaining = await healthCheckUpWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -437,6 +451,9 @@ async function fetchRemaining() {
     }
     if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
       remaining.value.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
+    }
+    if (fetchRemaining.data?.datas?.perUsersRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perUsersRemaining))) {
+      remaining.value.perUsersRemaining = formatNumber(fetchRemaining.data?.datas?.perUsersRemaining);
     }
     if (fetchRemaining.data?.datas?.categoryName != null) {
       remaining.value.categoryName = fetchRemaining.data?.datas?.categoryName;

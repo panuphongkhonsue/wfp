@@ -448,7 +448,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [
-                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_eligible)"),
+                    literal("sub_category.per_users - COUNT(reimbursements_general.fund_eligible)"),
                     "perUsersRemaining"
                 ]
             ],
@@ -482,7 +482,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [
-                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_sum_request_patient_visit)"),
+                    literal("sub_category.per_users - COUNT(reimbursements_general.fund_sum_request_patient_visit)"),
                     "perUsersRemaining"
                 ]
             ],
@@ -649,7 +649,7 @@ const checkRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [
-                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_eligible)"),
+                    literal("sub_category.per_users - COUNT(reimbursements_general.fund_eligible)"),
                     "perUsersRemaining"
                 ]
             ],
@@ -683,7 +683,7 @@ const checkRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [
-                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_sum_request_patient_visit)"),
+                    literal("sub_category.per_users - COUNT(reimbursements_general.fund_sum_request_patient_visit)"),
                     "perUsersRemaining"
                 ]
             ],

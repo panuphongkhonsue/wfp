@@ -212,6 +212,12 @@ async function init() {
     else {
       remaining.value.perTimesRemaining = null;
     }
+    if (fetchRemaining.data?.datas?.perUsersRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perUsersRemaining))) {
+      remaining.value.perUsersRemaining = formatNumber(fetchRemaining.data?.datas?.perUsersRemaining);
+    }
+    else {
+      remaining.value.perUsersRemaining = null;
+    }
   }
   catch (error) {
     Promise.reject(error);

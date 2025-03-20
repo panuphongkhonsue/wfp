@@ -533,6 +533,9 @@ async function fetchRemaining() {
     if (accidentData.perTimesRemaining != null && !isNaN(Number(accidentData.perTimesRemaining))) {
       remaining.value.accident.perTimesRemaining = formatNumber(accidentData.perTimesRemaining);
     }
+    if (accidentData.perUsersRemaining != null && !isNaN(Number(accidentData.perUsersRemaining))) {
+      remaining.value.accident.perUsersRemaining = formatNumber(accidentData.perUsersRemaining);
+    }
     if (accidentData.fund != null && !isNaN(Number(accidentData.fund))) {
       remaining.value.accident.fund = formatNumber(accidentData.fund);
     }
@@ -550,6 +553,9 @@ async function fetchRemaining() {
     }
     if (patientVisitData.perTimesRemaining != null && !isNaN(Number(patientVisitData.perTimesRemaining))) {
       remaining.value.patientVisit.perTimesRemaining = formatNumber(patientVisitData.perTimesRemaining);
+    }
+    if (patientVisitData.perUsersRemaining != null && !isNaN(Number(patientVisitData.perUsersRemaining))) {
+      remaining.value.patientVisit.perUsersRemaining = formatNumber(patientVisitData.perUsersRemaining);
     }
     if (patientVisitData.fund != null && !isNaN(Number(patientVisitData.fund))) {
       remaining.value.patientVisit.fund = formatNumber(patientVisitData.fund);

@@ -205,6 +205,12 @@ async function init() {
     if (accidentData.perTimesRemaining != null && !isNaN(Number(accidentData.perTimesRemaining))) {
       remaining.value.accident.perTimesRemaining = formatNumber(accidentData.perTimesRemaining);
     }
+    if (accidentData.perUsersRemaining != null && !isNaN(Number(accidentData.perUsersRemaining))) {
+      remaining.value.accident.perUsersRemaining = formatNumber(accidentData.perUsersRemaining);
+    }
+    if (accidentData.subCategoriesName != null) {
+      remaining.value.accident.categoryName = accidentData.subCategoriesName;
+    }
     if (patientVisitData.requestsRemaining != null && !isNaN(Number(patientVisitData.requestsRemaining))) {
       remaining.value.patientVisit.requestsRemaining = formatNumber(patientVisitData.requestsRemaining);
     }
@@ -213,6 +219,12 @@ async function init() {
     }
     if (patientVisitData.perTimesRemaining != null && !isNaN(Number(patientVisitData.perTimesRemaining))) {
       remaining.value.patientVisit.perTimesRemaining = formatNumber(patientVisitData.perTimesRemaining);
+    }
+    if (patientVisitData.perUsersRemaining != null && !isNaN(Number(patientVisitData.perUsersRemaining))) {
+      remaining.value.patientVisit.perUsersRemaining = formatNumber(patientVisitData.perUsersRemaining);
+    }
+    if (patientVisitData.subCategoriesName != null) {
+      remaining.value.patientVisit.categoryName = patientVisitData.subCategoriesName;
     }
   }
   catch (error) {
