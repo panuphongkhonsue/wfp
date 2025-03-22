@@ -57,7 +57,7 @@
         <div v-if="!isView" class="col-md-3 col-12">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md q-py-md font-18 font-bold">
-              <p class="q-mb-none">จำนวนเงินคงเหลือ</p>
+              <p class="q-mb-none">จำนวนเงินที่เบิกไปแล้ว</p>
             </q-card-section>
             <q-separator />
             <q-card-section class="q-px-md q-py-md font-medium font-16 text-grey-7">
@@ -399,9 +399,6 @@
                       </div>
                     </div>
 
-
-
-
                     <div class="row q-mb-md">
 
                       <div class="col-md-5 col-12 q-mr-xl q-gutter-y-md">
@@ -440,9 +437,6 @@
 
                         </div>
                       </div>
-
-
-
 
                       <div class="col-md-5 col-12 ">
                         <InputGroup more-class="font-16 font-medium text-grey-9" label="ระดับชั้นที่ศึกษา" is-require
@@ -496,7 +490,6 @@
                           </q-select>
                         </InputGroup>
                       </div>
-
 
                     </div>
 

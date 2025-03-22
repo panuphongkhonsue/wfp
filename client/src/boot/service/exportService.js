@@ -3,6 +3,16 @@ import { api } from "../axios";
 const path = "export";
 
 export default {
+  async childrenEnducation(id) {
+    try {
+      const response = await api.get(`${path}/Children-Education/${id}`, {
+        responseType: "blob",
+      });
+      return response;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  },
   async healthCheckup(id) {
     try {
       const response = await api.get(`${path}/health-check-up/${id}`, {
