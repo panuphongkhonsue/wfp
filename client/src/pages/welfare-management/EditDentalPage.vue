@@ -198,7 +198,7 @@ let options = ref([]);
 const isLoading = ref(false);
 const canRequest = ref(false);
 const isView = ref(false);
-
+const isFetchRemaining = ref(false);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
@@ -369,7 +369,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await dentalWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -381,6 +380,9 @@ async function fetchRemaining() {
     }
     if (fetchRemaining.data?.datas?.perTimesRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perTimesRemaining))) {
       remaining.value.perTimesRemaining = formatNumber(fetchRemaining.data?.datas?.perTimesRemaining);
+    }
+    if (fetchRemaining.data?.datas?.perUsersRemaining != null && !isNaN(Number(fetchRemaining.data?.datas?.perUsersRemaining))) {
+      remaining.value.perUsersRemaining = formatNumber(fetchRemaining.data?.datas?.perUsersRemaining);
     }
     if (fetchRemaining.data?.datas?.categoryName != null) {
       remaining.value.categoryName = fetchRemaining.data?.datas?.categoryName;

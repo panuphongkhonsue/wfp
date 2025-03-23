@@ -200,7 +200,7 @@ const bindCreate = async (req, res, next) => {
             attributes: ["id"],
             order: [["id", "DESC"]] // Order by id in descending order
         });
-        var reimNumber;
+        var reimNumber = getYear2Digits() + formatNumber(welfareType.Assist) + formatNumber(categoryId) + formatNumber(1);
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
             reimNumber = getYear2Digits() + formatNumber(welfareType.Assist) + formatNumber(categoryId) + formatNumber(datas.id + 1);

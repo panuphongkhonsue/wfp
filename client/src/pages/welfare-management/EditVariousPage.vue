@@ -227,6 +227,8 @@ const userInitialData = ref([]);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
+const isFetchRemaining = ref(false);
+
 onMounted(async () => {
   await init();
   isLoading.value = false;
@@ -360,7 +362,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });

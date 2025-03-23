@@ -273,7 +273,7 @@ const userInitialData = ref([]);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
-
+const isFetchRemaining = ref(false);
 onMounted(async () => {
   await init();
   isLoading.value = false;
@@ -491,7 +491,6 @@ async function fetchUserData(id) {
     Promise.reject(error);
   }
 }
-const isFetchRemaining = ref(false);
 async function fetchRemaining() {
   try {
     const fetchRemaining = await medicalWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -512,6 +511,9 @@ async function fetchRemaining() {
     if (accidentData.perYears != null && !isNaN(Number(accidentData.perYears))) {
       remaining.value.accident.perYears = formatNumber(accidentData.perYears);
     }
+    if (accidentData.perUsersRemaining != null && !isNaN(Number(accidentData.perUsersRemaining))) {
+      remaining.value.accident.perUsersRemaining = formatNumber(accidentData.perUsersRemaining);
+    }
     if (accidentData.subCategoriesName != null) {
       remaining.value.accident.categoryName = accidentData.subCategoriesName;
     }
@@ -529,6 +531,9 @@ async function fetchRemaining() {
     }
     if (patientVisitData.perYears != null && !isNaN(Number(patientVisitData.perYears))) {
       remaining.value.patientVisit.perYears = formatNumber(patientVisitData.perYears);
+    }
+    if (patientVisitData.perUsersRemaining != null && !isNaN(Number(patientVisitData.perUsersRemaining))) {
+      remaining.value.patientVisit.perUsersRemaining = formatNumber(patientVisitData.perUsersRemaining);
     }
     if (patientVisitData.subCategoriesName != null) {
       remaining.value.patientVisit.categoryName = patientVisitData.subCategoriesName;

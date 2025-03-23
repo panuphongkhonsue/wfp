@@ -108,17 +108,25 @@ exports.login = async (req, res, next) => {
                         expiresIn: '1d',
                     }
                 );
-                const path = [
-                    {
-                        title: "หน้าหลัก",
-                        icon: "outlinedHome",
-                        to: "home",
-                    },
-                    ...userPermission.map((userObj) => getpathMenu(userObj)).filter((result) => result !== null && result !== undefined)
-                ];
-                const pathEditor = userPermission.map((userObj) => getpathMenuEditor(userObj)).filter((result) => result !== null && result !== undefined);
-                user.path = path;
-                if (pathEditor) user.pathEditor = pathEditor;
+                if(user.roleId !== 4){
+                    const path = [
+                        {
+                            title: "หน้าหลัก",
+                            icon: "outlinedHome",
+                            to: "home",
+                        },
+                        ...userPermission.map((userObj) => getpathMenu(userObj)).filter((result) => result !== null && result !== undefined)
+                    ];
+                    const pathEditor = userPermission.map((userObj) => getpathMenuEditor(userObj)).filter((result) => result !== null && result !== undefined);
+                    user.path = path;
+                    if (pathEditor) user.pathEditor = pathEditor;
+                }
+                else{
+                    const pathEditor = userPermission.map((userObj) => getpathMenuEditor(userObj)).filter((result) => result !== null && result !== undefined);
+                    user.path = null;
+                    if (pathEditor) user.pathEditor = pathEditor;
+                    user.redirectTo = "user_management_list";
+                }
                 logger.info('Complete', { method, data: { username } });
                 return res.status(200).send({ user, accessToken: token });
             }

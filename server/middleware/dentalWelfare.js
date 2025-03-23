@@ -191,7 +191,7 @@ const bindCreate = async (req, res, next) => {
             attributes: ["id"],
             order: [["id", "DESC"]]
         });
-        var reimNumber;
+        var reimNumber = getYear2Digits() + formatNumber(welfareType.general) + formatNumber(category.dentalWelfare) + formatNumber(1);
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
             reimNumber = getYear2Digits() + formatNumber(welfareType.general) + formatNumber(category.dentalWelfare) + formatNumber(Number(datas.id) + 1);
@@ -274,12 +274,6 @@ const bindUpdate = async (req, res, next) => {
             updated_by: id,
         }
         if (!isNullOrEmpty(actionId)) {
-            if (req.access && actionId != status.approve) {
-                console.log("pass");
-                return res.status(400).json({
-                    message: "ไม่มีการกระทำที่ต้องการ",
-                });
-            }
             dataBinding.status = actionId;
             if (actionId === status.waitApprove) {
                 dataBinding.request_date = new Date();

@@ -254,7 +254,7 @@ const bindCreate = async (req, res, next) => {
             attributes: ["id"],
             order: [["id", "DESC"]]
         });
-        var reimNumber;
+        var reimNumber = getYear2Digits() + formatNumber(welfareType.general) + formatNumber(category.medicalWelfare) + formatNumber(1);
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
             reimNumber = getYear2Digits() + formatNumber(welfareType.general) + formatNumber(category.medicalWelfare) + formatNumber(Number(datas.id) + 1);
@@ -356,11 +356,6 @@ const bindUpdate = async (req, res, next) => {
             updated_by: id,
         }
         if (!isNullOrEmpty(actionId)) {
-            if (req.access && actionId != status.approve) {
-                return res.status(400).json({
-                    message: "ไม่มีการกระทำที่ต้องการ",
-                });
-            }
             dataBinding.status = actionId;
             if (actionId === status.waitApprove) {
                 dataBinding.request_date = new Date();
@@ -448,7 +443,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [
-                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_eligible)"),
+                    literal("sub_category.per_users - COUNT(reimbursements_general.fund_eligible)"),
                     "perUsersRemaining"
                 ]
             ],
@@ -482,7 +477,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [
-                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_sum_request_patient_visit)"),
+                    literal("sub_category.per_users - COUNT(reimbursements_general.fund_sum_request_patient_visit)"),
                     "perUsersRemaining"
                 ]
             ],
@@ -649,7 +644,7 @@ const checkRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [
-                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_eligible)"),
+                    literal("sub_category.per_users - COUNT(reimbursements_general.fund_eligible)"),
                     "perUsersRemaining"
                 ]
             ],
@@ -683,7 +678,7 @@ const checkRemaining = async (req, res, next) => {
                     "requestsRemaining"
                 ],
                 [
-                    literal("category.per_users - COUNT(reimbursementsGeneral.fund_sum_request_patient_visit)"),
+                    literal("sub_category.per_users - COUNT(reimbursements_general.fund_sum_request_patient_visit)"),
                     "perUsersRemaining"
                 ]
             ],

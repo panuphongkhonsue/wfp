@@ -3,10 +3,10 @@
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md q-ml-md-md items-end" @submit="search">
         <div class="col-12 col-md-4 col-lg-2">
-          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense label="ตั้งแต่ปี">
-            <q-select clearable :loading="isLoading" id="selected-welfares" class="q-pt-sm font-14 font-regular"
-              popup-content-class="font-14 font-regular" outlined v-model="filters.name" :options="optionNameUser"
-              label="ชื่อ - นามสกุล" dense option-value="name" emit-value map-options option-label="name">
+          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense label="ปีงบประมาณ">
+            <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm font-14 font-regular"
+              popup-content-class="font-14 font-regular" outlined v-model="filters.year" :options="optionStartYear"
+              label="ปีงบประมาณ" dense option-value="name" emit-value map-options option-label="name">
               <template v-slot:no-option>
                 <q-item>
                   <q-item-section class="text-grey">No option</q-item-section>
@@ -16,11 +16,10 @@
           </InputGroup>
         </div>
         <div class="col-12 col-md-4 col-lg-2">
-
-          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense label="ถึงปี">
-            <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm font-14 font-regular"
-              popup-content-class="font-14 font-regular" outlined v-model="filters.year" :options="optionStartYear"
-              label="ปีงบประมาณ" dense option-value="name" emit-value map-options option-label="name">
+          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense label="ชื่อบุคลากร">
+            <q-select clearable :loading="isLoading" id="selected-welfares" class="q-pt-sm font-14 font-regular"
+              popup-content-class="font-14 font-regular" outlined v-model="filters.name" :options="optionNameUser"
+              label="ชื่อ - นามสกุล" dense option-value="name" emit-value map-options option-label="name">
               <template v-slot:no-option>
                 <q-item>
                   <q-item-section class="text-grey">No option</q-item-section>
@@ -354,7 +353,6 @@ function onRequest(props) {
       for (let i = 0; i < dataTable.value.length; i++) {
         for (let j = 0; j < viewDashboardData.length; j++) {
           if (dataTable.value[i].userId == viewDashboardData[j].created_by) {
-
             if (viewDashboardData[j].welfare_type === "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
               if (viewDashboardData[j].welfare_type == viewDashboardData[j - 1].welfare_type
                 && viewDashboardData[j].id == viewDashboardData[j - 1].id
@@ -362,8 +360,9 @@ function onRequest(props) {
                 continue;
               }
               else {
-                dataTable.value[i].ผู้ปฏิบัติงานสียชีวิตfund = dataTable.value[i].ผู้ปฏิบัติงานสียชีวิตfund
-                  = Number(dataTable.value[i].ผู้ปฏิบัติงานสียชีวิตfund + viewDashboardData[j].fund_sum_request);
+                console.log(dataTable.value[i])
+                dataTable.value[i].ผู้ปฏิบัติงานเสียชีวิตfund
+                  = (Number(dataTable.value[i].ผู้ปฏิบัติงานเสียชีวิตfund) || 0) + viewDashboardData[j].fund_sum_request;
               }
             }
 
@@ -374,8 +373,8 @@ function onRequest(props) {
                 continue;
               }
               else {
-                dataTable.value[i].การศึกษาของบุตรfund = dataTable.value[i].การศึกษาของบุตรfund
-                  = Number(dataTable.value[i].การศึกษาของบุตรfund + viewDashboardData[j].fund_sum_request);
+                dataTable.value[i].การศึกษาของบุตรfund
+                  = (Number(dataTable.value[i].การศึกษาของบุตรfund) || 0) + viewDashboardData[j].fund_sum_request;
               }
             }
             if (j > 0 && viewDashboardData[j].welfare_type == viewDashboardData[j - 1].welfare_type
@@ -522,28 +521,75 @@ async function fetchAllWelfare() {
 }
 
 function exportToExcel() {
+  // Clone and sort the data to avoid mutating the original model
+  const sortedData = [...model.value].sort((a, b) => a.userId - b.userId);
+
+  // Add 'fundSum' by summing up the individual fund columns for each row
+  sortedData.forEach(item => {
+    const fundColumns = [
+      'ตรวจสุขภาพ',
+      'ทำฟัน',
+      'ประสบอุบัติเหตุขณะปฏิบัติงาน',
+      'เยี่ยมไข้',
+      'สมรส',
+      'อุปสมบทหรือประกอบพิธีฮัจน์',
+      'รับขวัญบุตร',
+      'ประสบภัยพิบัติ',
+      'การศึกษาของบุตร',
+      'กรณีเจ็บป่วย',
+      'ผู้ปฏิบัติงานเสียชีวิต',
+      'เสียชีวิตคนในครอบครัว'
+    ];
+
+    // Sum the values of each fund column (without 'fund' in the column name)
+    item.fundSum = fundColumns.reduce((sum, column) => {
+      const columnName = `${column}fund`; // Rebuild the column name with 'fund' appended
+      return sum + (parseFloat(item[columnName]) || 0); // Ensure that missing or non-numeric values are treated as 0
+    }, 0);
+
+    // Change 'userId' to string
+    item.userId = String(item.userId); // Convert userId to a string
+  });
+
   // Ensure 'fundSum' is the last column by repositioning it
-  model.value.forEach(item => {
+  sortedData.forEach(item => {
     const fundSum = item.fundSum;
     delete item.fundSum; // Remove 'fundSum' from its current position
     item.fundSum = fundSum; // Add 'fundSum' back at the end
   });
 
-  // Convert the updated model to a sheet
-  const ws = XLSX.utils.json_to_sheet(model.value);
+  // Convert the sorted and updated model to a sheet
+  const ws = XLSX.utils.json_to_sheet(sortedData);
 
-  // Rename 'fundSum' to 'รวม'
-  Object.keys(ws).forEach(key => {
-    if (ws[key] && ws[key].v === 'fundSum') {
-      ws[key].v = 'รวม';
+  // Remove 'fund' from column names and rename specific headers
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  for (let C = range.s.c; C <= range.e.c; ++C) {
+    const address = XLSX.utils.encode_cell({ r: 0, c: C }); // Get the header row
+    if (ws[address]) {
+      // Remove 'fund' from all column names
+      ws[address].v = ws[address].v.replace('fund', '');
+
+      // Rename 'userId' to 'ไอดีผู้ใช้', 'userName' to 'ชื่อผู้ใช้', and 'fundSum' to 'รวม'
+      if (ws[address].v === 'userId') {
+        ws[address].v = 'ไอดีผู้ใช้'; // Change 'userId' header name
+      }
+      if (ws[address].v === 'userName') {
+        ws[address].v = 'ชื่อผู้ใช้'; // Change 'userName' header name
+      }
+      if (ws[address].v === 'fundSum') {
+        ws[address].v = 'รวม'; // Change 'fundSum' header name
+      }
     }
-  });
+  }
 
-  // Add the worksheet to a workbook and export as Excel
+  // Create a new workbook and append the worksheet
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  XLSX.utils.book_append_sheet(wb, ws, "SortedData");
+
+  // Export the sorted data as an Excel file
   XLSX.writeFile(wb, "ExportedData.xlsx");
 }
+
 </script>
 
 <style lang="css">

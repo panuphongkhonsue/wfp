@@ -184,31 +184,36 @@ async function fetchDataFundRequestPerYearEachType(filters) {
       page: 1,
       itemPerPage: 10000,
     });
+
+    // 🔹 เซ็ตข้อมูลหลัก
     dataFundRequestPerYearEachType.value = result.data.docs;
-    if (Array.isArray(result.data.docs)) {
-      donutSeries.value[0] = result.data.docs[0]?.total_fund ?? 0;
-      donutSeries.value[1] = result.data.docs[1]?.total_fund ?? 0;
-      donutSeries.value[2] = result.data.docs[2]?.total_fund ?? 0;
-      donutSeries.value[3] = result.data.docs[3]?.total_fund ?? 0;
-    }
-    else {
-      donutSeries.value[0] = 0;
-      donutSeries.value[1] = 0;
-      donutSeries.value[2] = 0;
-      donutSeries.value[3] = 0;
-    }
+
+    // 🔹 สร้าง Map เพื่อเก็บค่า total_fund ตาม welfare_type
+    const fundMap = new Map();
+    result.data.docs.forEach(item => {
+      fundMap.set(item.welfare_type, item.total_fund ?? 0);
+    });
+
+    // 🔹 อัปเดตค่า donutSeries ตามลำดับที่ถูกต้อง
+    donutSeries.value = [
+      fundMap.get('สวัสดิการทั่วไป') ?? 0,
+      fundMap.get('สวัสดิการค่าสงเคราะห์ต่าง ๆ') ?? 0,
+      fundMap.get('สวัสดิการค่าสงเคราะห์การเสียชีวิต') ?? 0,
+      fundMap.get('สวัสดิการเกี่ยวกับการศึกษาของบุตร') ?? 0
+    ];
+
     console.log("dataFundRequestPerYearEachType: ", result.data.docs);
     return result.data.docs;
   } catch (error) {
     Notify.create({
       message:
-        error?.response?.data?.errors ??
-        "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
+        error?.response?.data?.errors ?? "เกิดข้อผิดพลาดกรุณาลองอีกครั้ง",
       position: "bottom-left",
       type: "negative",
     });
   }
 }
+
 const chartDonut = ref({
   colors: ["#4472C4", "#ED7D31", "#A5A5A5", "#FFC000"],
   chart: {
