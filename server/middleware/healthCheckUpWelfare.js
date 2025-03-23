@@ -218,7 +218,7 @@ const bindCreate = async (req, res, next) => {
             attributes: ["id"],
             order: [["id", "DESC"]]
         });
-        var reimNumber;
+        var reimNumber = getYear2Digits() + formatNumber(welfareType.general) + formatNumber(category.healthCheckup) + formatNumber(1);
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
             reimNumber = getYear2Digits() + formatNumber(welfareType.general) + formatNumber(category.healthCheckup) + formatNumber(Number(datas.id) + 1);
