@@ -83,11 +83,39 @@ const bindFilter = async (req, res, next) => {
 const getRemaining = async (req, res, next) => {
     const method = 'RemainingMiddleware';
     try {
+        const { id } = req.user;
+        const { createFor } = req.query;
+        const { created_by, createByData } = req.body;
+        const { actionId } = req.body;
+        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
+            return next();
+        }
         req.query.filter = {};
         req.query.filter[Op.and] = [];
         const getFiscalYearWhere = getFiscalYear();
+        if (req.access && !isNullOrEmpty(createByData)) {
+            req.query.filter[Op.and].push(
+                { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': createByData },
+            );
+        }
+        else if (!isNullOrEmpty(created_by) && req.isEditor) {
+            req.query.filter[Op.and].push(
+                { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': created_by },
+            );
+        }
+        else if (!isNullOrEmpty(createFor) && req.isEditor) {
+            req.query.filter[Op.and].push(
+                { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': createFor },
+            );
+        }
+        else {
+            req.query.filter[Op.and].push(
+                { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': id },
+            );
+        }
         req.query.filter[Op.and].push(
             { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.request_date$': getFiscalYearWhere, },
+            { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.status$': { [Op.eq]: status.approve } }
         );
         next();
     }
@@ -285,7 +313,7 @@ const bindCreate = async (req, res, next) => {
         let childFundUniversity = 0;
         let childFundRequest = 0;
 
-        if (!isNullOrEmpty(req.body.child)) { 
+        if (!isNullOrEmpty(req.body.child)) {
 
             childFundReceipt = req.body.child.reduce((sum, child) => {
                 let sumReceipt = !isNaN(Number(child.fundReceipt)) ? Number(child.fundReceipt) : 0;
@@ -409,11 +437,24 @@ const bindUpdate = async (req, res, next) => {
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
-            if (req.access && (datas.status == statusText.draft || datas.status == statusText.approve)) {
+            if (req.access && (datas.status != statusText.waitApprove)) {
                 return res.status(400).json({
                     message: "ไม่สามารถแก้ไขได้ เนื่องจากสถานะไม่ถูกต้อง",
                 });
             }
+
+            if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
+                const dataBinding = {
+                    status: actionId,
+                    updated_by: id,
+                }
+                req.body = dataBinding;
+                return next();
+            }
+        } else {
+            return res.status(400).json({
+                message: "ไม่พบข้อมูล",
+            });
         }
 
         let childFundReceipt = 0;
@@ -488,6 +529,18 @@ const bindUpdate = async (req, res, next) => {
             if (hasNull) {
                 delete dataBinding.child;
             }
+        }
+        if (!isNullOrEmpty(actionId)) {
+            dataBinding.status = actionId;
+            if (actionId === status.waitApprove) {
+                dataBinding.request_date = new Date();
+            }
+        }
+        if (!isNullOrEmpty(createFor) && !req.access) {
+            dataBinding.created_by = createFor;
+        }
+        if (!isNullOrEmpty(createByData) && req.access) {
+            dataBinding.createByData = createByData;
         }
 
 
@@ -586,6 +639,9 @@ const authPermissionEditor = async (req, res, next) => {
 const checkNullValue = async (req, res, next) => {
     try {
         const { spouse, marryRegis, child, actionId } = req.body;
+        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
+            return next();
+        }
         const errorObj = {};
         if (!isInvalidNumber(spouse)) {
             errorObj["spouse"] = "ค่าที่กรอกไม่ใช่ตัวหนังสือ";
@@ -730,6 +786,9 @@ const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
         const { fund_sum_request, subCategoriesId } = req.body;
+        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
+            return next();
+        }
         const getFund = await subCategories.findAll({
             attributes: [
                 [col("fund"), "fundRemaining"],
@@ -739,7 +798,7 @@ const checkFullPerTimes = async (req, res, next) => {
         })
         let childFundRequest = 0;
 
-        if (!isNullOrEmpty(req.body.child)) { 
+        if (!isNullOrEmpty(req.body.child)) {
 
 
 
@@ -752,7 +811,7 @@ const checkFullPerTimes = async (req, res, next) => {
 
 
         }
-        
+
         if (getFund) {
             const datas = JSON.parse(JSON.stringify(getFund));
             if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
@@ -783,6 +842,9 @@ const checkUpdateRemaining = async (req, res, next) => {
         const userId = req.user?.id;
         var whereObj = { ...filter }
         const { fund_sum_request } = req.body;
+        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
+            return next();
+        }
 
         const results = await childrenInfomation.findAll({
             attributes: [

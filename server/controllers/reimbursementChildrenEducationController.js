@@ -63,74 +63,90 @@ class Controller extends BaseController {
     getRemainingChildFund = async (req, res, next) => {
         const method = 'GetRemainingChildFund'
         const { id } = req.user;
+        const { subCategoriesId } = req.body
         try {
             const { filter } = req.query;
             let whereObj = { ...filter };
-              const  results = await childrenInfomation.findAll({
-                    attributes: [
-                        [col("sub_category.id"), "subCategoryId"],
-                        [col("childrenInfomation.child_name"), "childName"],
-                        [col("sub_category.fund"), "fund"],
-                        [fn("SUM", col("childrenInfomation.fund_sum_request")), "totalSumRequested"],
-                        [
-                            literal("sub_category.fund - SUM(childrenInfomation.fund_sum_request)"),
-                            "fundRemaining"
-                        ],
-                        [col("sub_category.per_times"), "perTime"],
-                        [fn("COUNT", col("childrenInfomation.fund_sum_request")), "totalCountRequested"],
-                        [col("sub_category.per_years"), "perYears"],
-                        [
-                            literal("sub_category.per_years - COUNT(childrenInfomation.fund_sum_request)"),
-                            "requestsRemaining"
-                        ]
+            const results = await childrenInfomation.findAll({
+                attributes: [
+                    [col("sub_category.id"), "subCategoryId"],
+                    [col("childrenInfomation.child_name"), "childName"],
+                    [col("sub_category.fund"), "fund"],
+                    [fn("SUM", col("childrenInfomation.fund_sum_request")), "totalSumRequested"],
+                    [
+                        literal("sub_category.fund - SUM(childrenInfomation.fund_sum_request)"),
+                        "fundRemaining"
                     ],
-                    include: [
-                        {
-                            model: subCategories,
-                            as: "sub_category",
-                            attributes: []
-                        },
-                        {
-                            model: reimbursementsChildrenEducationHasChildrenInfomation,
-                            as: "reimbursements_children_education_has_children_infomations",
-                            required: true,
-                            attributes: [],
-                            include: [
-                                {
-                                    model: reimbursementsChildrenEducation,
-                                    as: "reimbursements_children_education",
-                                    required: true,
-                                    attributes: [],
-                                    where: { created_by: id }
-                                }
-                            ]
-                        }
-                    ],
-                    where: whereObj,
-                    group: [
-                        "childrenInfomation.child_name",
-                        "sub_category.id"
+                    [col("sub_category.per_times"), "perTime"],
+                    [fn("COUNT", col("childrenInfomation.fund_sum_request")), "totalCountRequested"],
+                    [col("sub_category.per_years"), "perYears"],
+                    [
+                        literal("sub_category.per_years - COUNT(childrenInfomation.fund_sum_request)"),
+                        "requestsRemaining"
                     ]
+                ],
+                include: [
+                    {
+                        model: subCategories,
+                        as: "sub_category",
+                        attributes: []
+                    },
+                    {
+                        model: reimbursementsChildrenEducationHasChildrenInfomation,
+                        as: "reimbursements_children_education_has_children_infomations",
+                        required: true,
+                        attributes: [],
+                        include: [
+                            {
+                                model: reimbursementsChildrenEducation,
+                                as: "reimbursements_children_education",
+                                required: true,
+                                attributes: [],
+                                where: { created_by: id }
+                            }
+                        ]
+                    }
+                ],
+                where: whereObj,
+                group: [
+                    "childrenInfomation.child_name",
+                    "sub_category.id"
+                ]
 
 
+            });
+            if (results && results.length > 0) {
+                const datas = JSON.parse(JSON.stringify(results));
+                if (dynamicCheckRemaining(datas)) datas.canRequest = false;
+                var reimChildrenEducation = {};
+                reimChildrenEducation.datas = {
+                    ...datas,
+                    canRequest: datas.canRequest ?? true
+                };
+                logger.info('Complete', { method, data: { id } });
+                res.status(200).json(reimChildrenEducation);
+            } const getFund = await subCategories.findOne({
+                attributes: [
+                    [col("name"), "subCategoriesName"],
+                    [col("fund"), "fundRemaining"],
+                    [col("per_years"), "requestsRemaining"],
+                    [col("per_times"), "perTimesRemaining"],
+                    [col("per_users"), "perUsers"],
+                ],
+                where: { id: subCategoriesId }
+            });
+            if (getFund) {
+                const datas = JSON.parse(JSON.stringify(getFund));
+                logger.info("Complete", { method, data: { id } });
+                return res.status(200).json({
+                    datas: datas,
+                    canRequest: datas.canRequest ?? true
                 });
-                if (results && results.length > 0) {
-                    const datas = JSON.parse(JSON.stringify(results));
-                    var reimChildrenEducation = {};
-                    reimChildrenEducation.datas = {
-                        ...datas
-                    };
-                    logger.info('Complete', { method, data: { id } });
-                    res.status(200).json(reimChildrenEducation);
-                } else {
-                    logger.info('Data not found', {
-                        method,
-                        data: { id, dataId },
-                    });
-                    res.status(404).json({
-                        message: `ไม่พบข้อมูล`,
-                    });
-                }
+            }
+            logger.info("Data not Found", { method, data: { id } });
+            res.status(200).json({
+                message: "มีสิทธิ์คงเหลือเท่ากับเพดานเงิน"
+            });
 
         } catch (error) {
             logger.error(`Error ${error.message}`, {
@@ -475,62 +491,62 @@ class Controller extends BaseController {
         const method = "getChildDeathBydelegateNumber";
         const { id } = req.user;
         let { delegateNumber } = req.query;
-      
+
         try {
-          // ดึงข้อมูล reimbursement ล่าสุด
-          const latestEducation = await reimbursementsChildrenEducation.findOne({
-            attributes: ["id"],
-            where: { created_by: id },
-            order: [["updated_at", "DESC"]],
-            limit: 1,
-          });
-      
-          if (!latestEducation) {
-            return res.status(404).json({ message: "ไม่พบข้อมูลการเบิกค่าศึกษาของบุตรล่าสุด" });
-          }
-      
-          // ตรวจสอบค่า delegateNumber ว่ามีข้อมูลหรือไม่
-          if (!delegateNumber) {
-            return res.status(400).json({ message: "กรุณาระบุ delegateNumber" });
-          }
-      
-          // แปลงค่าให้เป็น array เสมอ
-          const delegateNumbers = Array.isArray(delegateNumber) ? delegateNumber : [delegateNumber];
-      
-          // ดึงข้อมูลลูกที่มี delegateNumber ตรงกัน
-          const deadChildData = await childrenInfomation.findAll({
-            attributes: [
-              [col("child_name"), "childName"],
-              [col("child_birth_day"), "childBirthDay"],
-              [col("child_number"), "delegateNumber"],
-            ],
-            include: [
-              {
-                model: reimbursementsChildrenEducationHasChildrenInfomation,
-                as: "reimbursements_children_education_has_children_infomations",
-                required: true,
-                where: { reimbursements_children_education_id: latestEducation.id },
-              },
-            ],
-            where: {
-              child_number: {
-                [Op.in]: delegateNumbers, // รองรับหลาย delegateNumber
-              },
-            },
-          });
-      
-          if (deadChildData.length > 0) {
-            return res.status(200).json({ datas: deadChildData });
-          } else {
-            return res.status(404).json({ message: "ไม่พบข้อมูลโรงเรียนของบุตร" });
-          }
+            // ดึงข้อมูล reimbursement ล่าสุด
+            const latestEducation = await reimbursementsChildrenEducation.findOne({
+                attributes: ["id"],
+                where: { created_by: id },
+                order: [["updated_at", "DESC"]],
+                limit: 1,
+            });
+
+            if (!latestEducation) {
+                return res.status(404).json({ message: "ไม่พบข้อมูลการเบิกค่าศึกษาของบุตรล่าสุด" });
+            }
+
+            // ตรวจสอบค่า delegateNumber ว่ามีข้อมูลหรือไม่
+            if (!delegateNumber) {
+                return res.status(400).json({ message: "กรุณาระบุ delegateNumber" });
+            }
+
+            // แปลงค่าให้เป็น array เสมอ
+            const delegateNumbers = Array.isArray(delegateNumber) ? delegateNumber : [delegateNumber];
+
+            // ดึงข้อมูลลูกที่มี delegateNumber ตรงกัน
+            const deadChildData = await childrenInfomation.findAll({
+                attributes: [
+                    [col("child_name"), "childName"],
+                    [col("child_birth_day"), "childBirthDay"],
+                    [col("child_number"), "delegateNumber"],
+                ],
+                include: [
+                    {
+                        model: reimbursementsChildrenEducationHasChildrenInfomation,
+                        as: "reimbursements_children_education_has_children_infomations",
+                        required: true,
+                        where: { reimbursements_children_education_id: latestEducation.id },
+                    },
+                ],
+                where: {
+                    child_number: {
+                        [Op.in]: delegateNumbers, // รองรับหลาย delegateNumber
+                    },
+                },
+            });
+
+            if (deadChildData.length > 0) {
+                return res.status(200).json({ datas: deadChildData });
+            } else {
+                return res.status(404).json({ message: "ไม่พบข้อมูลโรงเรียนของบุตร" });
+            }
         } catch (error) {
-          console.error(`❌ Error: ${error.message}`, { method });
-          next(error);
+            console.error(`❌ Error: ${error.message}`, { method });
+            next(error);
         }
-      };
-      
-    
+    };
+
+
 
 
 

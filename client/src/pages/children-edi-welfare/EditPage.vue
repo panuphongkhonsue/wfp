@@ -1109,54 +1109,21 @@ watch(
     })) || [],
   async (newValues) => {
     newValues.forEach((newValue, index) => {
-      const dataArray = Array.isArray(remaining.value) ? remaining.value : [];
-
-      if (!newValue.childName) {
-        isError.value[index] = { fundSumRequest: `ไม่มีข้อมูลชื่อบุตร` }; // แก้ไขเป็นอ็อบเจ็กต์
-        return;
-      }
-
-      const item = dataArray.find(
-        (r) => r.childName?.trim().toLowerCase() === newValue.childName
-      );
-
-      const fundLimit = parseFloat((parseFloat(item?.fund) || 0).toFixed(2));
-      const fundRemaining = parseFloat((parseFloat(item?.fundRemaining) || 0).toFixed(2));
+      
       const fundSum = (newValue.fundSum || 0).toFixed(2);
 
-      if (item) {
-        if (fundSum > fundLimit) {
-          isError.value[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเพดานเงินที่กำหนด ${fundLimit}`;
-        } else if (fundSum > fundRemaining) {
-          isError.value[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเงินคงเหลือ ${fundRemaining}`;
-        } else if (fundSum > newValue.fundRemaining) {
-          isError.value[index].fundSumRequest = "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
-        } else {
-          model.value.child[index].fundSumRequest = fundSum;
-          isError.value[index].fundSumRequest = null;
-        }
-      } else {
         if (fundSum > newValue.fundRemaining) {
           isError.value[index].fundSumRequest = "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
         } else {
           model.value.child[index].fundSumRequest = fundSum;
-          isError.value[index].fundSumRequest = null;
         }
-      }
+      
     });
 
     await nextTick();
   },
   { deep: true }
 );
-
-
-
-
-
-
-
-
 
 async function filterFn(val, update) {
   try {
