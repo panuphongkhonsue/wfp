@@ -28,16 +28,14 @@
           <q-btn id="button-search" class="font-medium bg-blue-10 text-white font-16 q-px-sm weight-8 q-mt-xs" dense
             type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>
-        <div class="content-center flex justify-end q-pt-md-xs col-2 q-pt-xs-md q-pt-md-none">
-          <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
-          icon="add" :to="{ name: 'children_edu_welfare_new' }"/>
-        </div>
-
       </q-form>
-
     </template>
-
-
+    <template v-slot:toolbar>
+      <div class="col-12 flex justify-end">
+        <q-btn id="add-req" class="font-medium font-14 bg-blue-10 text-white q-px-sm" label="เพิ่มใบเบิกสวัสดิการ"
+          icon="add" :to="{ name: 'children_edu_welfare_new' }" />
+      </div>
+    </template>
     <template v-slot:table>
       <q-table :rows-per-page-options="[5, 10, 15, 20]" flat bordered :rows="model ?? []" :columns="columns"
         row-key="index" :loading="isLoading" :wrap-cells="$q.screen.gt.lg"
@@ -110,6 +108,7 @@ import {
   outlinedDownload,
 } from "@quasar/extras/material-icons-outlined";
 import reimbursementChildrenEducation from "src/boot/service/reimbursementChildrenEducationService";
+import exportService from "src/boot/service/exportService";
 defineOptions({
   name: "childrenEduWelfareList",
 });

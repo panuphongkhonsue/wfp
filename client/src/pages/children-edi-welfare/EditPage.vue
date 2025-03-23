@@ -24,7 +24,8 @@
                   id="selected-status" class="col-lg q-px-lg-md col-12 font-regular" outlined for="selected-user"
                   v-model="model.createFor" :options="optionsUserName" dense option-value="id" emit-value map-options
                   option-label="name" @filter="filterFn" use-input input-debounce="100" hide-bottom-space
-                  :error="!!isError?.createFor" :rules="[(val) => !!val || '']" @filter-abort="abortFilterFn">
+                  :error="!!isError?.createFor" :error-message="isError?.createFor" :rules="[(val) => !!val || '']"
+                  @filter-abort="abortFilterFn">
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey"> ไม่มีตัวเลือก </q-item-section>
@@ -131,7 +132,8 @@
                     <q-select hide-bottom-space popup-content-class="font-14 font-regular text-grey-9"
                       v-model="model.parentalStatus" is-dense :loading="isLoading" id="selected-status" outlined
                       :options="optionsparentalStatus" dense clearable option-value="value" emit-value map-options
-                      option-label="name" :rules="[(val) => !!val || 'กรุณาเลือกสถานะที่มีต่อบุตร']" lazy-rules>
+                      :error="!!isError?.parentalStatus" :error-message="isError?.parentalStatus" option-label="name"
+                      :rules="[(val) => !!val || 'กรุณาเลือกสถานะที่มีต่อบุตร']" lazy-rules>
                     </q-select>
                   </InputGroup>
                 </div>
@@ -142,7 +144,7 @@
                     <q-select hide-bottom-space popup-content-class="font-14 font-regular text-grey-9"
                       v-model="model.marryRegis" is-dense :loading="isLoading" id="selected-status" outlined
                       :options="optionsMarry" dense clearable option-value="value" emit-value map-options
-                      option-label="name" :error="!!isError?.marryRegis"
+                      option-label="name" :error="!!isError?.marryRegis" :error-message="isError?.marryRegis"
                       :rules="[(val) => !!val || 'กรุณาเลือกการจดทะเบียนสมรส']" lazy-rules>
                     </q-select>
                   </InputGroup>
@@ -313,8 +315,9 @@
                           <q-select hide-bottom-space is-dense v-model="child.childName" is-require :loading="isLoading"
                             id="selected-status" popup-content-class="font-14 font-regular" class="font-14 font-regular"
                             outlined :options="availableChildOptions" dense clearable option-value="name" emit-value
-                            map-options option-label="name" :error="!!isError?.childName"
-                            :rules="[(val) => !!val || 'กรุณาเลือกชื่อบุตร']" lazy-rules>
+                            map-options option-label="name" :error="!!isError[index]?.childName"
+                            :error-message="isError[index]?.childName" :rules="[(val) => !!val || 'กรุณาเลือกชื่อบุตร']"
+                            lazy-rules>
                           </q-select>
                         </InputGroup>
                       </div>
@@ -334,7 +337,8 @@
                         <InputGroup for-id="fatherNumberChilden" is-dense v-model="child.childFatherNumber"
                           more-class="font-16 font-medium text-grey-9" :data="child.childFatherNumber ?? '-'" is-require
                           label="บุตรลำดับที่ (ของบิดา)" placeholder="" type="number" class="" :is-view="isView"
-                          :error="!!isError?.childFatherNumber"
+                          :error="!!isError[index]?.childFatherNumber"
+                          :error-message="isError[index]?.childFatherNumber"
                           :rules="[(val) => !!val || 'กรุณากรอกบุตรลำดับที (ของบิดา)']" lazy-rules>
                         </InputGroup>
                       </div>
@@ -343,7 +347,8 @@
                         <InputGroup for-id="motherNumberChilden" is-dense v-model="child.childMotherNumber"
                           more-class="font-16 font-medium text-grey-9" :data="child.childMotherNumber ?? '-'" is-require
                           label="บุตรลำดับที่ (ของมารดา)" placeholder="" type="number" class="" :is-view="isView"
-                          :error="!!isError?.childMotherNumber"
+                          :error="!!isError[index]?.childMotherNumber"
+                          :error-message="isError[index]?.childMotherNumber"
                           :rules="[(val) => !!val || 'กรุณากรอกบุตรลำดับที่ (ของมารดา)']" lazy-rules>
                         </InputGroup>
                       </div>
@@ -366,6 +371,7 @@
                           <InputGroup for-id="delegateNumber" is-dense v-model="child.delegateNumber"
                             more-class="font-16 font-medium text-grey-9" :data="child.delegateNumber ?? '-'" is-require
                             label="แทนที่บุตรลำดับที่" type="number" class="font-14" :is-view="isView" placeholder=""
+                            :error="!!isError[index]?.delegateNumber" :error-message="isError[index]?.delegateNumber"
                             :rules="[(val) => !!val || 'กรุณากรอกแทนที่บุตรลำดับที่']" lazy-rules />
                         </div>
 
@@ -393,6 +399,8 @@
                             :data="child.delegateDeathDay ?? '-'">
                             <DatePicker is-dense v-model:model="child.delegateDeathDay"
                               v-model:dateShow="child.delegateDeathDay" for-id="date" :no-time="true" range-time
+                              :error="!!isError[index]?.delegateDeathDay"
+                              :error-message="isError[index]?.delegateDeathDay"
                               :rules="[(val) => !!val || 'กรุณากรอกวันที่ถึงแก่กรรม']" lazy-rules />
                           </InputGroup>
                         </div>
@@ -415,7 +423,8 @@
 
                           <q-input v-if="!isView" v-model="child.schoolNamegeneral" outlined dense type="text"
                             :data="child.schoolNamegeneral ?? '-'" :disable="child.schoolType !== 'ทั่วไป'"
-                            class="col-md-6 col-12" :error="!!isError?.schoolNamegeneral"
+                            class="col-md-6 col-12" :error="!!isError[index]?.schoolNamegeneral"
+                            :error-message="isError[index]?.schoolNamegeneral"
                             :rules="[(val) => !!val || 'กรุณากรอกชื่อสถานศึกษา']" lazy-rules />
 
                         </div>
@@ -431,7 +440,8 @@
                             :data="child.schoolNameDemonstration ?? '-'" outlined class="col-md-6 col-12"
                             :disable="child.schoolType !== 'สาธิตพิบูลบําเพ็ญ'" :options="optionSchoolType" dense
                             clearable option-value="value" emit-value map-options option-label="name"
-                            :error="!!isError?.schoolNameDemonstration"
+                            :error="!!isError[index]?.schoolNameDemonstration"
+                            :error-message="isError[index]?.schoolNameDemonstration"
                             :rules="[(val) => !!val || 'กรุณาเลือกหลักสูตรโรงเรียนสาธิตพิบูลบําเพ็ญ']" lazy-rules>
                           </q-select>
 
@@ -445,8 +455,8 @@
                             id="selected-status" popup-content-class="font-14 font-regular" class="font-14 font-regular"
                             outlined :options="child.subCategories || []" dense clearable option-value="value"
                             emit-value map-options option-label="label" v-if="!isView"
-                            :error="!!isError?.subCategoriesId" :rules="[(val) => !!val || 'กรุณาเลือกระดับชั้น']"
-                            lazy-rules />
+                            :error="!!isError[index]?.subCategoriesId" :error-message="isError[index]?.subCategoriesId"
+                            :rules="[(val) => !!val || 'กรุณาเลือกระดับชั้น']" lazy-rules />
                         </InputGroup>
                       </div>
                     </div>
@@ -460,8 +470,9 @@
                             input-debounce="100" clearable popup-content-class="font-14 font-regular"
                             class="font-14 font-regular" :loading="isLoading" id="selected-province" outlined
                             v-model="child.province" :options="optionProvinceSelected" dense option-value="name_th"
-                            emit-value map-options option-label="name_th" :error="!!isError?.province"
-                            :rules="[(val) => !!val || 'กรุณากรอกจังหวัด']" lazy-rules>
+                            emit-value map-options option-label="name_th" :error="!!isError[index]?.province"
+                            :error-message="isError[index]?.province" :rules="[(val) => !!val || 'กรุณากรอกจังหวัด']"
+                            lazy-rules>
                             <template v-slot:no-option>
                               <q-item>
                                 <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
@@ -479,9 +490,9 @@
                             use-input input-debounce="100" clearable popup-content-class="font-14 font-regular"
                             class="font-14 font-regular" :loading="isLoading" id="selected-district" outlined
                             v-model="child.district" :options="optionsDistrict" dense option-value="name_th" emit-value
-                            map-options option-label="name_th" :error="!!isError?.district"
-                            :error-message="isError?.district" :rules="[(val) => !!val || 'กรุณากรอกอำเภอ / เขต']"
-                            lazy-rules>
+                            map-options option-label="name_th" :error="!!isError[index]?.district"
+                            :error-message="isError[index]?.district"
+                            :rules="[(val) => !!val || 'กรุณากรอกอำเภอ / เขต']" lazy-rules>
                             <template v-slot:no-option>
                               <q-item>
                                 <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
@@ -498,8 +509,8 @@
                         <InputGroup for-id="fundReceipt" is-dense v-model="child.fundReceipt"
                           more-class="font-16 font-medium text-grey-9" :data="child.fundReceipt ?? '-'" is-require
                           label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="" type="text" class="" :is-view="isView"
-                          :error="!!isError?.fundReceipt" :rules="[(val) => !!val || 'กรุณากรอกจำนวนเงินตามใบเสร็จ']"
-                          lazy-rules>
+                          :error="!!isError[index]?.fundReceipt" :error-message="isError[index]?.fundReceipt"
+                          :rules="[(val) => !!val || 'กรุณากรอกจำนวนเงินตามใบเสร็จ']" lazy-rules>
                         </InputGroup>
                       </div>
 
@@ -518,7 +529,8 @@
                           more-class="font-16 font-medium text-grey-9" :data="child.fundUniversity ?? '-'" is-require
                           label="ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(8) จำนวนเงิน (บาท)" placeholder="" type="text" class=""
                           :disable="child.schoolType !== 'ทั่วไป' && child.schoolNameDemonstration !== 'สาธิตพิบูลบําเพ็ญ นานาชาติ'"
-                          :is-view="isView" :error="!!isError?.fundUniversity"
+                          :is-view="isView" :error="!!isError[index]?.fundUniversity"
+                          :error-message="isError[index]?.fundUniversity"
                           :rules="[(val) => !!val || 'กรุณากรอกจำนวนเงินตามเบิกจากสวัสดิการมหาวิทยาลัย 5(8)']"
                           lazy-rules>
                         </InputGroup>
@@ -529,7 +541,8 @@
                           :data="child.fundSubUniversity ?? '-'" more-class="font-16 font-medium text-grey-9" is-require
                           label="ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10) จำนวนเงิน (บาท)" placeholder="" type="text"
                           :disable="child.schoolType !== 'สาธิตพิบูลบําเพ็ญ'" class="" :is-view="isView"
-                          :error="!!isError?.fundSubUniversity"
+                          :error="!!isError[index]?.fundSubUniversity"
+                          :error-message="isError[index]?.fundSubUniversity"
                           :rules="[(val) => !!val || 'กรุณากรอกจำนวนเงินตามเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)']"
                           lazy-rules>
                         </InputGroup>
@@ -541,7 +554,8 @@
                         <InputGroup for-id="fundUniversity" is-dense v-model="child.fundSumRequest"
                           more-class="font-16 font-medium text-grey-9" :data="child.fundSumRequest ?? '-'" is-require
                           label="รวมเป็นจำนวนเงิน (บาท)" placeholder="" type="text" class="" :is-view="isView"
-                          :error="!!isError?.fundSumRequest" :disable="true">
+                          :error-message="isError[index]?.fundSumRequest" :error="!!isError[index]?.fundSumRequest"
+                          :disable="true">
                         </InputGroup>
                       </div>
                     </div>
@@ -1087,7 +1101,7 @@ watch(
 watch(
   () =>
     model.value.child?.map((child) => ({
-      childName: child.childName?.trim().toLowerCase() || "", // ป้องกัน childName เป็น undefined
+      childName: child.childName?.trim().toLowerCase() || "",
       fundSum:
         (parseFloat(child.fundUniversity) || 0) + (parseFloat(child.fundSubUniversity) || 0),
       fundRemaining:
@@ -1097,49 +1111,45 @@ watch(
     newValues.forEach((newValue, index) => {
       const dataArray = Array.isArray(remaining.value) ? remaining.value : [];
 
-      // ตรวจสอบว่า newValue.childName มีค่าหรือไม่
       if (!newValue.childName) {
-        model.value.child[index].fundSumRequest = "ไม่มีข้อมูลชื่อบุตร";
+        isError.value[index] = { fundSumRequest: `ไม่มีข้อมูลชื่อบุตร` }; // แก้ไขเป็นอ็อบเจ็กต์
         return;
       }
 
-      // หาข้อมูลใน remaining.value ที่ตรงกับ childName
       const item = dataArray.find(
         (r) => r.childName?.trim().toLowerCase() === newValue.childName
       );
 
-      if (!item) {
-        // กรณีไม่เจอข้อมูลใน remaining.value
-        model.value.child[index].fundSumRequest =
-          newValue.fundSum <= newValue.fundRemaining
-            ? newValue.fundSum ?? 0
-            : "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
-        return;
-      }
-
-      // ตรวจสอบค่าต่าง ๆ ให้แน่ใจว่าเป็นตัวเลข
-      const fundLimit = parseFloat((parseFloat(item.fund) || 0).toFixed(2));
-      const fundRemaining = parseFloat((parseFloat(item.fundRemaining) || 0).toFixed(2));
+      const fundLimit = parseFloat((parseFloat(item?.fund) || 0).toFixed(2));
+      const fundRemaining = parseFloat((parseFloat(item?.fundRemaining) || 0).toFixed(2));
       const fundSum = (newValue.fundSum || 0).toFixed(2);
-      console.log("Raw fundSum:", fundSum);
-      console.log("Parsed fundLimit:", fundLimit);
 
-      if (fundSum > fundLimit) {
-
-        model.value.child[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเพดานเงินที่กำหนด ${fundLimit}`;
-      } else if (fundSum > fundRemaining) {
-        model.value.child[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเงินคงเหลือ ${fundRemaining}`;
-      } else if (fundSum > newValue.fundRemaining) {
-        model.value.child[index].fundSumRequest = "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
+      if (item) {
+        if (fundSum > fundLimit) {
+          isError.value[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเพดานเงินที่กำหนด ${fundLimit}`;
+        } else if (fundSum > fundRemaining) {
+          isError.value[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเงินคงเหลือ ${fundRemaining}`;
+        } else if (fundSum > newValue.fundRemaining) {
+          isError.value[index].fundSumRequest = "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
+        } else {
+          model.value.child[index].fundSumRequest = fundSum;
+          isError.value[index].fundSumRequest = null;
+        }
       } else {
-        model.value.child[index].fundSumRequest = fundSum;
+        if (fundSum > newValue.fundRemaining) {
+          isError.value[index].fundSumRequest = "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
+        } else {
+          model.value.child[index].fundSumRequest = fundSum;
+          isError.value[index].fundSumRequest = null;
+        }
       }
     });
 
-    await nextTick(); // อัปเดต UI หลังจากการคำนวณ
+    await nextTick();
   },
   { deep: true }
 );
+
 
 
 
@@ -1474,63 +1484,82 @@ async function submit(actionId) {
     validate = true;
     console.log("กรุณากรอกชื่อคู่สมรส :" + validate)
   }
-  if (!model.value.marryRegis) {
-    isError.value.marryRegis = "โปรดเลือกการจดทะเบียนสมรส";
+  if (!model.value.parentalStatus) {
+    isError.value.parentalStatus = "กรุณาเลือกสถานะที่มีต่อบุตร";
     validate = true;
-    console.log("โปรดเลือกการจดทะเบียนสมรส :" + validate)
+    console.log("กรุณากรอกชื่อคู่สมรส :" + validate)
+  }
+  if (!model.value.marryRegis) {
+    isError.value.marryRegis = "กรุณาเลือกการจดทะเบียนสมรส";
+    validate = true;
+    console.log("กรุณาเลือกการจดทะเบียนสมรส :" + validate)
   }
 
   if (!model.value.role && model.value.marryRegis === 'YES') {
-    isError.value.role = "โปรดเลือกประเภทคู่สมรส";
+    isError.value.role = "กรุณาเลือกประเภทคู่สมรส";
     validate = true;
-    console.log("โปรดเลือกประเภทคู่สมรส :" + validate)
+    console.log("กรุณาเลือกประเภทคู่สมรส :" + validate)
   }
 
   if (model.value.child && model.value.child.length > 0) {
-    model.value.child.forEach((c) => {
+    model.value.child.map((c, index) => {
+      isError.value[index] = {}; // สร้างออบเจ็กต์ isError สำหรับแต่ละคน
+
       if (!c.fundReceipt) {
-        isError.value.fundReceipt = "กรุณากรอกจำนวนเงินตามใบเสร็จ";
+        isError.value[index].fundReceipt = "กรุณากรอกจำนวนเงินตามใบเสร็จ";
+        validate = true;
+        console.log("กรุณากรอกจำนวนเงินตามใบเสร็จ :" + validate);
+      }
+      if (!c.fundUniversity && (c.schoolType === 'ทั่วไป' || c.schoolNameDemonstration === 'สาธิตพิบูลบำเพ็ญ นานาชาติ')) {
+        isError.value[index].fundUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย 5(8)";
         validate = true;
       }
-      if (!c.fundUniversity && c.schoolType === 'ทั่วไป' || c.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ นานาชาติ') {
-        isError.value.fundUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย 5(8)";
-        validate = true;
-      }
-      if (!c.fundSubUniversity && c.schoolType === 'สาธิตพิบูลบําเพ็ญ') {
-        isError.value.fundSubUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย 5(9), 5(10)";
+      if (!c.fundSubUniversity && c.schoolType === 'สาธิตพิบูลบำเพ็ญ') {
+        isError.value[index].fundSubUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย 5(9), 5(10)";
         validate = true;
       }
       if (!c.childName) {
-        isError.value.childName = "โปรดเลือกชื่อ-นามสกุลของบุตร";
+        isError.value[index].childName = "กรุณาเลือกชื่อ-นามสกุลของบุตร";
         validate = true;
       }
       if (!c.childFatherNumber) {
-        isError.value.childFatherNumber = "กรุณากรอกลำดับบุตรของบิดา";
+        isError.value[index].childFatherNumber = "กรุณากรอกลำดับบุตรของบิดา";
         validate = true;
       }
-      if (!c.childFatherNumber) {
-        isError.value.childMotherNumber = "กรุณากรอกลำดับบุตรของมารดา";
+      if (!c.childMotherNumber) {
+        isError.value[index].childMotherNumber = "กรุณากรอกลำดับบุตรของมารดา";
         validate = true;
       }
       if (!c.schoolNamegeneral && c.schoolType === 'ทั่วไป') {
-        isError.value.schoolName = "กรุณากรอกชื่อสถาบันศึกษาทั่วไป";
+        isError.value[index].schoolNamegeneral = "กรุณากรอกชื่อสถาบันศึกษาทั่วไป";
         validate = true;
       }
-      if (!c.schoolNameDemonstration && c.schoolType === 'สาธิตพิบูลบําเพ็ญ') {
-        isError.value.schoolName = "กรุณาเลือกชื่อสถาบันศึกษา";
+      if (!c.schoolNameDemonstration && c.schoolType === 'สาธิตพิบูลบำเพ็ญ') {
+        isError.value[index].schoolNameDemonstration = "กรุณาเลือกชื่อสถาบันศึกษา";
         validate = true;
       }
       if (!c.district) {
-        isError.value.district = "กรุณากรอกอำเภอ";
+        isError.value[index].district = "กรุณากรอกอำเภอ";
         validate = true;
       }
       if (!c.province) {
-        isError.value.province = "กรุณากรอกจังหวัด";
+        isError.value[index].province = "กรุณากรอกจังหวัด";
         validate = true;
       }
       if (!c.subCategoriesId) {
-        isError.value.subCategoriesId = "โปรดเลือกระดับชั้นที่ศึกษา";
+        isError.value[index].subCategoriesId = "กรุณาเลือกกระดับชั้นที่ศึกษา";
         validate = true;
+      }
+
+      if (c.childPassedAway) {
+        if (!c.delegateNumber) {
+          isError.value[index].delegateNumber = "กรุณาเลือกลำดับบุตรแทนที่";
+          validate = true;
+        }
+        if (!c.delegateDeathDay) {
+          isError.value[index].delegateDeathDay = "กรุณาเลือกวันที่ถึงแก่กรรม";
+          validate = true;
+        }
 
       }
     });

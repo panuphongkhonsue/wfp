@@ -274,7 +274,7 @@ const bindCreate = async (req, res, next) => {
             order: [["id", "DESC"]]
         });
 
-        var reimNumber;
+        var reimNumber = getYear2Digits() + formatNumber(welfareType.childrenEducation) + formatNumber(1);
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
             reimNumber = getYear2Digits() + formatNumber(welfareType.childrenEducation) + formatNumber(datas.id + 1);
