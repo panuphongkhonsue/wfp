@@ -262,7 +262,7 @@
                     <div class="row pt-sm pl-md" style="gap: 8px">
                       <div style="flex: 1" class="pl-md">
                         <div style="display: flex; flex-direction: column; gap: 10px;" class="pl-md">
-                          <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==3) { %>
+                          <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==3 && body.requestData.length > 0) { %>
                             <% for (var i=0; i < body.requestData.length; i++) { %>
                               <div class="d-flex">
                                 <input type="checkbox" id="body<%= i + 1 %>" name="body<%= i + 1 %>" value="1"
@@ -351,7 +351,7 @@
                     <div class="row pt-sm pl-md" style="gap: 8px">
                       <div style="flex: 1" class="pl-md">
                         <div style="display: flex; flex-direction: column; gap: 10px;" class="pl-md">
-                          <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==2) { %>
+                          <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==2 && body.requestData.length > 0) { %>
                             <% for (var i=0; i < body.requestData.length; i++) { %>
                               <div class="d-flex">
                                 <input type="checkbox" id="body<%= i + 1 %>" name="body<%= i + 1 %>" value="1"
