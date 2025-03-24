@@ -636,6 +636,8 @@ class Controller extends BaseController {
                     [col('delegate_death_day'), "delegateDeathDay"],
                     'district',
                     'province',
+                    [col('sub_category.id'), "subCategoryId"],
+                    [col('sub_category.name'), "subCategoryName"],
                 ],
                 include: [
                     {

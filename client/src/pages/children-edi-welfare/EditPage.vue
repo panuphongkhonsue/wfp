@@ -450,12 +450,12 @@
 
                       <div class="col-md-5 col-12 ">
                         <InputGroup more-class="font-16 font-medium text-grey-9" label="ระดับชั้นที่ศึกษา" is-require
-                          clearable :data="isView ? child.subCategoriesName : child.subCategoriesId" :is-view="isView">
+                          clearable :data="child.subCategoriesId ?? '-'" :is-view="isView">
                           <q-select hide-bottom-space v-model="child.subCategoriesId" :loading="isLoading"
                             id="selected-status" popup-content-class="font-14 font-regular" class="font-14 font-regular"
-                            outlined :options="child.subCategories || []" dense clearable option-value="value"
-                            emit-value map-options option-label="label" v-if="!isView"
-                            :error="!!isError[index]?.subCategoriesId" :error-message="isError[index]?.subCategoriesId"
+                            outlined :options="optionsSubCategory || []" dense clearable option-value="value" emit-value
+                            map-options option-label="label" v-if="!isView" :error="!!isError[index]?.subCategoriesId"
+                            :error-message="isError[index]?.subCategoriesId"
                             :rules="[(val) => !!val || 'กรุณาเลือกระดับชั้น']" lazy-rules />
                         </InputGroup>
                       </div>
@@ -646,6 +646,7 @@ const remaining = ref({});
 const shcoolData = ref([]);
 let optionsUserName = ref([]);
 let optionsChildName = ref([]);
+let optionsSubCategory = ref([]);
 const optionProvinceSelected = ref([]);
 const optionsDistrict = ref([]);
 const optionPrefix = ref(['นาย', 'นาง', 'นางสาว'])
@@ -806,7 +807,6 @@ async function fetchRemaining() {
     const fetchRemainingData = await reimbursementChildrenEducationService.getRemaining({
       createFor: model.value.createFor
     });
-    console.log("fetchRemainingData:", fetchRemainingData);
 
     var returnedData = fetchRemainingData.data.datas;
 
@@ -821,7 +821,6 @@ async function fetchRemaining() {
         fundRemaining: item?.fundRemaining
       }));
 
-      console.log("remaining:", JSON.stringify(remaining));
     }
 
   } catch (error) {
@@ -833,18 +832,14 @@ async function fetchRemaining() {
 // ฟังก์ชันในการจัดการการแสดงผลข้อมูลเด็ก
 const displayedChildren = computed(() => {
   const dataArray = Array.isArray(remaining.value) ? remaining.value : [];
-  console.log("dataArray:", dataArray);
-  console.log("optionsChildName", optionsChildName.value)
 
   return optionsChildName.value.map((child, index) => {
     const childNameToCompare = child.name?.trim().toLowerCase();  // ตรวจสอบก่อนใช้
-    console.log("Comparing:", childNameToCompare, "with", dataArray.map(r => r.childName));
 
     const foundChild = dataArray.find(r =>
       r.childName?.trim().toLowerCase() === childNameToCompare
     ) || null;
 
-    console.log("foundChild:", foundChild);
 
     return {
       index: index + 1,
@@ -898,14 +893,14 @@ watch(
 );
 
 
-watch(
-  () => model.value.child.map(child => child.subCategoriesId),
-  (newValue, oldValue) => {
-    if (JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
-      fetchRemaining(); // ฟังก์ชันนี้จะถูกเรียกเมื่อค่ามีการเปลี่ยนแปลง
-    }
-  }
-);
+// watch(
+//   () => model.value.child.map(child => child.subCategoriesId),
+//   (newValue, oldValue) => {
+//     if (JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
+//       fetchRemaining(); // ฟังก์ชันนี้จะถูกเรียกเมื่อค่ามีการเปลี่ยนแปลง
+//     }
+//   }
+// );
 
 
 
@@ -951,7 +946,6 @@ watch(
     // ✅ หน่วงเวลาเล็กน้อยเพื่อตรวจสอบซ้ำ
     setTimeout(() => {
       if (!model.value.child.some(child => child.schoolType)) {
-        console.log("⏳ ค่า schoolType ยังไม่ถูกตั้งค่า รอ...");
         return;
       }
       getSubCategory();
@@ -963,7 +957,6 @@ watch(
 const getSubCategory = async () => {
   try {
     if (!Array.isArray(model.value.child) || model.value.child.length === 0) {
-      console.log("❌ ไม่มีข้อมูลเด็ก ไม่สามารถดึงหมวดหมู่ย่อยได้");
       return;
     }
 
@@ -983,27 +976,22 @@ const getSubCategory = async () => {
       }
 
       if (!categoriesId) {
-        console.log(`⚠️ เด็ก ${child.childName} ไม่ตรงเงื่อนไข categories_id`);
         child.subCategories = [];
         continue;
       }
-
-      console.log(`📤 ดึง subCategories สำหรับเด็ก: ${child.childName} (categories_id: ${categoriesId})`);
 
       const result = await reimbursementChildrenEducationService.getSubCategories({
         categories_id: categoriesId
       });
 
-      console.log(`📥 ข้อมูลที่ได้รับสำหรับ ${child.childName}:`, result.data);
 
       // เก็บค่า subCategories ไว้ในตัวเด็ก
-      child.subCategories = result.data.map(item => ({
+      optionsSubCategory.value = result.data.map(item => ({
         value: item.id,
         label: item.name
       }));
     }
   } catch (error) {
-    console.log("❌ Error:", error);
     const errorMessage = error?.response?.data?.message ?? "กรุณาเลือกสิทธิ";
     alert(errorMessage);
   }
@@ -1109,15 +1097,23 @@ watch(
     })) || [],
   async (newValues) => {
     newValues.forEach((newValue, index) => {
-      
+
+      if (!newValue.childName) {
+        isError.value[index] = { fundSumRequest: `ไม่มีข้อมูลชื่อบุตร` }; // แก้ไขเป็นอ็อบเจ็กต์
+        return;
+      }
+
+
       const fundSum = (newValue.fundSum || 0).toFixed(2);
 
-        if (fundSum > newValue.fundRemaining) {
-          isError.value[index].fundSumRequest = "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
-        } else {
-          model.value.child[index].fundSumRequest = fundSum;
-        }
-      
+
+      if (fundSum > newValue.fundRemaining) {
+        isError.value[index].fundSumRequest = "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
+      } else {
+        model.value.child[index].fundSumRequest = fundSum;
+        isError.value[index].fundSumRequest = null;
+      }
+
     });
 
     await nextTick();
@@ -1207,7 +1203,28 @@ async function fetchDataEdit() {
         const spouseParts = returnedData.spouse.split(' ');
         prefix = spouseParts[0] ?? null;
         name = spouseParts.slice(1).join(' ') || null;
+        const subCategoryName = Array.isArray(returnedData.children)
+          ? returnedData.children.map(child => {
+            // console.log("subCategories options:", child.sub_category); // 🟢 เช็คค่าของ subCategories
+            // console.log("Selected subCategoriesId:", child.subCategoryId);
+            console.log("Selected subCategoriesId:", child.subCategoryName);  // 🟢 เช็คค่าของ subCategoriesId
 
+            return {
+              ...child,
+              schoolType: child.schoolType ?? "-",
+              schoolName: child.schoolName,
+              schoolNamegeneral:
+                child.schoolType === "ทั่วไป" ? child.schoolName ?? "-" : null,
+              schoolNameDemonstration:
+                child.schoolType === "สาธิตพิบูลบําเพ็ญ" ? child.schoolName ?? "-" : null,
+              childBirthDay: child.childBirthDay ?? "-",
+              subCategoriesId: child.subCategoryName ?? null, // 🟢 แก้จาก child.subCategoryName เป็น child.subCategoriesId
+              childPassedAway: child.childType === "DELEGATE"
+            };
+          })
+          : [];
+        console.log("subCategoryName")
+        console.log(subCategoryName)
         model.value = {
           ...model.value,
           createFor: returnedData?.user?.userId ?? null,
@@ -1223,28 +1240,16 @@ async function fetchDataEdit() {
           position: returnedData?.position ?? "-",
           department: returnedData?.department ?? "-",
           categoriesId: returnedData?.category?.id ?? null,
-          child: Array.isArray(returnedData.children)
-            ? returnedData.children.map(child => ({
-              ...child,
-              schoolType: child.schoolType ?? "-",
-              schoolName: child.schoolName,
-              schoolNamegeneral:
-                child.schoolType === "ทั่วไป" ? child.schoolName ?? "-" : null,
-              schoolNameDemonstration:
-                child.schoolType === "สาธิตพิบูลบําเพ็ญ" ? child.schoolName ?? "-" : null,
-              childBirthDay: child.childBirthDay ?? "-",
-              subCategoriesId: child.sub_category?.id ?? null,
-              subCategoriesName: child.sub_category?.name ?? "-",
-              childPassedAway: child.childType === "DELEGATE"
-            }))
-            : []
+          child: subCategoryName
         };
-        model.value.eligibleBenefits.push(returnedData?.eligibleBenefits)
-        model.value.eligibleSubSenefits.push(returnedData?.eligibleSubSenefits)
+
+        model.value.eligibleBenefits.push(returnedData?.eligibleBenefits);
+        model.value.eligibleSubSenefits.push(returnedData?.eligibleSubSenefits);
       }
 
+      console.log("model.value", JSON.stringify(model.value, null, 2)); // 🟢 ตรวจสอบค่าของ model.value
+
     } catch (error) {
-      console.error("❌ Error in fetchDataEdit:", error);
       Notify.create({
         message: error?.response?.data?.message ?? "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
         position: "bottom-left",
@@ -1254,6 +1259,7 @@ async function fetchDataEdit() {
     isLoading.value = false;
   }, 100);
 }
+
 
 
 
@@ -1330,23 +1336,30 @@ watch(
 );
 
 
-let isClear = false;
+
+let isFirstLoad = true;  // ตัวแปรเก็บสถานะการโหลดครั้งแรก
+
 watch(
   () => model.value.child.map((child) => child.schoolType),
   async (newSchoolTypes, oldSchoolTypes) => {
-    if (oldSchoolTypes) { // ตรวจสอบว่า oldSchoolTypes มีข้อมูลหรือไม่
-      newSchoolTypes.forEach((newSchoolType, index) => {
-        if ((newSchoolType !== oldSchoolTypes[index])) {
-          if (!isClear) {
-            isClear = true;
-            return;
-          }
-          model.value.child[index].schoolNameDemonstration = null;
-          model.value.child[index].schoolNamegeneral = null;
-          model.value.child[index].subCategoriesId = null;
-        }
-      });
+    // ถ้าเป็นการโหลดครั้งแรกไม่ให้ทำอะไร
+    if (isFirstLoad) {
+      isFirstLoad = false;  // เปลี่ยนสถานะเป็น false หลังจากโหลดครั้งแรก
+      return;
     }
+
+    // เช็คว่า newSchoolTypes กับ oldSchoolTypes ต่างกันหรือไม่
+    if (newSchoolTypes.length === 0 || JSON.stringify(newSchoolTypes) === JSON.stringify(oldSchoolTypes)) {
+      return;  // ถ้าไม่มีการเปลี่ยนแปลงหรือไม่พบข้อมูล
+    }
+
+    newSchoolTypes.forEach((newSchoolType, index) => {
+      if (newSchoolType) {
+        model.value.child[index].schoolNameDemonstration = null;
+        model.value.child[index].schoolNamegeneral = null;
+        model.value.child[index].subCategoriesId = null;
+      }
+    });
   }
 );
 
@@ -1412,7 +1425,6 @@ const selectedMarryLabel = computed(() => {
 });
 
 const selectedparentalStatusLabel = computed(() => {
-  console.log("parentalStatus" + model.value.parentalStatus)
   if (!model.value.parentalStatus) return "ไม่พบข้อมูล"; // ✅ ตรวจสอบค่าก่อน
 
   const selectedOption = optionsparentalStatus.find(opt => opt.value === model.value.parentalStatus);

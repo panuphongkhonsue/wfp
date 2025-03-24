@@ -134,14 +134,14 @@
                                                     <% if (body?.role==='ข้าราชการ' ) { %>
                                                         <span class="font-semi-bold mx-sm">ตำแหน่ง</span>
                                                         <span class="text-dot pl-sm mr-lg text-start col-8">
-                                                            <%=(body?.role==='ข้าราชการ' && body?.positionSpouse)
-                                                                ? "checked" : "" %>
+                                                            <%=(body?.role==='ข้าราชการ' && body?.positionSpouse) ?
+                                                                body?.positionSpouse : "" %>
                                                         </span>
 
                                                         <span class="font-semi-bold ">สังกัด</span>
                                                         <span class="text-dot pl-sm mr-lg text-start col-8">
-                                                            <%=(body?.role==='ข้าราชการ' && body?.departmentSpouse)
-                                                                ? "checked" : "" %>
+                                                            <%=(body?.role==='ข้าราชการ' && body?.departmentSpouse) ?
+                                                                body?.departmentSpouse : "" %>
                                                         </span>
                                                         <% } else { %>
                                                             <span class="font-semi-bold mx-sm">ตำแหน่ง</span>
@@ -1090,7 +1090,7 @@
                             <div style="width: 100%">
                                 <div class="d-flex">
                                     <div class="row" style="gap: 8px; flex-wrap: wrap; width: 350px;">
-                                        <div class=" px-sm  font-semi-bold">
+                                        <div class=" px-md  font-semi-bold">
                                             ๖.
                                         </div>
                                         <span class="font-semi-bold" for=""> เสนอ </span>
@@ -1173,7 +1173,10 @@
                 <tr>
                     <td>
                         <div class="row" style="gap: 8px">
-                            <span class="font-semi-bold px-md" class="col-12 px-md">การตรวจสอบ</span>
+                            <div class=" px-sm  font-semi-bold">
+                                ๗.
+                            </div>
+                            <span class="font-semi-bold " class="col-12">การตรวจสอบ</span>
                         </div>
                         <div class="row">
                             <span style="padding-left: 7%;"
@@ -1215,36 +1218,44 @@
             <div class="py-sm"></div>
             <div class="content">
                 <table>
-                    <tr style="margin: 0px;">
+                    <tr>
                         <td>
-                            <div class="row" style="gap: 8px;">
-                                <span class="font-semi-bold" class="col-12 px-md">คำอนุมัติ</span>
-                            </div>
-                            <div class="d-flex py-sm" style="width: 100%;">
-                                <div style="width: 2%;"></div>
-                                <div style="width: 100%;" class="pl-md ml-md">
-                                    <div class="pl-md ml-md"> อนุมัติเบิกจ่ายได้</div>
-                                </div>
-                            </div>
-                            <div class="row px-md py-sm" style="gap: 8px; align-items: center; justify-content: center;">
-                                <div class="col-auto row justify-center">
-                                    <div class="col-sign">
-                                        (ลงชื่อ) <div class="text-dot-no-value" style="max-width: 200px;">
-                                        </div>ผู้ขอรับเงินสวัสดิการ
+                            <div class="row" style="gap: 10px">
+                                <div style="width: 100%">
+                                    <div class="row" style="gap: 8px;">
+                                        <div class=" px-md  font-semi-bold">
+                                            ๘.
+                                        </div>
+                                        <span class="font-semi-bold" class="col-12">คำอนุมัติ</span>
                                     </div>
-                                    <div class="col-sign py-sm">
-                                        ( <div class="text-dot text-center" style="max-width: 220px;">
-                                        </div> )
-                                    </div>
-                                    <div class="col-position px-md">
-                                        ตำแหน่ง <div class="text-dot text-center" style="max-width: 170px;">
-
+                                    <div class="d-flex py-sm" style="width: 100%;">
+                                        <div style="width: 5%;"></div>
+                                        <div style="width: 100%;" class="pl-md ml-md">
+                                            <div class="pl-md ml-md"> อนุมัติเบิกจ่ายได้</div>
                                         </div>
                                     </div>
-                                    <div class="col-sign py-sm">
-                                        วันที่<div class="text-dot-no-value" style="max-width: 50px;">
-                                        </div>เดือน <div class="text-dot-no-value" style="max-width: 50px;">
-                                        </div> พ.ศ. <div class="text-dot-no-value" style="max-width: 50px;">
+                                    <div class="row px-md py-sm"
+                                        style="gap: 8px; align-items: center; justify-content: center;">
+                                        <div class="col-auto row justify-center">
+                                            <div class="col-sign">
+                                                (ลงชื่อ) <div class="text-dot-no-value" style="max-width: 200px;">
+                                                </div>ผู้ขอรับเงินสวัสดิการ
+                                            </div>
+                                            <div class="col-sign py-sm">
+                                                ( <div class="text-dot text-center" style="max-width: 220px;">
+                                                </div> )
+                                            </div>
+                                            <div class="col-position px-md">
+                                                ตำแหน่ง <div class="text-dot text-center" style="max-width: 170px;">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-sign py-sm">
+                                                วันที่<div class="text-dot-no-value" style="max-width: 50px;">
+                                                </div>เดือน <div class="text-dot-no-value" style="max-width: 50px;">
+                                                </div> พ.ศ. <div class="text-dot-no-value" style="max-width: 50px;">
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1254,61 +1265,68 @@
                     <tr>
                         <td>
                             <div class="row" style="gap: 8px">
-                                <span class="font-semi-bold px-md" class="col-12 px-md">ใบรับเงิน</span>
+                                <div class=" px-md  font-semi-bold">
+                                    ๙.
+                                </div>
+                                <span class="font-semi-bold " class="col-12">ใบรับเงิน</span>
                             </div>
                             <div class="d-flex pb-sm" style="width: 100%;">
-                                <div style="width: 2%;"></div>
+                                <div style="width: 7%;"></div>
                                 <div style="width: 100%;">
                                     <div class="row px-md ml-md pt-md" style="gap: 8px">
+                                        <div class="pl-md ml-md">
+                                            ได้รับเงินสวัสดิการเกี่ยวกับการศึกษาของบุตร
+                                        </div>
+                                        <span>
+                                            จำนวน
+                                        </span>
+                                        <span style="max-width: 150px; width: 150px;"
+                                            class="<%= body?.fundSumRequest ? 'text-dot text-center' : 'text-dot-no-value' %>">
+                                            <%= toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US',{
+                                                minimumFractionDigits: body?.fundSumRequest % 1===0 ? 0 : 2,
+                                                maximumFractionDigits: 2, })) %>
+                                        </span>
+                                        <span>
+                                            บาท
+                                        </span>
                                     </div>
                                     <div class="row px-md ml-md pt-sm" style="gap: 8px">
                                         <div style="flex: 1" class="pl-md ml-md d-flex">
-                                            <span>
-                                            ได้รับเงินสวัสดิการเกี่ยวกับการศึกษาของบุตร   จำนวนเงิน
-                                            </span>
-                                            <span style="max-width: 150px; width: 150px;"
-                                                class="<%= body?.fundSumRequest ? 'text-dot text-center' : 'text-dot-no-value' %>">
-                                                <%= toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US',{
-                                                    minimumFractionDigits: body?.fundSumRequest % 1===0 ? 0 : 2,
-                                                    maximumFractionDigits: 2, })) %>
-                                            </span>
-                                            <span>
-                                                บาท
-                                            </span>
                                             ( <span style="max-width: 200px; width: 200px;"
                                                 class="<%= body?.fundSumRequest ? 'text-dot text-center' : 'text-dot-no-value' %>">
                                                 <%= bahttext(Number(body?.fundSumRequest)) %>
-                                            </span> ) ไว้ถูกต้องแล้ว/ครบถ้วนแล้ว
+                                            </span> ) ไว้ถูกต้องแล้ว
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row px-md py-sm" style="gap: 8px; align-items: center; justify-content: center;">
-                                <div class="col"></div>
-                                <div class="col-auto row justify-center">
+                            <div class="row px-md py-sm"
+                                style="gap: 8px; align-items: center; justify-content: center;">
+                                <div class="col row justify-center">
                                     <div class="col-sign">
-                                        ลงชื่อ <div class="text-dot-no-value" style="max-width: 200px;"></div>ผู้รับเงิน
+                                        (ลงชื่อ) <div class="text-dot-no-value" style="max-width: 200px;"></div>
+                                        ผู้จ่ายเงิน
                                     </div>
                                     <div class="col-sign py-sm">
                                         ( <div class="text-dot" style="max-width: 220px;"> </div> )
                                     </div>
                                 </div>
                             </div>
-                            <div class="row px-md py-sm" style="gap: 8px; align-items: center; justify-content: center;">
+
+                            <div class="row px-md py-sm"
+                                style="gap: 8px; align-items: center; justify-content: center;">
                                 <div class="col-auto row justify-center">
                                     <div class="col-sign">
-                                        (ลงชื่อ) <div class="text-dot-no-value" style="max-width: 200px;">
-                                        </div>ผู้จ่ายเงิน
+                                        (ลงชื่อ) <div class="text-dot-no-value" style="max-width: 200px;"></div>
+                                        ผู้จ่ายเงิน
                                     </div>
                                     <div class="col-sign py-sm">
-                                        ( <div class="text-dot text-center" style="max-width: 220px;">
-                                        </div> )
+                                        ( <div class="text-dot" style="max-width: 220px;"> </div> )
                                     </div>
                                     <div class="col-sign py-sm">
-                                        วันที่<div class="text-dot-no-value" style="max-width: 50px;">
-                                        </div>เดือน <div class="text-dot-no-value" style="max-width: 50px;">
-                                        </div> พ.ศ. <div class="text-dot-no-value" style="max-width: 50px;">
-                                        </div>
+                                        วันที่<div class="text-dot-no-value" style="max-width: 50px;"> </div>เดือน <div
+                                            class="text-dot-no-value" style="max-width: 50px;"> </div> พ.ศ. <div
+                                            class="text-dot-no-value" style="max-width: 50px;"> </div>
                                     </div>
                                     <div class="col-sign py-sm">
                                         ลงชื่อต่อเมื่อได้รับเงินแล้วเท่านั้น
@@ -1318,26 +1336,27 @@
                         </td>
                     </tr>
                 </table>
-                <div class="row py-md" style="gap: 8px">
-                    <span class="px-md text-white">๒.</span>
-                    <div style="flex: 0" class="px-md">
-                      <span class="font-semi-bold">คำชี้แจง</span>
+                <div style="margin-top: 16px;margin-bottom: 8px; padding-left: 3%;">
+                    <span class="font-semi-bold">คำชี้แจง</span>
+                </div>
+
+
+                <div class="row " style="gap: 8px">
+                    <div class="px-md">
                     </div>
                     <div style="border: 1px solid #000; padding: 4px 6px 4px 6px;">ก</div>
                     <div style="flex: 1" class="font-14">
                         ให้ระบุการมีสิทธิเพียงใด เมื่อเทียบเท่ากับสิทธิที่ได้รับตามสิทธิกองทุนสวัสดิการ
                     </div>
-                  </div>
-                  <div class="row" style="gap: 8px">
-                    <span class="px-md text-white">๒.</span>
-                    <div style="flex: 0" class="px-md text-white font-14">
-                      <span class="font-semi-bold">หมายเหตุ</span>
+                </div>
+                <div class="row " style="gap: 8px; margin-top: 4px;">
+                    <div class="px-md">
                     </div>
                     <div style="border: 1px solid #000; padding: 4px 6px 4px 6px;">ข</div>
-                    <div style="flex: 1">
+                    <div style="flex: 1" class="font-14">
                         ให้เสนอต่อผู้มีอำนาจอนุมัติ
                     </div>
-                  </div>
+                </div>
             </div>
             <!-- New Page -->
             <div class="page-break"></div>
