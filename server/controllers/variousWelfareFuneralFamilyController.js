@@ -6,6 +6,7 @@ const category = require('../enum/category');
 const logger = initLogger('variousWelfareFuneralFamilyController');
 const { getFiscalYearDynamic, getFiscalYear, dynamicCheckRemaining } = require('../middleware/utility');
 const { isNullOrEmpty } = require('./utility');
+const status = require('../enum/status');
 
 class Controller extends BaseController {
     constructor() {
@@ -139,11 +140,11 @@ class Controller extends BaseController {
                         literal("sub_category.per_users - COUNT(CASE WHEN sub_category.id = 7 THEN reimbursements_assist.fund_wreath_arrange ELSE NULL END)"),
                         "perUsersRemainingArrange"
                     ],
-                    
+
                     // fund_wreath_university
                     [
-                    fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
-                    "totalSumRequestedUniversity"
+                        fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
+                        "totalSumRequestedUniversity"
                     ],
                     [
                         fn("SUM", literal("CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE 0 END")),
@@ -161,7 +162,7 @@ class Controller extends BaseController {
                         literal("sub_category.per_users - COUNT(CASE WHEN sub_category.id = 8 THEN reimbursements_assist.fund_wreath_university ELSE NULL END)"),
                         "perUsersRemainingUniversity"
                     ]
-                    
+
                 ],
                 include: [
                     {
@@ -326,7 +327,7 @@ class Controller extends BaseController {
                     [col("fund"), "fundRemaining"],
                     [col("per_years"), "requestsRemaining"],
                     [col("per_times"), "perTimesRemaining"],
-                    [col("per_users"), "perUsers"]
+                    [col("per_users"), "perUsersRemaining"]
                 ],
                 where: {
                     id: {
@@ -571,7 +572,9 @@ class Controller extends BaseController {
                     where: { id: dataId },
                     transaction: t,
                 });
-
+                if(dataUpdate.status === status.approve){
+                    return updated;
+                  }
                 let itemsReturned = { updated };
 
                 if (selectedWreath) {

@@ -609,7 +609,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 }
                 else {
                     const diffFundDecease = fund_decease - oldWelfareData.fund_decease;
-                    if (datas.fundRemaining === 0 || datas.fundRemaining - diffFundDecease < 0) {
+                    if ((datas.fundRemaining === 0 || datas.fundRemaining - diffFundDecease < 0) && !isNullOrEmpty(datas.fundRemaining)) {
                         return res.status(400).json({
                             message: "ไม่สามารถทำรายการได้เนื่องจากเกินเพดานเงินคงเหลือ",
                         });
@@ -645,12 +645,12 @@ const checkUpdateRemaining = async (req, res, next) => {
                 else {
                     const diffFundUniversity = fund_wreath_university - oldWelfareData.fund_wreath_university;
                     const diffFundArrange = fund_wreath_arrange - oldWelfareData.fund_wreath_arrange;
-                    if (datas.fundRemaining === 0 || datas.fundRemaining - diffFundUniversity < 0) {
+                    if ((datas.fundRemaining === 0 || datas.fundRemaining - diffFundUniversity < 0) && !isNullOrEmpty(datas.fundRemaining)) {
                         return res.status(400).json({
                             message: "ไม่สามารถทำรายการเบิกในนามมหาวิทยาลัยได้เนื่องจากเกินเพดานเงินคงเหลือ",
                         });
                     }
-                    if (datas.fundRemaining === 0 || datas.fundRemaining - diffFundArrange < 0) {
+                    if ((datas.fundRemaining === 0 || datas.fundRemaining - diffFundArrange < 0) && !isNullOrEmpty(datas.fundRemaining)) {
                         return res.status(400).json({
                             message: "ไม่สามารถทำรายการเบิกในนามส่วนงานได้เนื่องจากเกินเพดานเงินคงเหลือ",
                         });

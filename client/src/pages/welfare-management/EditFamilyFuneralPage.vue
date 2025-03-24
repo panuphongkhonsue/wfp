@@ -4,7 +4,7 @@
       <!--General Information Section -->
       <div class="row q-col-gutter-md q-pl-md q-pt-md">
         <div
-          :class="{ 'col-12': isView || isLoading || thisStaff, 'col-md-9 col-12': !isView && !isLoading && !thisStaff}">
+          :class="{ 'col-12': isView || isLoading , 'col-md-9 col-12': !isView && !isLoading }">
           <q-card flat bordered class="full-height">
             <q-card-section class="font-18 font-bold">
               <p class="q-mb-none">ข้อมูลผู้เบิกสวัสดิการ</p>
@@ -36,7 +36,7 @@
             </q-card-section>
           </q-card>
         </div>
-        <div class="col-md-3 col-12" v-if="!isView && !thisStaff">
+        <div class="col-md-3 col-12" v-if="!isView ">
           <q-card flat bordered class="full-height">
             <q-card-section class="q-px-md font-18 font-bold">
               <p class="q-mb-none">สิทธิ์คงเหลือ</p>
@@ -90,7 +90,7 @@
                 ?? "-"
                   }}</span> </p>
             </q-card-section>
-            <q-card-section v-show="!thisStaff"
+            <q-card-section 
               class="row wrap font-medium font-16 text-grey-9 q-pt-none">
               <div v-for="option in deceaseOptions" :key="option.value" class="col-12 row q-mb-none ">
                 <div class="col-md-2 col-6">
@@ -104,7 +104,7 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-card-section v-show="!thisStaff"
+            <q-card-section 
               class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'"
@@ -125,7 +125,7 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-card-section v-show="thisStaff"
+            <q-card-section 
               class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center" :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedWreath" />
               <p class="q-mb-none">ค่าสนับสนุนค่าพวงหรีด (จ่ายไม่เกินคนละ {{ remaining[7]?.fund ? remaining[7]?.fund
@@ -138,7 +138,7 @@
                   remaining[8]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน" }}
                 ในนามส่วนงาน)</p>
             </q-card-section>
-            <q-card-section v-show="thisStaff"
+            <q-card-section 
               class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
@@ -171,8 +171,8 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-separator v-show="thisStaff" inset />
-            <q-card-section v-show="thisStaff && !canCreateFor"
+            <q-separator  inset />
+            <q-card-section v-show="!canCreateFor"
               class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center" :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedVechicle" />
               <p class="q-mb-none ">ค่าสนับสนุนค่าพาหนะเหมาจ่าย (จ่ายจริงคนละไม่เกิน
@@ -181,7 +181,7 @@
                   "ไม่จำกัดจำนวนเงิน"
                 }})</p>
             </q-card-section>
-            <q-card-section v-show="thisStaff"
+            <q-card-section 
               class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceiptVechicle"
@@ -322,9 +322,7 @@ const userInitialData = ref([]);
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
 });
-const thisStaff = computed(() => {
-  return authStore.isStaff;
-});
+
 const isFetchRemaining = ref(false);
 onMounted(async () => {
   await init();
@@ -343,7 +341,7 @@ const isValidate = computed(() => {
   if (!model.value.selectedWreath && !model.value.selectedVechicle && !model.value.deceasedType) {
     validate = true;
   }
-  if (!thisStaff.value) {
+  
     if (model.value.deceasedType) {
       if (!model.value.fundReceipt) {
         validate = true;
@@ -361,7 +359,7 @@ const isValidate = computed(() => {
         validate = true;
       }
     }
-  }
+  
 
   if (model.value.selectedWreath) {
     if (!model.value.fundReceiptWreath) {
@@ -704,7 +702,7 @@ async function submit(actionId) {
     });
     return;
   }
-  if (!thisStaff.value) {
+  
     if (model.value.deceasedType) {
       if (!model.value.decease) {
         isError.value.decease = "กรุณากรอกข้อมูลชื่อ - นามสกุลของผู้เสียชีวิต";
@@ -719,8 +717,7 @@ async function submit(actionId) {
         validate = true;
       }
     }
-  }
-  if (thisStaff.value) {
+  
     if (model.value.selectedWreath) {
       if (!model.value.fundReceiptWreath) {
         isError.value.fundReceiptWreath = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงินสนับสนุนค่าพวงหลีด";
@@ -765,7 +762,7 @@ async function submit(actionId) {
         validate = true;
       }
     }
-  }
+  
 
   // if (!model.value.fundReceipt) {
   //   isError.value.fundReceipt = "กรุณากรอกข้อมูลจำนวนเงินตามใบสำคัญรับเงิน";
@@ -774,13 +771,13 @@ async function submit(actionId) {
   //   navigate.scrollIntoView(false);
   //   validate = true;
   // }
-  if (!thisStaff.value) {
+
     if (isOverDecease.value) {
       isError.value.fundDecease = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
       validate = true;
     }
-  }
-  if (!thisStaff.value) {
+  
+
     if (isOverWreathArrange.value) {
       isError.value.fundWreathArrange = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
       validate = true;
@@ -793,7 +790,7 @@ async function submit(actionId) {
       isError.value.fundVechicle = "จำนวนเงินที่ต้องการเบิกห้ามมากว่าจำนวนเงินตามใบสำคัญรับเงิน";
       validate = true;
     }
-  }
+  
   if (model.value.selectedWreath) {
     const totalWreath = (Number(model.value.fundWreathArrange) || 0) + (Number(model.value.fundWreathUniversity) || 0);
     if (totalWreath > Number(model.value.fundReceiptWreath)) {

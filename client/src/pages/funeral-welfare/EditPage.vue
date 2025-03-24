@@ -739,7 +739,6 @@ async function fetchRemaining(deceasedId) {
 
     const deceaseData = fetchedData.data?.datas;
 
-    // ตรวจสอบ canRequest ของแต่ละประเภทให้ละเอียด
     canRequest.value.deceased = deceaseData.some(item => item.categoriesId === 9 && item.canRequest === true); 
     canRequest.value.wreath = deceaseData.some(item => (item.categoriesId === 10 || item.categoriesId === 11) && item.canRequest === true); 
     canRequest.value.vehicle = deceaseData.some(item => item.categoriesId === 12 && item.canRequest === true); 
@@ -748,7 +747,6 @@ async function fetchRemaining(deceasedId) {
     console.log("Can request wreath: ", canRequest.value.wreath);
     console.log("Can request vehicle: ", canRequest.value.vehicle);
 
-    // ตรวจสอบและอัปเดต remaining สำหรับแต่ละ subCategoriesId
     if (Array.isArray(deceaseData)) {
       deceaseData.forEach((item) => {
         remaining.value[item.categoriesId] = {
