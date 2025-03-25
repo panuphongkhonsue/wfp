@@ -162,9 +162,6 @@ async function fetchDataFundRequestPerYear(filters) {
       }
       series.value[0].data = dataFundRequestPerYear.value.map((item) => item.totalFund);
     }
-    console.log("result.data.docs.lenght: ", result.data.docs.length);
-    console.log("dataFundRequestPerYear: ", dataFundRequestPerYear.value);
-    console.log("result.data.docs: ", result.data.docs);
     return result.data.docs;
   } catch (error) {
     Notify.create({
@@ -202,7 +199,6 @@ async function fetchDataFundRequestPerYearEachType(filters) {
       fundMap.get('สวัสดิการเกี่ยวกับการศึกษาของบุตร') ?? 0
     ];
 
-    console.log("dataFundRequestPerYearEachType: ", result.data.docs);
     return result.data.docs;
   } catch (error) {
     Notify.create({
