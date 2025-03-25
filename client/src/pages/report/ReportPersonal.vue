@@ -524,61 +524,57 @@ function exportToExcel() {
   // Clone and sort the data to avoid mutating the original model
   const sortedData = [...model.value].sort((a, b) => a.userId - b.userId);
 
-  // Add 'fundSum' by summing up the individual fund columns for each row
-  sortedData.forEach(item => {
-    const fundColumns = [
-      'ตรวจสุขภาพ',
-      'ทำฟัน',
-      'ประสบอุบัติเหตุขณะปฏิบัติงาน',
-      'เยี่ยมไข้',
-      'สมรส',
-      'อุปสมบทหรือประกอบพิธีฮัจน์',
-      'รับขวัญบุตร',
-      'ประสบภัยพิบัติ',
-      'การศึกษาของบุตร',
-      'กรณีเจ็บป่วย',
-      'ผู้ปฏิบัติงานเสียชีวิต',
-      'เสียชีวิตคนในครอบครัว'
-    ];
+  // Define the desired column order
+  const fundColumns = [
+    'ตรวจสุขภาพ',
+    'ทำฟัน',
+    'กรณีเจ็บป่วย',
+    'สมรส',
+    'อุปสมบทหรือประกอบพิธีฮัจน์',
+    'รับขวัญบุตร',
+    'ประสบภัยพิบัติ',
+    'เสียชีวิตคนในครอบครัว',
+    'ผู้ปฏิบัติงานเสียชีวิต',
+    'การศึกษาของบุตร',
+  ];
 
-    // Sum the values of each fund column (without 'fund' in the column name)
-    item.fundSum = fundColumns.reduce((sum, column) => {
-      const columnName = `${column}fund`; // Rebuild the column name with 'fund' appended
-      return sum + (parseFloat(item[columnName]) || 0); // Ensure that missing or non-numeric values are treated as 0
-    }, 0);
+  // Process each item in the dataset
+  const formattedData = sortedData.map(item => {
+    const reorderedItem = {
+      userId: String(item.userId), // Convert userId to string
+      userName: item.userName, // Keep userName
+    };
 
-    // Change 'userId' to string
-    item.userId = String(item.userId); // Convert userId to a string
+    let fundSum = 0; // Initialize sum
+
+    // Add fund columns in the specified order, replacing 0 with '-'
+    fundColumns.forEach(column => {
+      let value = parseFloat(item[`${column}fund`]) || 0; // Ensure numeric values
+      fundSum += value; // Accumulate for fundSum
+      reorderedItem[column] = value === 0 ? '-' : value; // Replace 0 with '-'
+    });
+
+    // Assign fundSum without replacing 0
+    reorderedItem.fundSum = fundSum;
+
+    return reorderedItem;
   });
 
-  // Ensure 'fundSum' is the last column by repositioning it
-  sortedData.forEach(item => {
-    const fundSum = item.fundSum;
-    delete item.fundSum; // Remove 'fundSum' from its current position
-    item.fundSum = fundSum; // Add 'fundSum' back at the end
-  });
+  // Convert the reordered model to a sheet
+  const ws = XLSX.utils.json_to_sheet(formattedData);
 
-  // Convert the sorted and updated model to a sheet
-  const ws = XLSX.utils.json_to_sheet(sortedData);
+  // Rename specific headers
+  const headerMap = {
+    userId: 'ไอดีผู้ใช้',
+    userName: 'ชื่อผู้ใช้',
+    fundSum: 'รวม',
+  };
 
-  // Remove 'fund' from column names and rename specific headers
   const range = XLSX.utils.decode_range(ws["!ref"]);
   for (let C = range.s.c; C <= range.e.c; ++C) {
     const address = XLSX.utils.encode_cell({ r: 0, c: C }); // Get the header row
-    if (ws[address]) {
-      // Remove 'fund' from all column names
-      ws[address].v = ws[address].v.replace('fund', '');
-
-      // Rename 'userId' to 'ไอดีผู้ใช้', 'userName' to 'ชื่อผู้ใช้', and 'fundSum' to 'รวม'
-      if (ws[address].v === 'userId') {
-        ws[address].v = 'ไอดีผู้ใช้'; // Change 'userId' header name
-      }
-      if (ws[address].v === 'userName') {
-        ws[address].v = 'ชื่อผู้ใช้'; // Change 'userName' header name
-      }
-      if (ws[address].v === 'fundSum') {
-        ws[address].v = 'รวม'; // Change 'fundSum' header name
-      }
+    if (ws[address] && headerMap[ws[address].v]) {
+      ws[address].v = headerMap[ws[address].v]; // Rename headers
     }
   }
 
@@ -589,7 +585,6 @@ function exportToExcel() {
   // Export the sorted data as an Excel file
   XLSX.writeFile(wb, "ExportedData.xlsx");
 }
-
 </script>
 
 <style lang="css">
