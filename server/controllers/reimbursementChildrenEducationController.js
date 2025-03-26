@@ -6,6 +6,7 @@ const { Op, fn, col, literal, where, Sequelize } = require("sequelize");
 const logger = initLogger('reimbursementChildrenEducationController');
 const childType = require('../enum/childType');
 const sub_categories = require('../models/mariadb/sub_categories');
+const { dynamicCheckRemaining } = require("../middleware/utility");
 
 class Controller extends BaseController {
     constructor() {
@@ -61,12 +62,18 @@ class Controller extends BaseController {
     }
 
     getRemainingChildFund = async (req, res, next) => {
-        const method = 'GetRemainingChildFund'
+        const method = 'GetRemainingChildFund';
         const { id } = req.user;
-        const { subCategoriesId } = req.body
+        const { subCategoriesId } = req.body;
+
         try {
             const { filter } = req.query;
             let whereObj = { ...filter };
+
+            console.log("Request ID:", id);
+            console.log("Filter:", JSON.stringify(whereObj));
+            console.log("subCategoriesId:", subCategoriesId);
+
             const results = await childrenInfomation.findAll({
                 attributes: [
                     [col("sub_category.id"), "subCategoryId"],
@@ -112,50 +119,62 @@ class Controller extends BaseController {
                     "childrenInfomation.child_name",
                     "sub_category.id"
                 ]
-
-
             });
+
+            console.log("Results:", JSON.stringify(results, null, 2));
+
             if (results && results.length > 0) {
                 const datas = JSON.parse(JSON.stringify(results));
+                console.log("Parsed Results:", datas);
+
                 if (dynamicCheckRemaining(datas)) datas.canRequest = false;
                 var reimChildrenEducation = {};
                 reimChildrenEducation.datas = {
                     ...datas,
                     canRequest: datas.canRequest ?? true
                 };
+
                 logger.info('Complete', { method, data: { id } });
-                res.status(200).json(reimChildrenEducation);
-            } const getFund = await subCategories.findOne({
+                return res.status(200).json(reimChildrenEducation);
+            }
+
+            const getFund = await subCategories.findOne({
                 attributes: [
+                    [col("id"), "subCategoryId"],
                     [col("name"), "subCategoriesName"],
-                    [col("fund"), "fundRemaining"],
+                    [col("fund"), "fund"],
                     [col("per_years"), "requestsRemaining"],
                     [col("per_times"), "perTimesRemaining"],
                     [col("per_users"), "perUsers"],
                 ],
                 where: { id: subCategoriesId }
             });
+
+            console.log("getFund Query Result:", JSON.stringify(getFund, null, 2));
+
             if (getFund) {
                 const datas = JSON.parse(JSON.stringify(getFund));
+                console.log("Parsed getFund:", datas);
+
                 logger.info("Complete", { method, data: { id } });
                 return res.status(200).json({
                     datas: datas,
                     canRequest: datas.canRequest ?? true
                 });
             }
+
             logger.info("Data not Found", { method, data: { id } });
-            res.status(200).json({
+            return res.status(200).json({
                 message: "มีสิทธิ์คงเหลือเท่ากับเพดานเงิน"
             });
 
         } catch (error) {
-            logger.error(`Error ${error.message}`, {
-                method,
-                data: { id },
-            });
+            console.error("Error:", error);
+            logger.error(`Error ${error.message}`, { method, data: { id } });
             next(error);
         }
-    }
+    };
+
 
 
     create = async (req, res, next) => {
@@ -375,6 +394,32 @@ class Controller extends BaseController {
                         individualHooks: true,
                     });
 
+                    // ตรวจสอบเด็กที่ต้องอัปเดตสถานะ Died ในใบเบิกเดียวกัน
+                    const childToBeMarkedAsDiedFiltered = updatedChildren
+                        .filter(child => child.delegate_number)  // คัดเฉพาะบุตรที่แทนที่คนอื่น
+                        .map(child => child.delegate_number);  // ดึงหมายเลขบุตรที่ถูกแทนที่
+
+                    if (childToBeMarkedAsDiedFiltered.length > 0) {
+                        await childrenInfomation.update(
+                            { child_type: childType.DIED }, // อัปเดตสถานะเป็น Died
+                            {
+                                where: {
+                                    child_number: childToBeMarkedAsDiedFiltered, // อัปเดตเฉพาะหมายเลขบุตรที่ถูกแทนที่
+                                    id: {
+                                        [Op.in]: sequelize.literal(`(
+                                                SELECT c.id FROM children_infomation c
+                                                JOIN reimbursements_children_education_has_children_infomation rc ON c.id = rc.children_infomation_id
+                                                WHERE rc.reimbursements_children_education_id = ${dataId}
+                                            )`)
+                                    }
+                                },
+                                transaction: t,
+                            }
+                        );
+                    }
+
+
+
                     // Check if there are any updates on the children data
                     const hasChildUpdated = existingChildren.some((existingChild, index) => {
                         const updatedChild = updatedChildren[index];
@@ -432,32 +477,49 @@ class Controller extends BaseController {
 
     getLatestSchoolByChildName = async (req, res, next) => {
         const method = "GetLatestSchoolByChildId";
-        const { id } = req.user;
-        try {
-            // ดึงข้อมูลล่าสุดจาก reimbursementsChildrenEducation
-            const latestEducation = await reimbursementsChildrenEducation.findOne({
-                attributes: ['id'],
-                where: {
-                    created_by: id
-                },
-                order: [["updated_at", "DESC"]], // เรียงลำดับตาม updated_at
-                limit: 1, // จำกัดแค่รายการเดียว
-            });
-            console.log("Latest Education ID: ", latestEducation.id);
+        const { createFor } = req.query;
+        const userId = req.user?.id; // ดึง id ของผู้ใช้ที่ล็อกอิน
 
-            // ตรวจสอบว่าได้รับข้อมูลจาก reimbursementsChildrenEducation หรือไม่
+        console.log("🟢 createFor:", createFor, "🟢 userId:", userId);
+
+        // ถ้าไม่มี createFor ให้ใช้ userId แทน
+        const createdByFilter = createFor ?? userId;
+
+        if (!createdByFilter) {
+            return res.status(400).json({ message: "ไม่พบ id ของผู้ใช้ กรุณาตรวจสอบ Token หรือ Middleware" });
+        }
+
+        try {
+            // ดึงข้อมูล reimbursement ล่าสุด
+            const latestEducation = await reimbursementsChildrenEducation.findOne({
+                attributes: ['id', 'created_by'],
+                where: { created_by: createdByFilter }, // ใช้ค่าแทน
+                order: [["updated_at", "DESC"]],
+                limit: 1,
+            });
+
+            console.log("✅ ข้อมูล reimbursement ล่าสุด:", latestEducation);
+
             if (!latestEducation) {
                 return res.status(404).json({ message: "ไม่พบข้อมูลการเบิกค่าศึกษาของบุตรล่าสุด" });
             }
 
-            // ดึงข้อมูลล่าสุดของบุตร
+            // ดึงข้อมูลเด็กที่เกี่ยวข้อง
             const childData = await childrenInfomation.findAll({
                 attributes: [
                     'id',
                     [col('child_name'), "childName"],
+                    [col('school_type'), "schoolType"],
                     [col('school_name'), "schoolName"],
+                    [col('sub_category.name'), "subCategoryName"],
+                    [col('sub_category.id'), "subCategoryId"],
                 ],
                 include: [
+                    {
+                        model: subCategories,
+                        as: "sub_category",
+                        attributes: ['id', 'name']
+                    },
                     {
                         model: reimbursementsChildrenEducationHasChildrenInfomation,
                         as: "reimbursements_children_education_has_children_infomations",
@@ -467,25 +529,25 @@ class Controller extends BaseController {
                 ],
             });
 
-            console.log("childData: ", childData);
+            console.log("✅ ข้อมูลเด็กที่ดึงมา:", JSON.stringify(childData, null, 2));
 
-            // ตรวจสอบว่ามีข้อมูลหรือไม่
-            if (childData && childData.length > 0) {
-                // สร้างอาร์เรย์เพื่อเก็บข้อมูลโรงเรียนของบุตรทั้งหมด
-                const ChildInformation = childData.map(child => child.dataValues);
-
-                console.log("ChildInformation: ", ChildInformation);
-
-                res.status(200).json({ ChildInformation });
-            } else {
-                res.status(404).json({ ChildInformation: "ไม่พบข้อมูลโรงเรียนของบุตร" });
+            if (!childData || childData.length === 0) {
+                return res.status(404).json({ message: "ไม่พบข้อมูลโรงเรียนของบุตร" });
             }
 
+            // จัดรูปแบบข้อมูลเพื่อส่งกลับ
+            const ChildInformation = childData.map(child => child.dataValues);
+            console.log("✅ ChildInformation ที่ส่งกลับ:", ChildInformation);
+
+            res.status(200).json({ ChildInformation });
+
         } catch (error) {
-            console.error(`Error: ${error.message}`, { method });
+            console.error(`❌ Error: ${error.message}`, { method });
             next(error);
         }
     };
+
+
 
     getTheDeadChild = async (req, res, next) => {
         const method = "getChildDeathBydelegateNumber";
@@ -584,10 +646,6 @@ class Controller extends BaseController {
 
                 ],
                 include: [
-                    {
-                        model: categories, as: 'category',
-                        attributes: ['id', 'name']
-                    },
                     {
                         model: users, as: 'created_by_user',
                         attributes: [],

@@ -1,7 +1,7 @@
 const { permissionsHasRoles, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation, reimbursementsChildrenEducation } = require('../models/mariadb')
 const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
 const permissionType = require('../enum/permission')
-const { Op, literal, col, where } = require("sequelize");
+const { Op, literal, col, fn } = require("sequelize");
 const { initLogger } = require('../logger');
 const logger = initLogger('ChildrenEducationValidator');
 const roleType = require('../enum/role')
@@ -125,34 +125,38 @@ const getRemaining = async (req, res, next) => {
     }
 };
 
+
+
 const checkRemaining = async (req, res, next) => {
     const method = 'CheckRemainingMiddleware';
     const { child, status } = req.body;
 
     try {
-
         const userId = req.user?.id;
         const { filter } = req.query;
         let whereObj = { ...filter, [Op.and]: [] };
-        const subCategoriesIds = child?.map(c => Number(c.subCategoriesId)) || [];
-        const fundSumRequests = child?.map(c => Number(c.fundUniversity) - Number(c.fundOther) || 0) || [];
 
-        // Loop ผ่านบุตรแต่ละคน
         for (let i = 0; i < child.length; i++) {
             const currentChild = child[i];
             const childName = currentChild.childName;
-            const currentFundSumRequest = fundSumRequests[i];
+            const currentFundSumRequest = Number(currentChild.fundUniversity) + Number(currentChild.fundSubUniversity) || 0;
 
-            // ค้นหาข้อมูลที่เกี่ยวข้องกับบุตรปัจจุบัน
+            // ค้นหาข้อมูลการเบิกของบุตรปัจจุบัน
             const results = await childrenInfomation.findAll({
                 attributes: [
+                    [col("sub_category.id"), "subCategoryId"],
+                    [col("childrenInfomation.child_name"), "childName"],
+                    [col("sub_category.fund"), "fund"],
+                    [fn("SUM", col("childrenInfomation.fund_sum_request")), "totalSumRequested"],
                     [
-                        literal("sub_category.fund - COALESCE(SUM(childrenInfomation.fund_sum_request), 0)"),
+                        literal("sub_category.fund - SUM(childrenInfomation.fund_sum_request)"),
                         "fundRemaining"
                     ],
                     [col("sub_category.per_times"), "perTimes"],
+                    [fn("COUNT", col("childrenInfomation.fund_sum_request")), "totalCountRequested"],
+                    [col("sub_category.per_years"), "perYears"],
                     [
-                        literal("sub_category.per_years - COALESCE(COUNT(childrenInfomation.fund_sum_request), 0)"),
+                        literal("sub_category.per_years - COUNT(childrenInfomation.fund_sum_request)"),
                         "requestsRemaining"
                     ]
                 ],
@@ -160,7 +164,7 @@ const checkRemaining = async (req, res, next) => {
                     {
                         model: subCategories,
                         as: "sub_category",
-                        attributes: [],
+                        attributes: ['id', 'fund', 'per_times', 'per_years'],
                     },
                     {
                         model: reimbursementsChildrenEducationHasChildrenInfomation,
@@ -178,59 +182,39 @@ const checkRemaining = async (req, res, next) => {
                         ]
                     }
                 ],
-                where: whereObj,
+                where: { ...whereObj, child_name: childName },
                 group: ["childrenInfomation.child_name", "sub_category.id"]
             });
 
-            const resultsSub = await subCategories.findAll({
-                attributes: [
-                    'id',
-                    [col("fund"), "fundRemaining"],
-                    [col("per_times"), "perTimes"],
+            let fundRemaining = 0;
+            let requestsRemaining = 0;
+            let perTimes = 0;
 
+            if (results.length > 0) {
+                // หากบุตรมีประวัติการเบิก
+                const data = results[0].dataValues;
+                fundRemaining = data.fundRemaining || 0;
+                requestsRemaining = data.requestsRemaining || 0;
+                perTimes = data.perTimes || 0;
+            } else {
+                // หากบุตรไม่เคยเบิก ใช้ข้อมูลจาก resultsSub
+                const resultsSub = await subCategories.findOne({
+                    attributes: [
+                        'id',
+                        [col("fund"), "fundRemaining"],
+                        [col("per_times"), "perTimes"]
+                    ],
+                    where: { id: Number(currentChild.subCategoriesId) }
+                });
 
-                ],
-                where: { id: { [Op.in]: subCategoriesIds } } // แก้ไขเงื่อนไขนี้   
-
-            })
-
-            if (results && !isNullOrEmpty(resultsSub)) {
-                const datas = JSON.parse(JSON.stringify(resultsSub));
-                const fundRemaining = datas[0]?.fundRemaining || 0;
-                const perTimes = datas[0]?.perTimes || 0;
-                if (status === 1) {
-                    return next();
-                }
-
-
-                // ตรวจสอบว่าจำนวนที่ขอเบิกเกินจำนวนครั้งที่สามารถขอได้หรือไม่
-                if (currentFundSumRequest > perTimes && perTimes) {
-                    return res.status(400).json({
-                        message: `บุตร ${childName} สามารถเบิกได้สูงสุด ${perTimes} ต่อครั้ง`,
-                    });
-                }
-
-                // ตรวจสอบว่าจำนวนที่ขอเบิกเกินเพดานเงินหรือไม่
-                if (currentFundSumRequest > fundRemaining && fundRemaining) {
-                    logger.info(`Request Over for child ${childName}`, { method });
-                    return res.status(400).json({
-                        message: `จำนวนที่ขอเบิกของบุตร ${childName} เกินเพดานเงิน กรุณาลองใหม่อีกครั้ง`,
-                    });
+                if (resultsSub) {
+                    fundRemaining = resultsSub.fundRemaining || 0;
+                    perTimes = resultsSub.perTimes || 0;
                 }
             }
 
-            if (!isNullOrEmpty(results)) {
-                const datas = JSON.parse(JSON.stringify(results));  // ตรวจสอบ fundRemaining จากผลลัพธ์
-
-                const fundRemaining = datas[0]?.fundRemaining || 0;
-                const requestsRemaining = datas[0]?.requestsRemaining || 0;
-                const perTimes = datas[0]?.perTimes || 0;
-
-                if (status === 1) {
-                    return next();
-                }
-
-                // ตรวจสอบว่าค่าคงเหลือเป็น 0 หรือไม่
+            // ตรวจสอบเงื่อนไขการเบิก
+            if (status !== 1) {
                 if (fundRemaining === 0 || requestsRemaining === 0) {
                     logger.info(`No Remaining for child ${childName}`, { method });
                     return res.status(400).json({
@@ -238,14 +222,12 @@ const checkRemaining = async (req, res, next) => {
                     });
                 }
 
-                // ตรวจสอบว่าจำนวนที่ขอเบิกเกินจำนวนครั้งที่สามารถขอได้หรือไม่
                 if (currentFundSumRequest > perTimes && perTimes) {
                     return res.status(400).json({
                         message: `บุตร ${childName} สามารถเบิกได้สูงสุด ${perTimes} ต่อครั้ง`,
                     });
                 }
 
-                // ตรวจสอบว่าจำนวนที่ขอเบิกเกินเพดานเงินหรือไม่
                 if (currentFundSumRequest > fundRemaining && fundRemaining) {
                     logger.info(`Request Over for child ${childName}`, { method });
                     return res.status(400).json({
@@ -261,6 +243,7 @@ const checkRemaining = async (req, res, next) => {
         next(error);
     }
 };
+
 
 const bindCreate = async (req, res, next) => {
     try {

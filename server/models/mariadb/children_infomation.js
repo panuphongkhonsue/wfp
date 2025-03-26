@@ -41,7 +41,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     child_type: {
-      type: DataTypes.ENUM('DELEGATE','COMMON'),
+      type: DataTypes.ENUM('DELEGATE', 'COMMON', 'DIED'),
       allowNull: false
     },
     school_name: {

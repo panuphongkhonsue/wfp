@@ -195,12 +195,14 @@
                   <div class="col-lg-4 col-12 row items-center ">
                     <p class="q-mb-none q-mx-md col-md-1 col-12">ตำแหน่ง</p>
                     <q-input for="officer-position" v-model="spouseData.officer.position" outlined dense
-                      :disable="model.role !== 'ข้าราชการ'" class="col-md-8 col-12 q-mx-md" :is-view="isView" />
+                      :data="spouseData.officer.position ?? '-'" :disable="model.role !== 'ข้าราชการ'"
+                      class="col-md-8 col-12 q-mx-md" :is-view="isView" />
                   </div>
                   <div class="col-lg-4 col-12 row items-center q-col-gutter-y-md">
                     <p class="q-mb-none q-mx-md q-mt-xs-md q-mt-lg-none col-md-1 col-12">สังกัด</p>
                     <q-input for="officer-belongTo" v-model="spouseData.officer.department" outlined dense
-                      :disable="model.role !== 'ข้าราชการ'" class="col-md-8 col-12 q-mx-md" :is-view="isView" />
+                      :data="spouseData.officer.department ?? '-'" :disable="model.role !== 'ข้าราชการ'"
+                      class="col-md-8 col-12 q-mx-md" :is-view="isView" />
                   </div>
                 </div>
 
@@ -211,15 +213,19 @@
                 <div class="row items-center q-col-gutter-y-md font-16 font-regular">
                   <q-radio v-model="model.role" val="พนักงานหรือลูกจ้างในรัฐวิสาหกิจ"
                     label="พนักงานหรือลูกจ้างในรัฐวิสาหกิจ / หน่วงานของทางราชการ ราชการส่วนท้องถิ่น กรุงเทพมหานคร องค์กรอิสระ องค์กรมหาชน หรือหน่วยงานอื่นใด" />
+
                   <div class="col-lg-4 col-12 row items-center ">
                     <p class="q-mb-none q-mx-md col-md-1 col-12">ตำแหน่ง</p>
                     <q-input for="enterprises-position" v-model="spouseData.enterprises.position" outlined dense
+                      :data="spouseData.enterprises.position ?? '-'"
                       :disable="model.role !== 'พนักงานหรือลูกจ้างในรัฐวิสาหกิจ'" class="col-md-8 col-12 q-mx-md"
                       :is-view="isView" />
                   </div>
+
                   <div class="col-lg-4 col-12 row items-center q-col-gutter-y-md">
                     <p class="q-mb-none q-mx-md q-mt-xs-md q-mt-lg-none col-md-1 col-12">สังกัด</p>
                     <q-input for="enterprises-belongTo" v-model="spouseData.enterprises.department" outlined dense
+                      :data="spouseData.enterprises.department ?? '-'"
                       :disable="model.role !== 'พนักงานหรือลูกจ้างในรัฐวิสาหกิจ'" class="col-md-8 col-12 q-mx-md"
                       :is-view="isView" />
                   </div>
@@ -450,7 +456,7 @@
 
                       <div class="col-md-5 col-12 ">
                         <InputGroup more-class="font-16 font-medium text-grey-9" label="ระดับชั้นที่ศึกษา" is-require
-                          clearable :data="child.subCategoriesId ?? '-'" :is-view="isView">
+                          clearable :data="child.subCategoriesName ?? '-'" :is-view="isView">
                           <q-select hide-bottom-space v-model="child.subCategoriesId" :loading="isLoading"
                             id="selected-status" popup-content-class="font-14 font-regular" class="font-14 font-regular"
                             outlined :options="optionsSubCategory || []" dense clearable option-value="value" emit-value
@@ -715,6 +721,7 @@ const model = ref({
       district: null,
       province: null,
       subCategoriesId: null,
+      subCategoriesName : null,
       childPassedAway: false,
       delegateName: null,
       delegateNumber: null,
@@ -749,7 +756,6 @@ function addChildForm() {
     delegateBirthDay: null,
     delegateDeathDay: null
   });
-  console.log("เพิ่มบุตรใหม่:", model.value.child.map(child => child.childNumber));
 }
 
 
@@ -802,31 +808,113 @@ const availableChildOptions = computed(() => {
   return optionsChildName.value.filter(option => !selectedChildNames.value.includes(option.name));
 });
 
-async function fetchRemaining() {
-  try {
-    const fetchRemainingData = await reimbursementChildrenEducationService.getRemaining({
-      createFor: model.value.createFor
-    });
 
-    var returnedData = fetchRemainingData.data.datas;
-
-    // แปลงเป็น array หาก `returnedData` เป็น object ที่มี key เป็นตัวเลข
-    if (returnedData) {
-      const dataArray = Object.values(returnedData);  // แปลงเป็น array
-      remaining.value = dataArray.map(item => ({
-        childName: item.childName,
-        fund: item?.fund,
-        totalSumRequested: item?.totalSumRequested,
-        perTime: item?.perTime,
-        fundRemaining: item?.fundRemaining
-      }));
-
+watch(
+  () =>
+    model.value.child?.map((child) => ({
+      childName: child.childName?.trim().toLowerCase() || "",
+      fundSum:
+        (parseFloat(child.fundUniversity) || 0) + (parseFloat(child.fundSubUniversity) || 0),
+      fundRemaining:
+        (parseFloat(child.fundReceipt) || 0) - (parseFloat(child.fundOther) || 0),
+    })) || [],
+  async (newValues) => {
+    // ตรวจสอบให้แน่ใจว่า isError.value มีขนาดเท่ากับ model.value.child
+    if (model.value.child && isError.value.length !== model.value.child.length) {
+      isError.value = model.value.child.map(() => ({ fundSumRequest: "" }));
     }
 
+    newValues.forEach((newValue, index) => {
+      const dataArray = (Array.isArray(remaining.value) ? remaining.value : []).filter(
+        (r) => r.childName
+      );
+
+      console.log("dataArray", dataArray);
+
+      const item = dataArray.find(
+        (r) => r.childName?.trim().toLowerCase() === newValue.childName
+      );
+
+      const fundLimit = parseFloat(item?.fund || 0);
+      const fundRemaining = parseFloat(item?.fundRemaining || 0);
+      const fundSum = parseFloat(newValue.fundSum || 0);
+
+      console.log("fundLimit", fundLimit, "fundRemaining", fundRemaining, "fundSum", fundSum);
+
+      if (!model.value.child[index]) {
+        console.error(`model.value.child[${index}] is undefined`);
+        return;
+      }
+
+      // ตรวจสอบว่า isError.value เป็นอาร์เรย์และมีข้อมูลที่ index นี้
+      if (Array.isArray(isError.value) && isError.value[index]) {
+        isError.value[index].fundSumRequest = ""; // เคลียร์ข้อความก่อนตรวจสอบ
+
+        if (fundSum > newValue.fundRemaining) {
+          isError.value[index].fundSumRequest = "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
+        } else if (item) {
+          if (fundSum > fundLimit) {
+            isError.value[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเพดานเงินที่กำหนด ${fundLimit.toFixed(2)}`;
+          } else if (fundSum > fundRemaining) {
+            isError.value[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเงินคงเหลือ ${fundRemaining.toFixed(2)}`;
+          } else {
+            model.value.child[index].fundSumRequest = fundSum.toFixed(2);
+          }
+        } else {
+          model.value.child[index].fundSumRequest = fundSum.toFixed(2);
+        }
+      } else {
+        console.warn(`isError.value[${index}] is undefined or isError.value is not an array`);
+      }
+    });
+
+    await nextTick();
+  },
+  { deep: true }
+);
+
+
+async function fetchRemaining() {
+  try {
+    const subCategoriesId = model.value.child.map(child => child.subCategoriesId);
+    
+    // Loop ผ่าน subCategoriesId แต่ละตัวและทำการ request แยก
+    for (const id of subCategoriesId) {
+      const fetchRemainingData = await reimbursementChildrenEducationService.getRemaining({
+        createFor: model.value.createFor,
+        subCategoriesId: [id]  // ส่งแค่หนึ่ง subCategoriesId ต่อครั้ง
+      });
+
+      const returnedData = fetchRemainingData.data.datas;
+      
+      if (returnedData) {
+        const dataArray = Object.values(returnedData);  // แปลงเป็น array
+        remaining.value = dataArray.map(item => ({
+          childName: item.childName,
+          fund: item?.fund,
+          totalSumRequested: item?.totalSumRequested,
+          perTime: item?.perTime,
+          fundRemaining: item?.fundRemaining
+        }));
+      }
+    }
   } catch (error) {
     console.error("❌ Error fetching remaining:", error);
   }
 }
+
+watch(
+  () => ({
+    createFor: model.value.createFor,
+    subCategoriesId: model.value.child.map(child => child.subCategoriesId)
+  }),
+  (newVal) => {
+    if (canCreateFor.value && newVal.subCategoriesId.length > 0) {
+      fetchRemaining();
+    }
+  },
+  { deep: true }
+);
 
 
 // ฟังก์ชันในการจัดการการแสดงผลข้อมูลเด็ก
@@ -893,30 +981,32 @@ watch(
 );
 
 
-// watch(
-//   () => model.value.child.map(child => child.subCategoriesId),
-//   (newValue, oldValue) => {
-//     if (JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
-//       fetchRemaining(); // ฟังก์ชันนี้จะถูกเรียกเมื่อค่ามีการเปลี่ยนแปลง
-//     }
-//   }
-// );
-
-
 
 async function fetchSchoolName() {
+  let createForParam = canCreateFor.value ? model.value.createFor : null;
+
+
   try {
-    const result = await reimbursementChildrenEducationService.getLastShcoolName();
-    if (result.data && result.data.ChildInformation) {
+    const result = await reimbursementChildrenEducationService.getLastShcoolName({
+      createFor: createForParam, // ส่งเฉพาะเมื่อ canCreateFor.value == true
+    });
+
+    if (result.data && Array.isArray(result.data.ChildInformation)) {
       shcoolData.value = result.data.ChildInformation;
+      console.log("🟢 shcoolData.value:",  shcoolData.value);
     } else {
-      console.warn("⚠️ ไม่มีข้อมูล shcoolData หรือ ChildInformation ไม่ถูกต้อง", result.data);
+      console.warn("⚠️ ไม่มีข้อมูล schoolData หรือ ChildInformation ไม่ถูกต้อง", result.data);
     }
   } catch (error) {
     console.error("❌ Error fetching school data:", error);
   }
-
 }
+watch(() => model.value.createFor, (newVal) => {
+  if (canCreateFor.value && newVal) {
+    fetchSchoolName();
+  }
+});
+
 watch(
   () => ({
     eligibleBenefits: [...model.value.eligibleBenefits],
@@ -930,13 +1020,11 @@ watch(
   async ({ eligibleBenefits, eligibleSubSenefits, children }) => {
 
     if (!eligibleBenefits.length && !eligibleSubSenefits.length) {
-      console.log("⚠️ กรุณาเลือก categoriesId ก่อน...");
       return;
     }
 
     const hasValidSchoolType = children.some(child => child.schoolType);
     if (!hasValidSchoolType) {
-      console.log("⏳ รอให้เลือก schoolType อย่างน้อย 1 คน...");
       return;
     }
 
@@ -1065,58 +1153,31 @@ watch(
           const selectedChild = shcoolData.value.find(
             (child) => child.childName === newName
           );
-
+          console.log("⚠️ shcoolData.value ไม่เป็นอาร์เรย์:", selectedChild);
           if (selectedChild) {
-            model.value.child[index].schoolName = selectedChild.schoolName || " ";
+            if (selectedChild.schoolType === 'ทั่วไป') {
+              model.value.child[index].schoolNamegeneral = selectedChild.schoolName || " ";
+              model.value.child[index].schoolType = selectedChild.schoolType
+              model.value.child[index].subCategoriesId = selectedChild.sub_category.name
+            }else{
+              model.value.child[index].schoolNameDemonstration = selectedChild.schoolName || " ";
+              model.value.child[index].schoolType = selectedChild.schoolType
+              model.value.child[index].subCategoriesId = selectedChild.sub_category.name
+            }
+
+
           }
         } else {
           console.warn("⚠️ shcoolData.value ไม่เป็นอาร์เรย์:", shcoolData.value);
         }
       } else {
         // เคลียร์ค่าถ้าชื่อถูกลบ
-        model.value.child[index].schoolName = "";
+        model.value.child[index].schoolNameDemonstration = "";
+        model.value.child[index].schoolNamegeneral = "";
       }
     });
 
     await nextTick(); // 🔥 บังคับ Vue อัปเดต UI
-  },
-  { deep: true }
-);
-
-
-
-
-watch(
-  () =>
-    model.value.child?.map((child) => ({
-      childName: child.childName?.trim().toLowerCase() || "",
-      fundSum:
-        (parseFloat(child.fundUniversity) || 0) + (parseFloat(child.fundSubUniversity) || 0),
-      fundRemaining:
-        (parseFloat(child.fundReceipt) || 0) - (parseFloat(child.fundOther) || 0),
-    })) || [],
-  async (newValues) => {
-    newValues.forEach((newValue, index) => {
-
-      if (!newValue.childName) {
-        isError.value[index] = { fundSumRequest: `ไม่มีข้อมูลชื่อบุตร` }; // แก้ไขเป็นอ็อบเจ็กต์
-        return;
-      }
-
-
-      const fundSum = (newValue.fundSum || 0).toFixed(2);
-
-
-      if (fundSum > newValue.fundRemaining) {
-        isError.value[index].fundSumRequest = "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
-      } else {
-        model.value.child[index].fundSumRequest = fundSum;
-        isError.value[index].fundSumRequest = null;
-      }
-
-    });
-
-    await nextTick();
   },
   { deep: true }
 );
@@ -1182,8 +1243,6 @@ function abortFilterFn() {
   // console.log('delayed filter aborted')
 }
 
-
-
 watch(() => model.value.categoriesId, (newValue) => {
   if (newValue) {
     getSubCategory(); // เรียกฟังก์ชัน getSubCategory เมื่อ categories_id เปลี่ยน
@@ -1195,6 +1254,8 @@ async function fetchDataEdit() {
     try {
       const result = await reimbursementChildrenEducationService.dataById(route.params.id);
       const returnedData = result.data.datas;
+      console.log("returnedData")
+      console.log(returnedData)
 
       if (returnedData) {
         let prefix = null;
@@ -1203,28 +1264,6 @@ async function fetchDataEdit() {
         const spouseParts = returnedData.spouse.split(' ');
         prefix = spouseParts[0] ?? null;
         name = spouseParts.slice(1).join(' ') || null;
-        const subCategoryName = Array.isArray(returnedData.children)
-          ? returnedData.children.map(child => {
-            // console.log("subCategories options:", child.sub_category); // 🟢 เช็คค่าของ subCategories
-            // console.log("Selected subCategoriesId:", child.subCategoryId);
-            console.log("Selected subCategoriesId:", child.subCategoryName);  // 🟢 เช็คค่าของ subCategoriesId
-
-            return {
-              ...child,
-              schoolType: child.schoolType ?? "-",
-              schoolName: child.schoolName,
-              schoolNamegeneral:
-                child.schoolType === "ทั่วไป" ? child.schoolName ?? "-" : null,
-              schoolNameDemonstration:
-                child.schoolType === "สาธิตพิบูลบําเพ็ญ" ? child.schoolName ?? "-" : null,
-              childBirthDay: child.childBirthDay ?? "-",
-              subCategoriesId: child.subCategoryName ?? null, // 🟢 แก้จาก child.subCategoryName เป็น child.subCategoriesId
-              childPassedAway: child.childType === "DELEGATE"
-            };
-          })
-          : [];
-        console.log("subCategoryName")
-        console.log(subCategoryName)
         model.value = {
           ...model.value,
           createFor: returnedData?.user?.userId ?? null,
@@ -1240,14 +1279,40 @@ async function fetchDataEdit() {
           position: returnedData?.position ?? "-",
           department: returnedData?.department ?? "-",
           categoriesId: returnedData?.category?.id ?? null,
-          child: subCategoryName
+          child: Array.isArray(returnedData?.children)
+            ? returnedData.children.map(child => ({
+              ...child,
+              schoolType: child.schoolType ?? "-",
+              schoolName: child.schoolName ?? "-",
+              schoolNamegeneral: child.schoolType === "ทั่วไป" ? child.schoolName : null,
+              schoolNameDemonstration: child.schoolType === "สาธิตพิบูลบําเพ็ญ" ? child.schoolName : null,
+              childBirthDay: child.childBirthDay ?? "-",
+              subCategoriesName : child.sub_category?.name ?? null,
+              subCategoriesId: child.sub_category?.id ?? null, // ✅ ใช้ subCategoriesId แทน subCategoryName
+              childPassedAway: child.childType === "DELEGATE"
+            }))
+            : []
+
+
+
         };
+
+        spouseData.value = {
+          officer: {
+            position: returnedData?.role === "ข้าราชการ" ? returnedData?.position ?? "-" : null,
+            department: returnedData?.role === "ข้าราชการ" ? returnedData?.department ?? "-" : null,
+          },
+          enterprises: {
+            position: returnedData?.role === "พนักงานหรือลูกจ้างในรัฐวิสาหกิจ" ? returnedData?.department ?? "-" : null,
+            department: returnedData?.role === "พนักงานหรือลูกจ้างในรัฐวิสาหกิจ" ? returnedData?.department ?? "-" : null,
+          }
+        };
+
 
         model.value.eligibleBenefits.push(returnedData?.eligibleBenefits);
         model.value.eligibleSubSenefits.push(returnedData?.eligibleSubSenefits);
       }
-
-      console.log("model.value", JSON.stringify(model.value, null, 2)); // 🟢 ตรวจสอบค่าของ model.value
+      console.log("model.value", JSON.stringify(model.value, null, 2));
 
     } catch (error) {
       Notify.create({
@@ -1259,11 +1324,6 @@ async function fetchDataEdit() {
     isLoading.value = false;
   }, 100);
 }
-
-
-
-
-
 
 function removeChildForm(index) {
   Swal.fire({
@@ -1296,22 +1356,24 @@ function removeChildForm(index) {
   })
 }
 
-
+let loadRole = true;
 watch(
   () => model.value.role,
   async () => {
-    spouseData.value = {
-      officer: {
-        position: null,
-        department: null
-      },
-      enterprises: {
-        position: null,
-        department: null
-      }
-    };
-  }
+    if (loadRole) {
+      loadRole = false
+      return;
+    }
+
+    // Preserve reactivity by updating properties instead of reassigning
+    spouseData.value.officer.position = null;
+    spouseData.value.officer.department = null;
+    spouseData.value.enterprises.position = null;
+    spouseData.value.enterprises.department = null;
+  },
+
 );
+
 
 watch(
   () => model.value.marryRegis,
@@ -1342,19 +1404,17 @@ let isFirstLoad = true;  // ตัวแปรเก็บสถานะกา�
 watch(
   () => model.value.child.map((child) => child.schoolType),
   async (newSchoolTypes, oldSchoolTypes) => {
-    // ถ้าเป็นการโหลดครั้งแรกไม่ให้ทำอะไร
     if (isFirstLoad) {
-      isFirstLoad = false;  // เปลี่ยนสถานะเป็น false หลังจากโหลดครั้งแรก
+      isFirstLoad = false;
       return;
     }
 
-    // เช็คว่า newSchoolTypes กับ oldSchoolTypes ต่างกันหรือไม่
-    if (newSchoolTypes.length === 0 || JSON.stringify(newSchoolTypes) === JSON.stringify(oldSchoolTypes)) {
-      return;  // ถ้าไม่มีการเปลี่ยนแปลงหรือไม่พบข้อมูล
+    if (!oldSchoolTypes || JSON.stringify(newSchoolTypes) === JSON.stringify(oldSchoolTypes)) {
+      return;
     }
 
     newSchoolTypes.forEach((newSchoolType, index) => {
-      if (newSchoolType) {
+      if (newSchoolType !== oldSchoolTypes[index]) { // ✅ เช็คว่ามีการเปลี่ยนจริง ๆ
         model.value.child[index].schoolNameDemonstration = null;
         model.value.child[index].schoolNamegeneral = null;
         model.value.child[index].subCategoriesId = null;
@@ -1362,6 +1422,7 @@ watch(
     });
   }
 );
+
 
 
 watch(
@@ -1627,12 +1688,10 @@ async function submit(actionId) {
           fetch = await reimbursementChildrenEducationService.update(route.params.id, payload);
         } else {
 
-          console.log("Payload before sending:", JSON.stringify(payload, null, 2));
           fetch = await reimbursementChildrenEducationService.create(payload);
         }
         isValid = true;
       } catch (error) {
-        console.error("เกิดข้อผิดพลาด:", error);
         if (error?.response?.status == 400) {
           if (Object.keys(error?.response?.data?.errors ?? {}).length) {
             isError.value = {
@@ -1641,12 +1700,13 @@ async function submit(actionId) {
             };
           }
         }
-        Swal.showValidationMessage(error?.response?.data?.message ?? `เกิดข้อผิดพลาด กรุณาลองอีกครั้ง`);
-        Notify.create({
-          message:
-            error?.response?.data?.message ?? "บันทึกข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง",
-          position: "bottom-left",
-          type: "negative",
+        Swal.fire({
+          html: error?.response?.data?.message ?? `เกิดข้อผิดพลาดกรุณาลองอีกครั้ง`,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+          customClass: {
+            confirmButton: "save-button",
+          },
         });
       }
     },
@@ -1688,6 +1748,7 @@ async function init() {
       optionsUserName.value = result.data.datas;
       fetchDataEdit();
       fetchRemaining();
+      fetchSchoolName()
     }
     else {
       if (!canCreateFor.value) {
@@ -1698,6 +1759,8 @@ async function init() {
       else {
         const result = await userManagementService.getUserInitialData({ keyword: null });
         userInitialData.value = result.data.datas;
+        fetchRemaining();
+        fetchSchoolName()
       }
     }
   }

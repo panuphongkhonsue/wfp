@@ -103,6 +103,9 @@ const fetchDatareimChildrenEducation = async (req, res, next) => {
                 'province',
                 [col('sub_category.name'), "SubCategoryName"],
             ],
+            where: {
+                child_type: { [Op.ne]: 'DIED' }  // ไม่เอา child ที่มีค่า DIED
+            },
             include: [
                 {
                     model: subCategories,
