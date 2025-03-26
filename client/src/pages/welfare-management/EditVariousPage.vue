@@ -85,16 +85,6 @@
                 <q-option-group class="q-gutter-y-sm" v-model="model.categoryId" type="radio" :options="categoryOptions"
                   :disable="isView" :rules="[(val) => !!val || '']" />
               </div>
-              <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
-                <p class="col-12 q-mb-none">({{ remaining[4]?.fund ? "จ่ายไม่เกินคนละ " + remaining[4]?.fund + " บาท" :
-                  "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
-                <p class="col-12 q-mb-none">({{ remaining[5]?.fund ? "จ่ายไม่เกินคนละ " + remaining[5]?.fund + " บาท" :
-                  "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
-                <p class="col-12 q-mb-none">({{ remaining[6]?.fund ? "จ่ายไม่เกินคนละ " + remaining[6]?.fund + " บาท" :
-                  "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
-                <p class="col-12 q-mb-none">({{ remaining[7]?.fund ? "จ่ายไม่เกินคนละ " + remaining[7]?.fund + " บาท" :
-                  "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
-              </div>
             </q-card-section>
             <q-card-section class="row wrap font-medium font-16 text-grey-9 q-pt-none">
               <div class="col-lg-4 col-12 ">
@@ -203,7 +193,7 @@ const categoryOptions =
       value: 4
     },
     {
-      label: 'การเบิกค่าอุปสมหรือการไปประกอบพิธีฮัจญ์',
+      label: 'การเบิกค่าอุปสมบทหรือการไปประกอบพิธีฮัจญ์',
       value: 5
     },
     {
