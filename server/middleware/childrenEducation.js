@@ -189,26 +189,28 @@ const checkRemaining = async (req, res, next) => {
             let fundRemaining = 0;
             let requestsRemaining = 0;
             let perTimes = 0;
+            let fund = 0;
 
             if (results.length > 0) {
                 // หากบุตรมีประวัติการเบิก
                 const data = results[0].dataValues;
                 fundRemaining = data.fundRemaining || 0;
                 requestsRemaining = data.requestsRemaining || 0;
+                fund = data.fund || 0;
                 perTimes = data.perTimes || 0;
             } else {
                 // หากบุตรไม่เคยเบิก ใช้ข้อมูลจาก resultsSub
                 const resultsSub = await subCategories.findOne({
                     attributes: [
                         'id',
-                        [col("fund"), "fundRemaining"],
+                        [col("fund"), "fund"],
                         [col("per_times"), "perTimes"]
                     ],
                     where: { id: Number(currentChild.subCategoriesId) }
                 });
 
                 if (resultsSub) {
-                    fundRemaining = resultsSub.fundRemaining || 0;
+                    fund = resultsSub.fund || 0;
                     perTimes = resultsSub.perTimes || 0;
                 }
             }
@@ -231,7 +233,14 @@ const checkRemaining = async (req, res, next) => {
                 if (currentFundSumRequest > fundRemaining && fundRemaining) {
                     logger.info(`Request Over for child ${childName}`, { method });
                     return res.status(400).json({
-                        message: `จำนวนที่ขอเบิกของบุตร ${childName} เกินเพดานเงิน กรุณาลองใหม่อีกครั้ง`,
+                        message: `ยอดเงินคงเหลือของบุตร ${childName} สามารถเบิกเบิกได้ ${fundRemaining} กรุณาลองใหม่อีกครั้ง`,
+                    });
+                }
+
+                if (currentFundSumRequest > fund && fund) {
+                    logger.info(`Request Over for child ${childName}`, { method });
+                    return res.status(400).json({
+                        message: `ยอหเพดานเงินที่บุตร ${childName} สามารถเบิกเบิกได้ ${fund} กรุณาลองใหม่อีกครั้ง`,
                     });
                 }
             }
@@ -768,7 +777,7 @@ const checkNullValue = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { fund_sum_request, subCategoriesId } = req.body;
+        const { subCategoriesId, status } = req.body;
         if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
@@ -797,12 +806,12 @@ const checkFullPerTimes = async (req, res, next) => {
 
         if (getFund) {
             const datas = JSON.parse(JSON.stringify(getFund));
-            if (fund_sum_request > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
+            if (childFundRequest > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
                 return res.status(400).json({
                     message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
                 });
             }
-            if (fund_sum_request > datas.fundRemaining && !isNullOrEmpty(datas.fundRemaining)) {
+            if (childFundRequest > datas.fundRemaining && !isNullOrEmpty(datas.fundRemaining)) {
                 logger.info('Request Over', { method });
                 return res.status(400).json({
                     message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",

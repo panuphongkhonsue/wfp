@@ -1158,11 +1158,9 @@ watch(
             if (selectedChild.schoolType === 'ทั่วไป') {
               model.value.child[index].schoolNamegeneral = selectedChild.schoolName || " ";
               model.value.child[index].schoolType = selectedChild.schoolType
-              model.value.child[index].subCategoriesId = selectedChild.sub_category.name
             }else{
               model.value.child[index].schoolNameDemonstration = selectedChild.schoolName || " ";
               model.value.child[index].schoolType = selectedChild.schoolType
-              model.value.child[index].subCategoriesId = selectedChild.sub_category.name
             }
 
 
