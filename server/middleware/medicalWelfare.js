@@ -536,7 +536,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 }
                 else {
                     const diffFund = fund_eligible - oldWelfareData.fund_eligible;
-                    if (datas.fundRemaining === 0 || datas.fundRemaining - diffFund < 0) {
+                    if ((datas.fundRemaining === 0 || datas.fundRemaining - diffFund < 0) && !isNullOrEmpty(datas.fundRemaining)) {
                         return res.status(400).json({
                             message: "ไม่สามารถทำรายการได้เนื่องจากเกินเพดานเงินคงเหลือ",
                         });
@@ -555,7 +555,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 }
                 else {
                     const diffFund = fund_sum_request_patient_visit - oldWelfareData.fund_sum_request_patient_visit;
-                    if (datas.fundRemaining === 0 || datas.fundRemaining - diffFund < 0) {
+                    if ((datas.fundRemaining === 0 || datas.fundRemaining - diffFund < 0) && !isNullOrEmpty(datas.fundRemaining)) {
                         return res.status(400).json({
                             message: "ไม่สามารถทำรายการได้เนื่องจากเกินเพดานเงินคงเหลือ",
                         });
@@ -563,7 +563,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 }
             }
         };
-        next();
+        // next();
     }
     catch (error) {
         logger.error(`Error ${error.message}`, { method });

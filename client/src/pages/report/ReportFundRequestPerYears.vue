@@ -3,7 +3,7 @@
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md q-ml-md-md items-end" @submit="search">
         <div class="col-12 col-md-4 col-lg-2">
-          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense label="ตั้งแต่ปี">
+          <InputGroup more-class="font-16 font-medium text-black" for-id="requesId" is-dense label="ปีงบประมาณ">
             <q-select :loading="isLoading" id="selected-welfares" class="q-pt-sm font-14 font-regular"
               popup-content-class="font-14 font-regular" outlined v-model="filters.year" :options="optionStartYear"
               label="ปีงบประมาณ" dense option-value="name" emit-value map-options option-label="name">
@@ -20,7 +20,7 @@
             dense type="submit" label="ค้นหา" icon="search" no-caps :loading="isLoading" />
         </div>
         <p class="col-12 text-center text-bold text-h4 q-pt-xl" style="color: #4D5B6B;">
-          ภาพรวมการเปรียบเทียบค่าใช้จ่ายของปี {{ filters.year }}
+          ภาพรวมค่าใช้จ่ายของปี {{ filters.year }}
         </p>
       </q-form>
       <div class="col-12 q-my-md q-mx-none row q-col-gutter-x-md">

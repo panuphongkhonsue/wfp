@@ -6,6 +6,7 @@ const category = require('../enum/category');
 const logger = initLogger('funeralWelfareEmployeeDeceasedController');
 const { getFiscalYearDynamic, getFiscalYear } = require('../middleware/utility');
 const { isNullOrEmpty } = require('./utility');
+const status = require('../enum/status');
 
 class Controller extends BaseController {
     constructor() {
@@ -375,9 +376,25 @@ class Controller extends BaseController {
 
             if (getFund) {
                 const datas = JSON.parse(JSON.stringify(getFund));
-                datas[0].canRequest = true;
-                datas[1].canRequest = true;
-                logger.info('Complete', { method, data: { id } });
+            
+                for (let i = 0; i < datas.length; i++) {
+                    if (datas[i].deceased !== undefined && datas[i].deceased !== null) {
+                        const deceasedData = await reimbursementsEmployeeDeceased.findOne({
+                            where: {
+                                category_id: datas[i].categoriesId,  
+                            }
+                        });
+                        if (deceasedData) {
+                            datas[i].canRequest = false;
+                        } else {
+                            datas[i].canRequest = true;
+                        }
+                    } else {
+                        datas[i].canRequest = true;
+                    }
+                }
+            
+            
                 return res.status(200).json({
                     datas: datas.map(item => ({
                         categoriesId: item.categoriesId,
@@ -385,12 +402,11 @@ class Controller extends BaseController {
                         fundRemaining: item.fundRemaining,
                         requestsRemaining: item.requestsRemaining,
                         perTimesRemaining: item.perTimesRemaining,
-                        canRequest: item.fundRemaining > 0 ? true : false
+                        canRequest: item.canRequest,
                     })),
-                    canRequest: datas.canRequest ?? true,
+                    canRequest: datas[0]?.canRequest ?? true, 
                 });
             }
-
             logger.info('Data not Found', { method, data: { id } });
             res.status(200).json({
                 message: "มีสิทธิ์คงเหลือเท่ากับเพดานเงิน"
@@ -618,7 +634,9 @@ class Controller extends BaseController {
                     where: { id: dataId },
                     transaction: t,
                 });
-
+                if(dataUpdate.status === status.approve){
+                    return updated;
+                  }
                 let itemsReturned = { updated };
 
                 // Handle selected wreath

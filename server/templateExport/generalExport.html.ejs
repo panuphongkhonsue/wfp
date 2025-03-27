@@ -262,7 +262,7 @@
                     <div class="row pt-sm pl-md" style="gap: 8px">
                       <div style="flex: 1" class="pl-md">
                         <div style="display: flex; flex-direction: column; gap: 10px;" class="pl-md">
-                          <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==3) { %>
+                          <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==3 && body.requestData.length > 0) { %>
                             <% for (var i=0; i < body.requestData.length; i++) { %>
                               <div class="d-flex">
                                 <input type="checkbox" id="body<%= i + 1 %>" name="body<%= i + 1 %>" value="1"
@@ -273,7 +273,7 @@
                                     <%= toThaiNumber(Number(i + 1).toLocaleString('en-US')) %>
                                   </span>
                                 </label>
-                                <span class="mx-sm d-flex" style="max-width: 200px; width: 200px;">เมื่อ
+                                <span class="mx-sm d-flex" style="max-width: 400px; width: 400px;">เมื่อ
                                   (วัน/เดือน/ปี)
                                   <span class="text-dot">
                                     <%= body.requestData[i].startDate + " - " + body.requestData[i].endDate %>
@@ -323,7 +323,7 @@
                   <input type="checkbox" id="cate1" name="cate1" value="1" <%=body?.categoryId==2 ? "checked" : "" %> />
                   <span class="font-semi-bold" for="cate1">ข้าพเจ้าขอรับเงินสวัสดิการค่าทำฟันเพื่อการรักษา <span
                       style="text-decoration: underline;">ยกเว้น</span>
-                    ทันตกรรมเพื่อความสวยงาม <span style="font-size: 12px;">(เท่าที่จ่ายจริงไม่เกิน ๑,๐๐๐)</span>
+                    ทันตกรรมเพื่อความสวยงาม <span style="font-size: 12px;">(เท่าที่จ่ายจริงไม่เกิน ๒,๐๐๐)</span>
                   </span>
                 </div>
                 <div class="d-flex">
@@ -351,7 +351,7 @@
                     <div class="row pt-sm pl-md" style="gap: 8px">
                       <div style="flex: 1" class="pl-md">
                         <div style="display: flex; flex-direction: column; gap: 10px;" class="pl-md">
-                          <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==2) { %>
+                          <% if (body.requestData && Array.isArray(body.requestData) && body?.categoryId==2 && body.requestData.length > 0) { %>
                             <% for (var i=0; i < body.requestData.length; i++) { %>
                               <div class="d-flex">
                                 <input type="checkbox" id="body<%= i + 1 %>" name="body<%= i + 1 %>" value="1"

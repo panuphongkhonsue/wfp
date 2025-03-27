@@ -405,7 +405,7 @@ const checkUpdateRemaining = async (req, res, next) => {
             }
             else {
                 const diffFund = fund_sum_request - oldWelfareData.fund_sum_request;
-                if (datas.fundRemaining === 0 || datas.fundRemaining - diffFund < 0) {
+                if ((datas.fundRemaining === 0 || datas.fundRemaining - diffFund < 0) && !isNullOrEmpty(datas.fundRemaining)) {
                     return res.status(400).json({
                         message: "ไม่สามารถทำรายการได้เนื่องจากเกินเพดานเงินคงเหลือ",
                     });

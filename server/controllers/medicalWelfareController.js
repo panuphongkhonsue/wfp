@@ -556,6 +556,9 @@ class Controller extends BaseController {
           },
           transaction: t
         });
+        if(dataUpdate.status === status.approve){
+          return updated;
+        }
         var checkingEdit = false;
         if (selectedAccident) {
           const existingAccident =
