@@ -2,7 +2,7 @@
   <q-page padding class="q-pt-none q-mb-lg">
     <DynamicBreadcrumb />
     <div class="row q-pb-md">
-      <div class="col-lg-8 col-12" v-if="!authStore.isEditor">
+      <div class="col-lg-8 col-12">
         <p class="q-mb-none col-8 q-mb-md font-medium">สิทธิ์คงเหลือ</p>
         <!-- card แถวที่ 1 -->
         <div class="row q-pb-md q-col-gutter-md q-pr-md">
