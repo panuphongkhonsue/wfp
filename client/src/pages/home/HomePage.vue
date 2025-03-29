@@ -17,11 +17,20 @@
                 <!-- ข้อความ -->
                 <div>
                   <p class="q-mb-none text-white font-20 font-bold q-pb-md">{{ items.categoryName }}</p>
-                  <p class="q-mb-none text-white font-16 q-pb-sm">เงินคงเหลือ {{ items?.fundRemaining ?
-                    items?.fundRemaining + " บาทต่อปี" :
-                    items?.perTimesRemaining ? items?.perTimesRemaining + " บาทต่อครั้ง" : "ไม่จำกัดจำนวนเงิน"
-                  }}</p>
-                  <p class="q-mb-none text-white font-16">{{ items?.requestsRemaining ? "จำนวน " +
+                  <p class="q-mb-none text-white font-16 q-pb-sm">
+
+                    {{ items?.perUsersRemaining !== null && items?.perUsersRemaining !== undefined ?
+                      (items?.perUsersRemaining > 0 ? "เงินคงเหลือ " +
+                        items?.fundRemaining + " บาท" :
+                        (items?.perUsersRemaining === 0 ? "ไม่จำกัดจำนวนเงิน" : "ใช้สิทธิ์ครบแล้ว"))
+                      : (items?.fundRemaining ? "เงินคงเหลือ " +
+                        items?.fundRemaining + " บาทต่อปี" :
+                        (items?.perTimesRemaining ?
+                    items?.perTimesRemaining + " บาทต่อครั้ง" :
+                    "ไม่จำกัดจำนวนเงิน"))
+                    }}
+                  </p>
+                  <p  class="q-mb-none text-white font-16">{{ items?.requestsRemaining ? "จำนวน " +
                     items?.requestsRemaining + " ครั้ง" : 'ไม่จำกัดครั้ง' }}</p>
                 </div>
                 <!-- รูปภาพ -->
@@ -268,7 +277,6 @@ async function fetchRemainingMedical() {
     Promise.reject(error);
   }
 }
-
 async function fetchRemainingVarious() {
   try {
     const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
@@ -281,6 +289,9 @@ async function fetchRemainingVarious() {
           categoryName: marriageData.categoryName,
           fundRemaining: marriageData.fundRemaining ? formatNumber(marriageData.fundRemaining) : null,
           perTimesRemaining: marriageData.perTimesRemaining ? formatNumber(marriageData.perTimesRemaining) : null,
+          perUsersRemaining: marriageData.perUsersRemaining !== null && marriageData.perUsersRemaining !== undefined
+            ? formatNumber(marriageData.perUsersRemaining)
+            : null,
           requestsRemaining: marriageData.requestsRemaining !== null && marriageData.requestsRemaining !== undefined
             ? formatNumber(marriageData.requestsRemaining)
             : null,
@@ -295,6 +306,7 @@ async function fetchRemainingVarious() {
     return Promise.reject(error);
   }
 }
+
 
 async function init() {
   pagination.value.rowsPerPage = listStore.getState();

@@ -67,12 +67,6 @@
             <q-card-section class="col row flex justify-between q-pb-none">
               <div class="row">
                 <p class="q-pb-none font-18 font-bold ">ข้อมูลการเบิกสวัสดิการ</p>
-                <p class="q-pl-md q-pb-none font-16 q-mb-none">
-                  (จ่ายไม่เกินคนละ {{ remaining[3]?.fund ? remaining[3]?.fund + " บาท" :
-                    remaining[3]?.perTimesRemaining ? remaining[3]?.perTimesRemaining + " บาทต่อครั้ง" :
-                      "ไม่จำกัดจำนวนเงิน" }})
-                </p>
-
               </div>
               <a class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
                 v-if="isView && (model.status == 'รอตรวจสอบ')" @click.stop.prevent="
@@ -90,7 +84,7 @@
                 ?? "-"
                   }}</span> </p>
             </q-card-section>
-            <q-card-section 
+            <q-card-section v-if="model.deceasedType"
               class="row wrap font-medium font-16 text-grey-9 q-pt-none">
               <div v-for="option in deceaseOptions" :key="option.value" class="col-12 row q-mb-none ">
                 <div class="col-md-2 col-6">
@@ -104,7 +98,7 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-card-section 
+            <q-card-section  v-if="model.deceasedType"
               class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-none">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fundReceipt ?? '-'"
@@ -125,7 +119,7 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-card-section 
+            <q-card-section  v-if="model.selectedWreath || model.selectedVechicle"
               class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center" :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedWreath" />
               <p class="q-mb-none">ค่าสนับสนุนค่าพวงหรีด (จ่ายไม่เกินคนละ {{ remaining[7]?.fund ? remaining[7]?.fund
@@ -138,7 +132,7 @@
                   remaining[8]?.perTimesRemaining ?? "ไม่จำกัดจำนวนเงิน" }}
                 ในนามส่วนงาน)</p>
             </q-card-section>
-            <q-card-section 
+            <q-card-section  v-if="model.selectedWreath || model.selectedVechicle"
               class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl q-pt-md-sm">
                 <InputGroup for-id="fund-wreath-receipt" is-dense v-model="model.fundReceiptWreath"
@@ -171,8 +165,8 @@
                 </InputGroup>
               </div>
             </q-card-section>
-            <q-separator  inset />
-            <q-card-section v-show="!canCreateFor"
+            <q-separator  inset v-if="model.selectedWreath || model.selectedVechicle" />
+            <q-card-section v-show="!canCreateFor"  v-if="model.selectedWreath || model.selectedVechicle"
               class="row wrap font-medium q-pb-xs font-16 text-grey-9 items-center" :class="isView ? '' : 'q-pl-sm'">
               <q-checkbox v-if="!isView" v-model="model.selectedVechicle" />
               <p class="q-mb-none ">ค่าสนับสนุนค่าพาหนะเหมาจ่าย (จ่ายจริงคนละไม่เกิน
@@ -181,7 +175,7 @@
                   "ไม่จำกัดจำนวนเงิน"
                 }})</p>
             </q-card-section>
-            <q-card-section 
+            <q-card-section  v-if="model.selectedWreath || model.selectedVechicle"
               class="row wrap font-medium font-16 text-grey-9 q-pt-none q-pb-sm">
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl">
                 <InputGroup for-id="fund" is-dense v-model="model.fundReceiptVechicle"

@@ -37,8 +37,16 @@
         </div>
         <q-card class="col-8 q-mx-auto q-mt-xl q-pl-none q-py-md " style="border-radius: 10px; box-shadow:inset">
           <div id="chart" class="q-mx-md ">
-            <ApexChart type="bar" height="480" :options="chartOptions" :series="chartOptions.series"></ApexChart>
+            <div v-if="noDataMessage" style="height: 480px;"
+              class="q-pa-md flex items-center justify-center text-center text-h6">
+              {{ noDataMessage }}
+            </div>
+            <ApexChart v-if="!noDataMessage" type="bar" height="480" :options="chartOptions"
+              :series="chartOptions.series">
+            </ApexChart>
+
           </div>
+
         </q-card>
       </q-form>
     </template>
@@ -58,7 +66,7 @@ import InputGroup from "src/components/InputGroup.vue";
 defineOptions({
   name: "report_compare-expenses",
 });
-
+const noDataMessage = ref("");
 const isLoading = ref(false);
 const route = useRoute();
 const currentYear = toThaiYear(new Date().getFullYear());
@@ -113,7 +121,7 @@ const chartOptions = ref({
         fontWeight: 400,
         fontFamily: 'BaiJamjureeMedium',
       },
-    }, 
+    },
     // 
   },
   title: {
@@ -250,16 +258,27 @@ async function fetchDataDashboard(filters) {
       page: 1,
       itemPerPage: 10000,
     });
+
     console.log("API Response Data:", results.data.datas);
+
     if (results && results.data) {
+      // กรองข้อมูลที่มีปีระหว่าง startYear และ endYear เท่านั้น
       dashboardData.value = results.data.datas.filter(item =>
         item.year >= toEngYear(filters.value.startYear) &&
         item.year <= toEngYear(filters.value.endYear)
       );
+
+      // ถ้าไม่มีข้อมูลที่ตรงกับช่วงปีที่เลือก
       if (dashboardData.value.length === 0) {
         console.warn("No data received after filtering.");
+        noDataMessage.value = "ไม่พบข้อมูลภาพรวมการเปรียบเทียบค่าใช้จ่ายของปีที่เลือก";
+        chartOptions.value = { ...chartOptions.value, xaxis: { categories: null } };
         return;
+      } else {
+        // รีเซ็ตข้อความเมื่อมีข้อมูล
+        noDataMessage.value = "";
       }
+
       const welfareOrder = [
         "สวัสดิการทั่วไป",
         "สวัสดิการค่าสงเคราะห์ต่าง ๆ",
@@ -272,13 +291,13 @@ async function fetchDataDashboard(filters) {
       const welfareTypes = [...new Set(
         dashboardData.value.map(item => welfareMapping[item.welfare_type] || item.welfare_type)
       )];
-      
+
       welfareTypes.sort((a, b) => welfareOrder.indexOf(a) - welfareOrder.indexOf(b));
 
-      console.log(" Ordered Welfare Types:", welfareTypes);
-
+      // กรองปีที่ตรงกับข้อมูลที่มี
       const years = [...new Set(dashboardData.value.map(item => item.year))].sort((a, b) => a - b);
 
+      // อัปเดตข้อมูล series ให้ตรงกับปีที่มี
       const series = welfareOrder
         .filter(type => welfareTypes.includes(type))
         .map(type => ({
@@ -290,15 +309,20 @@ async function fetchDataDashboard(filters) {
             return found ? found.fund_sum_request : 0;
           }),
         }));
-      chartOptions.value = {
-        ...chartOptions.value,
-        xaxis: { categories: years.map(year => toThaiYear(year)) },
-        series: series,
-      };
 
+      if (years.length === 0) {
+        chartOptions.value = { ...chartOptions.value, xaxis: { categories: [] }, series: [] };
+      } else {
+        chartOptions.value = {
+          ...chartOptions.value,
+          xaxis: { categories: years.map(year => toThaiYear(year)) },  
+          series: series,
+        };
+      }
     } else {
       console.warn("No valid data received.");
       dashboardData.value = [];
+      chartOptions.value = {};  
     }
 
   } catch (error) {
@@ -310,5 +334,6 @@ async function fetchDataDashboard(filters) {
     console.error("Fetch Error:", error);
   }
 }
+
 
 </script>
