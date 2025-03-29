@@ -148,24 +148,24 @@ async function fetchDataFundRequestPerYear(filters) {
       page: 1,
       itemPerPage: 10000,
     });
-    if (result.data.docs.length == 0) {
+    if (result.data.length == 0) {
       series.value[0].data = [];
     }
     else {
       for (let y = 0; y < dataFundRequestPerYear.value.length; y++) {
         dataFundRequestPerYear.value[y].totalFund = 0;
-        for (let i = 0; i < result.data.docs.length; i++) {
-          if (dataFundRequestPerYear.value[y].monthNumber === result.data.docs[i].month) {
-            dataFundRequestPerYear.value[y].totalFund = result.data.docs[i].total_fund;
+        for (let i = 0; i < result.data.length; i++) {
+          if (dataFundRequestPerYear.value[y].monthNumber === result.data[i].month) {
+            dataFundRequestPerYear.value[y].totalFund = result.data[i].total_fund;
           }
         }
       }
       series.value[0].data = dataFundRequestPerYear.value.map((item) => item.totalFund);
     }
-    console.log("result.data.docs.lenght: ", result.data.docs.length);
+    console.log("result.data.docs.lenght: ", result.data.length);
     console.log("dataFundRequestPerYear: ", dataFundRequestPerYear.value);
-    console.log("result.data.docs: ", result.data.docs);
-    return result.data.docs;
+    console.log("result.data.docs: ", result.data);
+    return result.data;
   } catch (error) {
     Notify.create({
       message:
@@ -186,11 +186,11 @@ async function fetchDataFundRequestPerYearEachType(filters) {
     });
 
     // 🔹 เซ็ตข้อมูลหลัก
-    dataFundRequestPerYearEachType.value = result.data.docs;
+    dataFundRequestPerYearEachType.value = result.data;
 
     // 🔹 สร้าง Map เพื่อเก็บค่า total_fund ตาม welfare_type
     const fundMap = new Map();
-    result.data.docs.forEach(item => {
+    result.data.forEach(item => {
       fundMap.set(item.welfare_type, item.total_fund ?? 0);
     });
 
@@ -202,8 +202,8 @@ async function fetchDataFundRequestPerYearEachType(filters) {
       fundMap.get('สวัสดิการเกี่ยวกับการศึกษาของบุตร') ?? 0
     ];
 
-    console.log("dataFundRequestPerYearEachType: ", result.data.docs);
-    return result.data.docs;
+    console.log("dataFundRequestPerYearEachType: ", result.data);
+    return result.data;
   } catch (error) {
     Notify.create({
       message:

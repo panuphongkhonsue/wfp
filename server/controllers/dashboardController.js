@@ -39,21 +39,25 @@ class Controller extends BaseController {
         console.log("startYear:", startYear);
         console.log("endYear:", endYear);
         try {
-            const result = await viewDashboard.findAll({
-                attributes: [
-                    [fn("SUM", col("fund_sum_request")), "fund_sum_request"],
-                    "welfare_type",
-                    [fn("YEAR", col("updated_at")), "year"] 
-                ],
-                where: {
-                    [Op.and]: [
-                        sequelize.where(sequelize.fn('YEAR', sequelize.col('updated_at')), '>=', startYear),
-                        sequelize.where(sequelize.fn('YEAR', sequelize.col('updated_at')), '<=', endYear)
-                    ]
+            const result = await sequelize.query(`
+                SELECT 
+                  welfare_type, 
+                  SUM(fund_sum_request) AS fund_sum_request,
+                  YEAR(updated_at) AS year
+                FROM (
+                  SELECT DISTINCT id, welfare_type, fund_sum_request, updated_at
+                  FROM wfpdb.view_dashboard
+                  WHERE updated_at BETWEEN :startDate AND :endDate
+                ) AS distinct_view
+                GROUP BY welfare_type, YEAR(updated_at)
+                ORDER BY YEAR(updated_at) DESC, welfare_type ASC
+              `, {
+                replacements: {
+                  startDate: `${startYear}-01-01`,
+                  endDate: `${endYear}-12-31`
                 },
-                group: ["welfare_type", fn("YEAR", col("updated_at"))],
-                order: [[fn("YEAR", col("updated_at")), "DESC"], ["welfare_type", "ASC"]]
-            });
+                type: sequelize.QueryTypes.SELECT
+              });
             res.status(200).json({
                 datas: result,
                 pagination: { totalPages: 1, totalItems: result.length }
@@ -70,20 +74,24 @@ class Controller extends BaseController {
         try {
             const { filter, page, itemPerPage, year } = req.query;
             var whereObj = { ...filter }
-            const dashboardDataList = await viewDashboard.paginate({
-                page: page && !isNaN(page) ? Number(page) : 1,
-                paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 10,
-                attributes: [
-                    [fn("SUM", col("fund_sum_request")), "total_fund"],
-                    [fn("MONTH", col("updated_at")), "month"],
-                  ],
-                  where: {
-                    updated_at: {
-                        [Op.between]: [`${parseInt(year) - 1}-10-01`, `${year}-09-30`]
-                    },
-                  },
-                  group: [fn("MONTH", col("updated_at"))],
-                  raw: true,
+            const dashboardDataList = await sequelize.query(`
+                SELECT 
+                    SUM(fund_sum_request) AS total_fund,
+                    MONTH(updated_at) AS month
+                FROM (
+                    SELECT DISTINCT id, fund_sum_request, updated_at
+                    FROM wfpdb.view_dashboard
+                    WHERE 
+                        updated_at BETWEEN :startDate AND :endDate
+                ) AS distinct_view
+                GROUP BY 
+                    MONTH(updated_at);
+            `, {
+                replacements: {
+                    startDate: `${parseInt(year) - 1}-10-01`,
+                    endDate: `${year}-09-30`,
+                },
+                type: sequelize.QueryTypes.SELECT,
             });
             logger.info('Complete', { method, data: { userId } });
             res.status(200).json(dashboardDataList);
@@ -103,27 +111,31 @@ class Controller extends BaseController {
         try {
             const { filter, page, itemPerPage, year } = req.query;
             var whereObj = { ...filter }
-            const dashboardDataList = await viewDashboard.paginate({
-                page: page && !isNaN(page) ? Number(page) : 1,
-                paginate: itemPerPage && !isNaN(itemPerPage) ? Number(itemPerPage) : 10,
-                attributes: [
-                    [fn("SUM", col("fund_sum_request")), "total_fund"],
-                    "welfare_type"
-                  ],
-                  where: {
-                    updated_at: {
-                        [Op.between]: [`${parseInt(year) - 1}-10-01`, `${year}-09-30`]
-                    }
-                  },
-                  group: ["welfare_type"],
-                  order: [
-                    [literal(`FIELD(welfare_type, 
-                      'สวัสดิการทั่วไป', 
-                      'สวัสดิการค่าสงเคราะห์ต่าง ๆ', 
-                      'สวัสดิการค่าสงเคราะห์การเสียชีวิต', 
-                      'สวัสดิการเกี่ยวกับการศึกษาของบุตร')`)]
-                  ]
-                });
+            const dashboardDataList = await sequelize.query(`
+                SELECT 
+                    welfare_type, 
+                    SUM(fund_sum_request) AS total_fund
+                FROM (
+                    SELECT DISTINCT id, welfare_type, fund_sum_request
+                    FROM wfpdb.view_dashboard
+                    WHERE 
+                        updated_at BETWEEN :startDate AND :endDate
+                ) AS distinct_view
+                GROUP BY welfare_type
+                ORDER BY 
+                    FIELD(welfare_type, 
+                        'สวัสดิการทั่วไป', 
+                        'สวัสดิการค่าสงเคราะห์ต่าง ๆ', 
+                        'สวัสดิการค่าสงเคราะห์การเสียชีวิต', 
+                        'สวัสดิการเกี่ยวกับการศึกษาของบุตร'
+                    );
+            `, {
+                replacements: {
+                    startDate: `${parseInt(year) - 1}-10-01`,
+                    endDate: `${year}-09-30`,
+                },
+                type: sequelize.QueryTypes.SELECT,
+            });
             logger.info('Complete', { method, data: { userId } });
             res.status(200).json(dashboardDataList);
         }
@@ -135,6 +147,5 @@ class Controller extends BaseController {
             next(error);
         }
     }
-      
 }
 module.exports = new Controller();
