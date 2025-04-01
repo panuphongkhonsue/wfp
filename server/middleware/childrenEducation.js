@@ -83,48 +83,55 @@ const bindFilter = async (req, res, next) => {
 const getRemaining = async (req, res, next) => {
     const method = 'RemainingMiddleware';
     try {
-        const { id } = req.user;
-        const { createFor } = req.query;
-        const { created_by, createByData } = req.body;
-        const { actionId } = req.body;
+        const { id } = req.user || {};
+        const { createFor } = req.query || {};
+        const { created_by, createByData, actionId } = req.body || {};
+
         if (req.access && (actionId === statusType.NotApproved) && !isNullOrEmpty(actionId)) {
             return next();
         }
-        req.query.filter = {};
-        req.query.filter[Op.and] = [];
+
+        // ตรวจสอบให้แน่ใจว่า filter[Op.and] ถูกกำหนดค่า
+        if (!req.query.filter) {
+            req.query.filter = {};
+        }
+        if (!Array.isArray(req.query.filter[Op.and])) {
+            req.query.filter[Op.and] = [];
+        }
         const getFiscalYearWhere = getFiscalYear();
+
+
         if (req.access && !isNullOrEmpty(createByData)) {
-            req.query.filter[Op.and].push(
-                { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': createByData },
-            );
+            req.query.filter[Op.and].push({
+                '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': createByData
+            });
+        } else if (!isNullOrEmpty(created_by) && req.isEditor) {
+            req.query.filter[Op.and].push({
+                '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': created_by
+            });
+        } else if (!isNullOrEmpty(createFor) && req.isEditor) {
+            req.query.filter[Op.and].push({
+                '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': createFor
+            });
+        } else {
+            req.query.filter[Op.and].push({
+                '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': id
+            });
         }
-        else if (!isNullOrEmpty(created_by) && req.isEditor) {
-            req.query.filter[Op.and].push(
-                { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': created_by },
-            );
-        }
-        else if (!isNullOrEmpty(createFor) && req.isEditor) {
-            req.query.filter[Op.and].push(
-                { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': createFor },
-            );
-        }
-        else {
-            req.query.filter[Op.and].push(
-                { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': id },
-            );
-        }
+        console.log(getFiscalYearWhere);
+        // เพิ่มเงื่อนไข statusType.approve
         req.query.filter[Op.and].push(
+            {'$reimbursements_children_education_has_children_infomations.reimbursements_children_education.status$': { [Op.eq]: statusType.approve }},
             { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.request_date$': getFiscalYearWhere, },
-            { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.status$': { [Op.eq]: statusType.approve } }
-        );
+    );
+
+        console.log("Updated filter before next:", JSON.stringify(req.query.filter, null, 2));
         next();
-    }
-    catch (error) {
+    } catch (error) {
         logger.error(`Error ${error.message}`, { method });
         res.status(400).json({ message: error.message });
     }
 };
-
 
 
 const checkRemaining = async (req, res, next) => {

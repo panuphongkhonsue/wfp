@@ -671,16 +671,17 @@
         <template v-slot:action>
             <div class="justify-end row q-py-xs font-medium q-gutter-lg">
                 <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
-          style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'welfare_management_list' }" />
-        <q-btn :disable="isButtonDisabled || isValidate" id="button-draft"
-          class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
-          label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
-        <q-btn id="button-approve"
-        class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #E52020"
-        label="ไม่อนุมัติ" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
-        <q-btn :disable="isButtonDisabled || isValidate" id="button-approve"
-          class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
-          label="อนุมัติ" no-caps @click="submit(3)" v-if="!isView && !isLoading" />
+                    style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'welfare_management_list' }" />
+                <q-btn :disable="isButtonDisabled || isValidate" id="button-draft"
+                    class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
+                    label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
+                <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
+                    style="background-color: #E52020" label="ไม่อนุมัติ" no-caps @click="submit(4)"
+                    v-if="!isView && !isLoading" />
+                <q-btn :disable="isButtonDisabled || isValidate" id="button-approve"
+                    class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
+                    style="background-color: #43a047" label="อนุมัติ" no-caps @click="submit(3)"
+                    v-if="!isView && !isLoading" />
             </div>
         </template>
     </PageLayout>
@@ -895,7 +896,6 @@ watch(
                 (r) => r.childName
             );
 
-            console.log("dataArray", dataArray);
 
             const item = dataArray.find(
                 (r) => r.childName?.trim().toLowerCase() === newValue.childName
@@ -1312,16 +1312,18 @@ async function fetchDataEdit() {
         try {
             const result = await welfareManagementService.dataChildrenById(route.params.id);
             const returnedData = result.data.datas;
-            console.log("returnedData")
-            console.log(returnedData)
+            console.log("Fetched Data:", JSON.stringify(returnedData, null, 2));
 
             if (returnedData) {
                 let prefix = null;
                 let name = returnedData?.spouse ?? "-";
 
-                const spouseParts = returnedData.spouse.split(' ');
-                prefix = spouseParts[0] ?? null;
-                name = spouseParts.slice(1).join(' ') || null;
+                if (returnedData.spouse) {
+                    const spouseParts = returnedData.spouse.split(' ');
+                    prefix = spouseParts[0] ?? null;
+                    name = spouseParts.slice(1).join(' ') || null;
+                }
+
                 model.value = {
                     ...model.value,
                     createFor: returnedData?.user?.userId ?? null,
@@ -1346,14 +1348,21 @@ async function fetchDataEdit() {
                             schoolNameDemonstration: child.schoolType === "สาธิตพิบูลบําเพ็ญ" ? child.schoolName : null,
                             childBirthDay: child.childBirthDay ?? "-",
                             subCategoriesName: child.sub_category?.name ?? null,
-                            subCategoriesId: child.sub_category?.id ?? null, // ✅ ใช้ subCategoriesId แทน subCategoryName
+                            subCategoriesId: child.sub_category?.id ?? null,
                             childPassedAway: child.childType === "DELEGATE"
                         }))
                         : []
-
-
-
                 };
+
+                userData.value = {
+                    userId: returnedData?.userId ?? null,
+                    name: returnedData?.name ?? "-",
+                    position: returnedData?.positionUser ?? "-", // ใช้ positionUser แทน position
+                    employeeType: returnedData?.employeeType ?? "-",
+                    sector: returnedData?.sector ?? "-",
+                    department: returnedData?.departmentUser ?? "-", // ใช้ departmentUser แทน department
+                };
+
 
                 spouseData.value = {
                     officer: {
@@ -1366,11 +1375,11 @@ async function fetchDataEdit() {
                     }
                 };
 
-
-                model.value.eligibleBenefits.push(returnedData?.eligibleBenefits);
-                model.value.eligibleSubSenefits.push(returnedData?.eligibleSubSenefits);
+                model.value.eligibleBenefits.push(returnedData?.eligibleBenefits ?? []);
+                model.value.eligibleSubSenefits.push(returnedData?.eligibleSubSenefits ?? []);
             }
             console.log("model.value", JSON.stringify(model.value, null, 2));
+            console.log("userData", JSON.stringify(userData.value, null, 2));
 
         } catch (error) {
             Notify.create({
@@ -1549,7 +1558,7 @@ const selectedRoleLabel = computed(() => {
 
 async function submit(actionId) {
     let validate = false;
-    
+
 
     if (!model.value.spouse && model.value.marryRegis === 'YES') {
         isError.value.spouse = "กรุณากรอกชื่อคู่สมรส";
@@ -1757,7 +1766,14 @@ async function submit(actionId) {
         }
     });
 }
-
+watch(
+  () => userData.value.userId,
+  async (newValue) => {
+    if (newValue !== null) {
+      await fetchUserData(userData.value.userId);
+    }
+  }
+);
 
 async function init() {
     isView.value = route.meta.isView;
@@ -1770,12 +1786,12 @@ async function init() {
         }
         else if (isEdit.value) {
             fetchRemaining();
-            fetchUserData(authStore.id);
+            fetchDataEdit();
+            fetchUserData(userData.value.userId);
             fetchSchoolName()
             const result = await userManagementService.getUserInitialData({ keyword: null });
             userInitialData.value = result.data.datas;
             optionsUserName.value = result.data.datas;
-            fetchDataEdit();
             fetchRemaining();
             fetchSchoolName()
         }
