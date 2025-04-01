@@ -98,7 +98,7 @@
                 </div>
 
                 <div v-if="isView" class="col-md-3 col-12 q-mb-none">
-                  <p class="font-16 require font-medium text-grey-9">จดทะเบียนสมรส</p>
+                  <p class="font-16 require font-medium text-grey-9">คู่สมรส</p>
                   <div class="font-14 font-regular text-grey-9">
                     {{ fullNameSpouse || '-' }}
                   </div>
@@ -514,7 +514,7 @@
                       <div class="col-md-5 col-12 q-mr-xl">
                         <InputGroup for-id="fundReceipt" is-dense v-model="child.fundReceipt"
                           more-class="font-16 font-medium text-grey-9" :data="child.fundReceipt ?? '-'" is-require
-                          label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="" type="text" class="" :is-view="isView"
+                          label="จำนวนเงินตามใบเสร็จ (บาท)" placeholder="" type="number" class="" :is-view="isView"
                           :error="!!isError[index]?.fundReceipt" :error-message="isError[index]?.fundReceipt"
                           :rules="[(val) => !!val || 'กรุณากรอกจำนวนเงินตามใบเสร็จ']" lazy-rules>
                         </InputGroup>
@@ -523,7 +523,7 @@
                       <div class="col-md-5 col-12 ">
                         <InputGroup for-id="fundOther" is-dense v-model="child.fundOther" :data="child.fundOther ?? '-'"
                           more-class="font-16 font-medium text-grey-9"
-                          label="เบิกจากหน่วยงานอื่นแล้ว เป็นจำนวนเงิน (บาท)" placeholder="" type="text" class=""
+                          label="เบิกจากหน่วยงานอื่นแล้ว เป็นจำนวนเงิน (บาท)" placeholder="" type="number" class=""
                           :is-view="isView">
                         </InputGroup>
                       </div>
@@ -533,8 +533,7 @@
                       <div class="col-md-5 col-12 q-mr-xl">
                         <InputGroup for-id="fundReceipt" is-dense v-model="child.fundUniversity"
                           more-class="font-16 font-medium text-grey-9" :data="child.fundUniversity ?? '-'" is-require
-                          label="ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(8) จำนวนเงิน (บาท)" placeholder="" type="text" class=""
-                          :disable="child.schoolType !== 'ทั่วไป' && child.schoolNameDemonstration !== 'สาธิตพิบูลบําเพ็ญ นานาชาติ'"
+                          label="ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(8) จำนวนเงิน (บาท)" placeholder="" type="number" class=""
                           :is-view="isView" :error="!!isError[index]?.fundUniversity"
                           :error-message="isError[index]?.fundUniversity"
                           :rules="[(val) => !!val || 'กรุณากรอกจำนวนเงินตามเบิกจากสวัสดิการมหาวิทยาลัย 5(8)']"
@@ -545,7 +544,7 @@
                       <div class="col-md-5 col-12 ">
                         <InputGroup for-id="fundOther" is-dense v-model="child.fundSubUniversity"
                           :data="child.fundSubUniversity ?? '-'" more-class="font-16 font-medium text-grey-9" is-require
-                          label="ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10) จำนวนเงิน (บาท)" placeholder="" type="text"
+                          label="ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10) จำนวนเงิน (บาท)" placeholder="" type="number"
                           :disable="child.schoolType !== 'สาธิตพิบูลบําเพ็ญ'" class="" :is-view="isView"
                           :error="!!isError[index]?.fundSubUniversity"
                           :error-message="isError[index]?.fundSubUniversity"
@@ -721,7 +720,7 @@ const model = ref({
       district: null,
       province: null,
       subCategoriesId: null,
-      subCategoriesName : null,
+      subCategoriesName: null,
       childPassedAway: false,
       delegateName: null,
       delegateNumber: null,
@@ -799,7 +798,9 @@ const isPassedAway = (index) => {
   );
 };
 
-const fullNameSpouse = computed(() => model.value.prefix + " " + model.value.spouse)
+const fullNameSpouse = computed(() => 
+  model.value.spouse ? `${model.value.prefix} ${model.value.spouse}` : 'ไม่พบข้อมูล'
+);
 
 
 const selectedChildNames = computed(() => model.value.child.map(child => child.childName));
@@ -815,7 +816,7 @@ watch(
       childName: child.childName?.trim().toLowerCase() || "",
       fundSum:
         (parseFloat(child.fundUniversity) || 0) + (parseFloat(child.fundSubUniversity) || 0),
-      fundRemaining:
+      fundSumReceipt:
         (parseFloat(child.fundReceipt) || 0) - (parseFloat(child.fundOther) || 0),
     })) || [],
   async (newValues) => {
@@ -838,6 +839,7 @@ watch(
       const fundLimit = parseFloat(item?.fund || 0);
       const fundRemaining = parseFloat(item?.fundRemaining || 0);
       const fundSum = parseFloat(newValue.fundSum || 0);
+      const perTime = parseFloat(item?.perTime || 0);
 
       console.log("fundLimit", fundLimit, "fundRemaining", fundRemaining, "fundSum", fundSum);
 
@@ -850,14 +852,21 @@ watch(
       if (Array.isArray(isError.value) && isError.value[index]) {
         isError.value[index].fundSumRequest = ""; // เคลียร์ข้อความก่อนตรวจสอบ
 
-        if (fundSum > newValue.fundRemaining) {
-          isError.value[index].fundSumRequest = "ยอดขอเบิกเกินจำนวนเงินตามใบเสร็จ";
-        } else if (item) {
-          if (fundSum > fundLimit) {
-            isError.value[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเพดานเงินที่กำหนด ${fundLimit.toFixed(2)}`;
-          } else if (fundSum > fundRemaining) {
-            isError.value[index].fundSumRequest = `ยอดขอเบิกเกินจำนวนเงินคงเหลือ ${fundRemaining.toFixed(2)}`;
-          } else {
+        if (fundSum > newValue.fundSumReceipt) {
+          isError.value[index].fundSumRequest = "ยอดเงินขอเบิกเกินจำนวนเงินตามใบเสร็จ";
+        }
+        else if (item) {
+
+          if (fundSum > perTime) {
+            isError.value[index].fundSumRequest = `ยอดเงินขอเบิกสามารถเบิกได้ ${perTime.toFixed(2)} ต่อครั้ง`;
+          }
+          else if (fundSum > fundRemaining) {
+            isError.value[index].fundSumRequest = `ยอดเงินขอเบิกเกินจำนวนเงินคงเหลือ ${fundRemaining.toFixed(2)}`;
+          }
+          else if (fundSum > fundLimit) {
+            isError.value[index].fundSumRequest = `ยอดเงินขอเบิกเกินจำนวนเพดานเงินที่กำหนด ${fundLimit.toFixed(2)}`;
+          }
+          else {
             model.value.child[index].fundSumRequest = fundSum.toFixed(2);
           }
         } else {
@@ -877,7 +886,7 @@ watch(
 async function fetchRemaining() {
   try {
     const subCategoriesId = model.value.child.map(child => child.subCategoriesId);
-    
+
     // Loop ผ่าน subCategoriesId แต่ละตัวและทำการ request แยก
     for (const id of subCategoriesId) {
       const fetchRemainingData = await reimbursementChildrenEducationService.getRemaining({
@@ -886,7 +895,7 @@ async function fetchRemaining() {
       });
 
       const returnedData = fetchRemainingData.data.datas;
-      
+
       if (returnedData) {
         const dataArray = Object.values(returnedData);  // แปลงเป็น array
         remaining.value = dataArray.map(item => ({
@@ -993,7 +1002,7 @@ async function fetchSchoolName() {
 
     if (result.data && Array.isArray(result.data.ChildInformation)) {
       shcoolData.value = result.data.ChildInformation;
-      console.log("🟢 shcoolData.value:",  shcoolData.value);
+      console.log("🟢 shcoolData.value:", shcoolData.value);
     } else {
       console.warn("⚠️ ไม่มีข้อมูล schoolData หรือ ChildInformation ไม่ถูกต้อง", result.data);
     }
@@ -1055,12 +1064,14 @@ const getSubCategory = async () => {
         categoriesId = 13;
       } else if (model.value.eligibleBenefits.includes('ข') && child.schoolType === 'ทั่วไป') {
         categoriesId = 14;
-      } else if (model.value.eligibleSubSenefits.includes('ค') && child.schoolType === 'สาธิตพิบูลบําเพ็ญ' && child.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ') {
+      } else if (model.value.eligibleBenefits.includes('ก') && model.value.eligibleSubSenefits.includes('ค') && child.schoolType === 'สาธิตพิบูลบําเพ็ญ' && child.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ') {
         categoriesId = 15;
-      } else if (model.value.eligibleBenefits.includes('ก') && model.value.eligibleSubSenefits.includes('ค') && child.schoolType === 'สาธิตพิบูลบําเพ็ญ' && child.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ นานาชาติ') {
+      }else if (model.value.eligibleBenefits.includes('ข') && model.value.eligibleSubSenefits.includes('ค') && child.schoolType === 'สาธิตพิบูลบําเพ็ญ' && child.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ') {
         categoriesId = 16;
-      } else if (model.value.eligibleBenefits.includes('ข') && model.value.eligibleSubSenefits.includes('ค') && child.schoolType === 'สาธิตพิบูลบําเพ็ญ' && child.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ นานาชาติ') {
+      } else if (model.value.eligibleBenefits.includes('ก') && model.value.eligibleSubSenefits.includes('ค') && child.schoolType === 'สาธิตพิบูลบําเพ็ญ' && child.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ นานาชาติ') {
         categoriesId = 17;
+      } else if (model.value.eligibleBenefits.includes('ข') && model.value.eligibleSubSenefits.includes('ค') && child.schoolType === 'สาธิตพิบูลบําเพ็ญ' && child.schoolNameDemonstration === 'สาธิตพิบูลบําเพ็ญ นานาชาติ') {
+        categoriesId = 18;
       }
 
       if (!categoriesId) {
@@ -1158,7 +1169,7 @@ watch(
             if (selectedChild.schoolType === 'ทั่วไป') {
               model.value.child[index].schoolNamegeneral = selectedChild.schoolName || " ";
               model.value.child[index].schoolType = selectedChild.schoolType
-            }else{
+            } else {
               model.value.child[index].schoolNameDemonstration = selectedChild.schoolName || " ";
               model.value.child[index].schoolType = selectedChild.schoolType
             }
@@ -1285,7 +1296,7 @@ async function fetchDataEdit() {
               schoolNamegeneral: child.schoolType === "ทั่วไป" ? child.schoolName : null,
               schoolNameDemonstration: child.schoolType === "สาธิตพิบูลบําเพ็ญ" ? child.schoolName : null,
               childBirthDay: child.childBirthDay ?? "-",
-              subCategoriesName : child.sub_category?.name ?? null,
+              subCategoriesName: child.sub_category?.name ?? null,
               subCategoriesId: child.sub_category?.id ?? null, // ✅ ใช้ subCategoriesId แทน subCategoryName
               childPassedAway: child.childType === "DELEGATE"
             }))
@@ -1548,7 +1559,7 @@ async function submit(actionId) {
         validate = true;
         console.log("กรุณากรอกจำนวนเงินตามใบเสร็จ :" + validate);
       }
-      if (!c.fundUniversity && (c.schoolType === 'ทั่วไป' || c.schoolNameDemonstration === 'สาธิตพิบูลบำเพ็ญ นานาชาติ')) {
+      if (!c.fundUniversity ) {
         isError.value[index].fundUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย 5(8)";
         validate = true;
       }

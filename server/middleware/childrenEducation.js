@@ -5,7 +5,7 @@ const { Op, literal, col, fn } = require("sequelize");
 const { initLogger } = require('../logger');
 const logger = initLogger('ChildrenEducationValidator');
 const roleType = require('../enum/role')
-const status = require('../enum/status')
+const statusType = require('../enum/status')
 const statusText = require('../enum/statusText')
 const welfareType = require('../enum/welfareType');
 
@@ -87,7 +87,7 @@ const getRemaining = async (req, res, next) => {
         const { createFor } = req.query;
         const { created_by, createByData } = req.body;
         const { actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
+        if (req.access && (actionId === statusType.NotApproved) && !isNullOrEmpty(actionId)) {
             return next();
         }
         req.query.filter = {};
@@ -115,7 +115,7 @@ const getRemaining = async (req, res, next) => {
         }
         req.query.filter[Op.and].push(
             { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.request_date$': getFiscalYearWhere, },
-            { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.status$': { [Op.eq]: status.approve } }
+            { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.status$': { [Op.eq]: statusType.approve } }
         );
         next();
     }
@@ -139,7 +139,8 @@ const checkRemaining = async (req, res, next) => {
         for (let i = 0; i < child.length; i++) {
             const currentChild = child[i];
             const childName = currentChild.childName;
-            const currentFundSumRequest = Number(currentChild.fundUniversity) + Number(currentChild.fundSubUniversity) || 0;
+            const currentFundSumRequest = Number(currentChild.fundUniversity) + Number(currentChild.fundSubUniversity) || 0
+
 
             // ค้นหาข้อมูลการเบิกของบุตรปัจจุบัน
             const results = await childrenInfomation.findAll({
@@ -177,7 +178,7 @@ const checkRemaining = async (req, res, next) => {
                                 as: "reimbursements_children_education",
                                 required: true,
                                 attributes: [],
-                                where: { created_by: userId }
+                                where: { created_by: userId, status: statusType.waitApprove }
                             }
                         ]
                     }
@@ -198,6 +199,35 @@ const checkRemaining = async (req, res, next) => {
                 requestsRemaining = data.requestsRemaining || 0;
                 fund = data.fund || 0;
                 perTimes = data.perTimes || 0;
+                if (status !== statusType.draft) {
+                    if (fundRemaining === 0 || requestsRemaining === 0) {
+                        logger.info(`No Remaining for child ${childName}`, { method });
+                        return res.status(400).json({
+                            message: `บุตร ${childName} ไม่มีสิทธิ์ขอเบิก เนื่องจากสิทธิ์เต็มแล้ว`,
+                        });
+                    }
+
+                    if (currentFundSumRequest > perTimes && perTimes) {
+                        return res.status(400).json({
+                            message: `บุตร ${childName} สามารถเบิกได้สูงสุด ${perTimes} ต่อครั้ง`,
+                        });
+                    }
+
+                    if (currentFundSumRequest > fundRemaining && fundRemaining) {
+                        logger.info(`Request Over for child ${childName}`, { method });
+                        return res.status(400).json({
+                            message: `ยอดเงินคงเหลือของบุตร ${childName} สามารถเบิกเบิกได้ ${fundRemaining} กรุณาลองใหม่อีกครั้ง`,
+                        });
+                    }
+
+                    if (currentFundSumRequest > fund && fund) {
+                        logger.info(`Request Over for child ${childName}`, { method });
+                        return res.status(400).json({
+                            message: `ยอหเพดานเงินที่บุตร ${childName} สามารถเบิกเบิกได้ ${fund} กรุณาลองใหม่อีกครั้ง`,
+                        });
+                    }
+                }
+
             } else {
                 // หากบุตรไม่เคยเบิก ใช้ข้อมูลจาก resultsSub
                 const resultsSub = await subCategories.findOne({
@@ -211,39 +241,26 @@ const checkRemaining = async (req, res, next) => {
 
                 if (resultsSub) {
                     fund = resultsSub.fund || 0;
-                    perTimes = resultsSub.perTimes || 0;
+                    perTimes = resultsSub.dataValues?.perTimes || 0;
+                    if (status !== statusType.draft) {
+
+                        if (currentFundSumRequest > perTimes && perTimes) {
+                            return res.status(400).json({
+                                message: `บุตร ${childName} สามารถเบิกได้สูงสุด ${perTimes} ต่อครั้ง`,
+                            });
+                        }
+
+                        if (currentFundSumRequest > fund && fund) {
+                            logger.info(`Request Over for child ${childName}`, { method });
+                            return res.status(400).json({
+                                message: `ยอดเงินคงเหลือของบุตร ${childName} สามารถเบิกเบิกได้ ${fund} กรุณาลองใหม่อีกครั้ง`,
+                            });
+                        }
+
+                    }
                 }
             }
 
-            // ตรวจสอบเงื่อนไขการเบิก
-            if (status !== 1) {
-                if (fundRemaining === 0 || requestsRemaining === 0) {
-                    logger.info(`No Remaining for child ${childName}`, { method });
-                    return res.status(400).json({
-                        message: `บุตร ${childName} ไม่มีสิทธิ์ขอเบิก เนื่องจากสิทธิ์เต็มแล้ว`,
-                    });
-                }
-
-                if (currentFundSumRequest > perTimes && perTimes) {
-                    return res.status(400).json({
-                        message: `บุตร ${childName} สามารถเบิกได้สูงสุด ${perTimes} ต่อครั้ง`,
-                    });
-                }
-
-                if (currentFundSumRequest > fundRemaining && fundRemaining) {
-                    logger.info(`Request Over for child ${childName}`, { method });
-                    return res.status(400).json({
-                        message: `ยอดเงินคงเหลือของบุตร ${childName} สามารถเบิกเบิกได้ ${fundRemaining} กรุณาลองใหม่อีกครั้ง`,
-                    });
-                }
-
-                if (currentFundSumRequest > fund && fund) {
-                    logger.info(`Request Over for child ${childName}`, { method });
-                    return res.status(400).json({
-                        message: `ยอหเพดานเงินที่บุตร ${childName} สามารถเบิกเบิกได้ ${fund} กรุณาลองใหม่อีกครั้ง`,
-                    });
-                }
-            }
         }
 
         return next();
@@ -279,7 +296,7 @@ const bindCreate = async (req, res, next) => {
         if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
             return res.status(400).json({ message: "ไม่มีสิทธิ์สร้างให้คนอื่นได้" });
         }
-        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
+        if (!isNullOrEmpty(createFor) && actionId == statusType.draft && createFor !== id) {
             return res.status(400).json({
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
@@ -313,7 +330,6 @@ const bindCreate = async (req, res, next) => {
             }, 0);
 
             childFundRequest = req.body.child.reduce((sum, child) => {
-                console.log("req.body.child:", req.body.child);
 
                 let sumRequest = (!isNaN(Number(child.fundUniversity)) ? Number(child.fundUniversity) : 0) +
                     (!isNaN(Number(child.fundSubUniversity)) ? Number(child.fundSubUniversity) : 0);
@@ -350,7 +366,7 @@ const bindCreate = async (req, res, next) => {
             role: role,
             position: position,
             department: department,
-            request_date: actionId === status.waitApprove ? new Date() : null,
+            request_date: actionId === statusType.waitApprove ? new Date() : null,
             created_by: createFor ?? id,
             updated_by: id,
             eligible_benefits: eligibleBenefits,
@@ -359,14 +375,12 @@ const bindCreate = async (req, res, next) => {
             categories_id: categoriesId,
             child: req.body.child,
         };
-        console.log("dataBinding : " + JSON.stringify(dataBinding))
         var hasNull = false;
         if (!isNullOrEmpty(dataBinding.child)) {
             hasNull = dataBinding.child.some(item =>
                 Object.values(item).some(value => value === null || value === "")
             );
         }
-        console.log("hasNull : " + hasNull)
         if (hasNull) {
             delete dataBinding.child;
         }
@@ -405,7 +419,7 @@ const bindUpdate = async (req, res, next) => {
                 message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
             });
         }
-        if (!isNullOrEmpty(createFor) && actionId == status.draft && createFor !== id) {
+        if (!isNullOrEmpty(createFor) && actionId == statusType.draft && createFor !== id) {
             return res.status(400).json({
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });
@@ -435,7 +449,7 @@ const bindUpdate = async (req, res, next) => {
                 });
             }
 
-            if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
+            if (req.access && (actionId === statusType.NotApproved || actionId === statusType.approve) && !isNullOrEmpty(actionId)) {
                 const dataBinding = {
                     status: actionId,
                     updated_by: id,
@@ -462,8 +476,6 @@ const bindUpdate = async (req, res, next) => {
             }, 0);
 
             childFundRequest = req.body.child.reduce((sum, child) => {
-                console.log("req.body.child:", req.body.child);
-
                 let sumRequest = (!isNaN(Number(child.fundUniversity)) ? Number(child.fundUniversity) : 0) +
                     (!isNaN(Number(child.fundSubUniversity)) ? Number(child.fundSubUniversity) : 0);
                 return sum + (isNaN(sumRequest) ? 0 : sumRequest);
@@ -497,7 +509,7 @@ const bindUpdate = async (req, res, next) => {
             role: role,
             position: position,
             department: department,
-            request_date: actionId === status.waitApprove ? new Date() : null,
+            request_date: actionId === statusType.waitApprove ? new Date() : null,
             updated_by: id,
             eligible_benefits: eligibleBenefits,
             eligible_sub_benefits: eligibleSubSenefits,
@@ -524,7 +536,7 @@ const bindUpdate = async (req, res, next) => {
         }
         if (!isNullOrEmpty(actionId)) {
             dataBinding.status = actionId;
-            if (actionId === status.waitApprove) {
+            if (actionId === statusType.waitApprove) {
                 dataBinding.request_date = new Date();
             }
         }
@@ -631,7 +643,7 @@ const authPermissionEditor = async (req, res, next) => {
 const checkNullValue = async (req, res, next) => {
     try {
         const { spouse, marryRegis, child, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
+        if (req.access && (actionId === statusType.NotApproved || actionId === statusType.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         const errorObj = {};
@@ -755,7 +767,7 @@ const checkNullValue = async (req, res, next) => {
             });
         }
 
-        if ((isNullOrEmpty(actionId) || (actionId != status.draft && actionId != status.waitApprove)) && !req.access) {
+        if ((isNullOrEmpty(actionId) || (actionId != statusType.draft && actionId != statusType.waitApprove)) && !req.access) {
             return res.status(400).json({
                 message: "ไม่มีการกระทำที่ต้องการ",
             });
@@ -777,8 +789,8 @@ const checkNullValue = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { subCategoriesId, status } = req.body;
-        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
+        const { subCategoriesId } = req.body;
+        if (req.access && (actionId === statusType.NotApproved || actionId === statusType.approve) && !isNullOrEmpty(actionId)) {
             return next();
         }
         const getFund = await subCategories.findAll({
@@ -834,7 +846,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const userId = req.user?.id;
         var whereObj = { ...filter }
         const { fund_sum_request } = req.body;
-        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
+        if (req.access && (actionId === statusType.NotApproved) && !isNullOrEmpty(actionId)) {
             return next();
         }
 

@@ -70,10 +70,6 @@ class Controller extends BaseController {
             const { filter } = req.query;
             let whereObj = { ...filter };
 
-            console.log("Request ID:", id);
-            console.log("Filter:", JSON.stringify(whereObj));
-            console.log("subCategoriesId:", subCategoriesId);
-
             const results = await childrenInfomation.findAll({
                 attributes: [
                     [col("sub_category.id"), "subCategoryId"],
@@ -121,11 +117,8 @@ class Controller extends BaseController {
                 ]
             });
 
-            console.log("Results:", JSON.stringify(results, null, 2));
-
             if (results && results.length > 0) {
                 const datas = JSON.parse(JSON.stringify(results));
-                console.log("Parsed Results:", datas);
 
                 if (dynamicCheckRemaining(datas)) datas.canRequest = false;
                 var reimChildrenEducation = {};
@@ -150,11 +143,9 @@ class Controller extends BaseController {
                 where: { id: subCategoriesId }
             });
 
-            console.log("getFund Query Result:", JSON.stringify(getFund, null, 2));
 
             if (getFund) {
                 const datas = JSON.parse(JSON.stringify(getFund));
-                console.log("Parsed getFund:", datas);
 
                 logger.info("Complete", { method, data: { id } });
                 return res.status(200).json({
@@ -188,10 +179,8 @@ class Controller extends BaseController {
         try {
             const results = await sequelize.transaction(async t => {
                 const newReimbursementsChild = await reimbursementsChildrenEducation.create(dataCreate, { transaction: t });
-                console.log("childData before map:", JSON.stringify(child, null, 2));
                 if (!isNullOrEmpty(child)) {
                     var childData = child.map((childObj) => {
-                        console.log("childObj before convert:", JSON.stringify(childObj, null, 2));
                         let data = {
                             reimbursements_children_education_id: newReimbursementsChild.id,
                             fund_receipt: !isNaN(Number(childObj.fundReceipt)) ? Number(childObj.fundReceipt) : 0,
@@ -213,7 +202,7 @@ class Controller extends BaseController {
                             province: childObj.province ?? null,
                             sub_categories_id: childObj.subCategoriesId ?? null,
                         };
-                        console.log("childObj after convert:", JSON.stringify(data, null, 2));
+
 
                         // ถ้า childPassedAway เป็น true ให้เพิ่ม delegate_xxx
                         if (childObj.childPassedAway) {
@@ -225,7 +214,6 @@ class Controller extends BaseController {
 
                         return data;
                     });
-                    console.log("childData after map:", JSON.stringify(childData, null, 2));
                     const newItemChild = await childrenInfomation.bulkCreate(childData, {
                         fields: [
                             'reimbursements_children_education_id', 'fund_receipt', 'fund_other',
@@ -236,7 +224,7 @@ class Controller extends BaseController {
                         ],
                         transaction: t,
                     });
-                    console.log("Inserted child records:", newItemChild.length);
+
 
                     var itemsReturned = {
                         ...newReimbursementsChild.toJSON(),
@@ -480,8 +468,6 @@ class Controller extends BaseController {
         const { createFor } = req.query;
         const userId = req.user?.id; // ดึง id ของผู้ใช้ที่ล็อกอิน
 
-        console.log("🟢 createFor:", createFor, "🟢 userId:", userId);
-
         // ถ้าไม่มี createFor ให้ใช้ userId แทน
         const createdByFilter = createFor ?? userId;
 
@@ -497,8 +483,6 @@ class Controller extends BaseController {
                 order: [["updated_at", "DESC"]],
                 limit: 1,
             });
-
-            console.log("✅ ข้อมูล reimbursement ล่าสุด:", latestEducation);
 
             if (!latestEducation) {
                 return res.status(404).json({ message: "ไม่พบข้อมูลการเบิกค่าศึกษาของบุตรล่าสุด" });
@@ -529,7 +513,6 @@ class Controller extends BaseController {
                 ],
             });
 
-            console.log("✅ ข้อมูลเด็กที่ดึงมา:", JSON.stringify(childData, null, 2));
 
             if (!childData || childData.length === 0) {
                 return res.status(404).json({ message: "ไม่พบข้อมูลโรงเรียนของบุตร" });
@@ -537,7 +520,6 @@ class Controller extends BaseController {
 
             // จัดรูปแบบข้อมูลเพื่อส่งกลับ
             const ChildInformation = childData.map(child => child.dataValues);
-            console.log("✅ ChildInformation ที่ส่งกลับ:", ChildInformation);
 
             res.status(200).json({ ChildInformation });
 
@@ -773,11 +755,11 @@ class Controller extends BaseController {
                     [
                         Sequelize.literal(`
                             CASE 
-                                WHEN id = 12 THEN 1
-                                WHEN id = 14 THEN 2
-                                WHEN id = 15 THEN 3
-                                WHEN id = 16 THEN 4
-                                WHEN id = 13 THEN 5
+                                WHEN id = 14 THEN 1
+                                WHEN id = 16 THEN 2
+                                WHEN id = 17 THEN 3
+                                WHEN id = 18 THEN 4
+                                WHEN id = 15 THEN 5
                                 ELSE 6
                             END
                         `),

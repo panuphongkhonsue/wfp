@@ -1,5 +1,5 @@
 <template>
-  <ListLayout title="สวัสดิการเกี่ยวกับการรศึกษาของบุตร">
+  <ListLayout title="สวัสดิการเกี่ยวกับการศึกษาของบุตร">
     <template v-slot:filter>
       <q-form class="col-12 row q-col-gutter-x-md items-end" @submit="search">
         <div class="col-12 col-md-4 col-lg-3">
@@ -353,7 +353,7 @@ const columns = ref([
   },
   {
     name: "requestDate",
-    label: "วันที่ร้องขอ",
+    label: "วันที่ส่งใบเบิก",
     align: "left",
     field: (row) => row?.requestDate ?? "-",
     format: (val) => formatDateThaiSlash(val),
@@ -361,7 +361,7 @@ const columns = ref([
   },
   {
     name: "updatedAt",
-    label: "วันที่แก้ไขล่าสุด",
+    label: "วันที่บันทึก/อนุมัติ",
     align: "left",
     field: (row) => row?.updatedAt ?? "-",
     format: (val) => formatDateThaiSlash(val),
