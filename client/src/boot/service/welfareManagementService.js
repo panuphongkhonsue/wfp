@@ -69,4 +69,16 @@ export default {
             Promise.reject(error);
         }
     },
+
+    dataChildrenById(id) {
+        return api.get(`reimbursement-children-education/get-welfare/${id}`);
+    },
+    updateChildren(id, options) {
+        try {
+            return api.put(`reimbursement-children-education/update-welfare/${id}`, options);
+        }
+        catch (error) {
+            Promise.reject(error);
+        }
+    },
 };

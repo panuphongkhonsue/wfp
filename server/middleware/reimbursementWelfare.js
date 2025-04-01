@@ -9,7 +9,6 @@ const authPermission = async (req, res, next) => {
     const method = 'AuthPermission';
     const { roleId } = req.user;
     try {
-        console.log("reg: " , req)
         const isAccess = await permissionsHasRoles.count({
             where: {
                 [Op.and]: [{ roles_id: roleId }, { permissions_id: permissionType.welfareManagement }],

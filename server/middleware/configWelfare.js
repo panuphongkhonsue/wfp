@@ -59,7 +59,6 @@ const bindUpdate = async (req, res, next) => {
 			per_times: perTimes,
 		}
 		req.body = dataBinding;
-		console.log(req.body)
 		next();
 	} catch (error) {
 		res.status(500).json({

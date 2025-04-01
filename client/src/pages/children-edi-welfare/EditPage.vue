@@ -1457,6 +1457,14 @@ watch(
   }
 );
 
+watch(
+  () => model.value.createFor,
+  async (newValue) => {
+    if (newValue !== null) {
+      await fetchRemaining();
+    }
+  }
+);
 
 
 
@@ -1629,7 +1637,6 @@ async function submit(actionId) {
 
   let payload = {
     prefix: model.value.prefix,
-    createFor: canCreateFor.value ? model.value.createFor : null,
     fundSumReceipt: model.value.fundSumReceipt,
     fundEligible: model.value.fundEligible,
     actionId: actionId ?? null,

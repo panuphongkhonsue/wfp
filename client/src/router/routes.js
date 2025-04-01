@@ -322,6 +322,18 @@ const routes = [
         meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการค่าสงเคราะห์การเสียชีวิต' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
         component: () => import('pages/welfare-management/EditFuneralPage.vue'),
       },
+      {
+        path: 'financial-children-welfare-edit/:id',
+        name: 'financial_children_welfare_edit',
+        meta: { breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' }, { name: 'แก้ไขใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/welfare-management/EditChildrenPage.vue'),
+      },
+      {
+        path: 'financial-children-welfare-view/:id',
+        name: 'financial_children_welfare_view',
+        meta: { isView: true, breadcrumbs: [{ name: 'สวัสดิการเกี่ยวกับการศึกษาของบุตร' }, { name: 'ดูใบเบิกสวัสดิการ' }] },
+        component: () => import('pages/welfare-management/EditChildrenPage.vue'),
+      },
     ],
   },
   {

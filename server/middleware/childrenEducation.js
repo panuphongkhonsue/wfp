@@ -502,7 +502,6 @@ const bindUpdate = async (req, res, next) => {
             fund_sum_request: childFundRequest,
             fund_sum_receipt: fundSumReceipt,
             fund_other: childfundOther,
-            status: actionId,
             spouse: prefix + ' ' + spouse,
             marry_regis: marryRegis,
             eligible: eligible,
@@ -845,7 +844,7 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         const userId = req.user?.id;
         var whereObj = { ...filter }
-        const { fund_sum_request } = req.body;
+        const { fund_sum_request, actionId } = req.body;
         if (req.access && (actionId === statusType.NotApproved) && !isNullOrEmpty(actionId)) {
             return next();
         }
@@ -888,9 +887,9 @@ const checkUpdateRemaining = async (req, res, next) => {
             group: ["childrenInfomation.child_name",
                 "sub_category.id"]
         });
-        const welfareCheckData = await reimbursementsGeneral.findOne({
+        const welfareCheckData = await reimbursementsChildrenEducation.findOne({
             attributes: ["fund_sum_request"],
-            where: { id: dataId, categories_id: category.healthCheckup },
+            where: { id: dataId },
         });
         if (!welfareCheckData) {
             return res.status(400).json({

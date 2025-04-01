@@ -7,6 +7,7 @@ const logger = initLogger('reimbursementChildrenEducationController');
 const childType = require('../enum/childType');
 const sub_categories = require('../models/mariadb/sub_categories');
 const { dynamicCheckRemaining } = require("../middleware/utility");
+const status = require('../enum/status');
 
 class Controller extends BaseController {
     constructor() {
@@ -64,7 +65,9 @@ class Controller extends BaseController {
     getRemainingChildFund = async (req, res, next) => {
         const method = 'GetRemainingChildFund';
         const { id } = req.user;
+        const { createFor} = req.query;
         const { subCategoriesId } = req.body;
+        console.log("RE45", req.body)
 
         try {
             const { filter } = req.query;
@@ -105,7 +108,7 @@ class Controller extends BaseController {
                                 as: "reimbursements_children_education",
                                 required: true,
                                 attributes: [],
-                                where: { created_by: id }
+                                where: { created_by: createFor ?? id }
                             }
                         ]
                     }
@@ -131,33 +134,33 @@ class Controller extends BaseController {
                 return res.status(200).json(reimChildrenEducation);
             }
 
-            const getFund = await subCategories.findOne({
-                attributes: [
-                    [col("id"), "subCategoryId"],
-                    [col("name"), "subCategoriesName"],
-                    [col("fund"), "fund"],
-                    [col("per_years"), "requestsRemaining"],
-                    [col("per_times"), "perTimesRemaining"],
-                    [col("per_users"), "perUsers"],
-                ],
-                where: { id: subCategoriesId }
-            });
+            // const getFund = await subCategories.findOne({
+            //     attributes: [
+            //         [col("id"), "subCategoryId"],
+            //         [col("name"), "subCategoriesName"],
+            //         [col("fund"), "fund"],
+            //         [col("per_years"), "requestsRemaining"],
+            //         [col("per_times"), "perTimesRemaining"],
+            //         [col("per_users"), "perUsers"],
+            //     ],
+            //     where: { id: subCategoriesId }
+            // });
 
 
-            if (getFund) {
-                const datas = JSON.parse(JSON.stringify(getFund));
+            // if (getFund) {
+            //     const datas = JSON.parse(JSON.stringify(getFund));
 
-                logger.info("Complete", { method, data: { id } });
-                return res.status(200).json({
-                    datas: datas,
-                    canRequest: datas.canRequest ?? true
-                });
-            }
+            //     logger.info("Complete", { method, data: { id } });
+            //     return res.status(200).json({
+            //         datas: datas,
+            //         canRequest: datas.canRequest ?? true
+            //     });
+            // }
 
-            logger.info("Data not Found", { method, data: { id } });
-            return res.status(200).json({
-                message: "มีสิทธิ์คงเหลือเท่ากับเพดานเงิน"
-            });
+            // logger.info("Data not Found", { method, data: { id } });
+            // return res.status(200).json({
+            //     message: "มีสิทธิ์คงเหลือเท่ากับเพดานเงิน"
+            // });
 
         } catch (error) {
             console.error("Error:", error);
@@ -272,12 +275,15 @@ class Controller extends BaseController {
 
         try {
             const result = await sequelize.transaction(async t => {
+                
 
                 const [updated] = await reimbursementsChildrenEducation.update(dataUpdate, {
                     where: { id: dataId },
                     transaction: t,
                 });
-
+                if(dataUpdate.status === status.approve || dataUpdate.status === status.NotApproved){
+                    return updated;
+                }
 
                 if (updated === 0 && isNullOrEmpty(child)) {
                     return { updated: false };
@@ -597,7 +603,7 @@ class Controller extends BaseController {
 
     getById = async (req, res, next) => {
         const method = 'GetReimbursementsChildrenEducationbyId';
-        const { id } = req.user;
+        const { id} = req.user;        
         const dataId = req.params['id'];
 
         try {
@@ -698,7 +704,7 @@ class Controller extends BaseController {
                                 required: true,
                                 attributes: [],
                                 where: {
-                                    created_by: id
+                                    id: dataId
                                 }
                             }
                         ]
