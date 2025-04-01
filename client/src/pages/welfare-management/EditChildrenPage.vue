@@ -18,7 +18,7 @@
                                     ชื่อ-นามสกุล : <span class="font-medium font-16 text-grey-7">{{
                                         userData?.name ?? "-" }}</span>
                                 </p>
-
+                                
                             </div>
                             <p class="col-lg-3 col-xl-4 col-12 q-mb-none q-pr-sm text-no-wrap ellipsis"
                                 :title="userData?.position ?? '-'">
@@ -70,7 +70,8 @@
                                 class="row wrap font-medium q-pb-xs q-pl-none q-pt-none q-mb-md font-16 text-grey-9">
                                 <p class="col-md-3 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
                                 <p class="col-md-3 col-12 q-mb-none">วันที่ร้องขอ : {{
-                                    formatDateThaiSlash(model.requestDate) ?? "-" }}
+                                    formatDateThaiSlash(model.requestDate) ?? "-"
+                                    }}
                                 </p>
                                 <p class="col-md-3 col-12 q-mb-none q-pl-sm">สถานะ : <span
                                         :class="textStatusColor(model.status)">{{
@@ -671,17 +672,16 @@
         <template v-slot:action>
             <div class="justify-end row q-py-xs font-medium q-gutter-lg">
                 <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
-                    style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'welfare_management_list' }" />
-                <q-btn :disable="isButtonDisabled || isValidate" id="button-draft"
-                    class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
-                    label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
-                <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
-                    style="background-color: #E52020" label="ไม่อนุมัติ" no-caps @click="submit(4)"
-                    v-if="!isView && !isLoading" />
-                <q-btn :disable="isButtonDisabled || isValidate" id="button-approve"
-                    class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
-                    style="background-color: #43a047" label="อนุมัติ" no-caps @click="submit(3)"
-                    v-if="!isView && !isLoading" />
+          style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'welfare_management_list' }" />
+        <q-btn :disable="validate" id="button-draft"
+          class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
+          label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
+        <q-btn id="button-approve"
+        class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #E52020"
+        label="ไม่อนุมัติ" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
+        <q-btn :disable="validate" id="button-approve"
+          class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
+          label="อนุมัติ" no-caps @click="submit(3)" v-if="!isView && !isLoading" />
             </div>
         </template>
     </PageLayout>
@@ -906,7 +906,6 @@ watch(
             const fundSum = parseFloat(newValue.fundSum || 0);
             const perTime = parseFloat(item?.perTime || 0);
 
-            console.log("fundLimit", fundLimit, "fundRemaining", fundRemaining, "fundSum", fundSum);
 
             if (!model.value.child[index]) {
                 console.error(`model.value.child[${index}] is undefined`);
@@ -1058,16 +1057,13 @@ watch(
 
 async function fetchSchoolName() {
     let createForParam = model.value.createFor;
-
-
     try {
-        const result = await reimbursementChildrenEducationService.getLastShcoolName({
+        const result = await welfareManagementService.getLastShcoolNameEditor({
             createFor: createForParam, // ส่งเฉพาะเมื่อ canCreateFor.value == true
         });
 
         if (result.data && Array.isArray(result.data.ChildInformation)) {
             shcoolData.value = result.data.ChildInformation;
-            console.log("🟢 shcoolData.value:", shcoolData.value);
         } else {
             console.warn("⚠️ ไม่มีข้อมูล schoolData หรือ ChildInformation ไม่ถูกต้อง", result.data);
         }
@@ -1229,7 +1225,6 @@ watch(
                     const selectedChild = shcoolData.value.find(
                         (child) => child.childName === newName
                     );
-                    console.log("⚠️ shcoolData.value ไม่เป็นอาร์เรย์:", selectedChild);
                     if (selectedChild) {
                         if (selectedChild.schoolType === 'ทั่วไป') {
                             model.value.child[index].schoolNamegeneral = selectedChild.schoolName || " ";
@@ -1312,18 +1307,14 @@ async function fetchDataEdit() {
         try {
             const result = await welfareManagementService.dataChildrenById(route.params.id);
             const returnedData = result.data.datas;
-            console.log("Fetched Data:", JSON.stringify(returnedData, null, 2));
 
             if (returnedData) {
                 let prefix = null;
                 let name = returnedData?.spouse ?? "-";
 
-                if (returnedData.spouse) {
-                    const spouseParts = returnedData.spouse.split(' ');
-                    prefix = spouseParts[0] ?? null;
-                    name = spouseParts.slice(1).join(' ') || null;
-                }
-
+                const spouseParts = returnedData.spouse.split(' ');
+                prefix = spouseParts[0] ?? null;
+                name = spouseParts.slice(1).join(' ') || null;
                 model.value = {
                     ...model.value,
                     createFor: returnedData?.user?.userId ?? null,
@@ -1348,12 +1339,11 @@ async function fetchDataEdit() {
                             schoolNameDemonstration: child.schoolType === "สาธิตพิบูลบําเพ็ญ" ? child.schoolName : null,
                             childBirthDay: child.childBirthDay ?? "-",
                             subCategoriesName: child.sub_category?.name ?? null,
-                            subCategoriesId: child.sub_category?.id ?? null,
+                            subCategoriesId: child.sub_category?.id ?? null, // ✅ ใช้ subCategoriesId แทน subCategoryName
                             childPassedAway: child.childType === "DELEGATE"
                         }))
                         : []
                 };
-
                 userData.value = {
                     userId: returnedData?.userId ?? null,
                     name: returnedData?.name ?? "-",
@@ -1362,7 +1352,6 @@ async function fetchDataEdit() {
                     sector: returnedData?.sector ?? "-",
                     department: returnedData?.departmentUser ?? "-", // ใช้ departmentUser แทน department
                 };
-
 
                 spouseData.value = {
                     officer: {
@@ -1375,11 +1364,10 @@ async function fetchDataEdit() {
                     }
                 };
 
-                model.value.eligibleBenefits.push(returnedData?.eligibleBenefits ?? []);
-                model.value.eligibleSubSenefits.push(returnedData?.eligibleSubSenefits ?? []);
+
+                model.value.eligibleBenefits.push(returnedData?.eligibleBenefits);
+                model.value.eligibleSubSenefits.push(returnedData?.eligibleSubSenefits);
             }
-            console.log("model.value", JSON.stringify(model.value, null, 2));
-            console.log("userData", JSON.stringify(userData.value, null, 2));
 
         } catch (error) {
             Notify.create({
@@ -1490,13 +1478,23 @@ watch(
     }
 );
 
+watch(
+    () => model.value.createFor,
+    async (newValue) => {
+        if (newValue != null) {
+            await fetchRemaining();
+        }
+    }
+);
 
-
-
-
-
-
-
+watch(
+  () => userData.value.userId,
+  async (newValue) => {
+    if (newValue != null) {
+      await fetchUserData(userData.value.userId);
+    }
+  }
+);
 
 const benefitsOptions = [
     { label: "(ก) สำหรับผู้ปฏิบัติงานที่เริ่มปฏิบัติงานตั้งแต่วันที่ 26 มีนาคม พ.ศ. 2561 หรือ ผู้ปฏิบัติงานที่ปฏิบัติงานก่อนประกาศนี้มีผลใช้บังคับและมีบุตรที่เริ่มเข้าศึกษาตั้งแต่ ปีการศึกษา 2561", value: "ก" },
@@ -1554,32 +1552,115 @@ const selectedRoleLabel = computed(() => {
 });
 
 
+let validate = ref(false);
 
+watch(model, (newValue) => {
+    validateForm(newValue);
+}, { deep: true });
+
+const validateForm = (modelValue) => {
+    validate.value = false;
+    isError.value = {}; // Reset errors
+
+    if (!modelValue.spouse && modelValue.marryRegis === 'YES') {
+        isError.value.spouse = "กรุณากรอกชื่อคู่สมรส";
+        validate.value = true;
+    }
+    if (!modelValue.parentalStatus) {
+        isError.value.parentalStatus = "กรุณาเลือกสถานะที่มีต่อบุตร";
+        validate.value = true;
+    }
+    if (!modelValue.marryRegis) {
+        isError.value.marryRegis = "กรุณาเลือกการจดทะเบียนสมรส";
+        validate.value = true;
+    }
+    if (!modelValue.role && modelValue.marryRegis === 'YES') {
+        isError.value.role = "กรุณาเลือกประเภทคู่สมรส";
+        validate.value = true;
+    }
+
+    if (modelValue.child && modelValue.child.length > 0) {
+        modelValue.child.forEach((c, index) => {
+            isError.value[index] = {}; 
+
+            if (!c.fundReceipt) {
+                isError.value[index].fundReceipt = "กรุณากรอกจำนวนเงินตามใบเสร็จ";
+                validate.value = true;
+            }
+            if (!c.fundUniversity) {
+                isError.value[index].fundUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย 5(8)";
+                validate.value = true;
+            }
+            if (!c.fundSubUniversity && c.schoolType === 'สาธิตพิบูลบำเพ็ญ') {
+                isError.value[index].fundSubUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย 5(9), 5(10)";
+                validate.value = true;
+            }
+            if (!c.childName) {
+                isError.value[index].childName = "กรุณาเลือกชื่อ-นามสกุลของบุตร";
+                validate.value = true;
+            }
+            if (!c.childFatherNumber) {
+                isError.value[index].childFatherNumber = "กรุณากรอกลำดับบุตรของบิดา";
+                validate.value = true;
+            }
+            if (!c.childMotherNumber) {
+                isError.value[index].childMotherNumber = "กรุณากรอกลำดับบุตรของมารดา";
+                validate.value = true;
+            }
+            if (!c.schoolNamegeneral && c.schoolType === 'ทั่วไป') {
+                isError.value[index].schoolNamegeneral = "กรุณากรอกชื่อสถาบันศึกษาทั่วไป";
+                validate.value = true;
+            }
+            if (!c.schoolNameDemonstration && c.schoolType === 'สาธิตพิบูลบำเพ็ญ') {
+                isError.value[index].schoolNameDemonstration = "กรุณาเลือกชื่อสถาบันศึกษา";
+                validate.value = true;
+            }
+            if (!c.district) {
+                isError.value[index].district = "กรุณากรอกอำเภอ";
+                validate.value = true;
+            }
+            if (!c.province) {
+                isError.value[index].province = "กรุณากรอกจังหวัด";
+                validate.value = true;
+            }
+            if (!c.subCategoriesId) {
+                isError.value[index].subCategoriesId = "กรุณาเลือกกระดับชั้นที่ศึกษา";
+                validate.value = true;
+            }
+
+            if (c.childPassedAway) {
+                if (!c.delegateNumber) {
+                    isError.value[index].delegateNumber = "กรุณาเลือกลำดับบุตรแทนที่";
+                    validate.value = true;
+                }
+                if (!c.delegateDeathDay) {
+                    isError.value[index].delegateDeathDay = "กรุณาเลือกวันที่ถึงแก่กรรม";
+                    validate.value = true;
+                }
+            }
+        });
+    }
+};
 
 async function submit(actionId) {
     let validate = false;
 
-
     if (!model.value.spouse && model.value.marryRegis === 'YES') {
         isError.value.spouse = "กรุณากรอกชื่อคู่สมรส";
         validate = true;
-        console.log("กรุณากรอกชื่อคู่สมรส :" + validate)
     }
     if (!model.value.parentalStatus) {
         isError.value.parentalStatus = "กรุณาเลือกสถานะที่มีต่อบุตร";
         validate = true;
-        console.log("กรุณากรอกชื่อคู่สมรส :" + validate)
     }
     if (!model.value.marryRegis) {
         isError.value.marryRegis = "กรุณาเลือกการจดทะเบียนสมรส";
         validate = true;
-        console.log("กรุณาเลือกการจดทะเบียนสมรส :" + validate)
     }
 
     if (!model.value.role && model.value.marryRegis === 'YES') {
         isError.value.role = "กรุณาเลือกประเภทคู่สมรส";
         validate = true;
-        console.log("กรุณาเลือกประเภทคู่สมรส :" + validate)
     }
 
     if (model.value.child && model.value.child.length > 0) {
@@ -1589,7 +1670,6 @@ async function submit(actionId) {
             if (!c.fundReceipt) {
                 isError.value[index].fundReceipt = "กรุณากรอกจำนวนเงินตามใบเสร็จ";
                 validate = true;
-                console.log("กรุณากรอกจำนวนเงินตามใบเสร็จ :" + validate);
             }
             if (!c.fundUniversity) {
                 isError.value[index].fundUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย 5(8)";
@@ -1647,7 +1727,6 @@ async function submit(actionId) {
     }
 
     if (validate) {
-        console.log("validate" + validate)
         Notify.create({
             message: "กรุณากรอกข้อมูลให้ครบถ้วน",
             position: "bottom-left",
@@ -1661,7 +1740,6 @@ async function submit(actionId) {
 
     let payload = {
         prefix: model.value.prefix,
-        createFor: model.value.createFor,
         fundSumReceipt: model.value.fundSumReceipt,
         fundEligible: model.value.fundEligible,
         actionId: actionId ?? null,
@@ -1761,19 +1839,12 @@ async function submit(actionId) {
                     confirmButton: "save-button",
                 },
             }).then(() => {
-                router.replace({ name: "children_edu_welfare_list" });
+                router.replace({ name: "welfare_management_list" });
             });
         }
     });
 }
-watch(
-  () => userData.value.userId,
-  async (newValue) => {
-    if (newValue !== null) {
-      await fetchUserData(userData.value.userId);
-    }
-  }
-);
+
 
 async function init() {
     isView.value = route.meta.isView;
@@ -1782,27 +1853,22 @@ async function init() {
         if (isView.value) {
             fetchDataEdit();
             fetchUserData(authStore.id);
-            fetchSchoolName()
         }
         else if (isEdit.value) {
             fetchRemaining();
-            fetchDataEdit();
-            fetchUserData(userData.value.userId);
-            fetchSchoolName()
+            fetchUserData(authStore.id);
             const result = await userManagementService.getUserInitialData({ keyword: null });
             userInitialData.value = result.data.datas;
             optionsUserName.value = result.data.datas;
+            fetchDataEdit();
             fetchRemaining();
-            fetchSchoolName()
         }
         else {
             fetchRemaining();
             fetchUserData(authStore.id);
-            fetchSchoolName()
             const result = await userManagementService.getUserInitialData({ keyword: null });
             userInitialData.value = result.data.datas;
             fetchRemaining();
-            fetchSchoolName()
         }
     }
     catch (error) {

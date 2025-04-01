@@ -830,7 +830,6 @@ watch(
         (r) => r.childName
       );
 
-      console.log("dataArray", dataArray);
 
       const item = dataArray.find(
         (r) => r.childName?.trim().toLowerCase() === newValue.childName
@@ -841,7 +840,6 @@ watch(
       const fundSum = parseFloat(newValue.fundSum || 0);
       const perTime = parseFloat(item?.perTime || 0);
 
-      console.log("fundLimit", fundLimit, "fundRemaining", fundRemaining, "fundSum", fundSum);
 
       if (!model.value.child[index]) {
         console.error(`model.value.child[${index}] is undefined`);
@@ -1002,7 +1000,6 @@ async function fetchSchoolName() {
 
     if (result.data && Array.isArray(result.data.ChildInformation)) {
       shcoolData.value = result.data.ChildInformation;
-      console.log("🟢 shcoolData.value:", shcoolData.value);
     } else {
       console.warn("⚠️ ไม่มีข้อมูล schoolData หรือ ChildInformation ไม่ถูกต้อง", result.data);
     }
@@ -1164,7 +1161,6 @@ watch(
           const selectedChild = shcoolData.value.find(
             (child) => child.childName === newName
           );
-          console.log("⚠️ shcoolData.value ไม่เป็นอาร์เรย์:", selectedChild);
           if (selectedChild) {
             if (selectedChild.schoolType === 'ทั่วไป') {
               model.value.child[index].schoolNamegeneral = selectedChild.schoolName || " ";
@@ -1263,8 +1259,6 @@ async function fetchDataEdit() {
     try {
       const result = await reimbursementChildrenEducationService.dataById(route.params.id);
       const returnedData = result.data.datas;
-      console.log("returnedData")
-      console.log(returnedData)
 
       if (returnedData) {
         let prefix = null;
@@ -1321,7 +1315,6 @@ async function fetchDataEdit() {
         model.value.eligibleBenefits.push(returnedData?.eligibleBenefits);
         model.value.eligibleSubSenefits.push(returnedData?.eligibleSubSenefits);
       }
-      console.log("model.value", JSON.stringify(model.value, null, 2));
 
     } catch (error) {
       Notify.create({
@@ -1539,23 +1532,19 @@ async function submit(actionId) {
   if (!model.value.spouse && model.value.marryRegis === 'YES') {
     isError.value.spouse = "กรุณากรอกชื่อคู่สมรส";
     validate = true;
-    console.log("กรุณากรอกชื่อคู่สมรส :" + validate)
   }
   if (!model.value.parentalStatus) {
     isError.value.parentalStatus = "กรุณาเลือกสถานะที่มีต่อบุตร";
     validate = true;
-    console.log("กรุณากรอกชื่อคู่สมรส :" + validate)
   }
   if (!model.value.marryRegis) {
     isError.value.marryRegis = "กรุณาเลือกการจดทะเบียนสมรส";
     validate = true;
-    console.log("กรุณาเลือกการจดทะเบียนสมรส :" + validate)
   }
 
   if (!model.value.role && model.value.marryRegis === 'YES') {
     isError.value.role = "กรุณาเลือกประเภทคู่สมรส";
     validate = true;
-    console.log("กรุณาเลือกประเภทคู่สมรส :" + validate)
   }
 
   if (model.value.child && model.value.child.length > 0) {
@@ -1565,7 +1554,6 @@ async function submit(actionId) {
       if (!c.fundReceipt) {
         isError.value[index].fundReceipt = "กรุณากรอกจำนวนเงินตามใบเสร็จ";
         validate = true;
-        console.log("กรุณากรอกจำนวนเงินตามใบเสร็จ :" + validate);
       }
       if (!c.fundUniversity ) {
         isError.value[index].fundUniversity = "กรุณากรอกจำนวนเงินเบิกจากสวัสดิการมหาวิทยาลัย 5(8)";
@@ -1623,7 +1611,6 @@ async function submit(actionId) {
   }
 
   if (validate) {
-    console.log("validate" + validate)
     Notify.create({
       message: "กรุณากรอกข้อมูลให้ครบถ้วน",
       position: "bottom-left",

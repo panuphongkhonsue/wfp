@@ -419,6 +419,8 @@ const bindUpdate = async (req, res, next) => {
             parentalStatus,
             eligible
         } = req.body;
+        console.log("CCCC", req.body)
+
 
         const { id, roleId } = req.user;
         if (!isNullOrEmpty(createFor) && roleId !== roleType.financialUser) {
@@ -426,7 +428,7 @@ const bindUpdate = async (req, res, next) => {
                 message: "ไม่มีสิทธิ์แก้ไขให้คนอื่นได้",
             });
         }
-        if (!isNullOrEmpty(createFor) && actionId == statusType.draft && createFor !== id) {
+        if (!isNullOrEmpty(createFor) && actionId == statusType.draft && createFor !== id && roleId !== roleType.financialUser) {
             return res.status(400).json({
                 message: "กรณีเบิกให้ผู้อื่น ไม่สามารถบันทึกฉบับร่างได้",
             });

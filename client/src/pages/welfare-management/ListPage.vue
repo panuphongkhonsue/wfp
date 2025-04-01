@@ -467,6 +467,9 @@ async function downloadData(requestId, categoryName, welfareType) {
     else if (welfareType == "สวัสดิการค่าสงเคราะห์การเสียชีวิต") {
       fileData.value = await exportService.funeralDeceaseEmployee(requestId);
     }
+    else if (welfareType == "สวัสดิการเกี่ยวกับการศึกษาของบุตร") {
+      fileData.value = await exportService.childrenEnducation(requestId);
+    }
     const result = fileData.value;
     let filename = null;
     const contentDisposition = result.headers["content-disposition"];

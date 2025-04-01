@@ -81,4 +81,9 @@ export default {
             Promise.reject(error);
         }
     },
+    getLastShcoolNameEditor(options) {
+        return api.get(`reimbursement-children-education/get-latest-school/latest-school`, {
+          params: options,
+        });
+    },
 };

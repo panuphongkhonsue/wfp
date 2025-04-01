@@ -67,7 +67,6 @@ class Controller extends BaseController {
         const { id } = req.user;
         const { createFor} = req.query;
         const { subCategoriesId } = req.body;
-        console.log("RE45", req.body)
 
         try {
             const { filter } = req.query;
@@ -133,34 +132,6 @@ class Controller extends BaseController {
                 logger.info('Complete', { method, data: { id } });
                 return res.status(200).json(reimChildrenEducation);
             }
-
-            // const getFund = await subCategories.findOne({
-            //     attributes: [
-            //         [col("id"), "subCategoryId"],
-            //         [col("name"), "subCategoriesName"],
-            //         [col("fund"), "fund"],
-            //         [col("per_years"), "requestsRemaining"],
-            //         [col("per_times"), "perTimesRemaining"],
-            //         [col("per_users"), "perUsers"],
-            //     ],
-            //     where: { id: subCategoriesId }
-            // });
-
-
-            // if (getFund) {
-            //     const datas = JSON.parse(JSON.stringify(getFund));
-
-            //     logger.info("Complete", { method, data: { id } });
-            //     return res.status(200).json({
-            //         datas: datas,
-            //         canRequest: datas.canRequest ?? true
-            //     });
-            // }
-
-            // logger.info("Data not Found", { method, data: { id } });
-            // return res.status(200).json({
-            //     message: "มีสิทธิ์คงเหลือเท่ากับเพดานเงิน"
-            // });
 
         } catch (error) {
             console.error("Error:", error);
@@ -275,12 +246,12 @@ class Controller extends BaseController {
 
         try {
             const result = await sequelize.transaction(async t => {
-                
-
+            
                 const [updated] = await reimbursementsChildrenEducation.update(dataUpdate, {
                     where: { id: dataId },
                     transaction: t,
                 });
+
                 if(dataUpdate.status === status.approve || dataUpdate.status === status.NotApproved){
                     return updated;
                 }
