@@ -114,7 +114,7 @@ CREATE TABLE `children_infomation` (
   PRIMARY KEY (`id`),
   KEY `fk_children_infomation_sub_categories1_idx` (`sub_categories_id`),
   CONSTRAINT `fk_children_infomation_sub_categories1` FOREIGN KEY (`sub_categories_id`) REFERENCES `sub_categories` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=199 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=201 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -123,7 +123,7 @@ CREATE TABLE `children_infomation` (
 
 LOCK TABLES `children_infomation` WRITE;
 /*!40000 ALTER TABLE `children_infomation` DISABLE KEYS */;
-INSERT INTO `children_infomation` VALUES (195,5000.00,0.00,3803.00,'ด.ช. นภัท แวงดงบัง',1,'2011-03-11',1,1,'COMMON','มัธยมนายาว','ทั่วไป','เขตพระนคร','กรุงเทพมหานคร',NULL,NULL,NULL,NULL,3803.00,0.00,0.00,15),(198,5000.00,0.00,3850.00,'ด.ญ. นริน แวงดงบัง',1,'2012-03-12',2,2,'COMMON','dfghjkl','ทั่วไป','เขตพระนคร','กรุงเทพมหานคร',NULL,NULL,NULL,NULL,3850.00,0.00,0.00,10);
+INSERT INTO `children_infomation` VALUES (195,5000.00,0.00,4000.00,'ด.ช. นภัท แวงดงบัง',1,'2011-03-11',1,1,'COMMON','มัธยมนายาว','ทั่วไป','เขตพระนคร','กรุงเทพมหานคร',NULL,NULL,NULL,NULL,4000.00,0.00,0.00,10),(199,5000.00,0.00,2000.00,'ด.ช. นภัท แวงดงบัง',1,'2011-03-11',1,1,'COMMON','มัธยมนายาว','ทั่วไป','เขตป้อมปราบศัตรูพ่าย','กรุงเทพมหานคร',NULL,NULL,NULL,NULL,2000.00,0.00,0.00,11),(200,5000.00,0.00,2000.00,'ด.ญ. นริน แวงดงบัง',1,'2012-03-12',2,2,'COMMON','ผแปแิืทม','ทั่วไป','บางระจัน','สิงห์บุรี',NULL,NULL,NULL,NULL,2000.00,0.00,0.00,10);
 /*!40000 ALTER TABLE `children_infomation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -445,7 +445,7 @@ CREATE TABLE `reimbursements_children_education` (
   KEY `fk_reimbursements_children_education_categories1_idx` (`categories_id`),
   CONSTRAINT `fk_reimbursements_children_education_categories1` FOREIGN KEY (`categories_id`) REFERENCES `categories` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_reimbursements_children_education_users1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=208 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=210 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -454,7 +454,7 @@ CREATE TABLE `reimbursements_children_education` (
 
 LOCK TABLES `reimbursements_children_education` WRITE;
 /*!40000 ALTER TABLE `reimbursements_children_education` DISABLE KEYS */;
-INSERT INTO `reimbursements_children_education` VALUES (205,'6804187',0.00,0.00,3803.00,0.00,3803.00,0.00,'อนุมัติ','undefined Mira Janess','YES','ข้าราชการ','-','-','ตามสิทธิ','มารดา','ก',NULL,NULL,'2025-04-01 03:42:06','2025-04-01 13:59:35',34,84,NULL),(207,'6804206',5000.00,0.00,3850.00,0.00,3850.00,0.00,'บันทึกฉบับร่าง','null null','NO',NULL,NULL,NULL,'ตามสิทธิ','บิดา','ก',NULL,NULL,'2025-04-01 12:47:45','2025-04-01 13:30:59',84,84,NULL);
+INSERT INTO `reimbursements_children_education` VALUES (205,'6804187',0.00,0.00,4000.00,0.00,4000.00,0.00,'รอตรวจสอบ','นาง ธิดาการ','YES','ข้าราชการ','นายก','อบจ.','ตามสิทธิ','มารดา','ก',NULL,NULL,'2025-04-01 03:42:06','2025-04-01 18:45:20',34,84,NULL),(208,'6804206',0.00,0.00,2000.00,0.00,2000.00,0.00,'อนุมัติ','null null','NO',NULL,NULL,NULL,'ตามสิทธิ','บิดา','ก',NULL,NULL,'2025-04-01 14:50:54','2025-04-01 18:43:09',34,84,NULL),(209,'6804209',0.00,0.00,2000.00,0.00,2000.00,0.00,'อนุมัติ','null null','NO',NULL,NULL,NULL,'ตามสิทธิ','บิดา','ก',NULL,'2025-04-01','2025-04-01 15:28:26','2025-04-01 15:47:29',34,84,NULL);
 /*!40000 ALTER TABLE `reimbursements_children_education` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -482,7 +482,7 @@ CREATE TABLE `reimbursements_children_education_has_children_infomation` (
 
 LOCK TABLES `reimbursements_children_education_has_children_infomation` WRITE;
 /*!40000 ALTER TABLE `reimbursements_children_education_has_children_infomation` DISABLE KEYS */;
-INSERT INTO `reimbursements_children_education_has_children_infomation` VALUES (205,195),(207,198);
+INSERT INTO `reimbursements_children_education_has_children_infomation` VALUES (205,195),(208,199),(209,200);
 /*!40000 ALTER TABLE `reimbursements_children_education_has_children_infomation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -936,4 +936,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-01 21:12:27
+-- Dump completed on 2025-04-02 19:10:46
