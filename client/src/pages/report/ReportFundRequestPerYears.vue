@@ -33,34 +33,42 @@
           </q-card>
         </div>
         <div class="col-12 col-md-4 row q-gutter-y-md font-16">
-          <q-card class="col-12 row text-center d-flex items-center">
-            <q-card-section class="col">
-              สวัสดิการทั่วไป = {{ formatNumber(dataFundRequestPerYearEachType[0]?.total_fund) ?? 0 }}
+          <q-card class="col-12 text-h6 text-bold row text-center d-flex items-center">
+            <q-card-section class="col " style="color: #007BFF;">
+              สวัสดิการทั่วไป = {{ formatNumber(dataFundRequestPerYearEachType[0]?.total_fund ?? 0) }}
             </q-card-section>
           </q-card>
-          <q-card class="col-12 row text-center d-flex items-center">
-            <q-card-section class="col">
-              สวัสดิการค่าสงเคราะห์ต่าง ๆ = {{ formatNumber(dataFundRequestPerYearEachType[1]?.total_fund) ?? 0 }}
+          <q-card class="col-12 text-h6 text-bold row text-center d-flex items-center">
+            <q-card-section class="col" style="color: #FF3D57;">
+              สวัสดิการค่าสงเคราะห์ต่าง ๆ = {{ formatNumber(dataFundRequestPerYearEachType[1]?.total_fund ?? 0) }}
             </q-card-section>
           </q-card>
-          <q-card class="col-12 row text-center d-flex items-center">
-            <q-card-section class="col">
-              สวัสดิการการเสียชีวิตของผู้ปฏิบัติงาน = {{ formatNumber(dataFundRequestPerYearEachType[2]?.total_fund) ??
-                0 }}
+          <q-card class="col-12 text-h6 text-bold row text-center d-flex items-center">
+            <q-card-section class="col" style="color: #28A745;">
+              สวัสดิการการเสียชีวิตของผู้ปฏิบัติงาน = {{ formatNumber(dataFundRequestPerYearEachType[2]?.total_fund ?? 0)}}
             </q-card-section>
           </q-card>
-          <q-card class="col-12 row text-center d-flex items-center">
-            <q-card-section class="col">
-              สวัสดิการเกี่ยวกับการศึกษาของบุตร = {{ formatNumber(dataFundRequestPerYearEachType[3]?.total_fund) ?? 0 }}
+          <q-card class="col-12 text-h6 text-bold row text-center d-flex items-center">
+            <q-card-section class="col" style="color: #FF9800;">
+              สวัสดิการเกี่ยวกับการศึกษาของบุตร = {{ formatNumber(dataFundRequestPerYearEachType[3]?.total_fund ?? 0) }}
             </q-card-section>
           </q-card>
         </div>
       </div>
-      <q-card class="chart-fund-request-per-year">
+      <p class="col-12 text-center text-bold text-h4 q-pt-xl" style="color: #4D5B6B;">
+        กราฟแสดงค่าใช้จ่ายรายเดือนของปีงบประมาณ {{ filters.year }}
+        </p>
+      <q-card class="chart-fund-request-per-year q-mt-md">
         <q-card-section>
-          <VueApexCharts type="bar" :options="chartOptions" :series="series" height="500" />
+          <VueApexCharts v-if="!noDataMessage"  type="bar" :options="chartOptions" :series="series" height="500" />
+          <div v-if="noDataMessage" style="height: 480px;"
+              class="q-pa-md flex items-center justify-center text-center text-h6">
+              {{ noDataMessage }}
+        </div>
         </q-card-section>
+        
       </q-card>
+      
     </template>
 
 
@@ -81,6 +89,7 @@ import { useRoute, useRouter } from "vue-router";
 import { formatNumber } from "src/components/format";
 import VueApexCharts from "vue3-apexcharts";
 
+const noDataMessage = ref("");
 const route = useRoute();
 const router = useRouter();
 const isLoading = ref(false);
@@ -140,7 +149,6 @@ async function init() {
   fetchDataFundRequestPerYear(filters);
   fetchDataFundRequestPerYearEachType(filters);
 }
-
 async function fetchDataFundRequestPerYear(filters) {
   try {
     const result = await dashboardService.getDashboardDataFundRequestPerYear({
@@ -150,6 +158,8 @@ async function fetchDataFundRequestPerYear(filters) {
     });
     if (result.data.length == 0) {
       series.value[0].data = [];
+      noDataMessage.value = "ไม่มีข้อมูลค่าใช้จ่ายรายเดือนของปีงบประมาณนี้";
+      return;
     }
     else {
       for (let y = 0; y < dataFundRequestPerYear.value.length; y++) {
@@ -161,6 +171,7 @@ async function fetchDataFundRequestPerYear(filters) {
         }
       }
       series.value[0].data = dataFundRequestPerYear.value.map((item) => item.totalFund);
+      noDataMessage.value = "";
     }
     console.log("result.data.docs.lenght: ", result.data.length);
     console.log("dataFundRequestPerYear: ", dataFundRequestPerYear.value);
@@ -187,7 +198,6 @@ async function fetchDataFundRequestPerYearEachType(filters) {
 
     // 🔹 เซ็ตข้อมูลหลัก
     dataFundRequestPerYearEachType.value = result.data;
-
     // 🔹 สร้าง Map เพื่อเก็บค่า total_fund ตาม welfare_type
     const fundMap = new Map();
     result.data.forEach(item => {
@@ -215,7 +225,7 @@ async function fetchDataFundRequestPerYearEachType(filters) {
 }
 
 const chartDonut = ref({
-  colors: ["#4472C4", "#ED7D31", "#A5A5A5", "#FFC000"],
+  colors: ["#007BFF", "#FF3D57", "#28A745", "#FF9800"],
   chart: {
     fontFamily: "BaiJamjureeMedium",
     type: "donut",
@@ -287,7 +297,7 @@ const chartDonut = ref({
             color: "#4D5B6B",
             formatter: function (w) {
               let result = w.globals.seriesTotals.reduce((a, b) => a + b, 0)
-              return formatNumber(Math.round(result * 100) / 100);
+              return result === 0 ? "ไม่มีข้อมูล" : formatNumber(Math.round(result * 100) / 100);
             },
           },
         },
@@ -297,10 +307,11 @@ const chartDonut = ref({
   tooltip: {
     y: {
       formatter: function (val) {
-        return formatNumber(val);
+        return val === 0 ? "ไม่มีข้อมูล" : formatNumber(val);
       },
     },
   },
+  
 });
 
 const donutSeries = ref([]);
@@ -321,7 +332,7 @@ const chartOptions = ref({
       },
     },
   },
-  colors: ["#73BDFF"],
+  colors: ["#FFC107"],
   dataLabels: {
     enabled: true,
     position: "top",
@@ -333,7 +344,7 @@ const chartOptions = ref({
       cssClass: "font-medium",
     },
     formatter: function (val) {
-      return formatNumber(val);
+      return val === 0 ? "" :  formatNumber(val);
     },
   },
   plotOptions: {

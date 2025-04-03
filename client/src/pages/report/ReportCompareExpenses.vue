@@ -147,7 +147,7 @@ const chartOptions = ref({
   },
   fill: {
     opacity: 1,
-    colors: ['#FFAE67', '#73BDFF', '#FCC1DB', "#F44773"]
+    colors: ['#007BFF', '#FF3D57', '#28A745', "#FF9800"]
   },
   tooltip: {
     y: {
