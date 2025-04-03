@@ -563,7 +563,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 }
             }
         };
-        // next();
+        next();
     }
     catch (error) {
         logger.error(`Error ${error.message}`, { method });
