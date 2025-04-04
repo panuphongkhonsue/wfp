@@ -25,16 +25,22 @@ const createPdfFuneralDeceaseEmployee = async (req, res, next) => {
             textColor: '#333',
         });
 
-        const receipt = await ejs.renderFile('./templateExport/receiptExport.html.ejs', {
+        const receiptFuneral = await ejs.renderFile('./templateExport/receiptFuneralExport.html.ejs', {
             body: req.body.datas,
             async: true,
             bahttext,
             path: process.env.fileAccess,
         });
-
+        const receiptFuneralSupport = await ejs.renderFile('./templateExport/receiptFuneralSupportExport.html.ejs', {
+            body: req.body.datas,
+            async: true,
+            bahttext,
+            path: process.env.fileAccess,
+        });
         const html = await ejs.renderFile('./templateExport/funeralDeceaseEmployeeExport.html.ejs', {
             body: req.body.datas,
-            receipt: receipt,
+            receiptFuneral: receiptFuneral,
+            receiptFuneralSupport: receiptFuneralSupport,
             async: true,
             bahttext,
             cssStyles: `<style>${cssData}</style>`,

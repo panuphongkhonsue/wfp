@@ -105,7 +105,7 @@ const fetchDataFuneralDeceaseEmployee = async (req, res, next) => {
                 }
             ]
         });
-        
+
         var welfareData = {
             ...datas,
             user: {
@@ -130,8 +130,9 @@ const fetchDataFuneralDeceaseEmployee = async (req, res, next) => {
                 department: deceasedUser.department,
                 sector: deceasedUser.sector
             } : null,
-            receiptInfo: [],
-            total: datas.fundSumRequest,
+            receiptInfoSupport: [],
+            receiptInfoFuneral: [],
+            total: datas.fundSumRequest - datas.fundRequest,
         }
         const hasDeceased = await reimbursementsEmployeeDeceasedHasCategories.findOne({
             attributes: [
@@ -148,7 +149,7 @@ const fetchDataFuneralDeceaseEmployee = async (req, res, next) => {
                 [Op.and]: [{ reimbursements_employee_deceased_id: dataId }, { categories_id: 9 }],
             }
         });
-        const hasWreath = await reimbursementsEmployeeDeceasedHasCategories.findOne({
+        const hasWreathArrange = await reimbursementsEmployeeDeceasedHasCategories.findOne({
             attributes: [
                 [col("category.name"), "categoryName"],
             ],
@@ -160,7 +161,22 @@ const fetchDataFuneralDeceaseEmployee = async (req, res, next) => {
                 },
             ],
             where: {
-                [Op.and]: [{ reimbursements_employee_deceased_id: dataId }, { categories_id: { [Op.in]: [10, 11] } }],
+                [Op.and]: [{ reimbursements_employee_deceased_id: dataId }, { categories_id: 10 }],
+            }
+        });
+        const hasWreathUnversity = await reimbursementsEmployeeDeceasedHasCategories.findOne({
+            attributes: [
+                [col("category.name"), "categoryName"],
+            ],
+            include: [
+                {
+                    model: categories,
+                    as: "category",
+                    attributes: []
+                },
+            ],
+            where: {
+                [Op.and]: [{ reimbursements_employee_deceased_id: dataId }, { categories_id: 11 }],
             }
         });
         const hasVehicle = await reimbursementsEmployeeDeceasedHasCategories.findOne({
@@ -179,30 +195,37 @@ const fetchDataFuneralDeceaseEmployee = async (req, res, next) => {
             }
         });
 
-        if (!hasWreath && !hasVehicle && !hasDeceased) {
+        if (!hasWreathArrange && !hasWreathUnversity && !hasVehicle && !hasDeceased) {
             return res.status(200).json({
                 message: "ไม่พบข้อมูล"
             });
         }
-        if (hasWreath) {
-            const hasWreathdatas = JSON.parse(JSON.stringify(hasWreath));
-            welfareData.receiptInfo.push({
+        if (hasWreathArrange) {
+            const hasWreathdatas = JSON.parse(JSON.stringify(hasWreathArrange));
+            welfareData.receiptInfoSupport.push({
                 categoryName: hasWreathdatas.categoryName,
-                fundSumRequest: welfareData.fundWreathUniversity + welfareData.fundWreathArrange,
+                fundSumRequestSupport: welfareData.fundWreathArrange,
             });
         }
+        if (hasWreathUnversity) {
+            const hasWreathdatas = JSON.parse(JSON.stringify(hasWreathUnversity));
+            welfareData.receiptInfoSupport.push({
+                categoryName: hasWreathdatas.categoryName,
+                fundSumRequestSupport: welfareData.fundWreathUniversity,
+            });
+        }
+      
         if (hasVehicle) {
             const hasVehicledatas = JSON.parse(JSON.stringify(hasVehicle));
-            welfareData.receiptInfo.push({
+            welfareData.receiptInfoSupport.push({
                 categoryName: hasVehicledatas.categoryName,
-                fundSumRequest: welfareData.fundVehicle,
+                fundSumRequestSupport: welfareData.fundVehicle,
             });
         }
         if (hasDeceased) {
-            const hasDeceaseddatas = JSON.parse(JSON.stringify(hasDeceased));
-            welfareData.receiptInfo.push({
-                categoryName: hasDeceaseddatas.categoryName,
-                fundSumRequest: welfareData.fundRequest,
+            welfareData.receiptInfoFuneral.push({
+                deceasedName: deceasedUser.name,
+                fundRequest: welfareData.fundRequest,
             });
         }
         delete welfareData.categoryName;
