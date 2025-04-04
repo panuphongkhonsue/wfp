@@ -80,7 +80,8 @@
 </template>
 
 <script setup>
-import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import ReportLayout from "src/layouts/ReportLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import { ref, onMounted, watch } from "vue";
@@ -569,104 +570,77 @@ async function fetchAllWelfare() {
   }
 }
 
-function exportToExcel() {
-  // Define the columns to be included in the export
+async function exportToExcel() {
   const selectedColumns = [
     'ตรวจสุขภาพ',
     'ทำฟัน',
-    'ประสบอุบัติเหตุขณะปฏิบัติงาน',
-    'เยี่ยมไข้',
+    'กรณีเจ็บป่วย',
     'สมรส',
     'อุปสมบทหรือประกอบพิธีฮัจน์',
     'รับขวัญบุตร',
     'ประสบภัยพิบัติ',
+    'เสียชีวิตคนในครอบครัว',
     'การศึกษาของบุตร',
-    'กรณีเจ็บป่วย',
-    'ผู้ปฏิบัติงานเสียชีวิต',
-    'เสียชีวิตคนในครอบครัว'
+    'ผู้ปฏิบัติงานเสียชีวิต'
   ];
 
-  // Create a new array with only the selected columns + index & userName + total sum
-  const filteredData = model.value.map((item, index) => {
-    let newItem = {
-      'ลำดับ': index + 1, // Index starts from 1
-      'ชื่อผู้ใช้': item.userName || '', // Include username
-    };
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('FilteredData');
 
+  // 🔹 **Title Row**
+  const title = `รายละเอียดการเบิกจ่ายสวัสดิการรายบุคคลของปีงบประมาณ ${filters.value.year}`;
+  worksheet.mergeCells('A1', 'M1');
+  worksheet.getCell('A1').value = title;
+  worksheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
+  worksheet.getCell('A1').font = { bold: true, size: 14 };
+
+  // 🔹 **Header Row (Row 2)**
+  const headerRow = ['ลำดับ', 'ชื่อผู้ใช้', ...selectedColumns, 'รวม'];
+  worksheet.addRow(headerRow).font = { bold: true };
+
+  // 🔹 **Populate Data**
+  model.value.forEach((item, index) => {
+    let rowData = [index + 1, item.userName || ''];
     let totalSum = 0;
 
     selectedColumns.forEach(column => {
-      const columnName = `${column}fund`; // Adjust column names if needed
-      const value = parseFloat(item[columnName]) || 0; // Ensure missing values are treated as 0
-      newItem[column] = value === 0 ? '-' : value; // Change 0 to '-' except in "รวม"
-      totalSum += value; // Add to total sum
+      const columnName = `${column}fund`;
+      const value = parseFloat(item[columnName]) || 0;
+      rowData.push(value === 0 ? '-' : value);
+      totalSum += value;
     });
 
-    newItem['รวม'] = totalSum; // Keep sum as number
-
-    return newItem;
+    rowData.push(totalSum);
+    worksheet.addRow(rowData);
   });
 
-  // Convert the filtered data to a sheet
-  const ws = XLSX.utils.json_to_sheet(filteredData);
+  // 🔹 **Set other columns width**
+  // worksheet.columns.forEach(column => {
+  //   column.width = 20;
+  // });
 
-  // Add a title row spanning all columns
-  const title = `รายละเอียดการเบิกจ่ายสวัสดิการรายบุคคลของปีงบประมาณ ${filters.value.year}`;
-  const range = XLSX.utils.decode_range(ws["!ref"]);
+  // 🔹 **Set Column A width to 47 pixels (approx)**
+  worksheet.getColumn(1).width = 56 / 7; // number
+  worksheet.getColumn(2).width = 182 / 7; // user name
+  worksheet.getColumn(3).width = 94 / 7; // health
+  worksheet.getColumn(4).width = 60 / 7; // dentist
+  worksheet.getColumn(5).width = 93 / 7; // In case of illness
+  worksheet.getColumn(6).width = 60 / 7; // marrige
+  worksheet.getColumn(7).width = 206 / 7; // ordain
+  worksheet.getColumn(8).width = 93 / 7; // Welcoming the Child
+  worksheet.getColumn(9).width = 106 / 7; // Suffer from disaster
+  worksheet.getColumn(10).width = 163 / 7; // Decease Family
+  worksheet.getColumn(11).width = 132 / 7; // Children's education
+  worksheet.getColumn(12).width = 139 / 7; // Decease
+  worksheet.getColumn(13).width = 60 / 7; // Sum fund
 
-  // Merge cells for the title (from A1 to the last column in the first row)
-  ws['!merges'] = [
-    {
-      s: { r: 0, c: 0 }, // Starting cell: A1
-      e: { r: 0, c: range.e.c } // Ending cell: Last column in the first row
-    }
-  ];
+  // 🔹 **Generate Excel File**
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
-  // Add the title to the merged cells
-  ws['A1'] = { v: title, t: 's' }; // Place title in the first cell of row 1
-
-  // Apply the "Merge and Center" equivalent alignment for the title
-  if (!ws['A1'].s) {
-    ws['A1'].s = {};
-  }
-
-  // Center alignment for both horizontal and vertical
-  ws['A1'].s.alignment = {
-    horizontal: 'center', // Center text horizontally
-    vertical: 'center',   // Center text vertically
-    wrapText: true         // Wrap text in case it's too long
-  };
-
-  // Adjust column headers
-  const headerRow = ['ลำดับ', 'ชื่อผู้ใช้', ...selectedColumns, 'รวม'];
-  headerRow.forEach((header, index) => {
-    const cellAddress = XLSX.utils.encode_cell({ r: 1, c: index });
-    ws[cellAddress] = { v: header, t: 's' }; // Add header to row 2
-  });
-
-  // Remove 'fund' from column names
-  for (let C = range.s.c; C <= range.e.c; ++C) {
-    const address = XLSX.utils.encode_cell({ r: 0, c: C });
-    if (ws[address]) {
-      ws[address].v = ws[address].v.replace('fund', ''); // Rename headers
-    }
-  }
-
-  // Create a new workbook and append the worksheet
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "FilteredData");
-
-  // Export as Excel file
-  XLSX.writeFile(wb, "ExportData.xlsx");
+  // 🔹 **Trigger File Download**
+  saveAs(blob, 'ExportData.xlsx');
 }
-
-
-
-
-
-
-
-
 </script>
 
 <style lang="css">
