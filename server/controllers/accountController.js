@@ -67,9 +67,9 @@ exports.login = async (req, res, next) => {
             if (passwordIsValid) {
                 delete user.password;
                 const role = user?.role;
-                const positions = user?.position?.name;
-                const department = user?.department?.name;
-                const sector = user?.sector.name;
+                const positions = user?.position?.name ?? '-';
+                const department = user?.department?.name ?? '-';
+                const sector = user?.sector?.name ?? '-';
                 user.roleName = role?.name ? role?.name : null;
                 user.roleId = role?.id ? role.id : null;
                 user.position = positions;

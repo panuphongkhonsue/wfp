@@ -134,7 +134,7 @@ class Controller extends BaseController {
           { "$reimbursementsGeneral.request_date$": getFiscalYearWhere },
           { "$reimbursementsGeneral.categories_id$": category.dentalWelfare },
           { "$reimbursementsGeneral.created_by$": req.query.createFor ?? id },
-          { "$reimbursementsGeneral.status$": { [Op.eq]: status.approve } }
+          { "$reimbursementsGeneral.status$": { [Op.ne]: status.NotApproved } }
         );
         const getRequestData = await reimbursementsGeneral.findAll({
           attributes: [
@@ -251,7 +251,7 @@ class Controller extends BaseController {
           { "$reimbursementsGeneral.categories_id$": category.dentalWelfare },
           { "$reimbursementsGeneral.created_by$": datas.userId },
           { "$reimbursementsGeneral.id$": { [Op.lte]: datas.id } },
-          { "$reimbursementsGeneral.status$": { [Op.eq]: status.approve } }
+          { "$reimbursementsGeneral.status$": { [Op.ne]: status.NotApproved } }
         );
         const getRequestData = await reimbursementsGeneral.findAll({
           attributes: [

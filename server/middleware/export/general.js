@@ -285,7 +285,7 @@ const fetchDataMedical = async (req, res, next) => {
                 { '$reimbursements_general.created_by$': datas.userId },
                 { '$reimbursements_general.id$': { [Op.lte]: datas.id } },
                 { '$sub_category.id$': 2 },
-                { '$reimbursements_general.status$': { [Op.eq]: status.approve } },
+                { '$reimbursements_general.status$': {  [Op.ne]: status.NotApproved } },
             );
             const getRequestData = await reimbursementsGeneralHasSubCategories.findAll({
                 attributes: [
@@ -448,7 +448,7 @@ const fetchDataDental = async (req, res, next) => {
             { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
             { '$reimbursementsGeneral.created_by$': datas.userId },
             { '$reimbursementsGeneral.id$': { [Op.lte]: datas.id } },
-            { '$reimbursementsGeneral.status$': { [Op.eq]: status.approve } },
+            { '$reimbursementsGeneral.status$': {  [Op.ne]: status.NotApproved } },
         );
         const getRequestData = await reimbursementsGeneral.findAll({
             attributes: [

@@ -33,7 +33,7 @@ exports.sendMail = (to, reimNumber, actionId, name) => {
         to,
         subject: `ระบบเบิกสวัสดิการ แจ้งเตือนการแก้ไขข้อมูลคำขอเบิกสวัสดิการเลขที่ ${reimNumber}`,
         html: `
-        <h2>เรียน คุณ${nameWithNoProfix}</h2>
+        <h4>เรียน คุณ${nameWithNoProfix}</h4>
         <br>
         <p>${content}</p>
         <br>

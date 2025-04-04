@@ -7,8 +7,8 @@ const statusText = require('../enum/statusText')
 const status = require('../enum/status')
 const category = require('../enum/category');
 const welfareType = require('../enum/welfareType');
-const { permissionsHasRoles, reimbursementsGeneral, categories, subCategories, reimbursementsGeneralHasSubCategories, sequelize } = require('../models/mariadb')
-
+const { permissionsHasRoles, reimbursementsGeneral, categories, subCategories, reimbursementsGeneralHasSubCategories,users, sequelize } = require('../models/mariadb')
+const { sendMail } = require('../helper/mail');
 const authPermission = async (req, res, next) => {
     const method = 'AuthPermission';
     const { roleId } = req.user;
@@ -380,8 +380,8 @@ const getRemaining = async (req, res, next) => {
     try {
         const { id } = req.user;
         const { createFor } = req.query;
-        const { created_by, createByData, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
+        const { created_by, createByData } = req.body;
+        if(req.access && (req.body.status === status.NotApproved || req.body.status === status.approve) && !isNullOrEmpty(req.body.status)){
             return next();
         }
         req.query.filter = {};
@@ -425,8 +425,26 @@ const checkUpdateRemaining = async (req, res, next) => {
         const { filter } = req.query;
         const dataId = req.params['id'];
         var whereObj = { ...filter }
-        const { fund_eligible, fund_sum_request_patient_visit, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
+        const { fund_eligible, fund_sum_request_patient_visit } = req.body;
+        const welfareCheckData = await reimbursementsGeneral.findOne({
+            attributes: ["fund_eligible", "fund_sum_request_patient_visit", "reim_number"],
+            include: [
+                {
+                  model: users,
+                  as: "created_by_user",
+                  attributes: ['name','email'],
+                }
+            ],
+            where: { id: dataId, categories_id: category.medicalWelfare },
+        });
+        if (!welfareCheckData) {
+            return res.status(400).json({
+                message: "ไม่พบข้อมูล",
+            });
+        }
+        const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
+        if(req.access && (req.body.status === status.NotApproved || req.body.status === status.approve) && !isNullOrEmpty(req.body.status)){
+            sendMail(oldWelfareData.created_by_user.email,oldWelfareData.reim_number,req.body.status,oldWelfareData.created_by_user.name);
             return next();
         }
         whereObj[Op.and].push(
@@ -496,34 +514,8 @@ const checkUpdateRemaining = async (req, res, next) => {
             where: whereObj,
             group: ["sub_category.id"],
         });
-        const welfareCheckData = await reimbursementsGeneral.findOne({
-            attributes: ["fund_eligible", "fund_sum_request_patient_visit"],
-            where: { id: dataId, categories_id: category.medicalWelfare },
-        });
-        if (!welfareCheckData) {
-            return res.status(400).json({
-                message: "ไม่พบข้อมูล",
-            });
-        }
+
         if (!isNullOrEmpty(accidentRemaining) || !isNullOrEmpty(patientVisitRemaining)) {
-            const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
-            const accidentRemainingData = JSON.parse(JSON.stringify(accidentRemaining[0]));
-            const patientVisitRemainingData = JSON.parse(JSON.stringify(patientVisitRemaining[0]));
-            if (actionId === status.approve) {
-                if (dynamicCheckRemaining(accidentRemainingData)) {
-                    return res.status(400).json({
-                        message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิกสวัสดิการประสบอุบัติเหตุ",
-                    });
-                }
-                if(dynamicCheckRemaining(patientVisitRemainingData)){
-                    return res.status(400).json({
-                        message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิกสวัสดิการเยี่ยมไข้",
-                    });
-                }
-                else {
-                    return next();
-                }
-            }
             if (!isNullOrEmpty(accidentRemaining)) {
                 const datas = JSON.parse(JSON.stringify(accidentRemaining[0]));
                 if (fund_eligible < oldWelfareData.fund_eligible) {
@@ -563,6 +555,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 }
             }
         };
+        sendMail(oldWelfareData.created_by_user.email,oldWelfareData.reim_number,req.body.status,oldWelfareData.created_by_user.name);
         next();
     }
     catch (error) {
@@ -573,8 +566,8 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { fund_eligible, fund_sum_request_patient_visit, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
+        const { fund_eligible, fund_sum_request_patient_visit } = req.body;
+        if(req.access && (req.body.status === status.NotApproved || req.body.status === status.approve) && !isNullOrEmpty(req.body.status)){
             return next();
         }
         const getFund = await subCategories.findAll({

@@ -255,7 +255,7 @@ class Controller extends BaseController {
               "$reimbursements_general.created_by$": req.query.createFor ?? id
             },
             { "$sub_category.id$": 2 },
-            { "$reimbursements_general.status$": { [Op.eq]: status.approve } }
+            { "$reimbursements_general.status$": { [Op.ne]: status.NotApproved } }
           );
           const getRequestData =
             await reimbursementsGeneralHasSubCategories.findAll({
@@ -418,7 +418,7 @@ class Controller extends BaseController {
           { "$reimbursements_general.created_by$": datas.userId },
           { "$reimbursements_general.id$": { [Op.lte]: datas.id } },
           { "$sub_category.id$": 2 },
-          { "$reimbursements_general.status$": { [Op.eq]: status.approve } }
+          { "$reimbursements_general.status$": { [Op.ne]: status.NotApproved } }
         );
         const getRequestData =
           await reimbursementsGeneralHasSubCategories.findAll({

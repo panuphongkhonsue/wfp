@@ -143,7 +143,7 @@ class Controller extends BaseController {
                     firstWorkingDate: datas.first_working_date,
                     position: datas.position,
                     employeeType: datas.employee_type,
-                    sector: datas.sector,
+                    sector: datas.sector ?? {id : '-' , name : '-'},
                     role: datas.role,
                     department: datas.department,
                     children: childrenData,
@@ -212,11 +212,11 @@ class Controller extends BaseController {
                     return {
                         id: plainObj.id,
                         name: plainObj.name,
-                        position: plainObj.position.name,
-                        employeeType: plainObj.employee_type.name,
-                        role: plainObj.role.name,
-                        department: plainObj.department.name,
-                        sector: plainObj.sector.name,
+                        position: plainObj.position?.name || '-',
+                        employeeType: plainObj.employee_type?.name || '-',
+                        role: plainObj.role?.name || '-',
+                        department: plainObj.department?.name || '-',
+                        sector: plainObj.sector?.name || '-',
                     }
                 });
                 logger.info('Complete', { method, data: { id } });
