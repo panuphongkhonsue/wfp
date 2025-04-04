@@ -37,9 +37,10 @@
               <InputGroup for-id="position" :data="model.positionsName ?? '-'" is-require label="ตำแหน่ง"
                 :is-view="isView">
                 <q-select hide-bottom-space popup-content-class="font-14 font-regular" class="font-14 font-regular"
-                  :loading="isLoading" for="selected-status" outlined v-model="model.positionId"
-                  :options="optionsPosition" dense clearable option-value="id" emit-value map-options
-                  option-label="name" :error-message="isError?.positionId" :error="!!isError?.positionId"
+                  :loading="isLoading" for="selected-status" outlined v-model="model.positionId" use-input
+                  input-debounce="0" new-value-mode="add-unique" hide-selected hide-dropdown-icon fill-input
+                  @new-value="onNewPosition" :options="optionsPosition" dense clearable option-value="id" emit-value
+                  map-options option-label="name" :error-message="isError?.positionId" :error="!!isError?.positionId"
                   :rules="[(val) => !!val || 'กรุณาเลือกตำแหน่ง']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
@@ -53,10 +54,11 @@
               <InputGroup for-id="employee-type" :data="model.employeeTypeName ?? '-'" is-require label="ประเภทบุคลากร"
                 :is-view="isView">
                 <q-select hide-bottom-space popup-content-class="font-14 font-regular" class="font-14 font-regular"
-                  :loading="isLoading" for="selected-employee-type" outlined v-model="model.employeeTypeId"
-                  :options="optionsemployeeType" dense clearable option-value="id" emit-value map-options
-                  option-label="name" :error-message="isError?.employeeTypeId" :error="!!isError?.employeeTypeId"
-                  :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']" lazy-rules>
+                  :loading="isLoading" for="selected-employee-type" outlined v-model="model.employeeTypeId" use-input
+                  input-debounce="0" new-value-mode="add-unique" hide-selected hide-dropdown-icon fill-input
+                  @new-value="onNewEmployeeType" :options="optionsemployeeType" dense clearable option-value="id"
+                  emit-value map-options option-label="name" :error-message="isError?.employeeTypeId"
+                  :error="!!isError?.employeeTypeId" :rules="[(val) => !!val || 'กรุณาเลือกประเภทบุคลากร']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -69,10 +71,11 @@
               <InputGroup for-id="department" :data="model.departmentName ?? '-'" is-require label="ส่วนงาน"
                 :is-view="isView">
                 <q-select hide-bottom-space popup-content-class="font-14 font-regular" class="font-14 font-regular"
-                  :loading="isLoading" id="selected-department" outlined v-model="model.departmentId"
-                  :options="optionsDepartment" dense clearable option-value="id" emit-value map-options
-                  option-label="name" :error-message="isError?.departmentId" :error="!!isError?.departmentId"
-                  :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']" lazy-rules>
+                  :loading="isLoading" id="selected-department" outlined v-model="model.departmentId" use-input
+                  input-debounce="0" new-value-mode="add-unique" hide-selected hide-dropdown-icon fill-input
+                  @new-value="onNewDepartment" :options="optionsDepartment" dense clearable option-value="id" emit-value
+                  map-options option-label="name" :error-message="isError?.departmentId"
+                  :error="!!isError?.departmentId" :rules="[(val) => !!val || 'กรุณาเลือกส่วนงาน']" lazy-rules>
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -82,12 +85,13 @@
                   </template>
                 </q-select>
               </InputGroup>
-              <InputGroup for-id="sector" :data="model.sectorName ?? '-'" is-require label="ภาควิชา" :is-view="isView">
+              <InputGroup for-id="sector" :data="model.sectorName ?? '-'" label="ภาควิชา" :is-view="isView">
                 <q-select hide-bottom-space popup-content-class="font-14 font-regular" class="font-14 font-regular"
-                  :loading="isLoading" id="selected-sector" outlined v-model="model.sectorId" :options="optionsSection"
-                  dense clearable option-value="id" emit-value map-options option-label="name"
+                  :loading="isLoading" id="selected-sector" outlined v-model="model.sectorId" :options="optionsSection" use-input
+                  input-debounce="0" new-value-mode="add-unique" hide-selected hide-dropdown-icon fill-input
+                  @new-value="onNewSector" dense clearable option-value="id" emit-value map-options option-label="name"
                   :error-message="isError?.sectorId" :error="!!isError?.sectorId"
-                  :rules="[(val) => !!val || 'กรุณาเลือกภาควิชา']" lazy-rules>
+                  >
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -470,6 +474,7 @@ function validateFirstWorkingDate() {
   }
 }
 
+
 async function submit() {
   let validate = false
   if (!model.value.username) {
@@ -494,10 +499,6 @@ async function submit() {
   }
   if (!model.value.departmentId) {
     isError.value.departmentId = 'กรุณาเลือกส่วนงาน'
-    validate = true
-  }
-  if (!model.value.sectorId) {
-    isError.value.sectorId = 'กรุณาเลือกภาควิชา'
     validate = true
   }
   if (!model.value.firstWorkingDate) {
@@ -542,6 +543,9 @@ async function submit() {
       type: 'negative',
     })
     return
+  }
+  if(model.value.sectorId == '-'){
+    model.value.sectorId = null;
   }
   model.value.child = model.value.child.filter(
     (item) => !Object.values(item).some((value) => value === null || value === ''),
@@ -611,6 +615,41 @@ const optionsemployeeType = ref([])
 const optionsDepartment = ref([])
 const optionsSection = ref([])
 const optionRole = ref([])
+function onNewPosition(val) {
+  console.log(val);
+  const existing = optionsPosition.value.find(opt => opt.name === val);
+  if (existing) {
+    model.value.positionId = existing.id;
+  } else {
+    model.value.positionId = val;
+  }
+}
+function onNewEmployeeType(val) {
+  const existing = optionsemployeeType.value.find(opt => opt.name === val);
+  if (existing) {
+    model.value.employeeTypeId = existing.id;
+  } else {
+    model.value.employeeTypeId = val;
+  }
+}
+function onNewDepartment(val) {
+  const existing = optionsDepartment.value.find(opt => opt.name === val);
+  if (existing) {
+    model.value.departmentId = existing.id;
+  } else {
+    model.value.departmentId = val;
+  }
+}
+function onNewSector(val) {
+  const existing = optionsSection.value.find(opt => opt.name === val);
+  if (existing) {
+    model.value.sectorId = existing.id;
+  } else {
+    model.value.sectorId = val;
+  }
+}
+
+
 async function fetchInitialData() {
   try {
     const [fetchPosition, fetchDepartment, fetchSector, fetchemployeeType, fetchRole] =
@@ -656,26 +695,26 @@ async function init() {
       const name = dataBinding.name.split(' ').slice(1).join(' ')
       model.value = {
         id: dataBinding.id,
-        prefix: prefix,
-        name: name,
-        username: dataBinding.username,
+        prefix: prefix ?? '-',
+        name: name ?? '-',
+        username: dataBinding.username ?? '-',
         firstWorkingDate: convertDate,
-        positionId: dataBinding.position.id,
-        positionsName: dataBinding.position.name,
-        employeeTypeId: dataBinding.employeeType.id,
-        employeeTypeName: dataBinding.employeeType.name,
-        departmentId: dataBinding.department.id,
-        departmentName: dataBinding.department.name,
-        sectorId: dataBinding.sector.id,
-        sectorName: dataBinding.sector.name,
-        roleId: dataBinding.role.id,
-        roleName: dataBinding.role.name,
-        houseNumber: dataBinding.houseNumber,
-        street: dataBinding.street,
-        district: dataBinding.district,
-        subDistrict: dataBinding.subDistrict,
-        province: dataBinding.province,
-        postalCode: dataBinding.postalCode,
+        positionId: dataBinding?.position?.id ?? '-',
+        positionsName: dataBinding?.position?.name ?? '-',
+        employeeTypeId: dataBinding?.employeeType?.id ?? '-',
+        employeeTypeName: dataBinding?.employeeType?.name ?? '-',
+        departmentId: dataBinding?.department?.id ?? '-',
+        departmentName: dataBinding?.department?.name ?? '-',
+        sectorId: dataBinding?.sector?.id ?? '-',
+        sectorName: dataBinding?.sector?.name ?? '-',
+        roleId: dataBinding?.role?.id ?? '-',
+        roleName: dataBinding?.role?.name ?? '-',
+        houseNumber: dataBinding?.houseNumber ?? '-',
+        street: dataBinding?.street ?? '-',
+        district: dataBinding?.district ?? '-',
+        subDistrict: dataBinding?.subDistrict ?? '-',
+        province: dataBinding?.province ?? '-',
+        postalCode: dataBinding?.postalCode ?? '-',
       }
       if (Array.isArray(dataBinding.children) && dataBinding.children.length > 0) {
         const newChild = dataBinding.children.map((child) => {

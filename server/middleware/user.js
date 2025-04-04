@@ -4,7 +4,7 @@ const logger = initLogger('UserValidator');
 const { Op } = require('sequelize')
 const permissionType = require('../enum/permission')
 const roleType = require('../enum/role')
-const { permissionsHasRoles, sequelize, users } = require('../models/mariadb')
+const { permissionsHasRoles, sequelize, users,positions, sector, employeeTypes, departments, } = require('../models/mariadb')
 const { formatDateSlash } = require('../enum/formatDate');
 
 const authPermission = async (req, res, next) => {
@@ -27,6 +27,47 @@ const authPermission = async (req, res, next) => {
 	}
 };
 
+const checkNullValue = async (req, res, next) => {
+	try{
+		const {
+			prefix,
+			username,
+			name,
+			positionId,
+			employeeTypeId,
+			departmentId,
+			firstWorkingDate,
+			roleId,
+			houseNumber,
+			district,
+			subDistrict,
+			province,
+			postalCode,
+		} = req.body;
+		const errorObj = {};
+		if (isNullOrEmpty(prefix)) errorObj['prefix'] = 'กรุณากรอกคำนำหน้าชื่อ';
+		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
+		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
+		if (isNullOrEmpty(positionId)) errorObj['positionId'] = 'กรุณากรอกตำแหน่ง';
+		if (isNullOrEmpty(employeeTypeId)) errorObj['employeeTypeId'] = 'กรุณากรอกประเภทบุคลากร';
+		if (isNullOrEmpty(departmentId)) errorObj['departmentId'] = 'กรุณากรอกส่วนงาน';
+		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
+		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
+		if (isNullOrEmpty(houseNumber)) errorObj['houseNumber'] = 'กรุณากรอกบ้านเลขที่';
+		if (isNullOrEmpty(district)) errorObj['district'] = 'กรุณากรอก อำเภอ/เขต';
+		if (isNullOrEmpty(subDistrict)) errorObj['subDistrict'] = 'กรุณากรอก ตำบล/แขวง';
+		if (isNullOrEmpty(province)) errorObj['province'] = 'กรุณากรอกจังหวัด';
+		if (isNullOrEmpty(postalCode)) errorObj['postalCode'] = 'กรุณากรอกรหัสไปรษณีย์';
+		if (Object.keys(errorObj).length) return res.status(400).json({ errors: errorObj });
+		next();
+	}
+	catch(error){
+		res.status(500).json({
+            message: 'Internal Server Error',
+        });
+	}
+}
+
 const bindCreate = async (req, res, next) => {
 	try {
 		const {
@@ -47,20 +88,6 @@ const bindCreate = async (req, res, next) => {
 			postalCode,
 		} = req.body;
 		const errorObj = {};
-		if (isNullOrEmpty(prefix)) errorObj['prefix'] = 'กรุณากรอกคำนำหน้าชื่อ';
-		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
-		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
-		if (isNullOrEmpty(positionId)) errorObj['positionId'] = 'กรุณากรอกตำแหน่ง';
-		if (isNullOrEmpty(employeeTypeId)) errorObj['employeeTypeId'] = 'กรุณากรอกประเภทบุคลากร';
-		if (isNullOrEmpty(departmentId)) errorObj['departmentId'] = 'กรุณากรอกส่วนงาน';
-		if (isNullOrEmpty(sectorId)) errorObj['sectorId'] = 'กรุณากรอกภาควิชา';
-		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
-		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
-		if (isNullOrEmpty(houseNumber)) errorObj['houseNumber'] = 'กรุณากรอกบ้านเลขที่';
-		if (isNullOrEmpty(district)) errorObj['district'] = 'กรุณากรอก อำเภอ/เขต';
-		if (isNullOrEmpty(subDistrict)) errorObj['subDistrict'] = 'กรุณากรอก ตำบล/แขวง';
-		if (isNullOrEmpty(province)) errorObj['province'] = 'กรุณากรอกจังหวัด';
-		if (isNullOrEmpty(postalCode)) errorObj['postalCode'] = 'กรุณากรอกรหัสไปรษณีย์';
 		const inputDate = new Date(firstWorkingDate);
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
@@ -134,20 +161,6 @@ const bindUpdate = async (req, res, next) => {
 			postalCode,
 		} = req.body;
 		const errorObj = {};
-		if (isNullOrEmpty(prefix)) errorObj['prefix'] = 'กรุณากรอกคำนำหน้าชื่อ';
-		if (isNullOrEmpty(username)) errorObj['username'] = 'กรุณากรอกบัญชึผู้ใช้งาน';
-		if (isNullOrEmpty(name)) errorObj['name'] = 'กรุณากรอกชื่อ - นามสกุล';
-		if (isNullOrEmpty(positionId)) errorObj['positionId'] = 'กรุณากรอกตำแหน่ง';
-		if (isNullOrEmpty(employeeTypeId)) errorObj['employeeTypeId'] = 'กรุณากรอกประเภทบุคลากร';
-		if (isNullOrEmpty(departmentId)) errorObj['departmentId'] = 'กรุณากรอกส่วนงาน';
-		if (isNullOrEmpty(sectorId)) errorObj['sectorId'] = 'กรุณากรอกภาควิชา';
-		if (isNullOrEmpty(firstWorkingDate)) errorObj['firstWorkingDate'] = 'กรุณากรอกวันที่เริ่มเข้าปฏิบัติงาน';
-		if (isNullOrEmpty(roleId)) errorObj['roleId'] = 'กรุณาเลือกบทบาท';
-		if (isNullOrEmpty(houseNumber)) errorObj['houseNumber'] = 'กรุณากรอกบ้านเลขที่';
-		if (isNullOrEmpty(district)) errorObj['district'] = 'กรุณากรอก อำเภอ/เขต';
-		if (isNullOrEmpty(subDistrict)) errorObj['subDistrict'] = 'กรุณากรอก ตำบล/แขวง';
-		if (isNullOrEmpty(province)) errorObj['province'] = 'กรุณากรอกจังหวัด';
-		if (isNullOrEmpty(postalCode)) errorObj['postalCode'] = 'กรุณากรอกรหัสไปรษณีย์';
 		const inputDate = new Date(firstWorkingDate);
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
@@ -250,6 +263,36 @@ const validateDuplicate = async (req, res, next) => {
 	}
 };
 
+const newValueUserType = async (req, res, next) => {
+	try {
+		let { positions_id, employee_types_id, departments_id, sector_id } = req.body;
+		if(isNaN(positions_id)){
+			const addPosition = await positions.create({name : positions_id});
+			req.body.positions_id = addPosition.id;
+		}
+		if(isNaN(employee_types_id)){
+			const addEmployeeType = await employeeTypes.create({name : employee_types_id});
+			req.body.employee_types_id = addEmployeeType.id;
+		}
+		if(isNaN(departments_id)){
+			const addDepartment = await departments.create({name : departments_id});
+			req.body.departments_id = addDepartment.id;
+		}
+		if(isNaN(sector_id)){
+			const addSectors = await sector.create({name : sector_id});
+			req.body.sector_id = addSectors.id;
+		}
+		next();
+	} catch (error) {
+		logger.error(error);
+		res.status(500).json({
+			message: 'Internal Server Error',
+		});
+	}
+};
+
+
+
 const bindFilter = async (req, res, next) => {
 	const method = 'BindFilter';
 	try {
@@ -278,4 +321,4 @@ const bindFilter = async (req, res, next) => {
 };
 
 
-module.exports = { authPermission, bindCreate, bindUpdate, validateDuplicate, bindFilter };
+module.exports = { authPermission, bindCreate, bindUpdate, validateDuplicate, bindFilter,newValueUserType,checkNullValue };

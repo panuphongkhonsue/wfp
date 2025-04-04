@@ -109,7 +109,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     sector_id: {
       type: DataTypes.BIGINT,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'sector',
         key: 'id'
