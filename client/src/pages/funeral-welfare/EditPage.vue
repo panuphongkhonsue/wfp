@@ -98,7 +98,7 @@
             </q-card-section>
             <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-9">
               <div class="col-lg-5 col-xl-4 col-12 q-mb-none q-pr-lg-xl">
-                <InputGroup label="ชื่อ - นามสกุล" is-require :is-view="isView" :data="isView ? deceasedName : null">
+                <InputGroup label="ชื่อ - นามสกุล (ผู้เสียชีวิต)" is-require :is-view="isView" :data="isView ? deceasedName : null">
                   <q-select v-model="model.deceased" :options="filteredOptions" :loading="isLoading" :clearable="true"
                     emit-value map-options option-value="id" option-label="name" :rules="[(val) => !!val || '',(val) => isOverfundRemaining !== 3 || 'ผู้เสียชีวิตเคยเบิกสิทธิ์ไปแล้ว']" dense
                     outlined use-input hide-selected fill-input input-debounce="100" hide-bottom-space
@@ -361,7 +361,7 @@ onBeforeUnmount(() => {
 });
 const filteredOptions = computed(() => {
   return options.value.filter((option) => {
-    return !hasClaimed(option.id);
+    return option.id !== authStore.id && !hasClaimed(option.id);
   });
 });
 

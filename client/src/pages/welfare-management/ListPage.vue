@@ -146,7 +146,6 @@ const filter = ref({
   statusName: null,
 });
 let optionStatus = [
-  { statusId: 1, name: "บันทึกฉบับร่าง" },
   { statusId: 2, name: "รอตรวจสอบ" },
   { statusId: 3, name: "อนุมัติ" },
   { statusId: 4, name: "ไม่อนุมัติ"}

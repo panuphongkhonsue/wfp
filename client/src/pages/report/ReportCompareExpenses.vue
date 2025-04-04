@@ -91,6 +91,10 @@ const chartOptions = ref({
     bar: {
       horizontal: false,
       columnWidth: "30%",
+      dataLabels: {
+      position: 'top'
+    },
+    columnPadding: 10,
     }
   },
   xaxis: {
@@ -122,7 +126,7 @@ const chartOptions = ref({
         fontFamily: 'BaiJamjureeMedium',
       },
     },
-    // 
+    offsetY: 20,
   },
   title: {
     text: "จำนวนเงิน",
@@ -132,14 +136,16 @@ const chartOptions = ref({
       fontWeight: 'bold',
       fontFamily: "BaiJamjureeMedium",
     },
+    
   },
   dataLabels: {
-    enabled: false,
+    enabled: true,
+    offsetY: -20,
     style: {
       colors: ["black"],
       fontSize: "14px",
-      fontWeight: 400,
-      cssClass: "font-medium",
+      fontWeight: '',
+      fontFamily: "BaiJamjureeMedium",
     },
     formatter: function (val) {
       return formatNumber(val);
@@ -147,7 +153,7 @@ const chartOptions = ref({
   },
   fill: {
     opacity: 1,
-    colors: ['#FFAE67', '#73BDFF', '#FCC1DB', "#F44773"]
+    colors: ['#007BFF', '#FF3D57', '#28A745', "#FF9800"]
   },
   tooltip: {
     y: {

@@ -69,39 +69,6 @@
               </span>
             </div>
           </template>
-
-          <template v-slot:body-cell-tools="props">
-            <q-td :props="props" class="">
-              <a @click.stop.prevent="viewData(props.row.requestId)" class="text-dark q-py-sm q-px-xs cursor-pointer">
-                <q-icon :name="outlinedVisibility" size="xs" />
-              </a>
-              <a v-show="props.row.status.statusId == 2" @click.stop.prevent="goto(props.row.requestId)"
-                class="text-dark q-py-sm q-px-xs cursor-pointer">
-                <q-icon :name="outlinedEdit" size="xs" color="blue" />
-              </a>
-              <a v-show="props.row.status.statusId == 1" @click.stop.prevent="
-                deleteData(props.row.requestId)
-                " class="text-dark q-py-sm q-px-xs cursor-pointer">
-                <q-icon :name="outlinedDelete" size="xs" color="red" />
-              </a>
-              <a v-show="props.row.status.statusId == 2 || props.row.status.statusId == 3" @click.stop.prevent="
-                downloadData(props.row.requestId)
-                " class="text-dark q-py-sm q-px-xs cursor-pointer">
-                <q-icon :name="outlinedDownload" size="xs" color="blue" />
-              </a>
-            </q-td>
-          </template>
-
-          <template v-slot:body-cell-statusName="props">
-            <q-td :props="props" class="text-center">
-              <q-badge class="font-regular font-14 weight-5 q-py-xs full-width"
-                :color="statusColor(props.row.statusName)">
-                <p class="q-py-xs q-ma-none full-width font-14" :class="textStatusColor(props.row.statusName)">
-                  {{ props.row.status.name }}
-                </p>
-              </q-badge>
-            </q-td>
-          </template>
         </q-table>
       </div>
 
@@ -113,7 +80,8 @@
 </template>
 
 <script setup>
-import * as XLSX from "xlsx";
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import ReportLayout from "src/layouts/ReportLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import { ref, onMounted, watch } from "vue";
@@ -159,9 +127,7 @@ const model = ref([]);
 
 const columns = ref([
   { name: "createdByName", label: "ชื่อ - สกุล", align: "left", field: (row) => row.createdByName ?? "-" },
-  { name: "fundSum", label: "รวม", align: "left", field: (row) => row.fundSum ?? "-" },
 ]);
-
 onMounted(async () => {
   isLoading.value = true;
   await init();
@@ -207,7 +173,7 @@ function search() {
 async function init() {
   pagination.value.rowsPerPage = listStore.getState();
   await tableRef.value.requestServerInteraction();
-  
+
 }
 
 function onRequest(props) {
@@ -254,21 +220,58 @@ function onRequest(props) {
           allWelfareData[i].category_name !== "สนับสนุนพวงหรีดในนามส่วนบุคคล" &&
           allWelfareData[i].category_name !== "พาหนะเหมาจ่าย" &&
           allWelfareData[i].sub_category_name !== "พาหนะเหมาจ่าย" &&
-          allWelfareData[i].sub_category_name !== "ประสบอุบัติเหตุขณะปฏิบัติงาน"
+          allWelfareData[i].sub_category_name !== "ประสบอุบัติเหตุขณะปฏิบัติงาน" &&
+          allWelfareData[i].sub_category_name !== "ระดับปฐมวัย" &&
+          allWelfareData[i].sub_category_name !== "ระดับประถมศึกษาปีที่ 1 - 6" &&
+          allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาปีที่ 1 - 3" &&
+          allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาปีที่ 4 - 6" &&
+          allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาปีที่ 4 - 6 (หรือเทียบเท่า)" &&
+          allWelfareData[i].sub_category_name !== "ระดับปฐมศึกษาปีที่ 1 - 3" &&
+          allWelfareData[i].sub_category_name !== "ระดับปฐมศึกษาปีที่ 4 - 6" &&
+          allWelfareData[i].sub_category_name !== "ระดับปฐมวัยโปรแกรมทั่วไป" &&
+          allWelfareData[i].sub_category_name !== "ระดับปฐมวัยโปรแกรมเน้นความสามารถทางภาษา" &&
+          allWelfareData[i].sub_category_name !== "ระดับปฐมศึกษาปีที่ 1 - 6 โปรแกรมทั่วไป" &&
+          allWelfareData[i].sub_category_name !== "ระดับปฐมศึกษาปีที่ 1 - 6 โปรแกรมเน้นความสามารถทางภาษา" &&
+          allWelfareData[i].sub_category_name !== "ระดับปฐมศึกษาปีที่ 1 - 6 โปรแกรมศึกษาพิเศษแบบบูรณาการ" &&
+          allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาโปรแกรมทั่วไป" &&
+          allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาโปรแกรมเน้นความสามารถทางภาษา" &&
+          allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาโปรแกรมเน้นความสามารถทางคณิต-วิทย์" &&
+          allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาโปรแกรมศึกษาพิเศษแบบบูรณาการ"
         ) {
           if (allWelfareData[i].sub_category_name === "บุตร") {
             columns.value.push({
               name: "เสียชีวิตคนในครอบครัว",
               label: "เสียชีวิตคนในครอบครัว",
               align: "left",
-              field: "เสียชีวิตคนในครอบครัว" + "fund"
+              field: "เสียชีวิตคนในครอบครัว" + "fund",
+              format: (val) => {
+                const number = Number(val); // Convert to number
+                if (!isNaN(number)) {
+                  return number.toLocaleString("en-US", {
+                    minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+                    maximumFractionDigits: 2, // Limit to 2 decimal places
+                  }); // Format as '3,000'
+                }
+                return `${val}`; // If conversion fails, return a fallback value
+              },
+              classes: "ellipsis",
             });
-          } else if (allWelfareData[i].sub_category_name === "ระดับมัธยมศึกษาปีที่ 1 - 3") {
             columns.value.push({
               name: "การศึกษาของบุตร",
               label: "การศึกษาของบุตร",
               align: "left",
-              field: "การศึกษาของบุตร" + "fund"
+              field: "การศึกษาของบุตร" + "fund",
+              format: (val) => {
+                const number = Number(val); // Convert to number
+                if (!isNaN(number)) {
+                  return number.toLocaleString("en-US", {
+                    minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+                    maximumFractionDigits: 2, // Limit to 2 decimal places
+                  }); // Format as '3,000'
+                }
+                return `${val}`; // If conversion fails, return a fallback value
+              },
+              classes: "ellipsis",
             });
           }
           else if (allWelfareData[i].sub_category_name === "เยี่ยมไข้") {
@@ -276,7 +279,18 @@ function onRequest(props) {
               name: "กรณีเจ็บป่วย",
               label: "กรณีเจ็บป่วย",
               align: "left",
-              field: "กรณีเจ็บป่วย" + "fund"
+              field: "กรณีเจ็บป่วย" + "fund",
+              format: (val) => {
+                const number = Number(val); // Convert to number
+                if (!isNaN(number)) {
+                  return number.toLocaleString("en-US", {
+                    minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+                    maximumFractionDigits: 2, // Limit to 2 decimal places
+                  }); // Format as '3,000'
+                }
+                return `${val}`; // If conversion fails, return a fallback value
+              },
+              classes: "ellipsis",
             });
           }
           else if (allWelfareData[i].category_name === "ผู้ปฏิบัติงานเสียชีวิต") {
@@ -284,7 +298,18 @@ function onRequest(props) {
               name: "ผู้ปฏิบัติงานเสียชีวิต",
               label: "ผู้ปฏิบัติงานเสียชีวิต",
               align: "left",
-              field: "ผู้ปฏิบัติงานเสียชีวิต" + "fund"
+              field: "ผู้ปฏิบัติงานเสียชีวิต" + "fund",
+              format: (val) => {
+                const number = Number(val); // Convert to number
+                if (!isNaN(number)) {
+                  return number.toLocaleString("en-US", {
+                    minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+                    maximumFractionDigits: 2, // Limit to 2 decimal places
+                  }); // Format as '3,000'
+                }
+                return `${val}`; // If conversion fails, return a fallback value
+              },
+              classes: "ellipsis",
             });
           }
           else {
@@ -294,7 +319,18 @@ function onRequest(props) {
                 ? allWelfareData[i].sub_category_name
                 : allWelfareData[i].category_name, // Use ternary operator for conditional label
               align: "left",
-              field: allWelfareData[i].category_name + "fund"
+              field: allWelfareData[i].category_name + "fund",
+              format: (val) => {
+                const number = Number(val); // Convert to number
+                if (!isNaN(number)) {
+                  return number.toLocaleString("en-US", {
+                    minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+                    maximumFractionDigits: 2, // Limit to 2 decimal places
+                  }); // Format as '3,000'
+                }
+                return `${val}`; // If conversion fails, return a fallback value
+              },
+              classes: "ellipsis",
             });
           }
         }
@@ -423,16 +459,30 @@ function onRequest(props) {
       console.log("modelValue: ", model.value);
       console.log("dataTables:", dataTable.value);
       columns.value.push(
-        { name: "fundSum", label: "รวม", align: "left", field: (row) => row.fundSum ?? "-" },
+        {
+          name: "fundSum", label: "รวม", align: "left", field: (row) => row.fundSum ?? "-", format: (val) => {
+            const number = Number(val); // Convert to number
+            if (!isNaN(number)) {
+              return number.toLocaleString("en-US", {
+                minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+                maximumFractionDigits: 2, // Limit to 2 decimal places
+              }); // Format as '3,000'
+            }
+            return `${val}`; // If conversion fails, return a fallback value
+          },
+          classes: "ellipsis",
+        },
       );
       console.log("viewDashboardData: ", viewDashboardData);
       console.log("userData: ", userData);
       console.log("allWelfare: ", allWelfareData);
-      if(checkfirstPage == true){
-      optionNameUser.value = dataTable.value.map(item => ({
-      name: item.userName
-      }));
-      checkfirstPage = false;
+      console.log("COL.Value: ", columns.value);
+
+      if (checkfirstPage == true) {
+        optionNameUser.value = dataTable.value.map(item => ({
+          name: item.userName
+        }));
+        checkfirstPage = false;
       }
       pagination.value.page = page;
       pagination.value.rowsPerPage = rowsPerPage;
@@ -520,76 +570,77 @@ async function fetchAllWelfare() {
   }
 }
 
-function exportToExcel() {
-  // Clone and sort the data to avoid mutating the original model
-  const sortedData = [...model.value].sort((a, b) => a.userId - b.userId);
+async function exportToExcel() {
+  const selectedColumns = [
+    'ตรวจสุขภาพ',
+    'ทำฟัน',
+    'กรณีเจ็บป่วย',
+    'สมรส',
+    'อุปสมบทหรือประกอบพิธีฮัจน์',
+    'รับขวัญบุตร',
+    'ประสบภัยพิบัติ',
+    'เสียชีวิตคนในครอบครัว',
+    'การศึกษาของบุตร',
+    'ผู้ปฏิบัติงานเสียชีวิต'
+  ];
 
-  // Add 'fundSum' by summing up the individual fund columns for each row
-  sortedData.forEach(item => {
-    const fundColumns = [
-      'ตรวจสุขภาพ',
-      'ทำฟัน',
-      'ประสบอุบัติเหตุขณะปฏิบัติงาน',
-      'เยี่ยมไข้',
-      'สมรส',
-      'อุปสมบทหรือประกอบพิธีฮัจน์',
-      'รับขวัญบุตร',
-      'ประสบภัยพิบัติ',
-      'การศึกษาของบุตร',
-      'กรณีเจ็บป่วย',
-      'ผู้ปฏิบัติงานเสียชีวิต',
-      'เสียชีวิตคนในครอบครัว'
-    ];
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('FilteredData');
 
-    // Sum the values of each fund column (without 'fund' in the column name)
-    item.fundSum = fundColumns.reduce((sum, column) => {
-      const columnName = `${column}fund`; // Rebuild the column name with 'fund' appended
-      return sum + (parseFloat(item[columnName]) || 0); // Ensure that missing or non-numeric values are treated as 0
-    }, 0);
+  // 🔹 **Title Row**
+  const title = `รายละเอียดการเบิกจ่ายสวัสดิการรายบุคคลของปีงบประมาณ ${filters.value.year}`;
+  worksheet.mergeCells('A1', 'M1');
+  worksheet.getCell('A1').value = title;
+  worksheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
+  worksheet.getCell('A1').font = { bold: true, size: 14 };
 
-    // Change 'userId' to string
-    item.userId = String(item.userId); // Convert userId to a string
+  // 🔹 **Header Row (Row 2)**
+  const headerRow = ['ลำดับ', 'ชื่อผู้ใช้', ...selectedColumns, 'รวม'];
+  worksheet.addRow(headerRow).font = { bold: true };
+
+  // 🔹 **Populate Data**
+  model.value.forEach((item, index) => {
+    let rowData = [index + 1, item.userName || ''];
+    let totalSum = 0;
+
+    selectedColumns.forEach(column => {
+      const columnName = `${column}fund`;
+      const value = parseFloat(item[columnName]) || 0;
+      rowData.push(value === 0 ? '-' : value);
+      totalSum += value;
+    });
+
+    rowData.push(totalSum);
+    worksheet.addRow(rowData);
   });
 
-  // Ensure 'fundSum' is the last column by repositioning it
-  sortedData.forEach(item => {
-    const fundSum = item.fundSum;
-    delete item.fundSum; // Remove 'fundSum' from its current position
-    item.fundSum = fundSum; // Add 'fundSum' back at the end
-  });
+  // 🔹 **Set other columns width**
+  // worksheet.columns.forEach(column => {
+  //   column.width = 20;
+  // });
 
-  // Convert the sorted and updated model to a sheet
-  const ws = XLSX.utils.json_to_sheet(sortedData);
+  // 🔹 **Set Column A width to 47 pixels (approx)**
+  worksheet.getColumn(1).width = 56 / 7; // number
+  worksheet.getColumn(2).width = 182 / 7; // user name
+  worksheet.getColumn(3).width = 94 / 7; // health
+  worksheet.getColumn(4).width = 60 / 7; // dentist
+  worksheet.getColumn(5).width = 93 / 7; // In case of illness
+  worksheet.getColumn(6).width = 60 / 7; // marrige
+  worksheet.getColumn(7).width = 206 / 7; // ordain
+  worksheet.getColumn(8).width = 93 / 7; // Welcoming the Child
+  worksheet.getColumn(9).width = 106 / 7; // Suffer from disaster
+  worksheet.getColumn(10).width = 163 / 7; // Decease Family
+  worksheet.getColumn(11).width = 132 / 7; // Children's education
+  worksheet.getColumn(12).width = 139 / 7; // Decease
+  worksheet.getColumn(13).width = 60 / 7; // Sum fund
 
-  // Remove 'fund' from column names and rename specific headers
-  const range = XLSX.utils.decode_range(ws["!ref"]);
-  for (let C = range.s.c; C <= range.e.c; ++C) {
-    const address = XLSX.utils.encode_cell({ r: 0, c: C }); // Get the header row
-    if (ws[address]) {
-      // Remove 'fund' from all column names
-      ws[address].v = ws[address].v.replace('fund', '');
+  // 🔹 **Generate Excel File**
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
-      // Rename 'userId' to 'ไอดีผู้ใช้', 'userName' to 'ชื่อผู้ใช้', and 'fundSum' to 'รวม'
-      if (ws[address].v === 'userId') {
-        ws[address].v = 'ไอดีผู้ใช้'; // Change 'userId' header name
-      }
-      if (ws[address].v === 'userName') {
-        ws[address].v = 'ชื่อผู้ใช้'; // Change 'userName' header name
-      }
-      if (ws[address].v === 'fundSum') {
-        ws[address].v = 'รวม'; // Change 'fundSum' header name
-      }
-    }
-  }
-
-  // Create a new workbook and append the worksheet
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "SortedData");
-
-  // Export the sorted data as an Excel file
-  XLSX.writeFile(wb, "ExportedData.xlsx");
+  // 🔹 **Trigger File Download**
+  saveAs(blob, 'ExportData.xlsx');
 }
-
 </script>
 
 <style lang="css">
