@@ -340,8 +340,8 @@ const chartOptions = ref({
     style: {
       colors: ["black"],
       fontSize: "14px",
-      fontWeight: 400,
-      cssClass: "font-medium",
+      fontWeight: '',
+      fontFamily: "BaiJamjureeMedium",
     },
     formatter: function (val) {
       return val === 0 ? "" :  formatNumber(val);
