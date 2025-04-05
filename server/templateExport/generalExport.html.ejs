@@ -32,28 +32,28 @@
         <tr>
           <td>
             <div class="d-flex">
-              <div style="width: 60%">
+              <div class="col-7" >
                 <div class="row" style="gap: 8px; flex-wrap: wrap">
                   <div class="pl-sm font-semi-bold">๑.</div>
-                  <div class="col wrap row pl-sm" style="gap:8px; flex-wrap: wrap">
-                    <div>
+                  <div class="col-10 wrap row pl-sm " style="gap:8px; flex-wrap: wrap; width: 90%;">
+                    <div class="d-flex">
                       <span class="font-semi-bold">ข้าพเจ้า</span>
-                      <span class="text-dot pl-sm text-center">
-                        <%= body?.user?.name %>
+                      <span style="max-width: 180px; width: 180px;" class="<%= body?.user?.name ? 'text-dot text-center' : 'text-dot-no-value' %>">
+                        <%= body?.user?.name ?? '' %>
                       </span>
                     </div>
-                    <div class="col">
+                    <div class="col d-flex" >
                       <span class="font-semi-bold">ตำแหน่ง</span>
-                      <span class="text-dot pl-sm text-center">
-                        <%= body?.user?.position %>
+                      <span style="max-width: 103px; width: 103px; " class="<%= body?.user?.position ? 'text-dot text-center' : 'text-dot-no-value' %>">
+                        <%= body?.user?.position ?? '' %> 
                       </span>
                     </div>
-                    <div style="flex-basis: 100%">
+                    <div style="flex-basis: 95%" >
                       <div style="display: flex; gap: 8px; align-items: center">
-                        <div style="flex: 1">
-                          <span class="font-semi-bold">สังกัด ภาควิชา / ส่วนงาน</span>
-                          <span class="text-dot pl-sm text-center">
-                            <%= body?.user?.sector ? body.user.sector + ' / ' + body.user.department : body?.user?.department %>
+                        <div  class="d-flex">
+                          <span class="font-semi-bold">สังกัด ส่วนงาน</span>
+                          <span style="max-width: 300px; width: 300px;" class="<%= body?.user?.department ? 'text-dot text-center' : 'text-dot-no-value' %>">
+                            <%= body?.user?.department %>
                           </span>
                         </div>
                       </div>
@@ -61,14 +61,14 @@
                   </div>
                 </div>
               </div>
-              <div style="width: 40%">
+              <div class="col-5" >
                 <input type="checkbox" id="1" name="ข้าราชการ / ลูกจ้างประจำ" value="1" <%=body?.user?.employeeTypeId==1
                   ? "checked" : "" %>
                 />
-                <label for="1"> ข้าราชการ / ลูกจ้างประจำ</label><br />
+                <label  for="1"> ข้าราชการ / ลูกจ้างประจำ</label><br />
                 <input type="checkbox" id="2" name="พนักงานมหาวิทยาลัย
                 (สิทธิข้าราชการบำนาญ)" value="2" <%=body?.user?.employeeTypeId==2 ? "checked" : "" %> />
-                <label for="2"> พนักงานมหาวิทยาลัย (สิทธิข้าราชการบำนาญ)</label><br />
+                <label  for="2"> พนักงานมหาวิทยาลัย (สิทธิข้าราชการบำนาญ)</label><br />
                 <input type="checkbox" id="3" name="พนักงานมหาวิทยาลัย" value="3" <%=body?.user?.employeeTypeId==3
                   ? "checked" : "" %>
                 />

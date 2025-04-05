@@ -7,7 +7,8 @@ const statusText = require('../enum/statusText')
 const status = require('../enum/status')
 const welfareType = require('../enum/welfareType');
 const category = require('../enum/category')
-const { permissionsHasRoles, reimbursementsAssist, categories, sequelize } = require('../models/mariadb')
+const { permissionsHasRoles, reimbursementsAssist, categories,users, sequelize } = require('../models/mariadb')
+const { sendMail } = require('../helper/mail');
 
 const authPermission = async (req, res, next) => {
     const method = 'AuthPermission';
@@ -328,8 +329,8 @@ const getRemaining = async (req, res, next) => {
     try {
         const { id } = req.user;
         const { createFor } = req.query;
-        const { created_by, createByData, categories_id, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
+        const { created_by, createByData, categories_id, } = req.body;
+        if (req.access && (req.body.status === status.NotApproved || req.body.status === status.approve) && !isNullOrEmpty(req.body.status)) {
             return next();
         }
         req.query.filter = {};
@@ -385,8 +386,26 @@ const checkUpdateRemaining = async (req, res, next) => {
         const { filter } = req.query;
         const dataId = req.params['id'];
         var whereObj = { ...filter }
-        const { fund_sum_request, categories_id, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
+        const { fund_sum_request, categories_id } = req.body;
+        const welfareCheckData = await reimbursementsAssist.findOne({
+            attributes: ["fund_sum_request", "reim_number"],
+            include: [
+                {
+                    model: users,
+                    as: "created_by_user",
+                    attributes: ['name', 'email'],
+                }
+            ],
+            where: { id: dataId, categories_id: categories_id },
+        });
+        if (!welfareCheckData) {
+            return res.status(400).json({
+                message: "ไม่พบข้อมูล",
+            });
+        }
+        const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
+        if (req.access && (req.body.status === status.NotApproved || req.body.status === status.approve) && !isNullOrEmpty(req.body.status)) {
+            sendMail(oldWelfareData.created_by_user.email, oldWelfareData.reim_number, req.body.status, oldWelfareData.created_by_user.name);
             return next();
         }
         const results = await reimbursementsAssist.findOne({
@@ -415,23 +434,8 @@ const checkUpdateRemaining = async (req, res, next) => {
             where: whereObj,
             group: ["category.id"]
         });
-        const welfareCheckData = await reimbursementsAssist.findOne({
-            attributes: ["fund_sum_request"],
-            where: { id: dataId, categories_id: categories_id },
-        });
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
-            if (actionId === status.approve) {
-                if (dynamicCheckRemaining(datas)) {
-                    return res.status(400).json({
-                        message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิก",
-                    });
-                }
-                else {
-                    return next();
-                }
-            }
-            const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
             if (fund_sum_request < oldWelfareData.fund_sum_request) {
                 return next();
             }
@@ -449,6 +453,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 }
             }
         };
+        sendMail(oldWelfareData.created_by_user.email, oldWelfareData.reim_number, req.body.status, oldWelfareData.created_by_user.name);
         next();
     }
     catch (error) {
@@ -459,8 +464,8 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { fund_sum_request, categories_id, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
+        const { fund_sum_request, categories_id, } = req.body;
+        if (req.access && (req.body.status === status.NotApproved || req.body.status === status.approve) && !isNullOrEmpty(req.body.status)) {
             return next();
         }
         const getFund = await categories.findOne({

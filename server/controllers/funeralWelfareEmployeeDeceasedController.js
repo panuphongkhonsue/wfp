@@ -376,12 +376,12 @@ class Controller extends BaseController {
 
             if (getFund) {
                 const datas = JSON.parse(JSON.stringify(getFund));
-            
+
                 for (let i = 0; i < datas.length; i++) {
                     if (datas[i].deceased !== undefined && datas[i].deceased !== null) {
                         const deceasedData = await reimbursementsEmployeeDeceased.findOne({
                             where: {
-                                category_id: datas[i].categoriesId,  
+                                category_id: datas[i].categoriesId,
                             }
                         });
                         if (deceasedData) {
@@ -393,8 +393,8 @@ class Controller extends BaseController {
                         datas[i].canRequest = true;
                     }
                 }
-            
-            
+
+
                 return res.status(200).json({
                     datas: datas.map(item => ({
                         categoriesId: item.categoriesId,
@@ -404,7 +404,7 @@ class Controller extends BaseController {
                         perTimesRemaining: item.perTimesRemaining,
                         canRequest: item.canRequest,
                     })),
-                    canRequest: datas[0]?.canRequest ?? true, 
+                    canRequest: datas[0]?.canRequest ?? true,
                 });
             }
             logger.info('Data not Found', { method, data: { id } });
@@ -634,9 +634,9 @@ class Controller extends BaseController {
                     where: { id: dataId },
                     transaction: t,
                 });
-                if(dataUpdate.status === status.approve){
+                if (dataUpdate.status === status.approve || dataUpdate.status === status.NotApproved) {
                     return updated;
-                  }
+                }
                 let itemsReturned = { updated };
 
                 // Handle selected wreath

@@ -7,8 +7,8 @@ const statusText = require('../enum/statusText')
 const status = require('../enum/status')
 const category = require('../enum/category');
 const welfareType = require('../enum/welfareType');
-const { permissionsHasRoles, reimbursementsEmployeeDeceased, categories, reimbursementsEmployeeDeceasedHasCategories, sequelize } = require('../models/mariadb');
-
+const { permissionsHasRoles, reimbursementsEmployeeDeceased, categories, reimbursementsEmployeeDeceasedHasCategories,users, sequelize } = require('../models/mariadb');
+const { sendMail } = require('../helper/mail');
 const authPermission = async (req, res, next) => {
     const method = 'AuthPermission';
     const { roleId } = req.user;
@@ -421,8 +421,8 @@ const getRemaining = async (req, res, next) => {
     try {
         const { id } = req.user;
         const { deceasedId } = req.query;
-        const { deceased, checkData, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
+        const { deceased, checkData } = req.body;
+        if (req.access && (req.body.status === status.NotApproved || req.body.status === status.approve) && !isNullOrEmpty(req.body.status)) {
             return next();
         }
         req.query.filter = {};
@@ -461,7 +461,26 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         var whereObj = { ...filter }
         const { fund_request, fund_wreath_university, fund_wreath_arrange, fund_vehicle, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved) && !isNullOrEmpty(actionId)) {
+
+        const welfareCheckData = await reimbursementsEmployeeDeceased.findOne({
+            attributes: ["fund_request", "fund_wreath_university", "fund_wreath_arrange", "fund_vehicle", "reim_number"],
+            include: [
+                {
+                    model: users,
+                    as: "created_by_user",
+                    attributes: ['name', 'email'],
+                }
+            ],
+            where: { id: dataId, },
+        });
+        if (!welfareCheckData) {
+            return res.status(400).json({
+                message: "ไม่พบข้อมูล",
+            });
+        }
+        const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
+        if (req.access && (req.body.status === status.NotApproved || req.body.status === status.approve) && !isNullOrEmpty(req.body.status)) {
+            sendMail(oldWelfareData.created_by_user.email, oldWelfareData.reim_number, req.body.status, oldWelfareData.created_by_user.name);
             return next();
         }
         whereObj[Op.and].push(
@@ -584,29 +603,10 @@ const checkUpdateRemaining = async (req, res, next) => {
             where: whereObj,
             group: ["category.id"],
         });
-        const welfareCheckData = await reimbursementsEmployeeDeceased.findOne({
-            attributes: ["fund_request", "fund_wreath_university", "fund_wreath_arrange", "fund_vehicle"],
-            where: { id: dataId, },
-        });
-        if (!welfareCheckData) {
-            return res.status(400).json({
-                message: "ไม่พบข้อมูล",
-            });
-        }
+        
         if (!isNullOrEmpty(decreaseRemaining) || !isNullOrEmpty(wreathRemaining) || !isNullOrEmpty(vehicleRemaining)) {
-            const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
             if (!isNullOrEmpty(decreaseRemaining)) {
                 const datas = JSON.parse(JSON.stringify(decreaseRemaining[0]));
-                if (actionId === status.approve) {
-                    if (dynamicCheckRemaining(decreaseRemaining)) {
-                        return res.status(400).json({
-                            message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิกสวัสดิการประสบอุบัติเหตุ",
-                        });
-                    }
-                    else {
-                        return next();
-                    }
-                }
                 if (fund_request < oldWelfareData.fund_request) {
                     return next();
                 }
@@ -627,16 +627,6 @@ const checkUpdateRemaining = async (req, res, next) => {
 
             if (!isNullOrEmpty(wreathRemaining)) {
                 const datas = JSON.parse(JSON.stringify(wreathRemaining[0]));
-                if (actionId === status.approve) {
-                    if (dynamicCheckRemaining(wreathRemaining)) {
-                        return res.status(400).json({
-                            message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิกสวัสดิการประสบอุบัติเหตุ",
-                        });
-                    }
-                    else {
-                        return next();
-                    }
-                }
                 if (fund_wreath_university < oldWelfareData.fund_wreath_university || fund_wreath_arrange < oldWelfareData.fund_wreath_arrange) {
                     return next();
                 }
@@ -667,16 +657,6 @@ const checkUpdateRemaining = async (req, res, next) => {
             }
             if (!isNullOrEmpty(vehicleRemaining)) {
                 const datas = JSON.parse(JSON.stringify(vehicleRemaining[0]));
-                if (actionId === status.approve) {
-                    if (dynamicCheckRemaining(vehicleRemaining)) {
-                        return res.status(400).json({
-                            message: "ไม่สามารถอนุมัติได้เนื่องจากผู้ขอเบิกสวัสดิการไม่มีสิทธิ์ขอเบิกสวัสดิการประสบอุบัติเหตุ",
-                        });
-                    }
-                    else {
-                        return next();
-                    }
-                }
                 if (fund_vehicle < oldWelfareData.fund_vehicle) {
                     return next();
                 }
@@ -705,10 +685,10 @@ const checkUpdateRemaining = async (req, res, next) => {
 const checkFullPerTimes = async (req, res, next) => {
     const method = 'CheckFullPerTimes';
     try {
-        const { fund_request, fund_wreath_university, fund_wreath_arrange, fund_vehicle, actionId } = req.body;
-        if (req.access && (actionId === status.NotApproved || actionId === status.approve) && !isNullOrEmpty(actionId)) {
-            return next();
-        }
+        const { fund_request, fund_wreath_university, fund_wreath_arrange, fund_vehicle } = req.body;
+        if (req.access && (req.body.status === status.NotApproved || req.body.status === status.approve) && !isNullOrEmpty(req.body.status)) {
+                   return next();
+               }
         const getFund = await categories.findAll({
             attributes: [
                 [col("id"), "CategoriesId"],

@@ -221,7 +221,8 @@ const fetchDataFuneralFamily = async (req, res, next) => {
 
             },
             receiptInfo: [],
-            total: datas.fundSumRequest,
+            receiptInfoSupport: [],
+            total: datas.fundSumRequest ,
         }
         const hasDeceased = await reimbursementsAssistHasSubCategories.findOne({
             attributes: [
@@ -239,7 +240,7 @@ const fetchDataFuneralFamily = async (req, res, next) => {
             }
         });
         
-        const hasWreath = await reimbursementsAssistHasSubCategories.findOne({
+        const hasWreathArrange = await reimbursementsAssistHasSubCategories.findOne({
             attributes: [
                 [col("sub_category.name"), "subCategoryName"],
             ],
@@ -251,7 +252,22 @@ const fetchDataFuneralFamily = async (req, res, next) => {
                 },
             ],
             where: {
-                [Op.and]: [{ reimbursements_assist_id: dataId }, { sub_categories_id: { [Op.in]: [7,8] } }],
+                [Op.and]: [{ reimbursements_assist_id: dataId }, { sub_categories_id: 7 }],
+            }
+        });
+        const hasWreathUnversity = await reimbursementsAssistHasSubCategories.findOne({
+            attributes: [
+                [col("sub_category.name"), "subCategoryName"],
+            ],
+            include: [
+                {
+                    model: subCategories,
+                    as: "sub_category",
+                    attributes: []
+                },
+            ],
+            where: {
+                [Op.and]: [{ reimbursements_assist_id: dataId }, { sub_categories_id: 8 }],
             }
         });
         const hasVechicle = await reimbursementsAssistHasSubCategories.findOne({
@@ -269,7 +285,7 @@ const fetchDataFuneralFamily = async (req, res, next) => {
                 [Op.and]: [{ reimbursements_assist_id: dataId }, { sub_categories_id: 9 }],
             }
         });
-        if (!hasWreath && !hasVechicle && !hasDeceased) {
+        if (!hasWreathArrange && !hasWreathUnversity && !hasVechicle && !hasDeceased) {
             return res.status(200).json({
                 message: "ไม่พบข้อมูล"
             });
@@ -278,21 +294,28 @@ const fetchDataFuneralFamily = async (req, res, next) => {
             const hasDeceaseddatas = JSON.parse(JSON.stringify(hasDeceased));
             welfareData.receiptInfo.push({
                 categoryName: hasDeceaseddatas.subCategoryName,
-                fundSumRequest: welfareData.fundDecease,
+                fundSumRequest: welfareData.fundSumRequest,
             });
         }
-        if (hasWreath) {
-            const hasWreathdatas = JSON.parse(JSON.stringify(hasWreath));
-            welfareData.receiptInfo.push({
+        if (hasWreathArrange) {
+            const hasWreathdatas = JSON.parse(JSON.stringify(hasWreathArrange));
+            welfareData.receiptInfoSupport.push({
                 categoryName: hasWreathdatas.subCategoryName,
-                fundSumRequest: welfareData.fundWreathUniversity + welfareData.fundWreathArrange,
+                fundSumRequestSupport: welfareData.fundWreathArrange,
+            });
+        }
+        if (hasWreathUnversity) {
+            const hasWreathdatas = JSON.parse(JSON.stringify(hasWreathUnversity));
+            welfareData.receiptInfoSupport.push({
+                categoryName: hasWreathdatas.subCategoryName,
+                fundSumRequestSupport: welfareData.fundWreathUniversity,
             });
         }
         if (hasVechicle) {
             const hasVechicledatas = JSON.parse(JSON.stringify(hasVechicle));
-            welfareData.receiptInfo.push({
+            welfareData.receiptInfoSupport.push({
                 categoryName: hasVechicledatas.subCategoryName,
-                fundSumRequest: welfareData.fundVechicle,
+                fundSumRequestSupport: welfareData.fundVechicle,
             });
         }
         

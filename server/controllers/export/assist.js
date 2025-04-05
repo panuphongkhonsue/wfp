@@ -31,10 +31,16 @@ const createPdfAssist = async (req, res, next) => {
             bahttext,
             path: process.env.fileAccess,
         });
-
+        const receiptFuneralSupport = await ejs.renderFile('./templateExport/receiptFuneralSupportExport.html.ejs', {
+            body: req.body.datas,
+            async: true,
+            bahttext,
+            path: process.env.fileAccess,
+        });
         const html = await ejs.renderFile('./templateExport/assistExport.html.ejs', {
             body: req.body.datas,
             receipt: receipt,
+            receiptFuneralSupport: receiptFuneralSupport,
             async: true,
             bahttext,
             cssStyles: `<style>${cssData}</style>`,

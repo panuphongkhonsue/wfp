@@ -556,7 +556,7 @@ class Controller extends BaseController {
           },
           transaction: t
         });
-        if(dataUpdate.status === status.approve){
+        if(dataUpdate.status === status.approve || dataUpdate.status === status.NotApproved){
           return updated;
         }
         var checkingEdit = false;
