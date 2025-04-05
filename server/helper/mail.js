@@ -29,7 +29,7 @@ exports.sendMail = (to, reimNumber, actionId, name) => {
     }
     var smtpTransport = mailer.createTransport(smtp);
     var mail = {
-        from: "Buu Informatics Welfare Reimburstment",
+        from: `"Buu Informatics Welfare Reimburstment" <${process.env.USER_MAIL}>`,
         to,
         subject: `ระบบเบิกสวัสดิการ แจ้งเตือนการแก้ไขข้อมูลคำขอเบิกสวัสดิการเลขที่ ${reimNumber}`,
         html: `
