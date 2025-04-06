@@ -198,12 +198,9 @@ const bindUpdate = async (req, res, next) => {
 					!Object.values(item).some(value => value.name === null || value.name === "" || value.birthday === null || value.birthday === "" || value.prefix === null || value.prefix === "")
 				);
 				if (dataBinding.child.length === 0) {
-					console.log(true);
-					console.log(dataBinding);
 					delete dataBinding.child;
 				}
 				else {
-					console.log("else");
 					const newChild = dataBinding.child.map((child) => {
 						const childId = child.id;
 						const childName = child.prefix + ' ' + child.name;

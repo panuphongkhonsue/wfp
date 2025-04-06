@@ -118,14 +118,12 @@ const getRemaining = async (req, res, next) => {
                 '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.created_by$': id
             });
         }
-        console.log(getFiscalYearWhere);
         // เพิ่มเงื่อนไข statusType.approve
         req.query.filter[Op.and].push(
             {'$reimbursements_children_education_has_children_infomations.reimbursements_children_education.status$': { [Op.eq]: statusType.approve }},
             { '$reimbursements_children_education_has_children_infomations.reimbursements_children_education.request_date$': getFiscalYearWhere, },
     );
 
-        console.log("Updated filter before next:", JSON.stringify(req.query.filter, null, 2));
         next();
     } catch (error) {
         logger.error(`Error ${error.message}`, { method });
@@ -419,7 +417,6 @@ const bindUpdate = async (req, res, next) => {
             parentalStatus,
             eligible
         } = req.body;
-        console.log("CCCC", req.body)
 
 
         const { id, roleId } = req.user;

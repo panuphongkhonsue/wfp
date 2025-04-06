@@ -36,8 +36,6 @@ class Controller extends BaseController {
         const method = 'GetCustomDashboardData';
         const { userId } = req.user;
         const { startYear, endYear } = req.query;
-        console.log("startYear:", startYear);
-        console.log("endYear:", endYear);
         try {
             const result = await sequelize.query(`
                 SELECT 

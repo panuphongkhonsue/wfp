@@ -587,7 +587,6 @@ class Controller extends BaseController {
                 }
 
                 if (deceased) {
-                    console.log("Selected Deceased:", deceased);
                     const newItemSub = await reimbursementsEmployeeDeceasedHasCategories.create(
                         {
                             reimbursements_employee_deceased_id: newItem.id,

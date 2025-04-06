@@ -396,7 +396,6 @@ function onRequest(props) {
                 continue;
               }
               else {
-                console.log(dataTable.value[i])
                 dataTable.value[i].ผู้ปฏิบัติงานเสียชีวิตfund
                   = (Number(dataTable.value[i].ผู้ปฏิบัติงานเสียชีวิตfund) || 0) + viewDashboardData[j].fund_sum_request;
               }
@@ -456,8 +455,6 @@ function onRequest(props) {
           return item;
         });
       }
-      console.log("modelValue: ", model.value);
-      console.log("dataTables:", dataTable.value);
       columns.value.push(
         {
           name: "fundSum", label: "รวม", align: "left", field: (row) => row.fundSum ?? "-", format: (val) => {
@@ -473,10 +470,6 @@ function onRequest(props) {
           classes: "ellipsis",
         },
       );
-      console.log("viewDashboardData: ", viewDashboardData);
-      console.log("userData: ", userData);
-      console.log("allWelfare: ", allWelfareData);
-      console.log("COL.Value: ", columns.value);
 
       if (checkfirstPage == true) {
         optionNameUser.value = dataTable.value.map(item => ({
@@ -538,7 +531,6 @@ async function fetchUserData() {
       page: 1,
       itemPerPage: 10000,
     });
-    console.log(optionNameUser.value);
     return result.data.datas;
   } catch (error) {
     Notify.create({

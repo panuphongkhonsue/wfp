@@ -135,7 +135,7 @@
               <div class="col-lg-5 col-xl-4 col-12 q-pr-lg-xl  ">
                 <InputGroup for-id="fund-receipt" is-dense v-model="model.fundReceipt" :data="model.fundReceipt === 0 ? '-' : model.fundReceipt ?? '-'"
                   is-require label="จำนวนเงินตามใบสำคัญรับเงิน (บาท)" placeholder="บาท" type="number" class="q-py-xs-md q-py-lg-none"
-                  :is-view="isView" 
+                  :is-view="isView"
                   :error-message="isError?.fundReceipt" :error="!!isError?.fundReceipt">
                 </InputGroup>
               </div>
@@ -373,7 +373,7 @@ function hasClaimed(userId) {
 const isValidate = computed(() => {
   let validate = false;
   if (isError.value.fundReceiptWreath) {
-    validate = true;  
+    validate = true;
   }
   if (!model.value.selectedWreath && !model.value.selectedVehicle && !model.value.deceased) {
     validate = true;
@@ -405,7 +405,7 @@ const isValidate = computed(() => {
       validate = true;
     }
     if (!model.value.fundWreathArrange || !model.value.fundWreathUniversity) {
-      validate = true;  
+      validate = true;
     }
     if (isOverWreathArrange.value) {
       validate = true;
@@ -509,12 +509,12 @@ const isOverVehicle = computed(() => {
 });
 watch([() => model.value.fundWreathArrange, () => model.value.fundWreathUniversity], () => {
   const totalWreath = (Number(model.value.fundWreathArrange) || 0) + (Number(model.value.fundWreathUniversity) || 0);
-  
+
   nextTick(() => {
     if (model.value.fundReceiptWreath && totalWreath > Number(model.value.fundReceiptWreath)) {
       isError.value.fundReceiptWreath = "จำนวนเงินรวมของค่าพวงหรีด ต้องไม่เกินจำนวนเงินตามใบสำคัญรับเงิน";
     } else {
-      isError.value.fundReceiptWreath = null; 
+      isError.value.fundReceiptWreath = null;
     }
   });
 });
@@ -528,7 +528,7 @@ watch(
       isError.value.fundReceiptWreath = null;
     }
   },
-  { immediate: true }  
+  { immediate: true }
 );
 
 
@@ -661,7 +661,7 @@ watch(
   async (newValue) => {
     if (newValue) {
       await fetchRemaining(newValue);
-    } 
+    }
   }
 );
 
@@ -739,13 +739,10 @@ async function fetchRemaining(deceasedId) {
 
     const deceaseData = fetchedData.data?.datas;
 
-    canRequest.value.deceased = deceaseData.some(item => item.categoriesId === 9 && item.canRequest === true); 
-    canRequest.value.wreath = deceaseData.some(item => (item.categoriesId === 10 || item.categoriesId === 11) && item.canRequest === true); 
-    canRequest.value.vehicle = deceaseData.some(item => item.categoriesId === 12 && item.canRequest === true); 
+    canRequest.value.deceased = deceaseData.some(item => item.categoriesId === 9 && item.canRequest === true);
+    canRequest.value.wreath = deceaseData.some(item => (item.categoriesId === 10 || item.categoriesId === 11) && item.canRequest === true);
+    canRequest.value.vehicle = deceaseData.some(item => item.categoriesId === 12 && item.canRequest === true);
 
-    console.log("Can request deceased: ", canRequest.value.deceased);
-    console.log("Can request wreath: ", canRequest.value.wreath);
-    console.log("Can request vehicle: ", canRequest.value.vehicle);
 
     if (Array.isArray(deceaseData)) {
       deceaseData.forEach((item) => {
@@ -857,7 +854,7 @@ async function submit(actionId) {
       validate = true;
     }
   }
-  
+
   if (!model.value.createFor && canCreateFor.value) {
     isError.value.createFor = "โปรดเลือกผู้ใช้งาน";
     let navigate = document.getElementById("fund-receipt");

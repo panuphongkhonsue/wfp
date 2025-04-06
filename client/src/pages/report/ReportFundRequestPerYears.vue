@@ -66,9 +66,9 @@
               {{ noDataMessage }}
         </div>
         </q-card-section>
-        
+
       </q-card>
-      
+
     </template>
 
 
@@ -173,9 +173,6 @@ async function fetchDataFundRequestPerYear(filters) {
       series.value[0].data = dataFundRequestPerYear.value.map((item) => item.totalFund);
       noDataMessage.value = "";
     }
-    console.log("result.data.docs.lenght: ", result.data.length);
-    console.log("dataFundRequestPerYear: ", dataFundRequestPerYear.value);
-    console.log("result.data.docs: ", result.data);
     return result.data;
   } catch (error) {
     Notify.create({
@@ -212,7 +209,6 @@ async function fetchDataFundRequestPerYearEachType(filters) {
       fundMap.get('สวัสดิการเกี่ยวกับการศึกษาของบุตร') ?? 0
     ];
 
-    console.log("dataFundRequestPerYearEachType: ", result.data);
     return result.data;
   } catch (error) {
     Notify.create({
@@ -311,7 +307,7 @@ const chartDonut = ref({
       },
     },
   },
-  
+
 });
 
 const donutSeries = ref([]);

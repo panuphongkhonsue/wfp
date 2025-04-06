@@ -616,7 +616,6 @@ const optionsDepartment = ref([])
 const optionsSection = ref([])
 const optionRole = ref([])
 function onNewPosition(val) {
-  console.log(val);
   const existing = optionsPosition.value.find(opt => opt.name === val);
   if (existing) {
     model.value.positionId = existing.id;

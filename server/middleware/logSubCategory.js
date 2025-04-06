@@ -15,7 +15,6 @@ const bindAdd = async (req, res, next) => {
 			created_by: req.user.id
 		}
 		req.body = dataBinding;
-		console.log(req.body)
 		next();
 	} catch (error) {
 		res.status(500).json({

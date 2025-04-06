@@ -369,7 +369,6 @@ async function updateConfigWelfare(propsRowData) {
           //Validate
           let validateMessage = "";
 
-          console.log(propsRowData);
           if (payload.value.fund == null && payload.value.perYears == null && payload.value.perTimes == null && payload.value.perUsers == null) {
             validateMessage = "ข้อมูลไม่ได้ถูกแก้ไข";
           }
@@ -436,7 +435,6 @@ async function updateConfigWelfare(propsRowData) {
                 payload.value.perTimes = null;
               }
               else if (propsRowData.fund != '-') {
-                console.log("payload.value.fund", payload.value.fund)
                 if (Number(payload.value.perTimes) > Number(payload.value.fund)) {
                   validateMessage = "ข้อมูลครั้งละไม่เกินสูงกว่าเพดานเงิน";
                 }

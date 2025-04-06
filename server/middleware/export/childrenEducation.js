@@ -139,7 +139,6 @@ const fetchDatareimChildrenEducation = async (req, res, next) => {
             });
         }
         const datas = JSON.parse(JSON.stringify(requestData));
-        console.log("Children Data:", datas);
         const child = childrenData.map(c => c.get({ plain: true })); 
         var welfareData = {
             ...datas,

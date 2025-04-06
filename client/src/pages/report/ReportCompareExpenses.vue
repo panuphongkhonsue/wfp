@@ -136,7 +136,7 @@ const chartOptions = ref({
       fontWeight: 'bold',
       fontFamily: "BaiJamjureeMedium",
     },
-    
+
   },
   dataLabels: {
     enabled: true,
@@ -265,7 +265,6 @@ async function fetchDataDashboard(filters) {
       itemPerPage: 10000,
     });
 
-    console.log("API Response Data:", results.data.datas);
 
     if (results && results.data) {
       // กรองข้อมูลที่มีปีระหว่าง startYear และ endYear เท่านั้น
@@ -321,14 +320,14 @@ async function fetchDataDashboard(filters) {
       } else {
         chartOptions.value = {
           ...chartOptions.value,
-          xaxis: { categories: years.map(year => toThaiYear(year)) },  
+          xaxis: { categories: years.map(year => toThaiYear(year)) },
           series: series,
         };
       }
     } else {
       console.warn("No valid data received.");
       dashboardData.value = [];
-      chartOptions.value = {};  
+      chartOptions.value = {};
     }
 
   } catch (error) {
