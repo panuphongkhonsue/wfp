@@ -149,11 +149,15 @@ class Controller extends BaseController {
         delete req.body.child
         const dataCreate = req.body;
         dataCreate.fund_receipt = isNaN(dataCreate.fund_receipt) ? 0 : parseFloat(dataCreate.fund_receipt);
+        if (child.length > 3) {
+            return res.status(400).json({ message: "ไม่สามารถเพิ่มข้อมูลบุตรได้เกิน 3 คน" });
+        }
 
         try {
             const results = await sequelize.transaction(async t => {
                 const newReimbursementsChild = await reimbursementsChildrenEducation.create(dataCreate, { transaction: t });
                 if (!isNullOrEmpty(child)) {
+                
                     var childData = child.map((childObj) => {
                         let data = {
                             reimbursements_children_education_id: newReimbursementsChild.id,
@@ -243,6 +247,9 @@ class Controller extends BaseController {
         var itemsReturned = null;
         dataUpdate.fund_receipt = isNaN(dataUpdate.fund_receipt) ? 0 : parseFloat(dataUpdate.fund_receipt);
         dataUpdate.fund_eligible = isNaN(dataUpdate.fund_eligible) ? 0 : parseFloat(dataUpdate.fund_eligible);
+        if (child.length > 3) {
+            return res.status(400).json({ message: "ไม่สามารถเพิ่มข้อมูลบุตรได้เกิน 3 คน" });
+        }
 
         try {
             const result = await sequelize.transaction(async t => {

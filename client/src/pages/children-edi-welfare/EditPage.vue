@@ -306,7 +306,7 @@
                 <q-card-section class="q-px-md q-pt-md q-pb-none font-14 q-gutter-y-md">
                   <div v-for="(child, index) in model.child" :key="index">
                     <div class="row items-center justify-between">
-                      <p class="q-mb-lg">บุตรคนที่ {{ index + 1 }} <span v-if="isPassedAway(index)">(ถึงแก่กรรม)</span>
+                      <p class="q-mb-lg font-18 font-medium ">บุตรคนที่ {{ index + 1 }} <span v-if="isPassedAway(index)">(ถึงแก่กรรม)</span>
                       </p>
                       <q-btn
                         v-if="(index > 0 && !isView && !isLoading) ||
@@ -402,7 +402,7 @@
                         <div class="col-12 col-md-5">
                           <InputGroup for-id="delegateDeathDay" more-class="font-16 font-medium text-grey-9"
                             label="ถึงแก่กรรมเมื่อ" compclass="col-6 q-pr-none" clearable :is-view="isView"
-                            :data="child.delegateDeathDay ?? '-'">
+                            :data="formatDateThaiSlash(child.delegateDeathDay) ?? '-'">
                             <DatePicker is-dense v-model:model="child.delegateDeathDay"
                               v-model:dateShow="child.delegateDeathDay" for-id="date" :no-time="true" range-time
                               :error="!!isError[index]?.delegateDeathDay"
@@ -412,6 +412,8 @@
                         </div>
                       </div>
                     </div>
+
+                    <q-separator class="q-my-xl"/>
 
                     <div class="row q-mb-md">
 
@@ -492,10 +494,10 @@
                         <InputGroup for-id="district" is-dense :data="child.district ?? '-'"
                           more-class="font-16 font-medium text-grey-9" is-require label="อำเภอ" placeholder=""
                           type="text" class="" :is-view="isView" :error="!!isError?.district">
-                          <q-select hide-bottom-space @filter="filterFnDistrict" @filter-abort="abortFilterFnDistrict"
+                          <q-select hide-bottom-space @filter="(val, update) => filterFnDistrict(val, update, index)" @filter-abort="abortFilterFnDistrict"
                             use-input input-debounce="100" clearable popup-content-class="font-14 font-regular"
                             class="font-14 font-regular" :loading="isLoading" id="selected-district" outlined
-                            v-model="child.district" :options="optionsDistrict" dense option-value="name_th" emit-value
+                            v-model="child.district" :options="child.districtOptions" dense option-value="name_th" emit-value
                             map-options option-label="name_th" :error="!!isError[index]?.district"
                             :error-message="isError[index]?.district"
                             :rules="[(val) => !!val || 'กรุณากรอกอำเภอ / เขต']" lazy-rules>
@@ -509,6 +511,8 @@
                       </div>
 
                     </div>
+
+                    <q-separator class="q-my-xl"/>
 
                     <div class="row q-mb-md">
                       <div class="col-md-5 col-12 q-mr-xl">
@@ -653,7 +657,6 @@ let optionsUserName = ref([]);
 let optionsChildName = ref([]);
 let optionsSubCategory = ref([]);
 const optionProvinceSelected = ref([]);
-const optionsDistrict = ref([]);
 const optionPrefix = ref(['นาย', 'นาง', 'นางสาว'])
 const isEdit = computed(() => {
   return !isNaN(route.params.id);
@@ -673,14 +676,11 @@ const optionsProvince = computed(() => {
   if (!isView.value) return data;
   else return [];
 });
-const getDistrict = computed(() => {
-  if (!isView.value) {
-    const provinceName = model.value.child.find(c => c.province)?.province;
-    const findData = optionsProvince.value.filter((province) => province.name_th == provinceName);
-    return findData[0] ? findData[0].amphure : [];
-  }
-  return [];
-});
+function getDistrictByProvince(provinceName) {
+  const findData = optionsProvince.value.find(p => p.name_th === provinceName);
+  return findData ? findData.amphure : [];
+}
+
 
 const model = ref({
   createFor: null,
@@ -718,6 +718,7 @@ const model = ref({
       schoolNameDemonstration: null,
       schoolType: null,
       district: null,
+      districtOptions: [],
       province: null,
       subCategoriesId: null,
       subCategoriesName: null,
@@ -945,46 +946,25 @@ const displayedChildren = computed(() => {
 });
 
 
-async function fetchDeadChildByDelegateNumber(delegateNumber, childItem) {
-  if (!delegateNumber) {
-    childItem.delegateName = null;
-    childItem.delegateBirthDay = null;
-    return;
-  }
-  isLoading.value = true;
-  try {
-    const fetchDeadChild = await reimbursementChildrenEducationService.getDeadChild({ delegateNumber });
-    const deadChildData = fetchDeadChild?.data?.datas?.[0]; // คาดว่า API จะคืนข้อมูลมาเป็น array
-
-    if (deadChildData) {
-      childItem.delegateName = deadChildData.childName ?? '-';
-      childItem.delegateBirthDay = deadChildData.childBirthDay ?? '-';
-    } else {
-      childItem.delegateName = null;
-      childItem.delegateBirthDay = null;
-    }
-  } catch (error) {
-    console.error("❌ Error in fetchDeadChildByDelegateNumber:", error);
-  } finally {
-    isLoading.value = false;
-  }
-}
 watch(
   () => model.value.child.map(child => child.delegateNumber),
-  async (newDelegateNumbers, oldDelegateNumbers) => {
-    model.value.child.forEach(async (child, index) => {
-      if (newDelegateNumbers[index] !== oldDelegateNumbers[index]) {
-        if (child.childPassedAway) {
-          await fetchDeadChildByDelegateNumber(newDelegateNumbers[index], child);
+  async (newDelegateNumbers) => {
+    newDelegateNumbers.forEach((delegateNumber, index) => {
+      if (delegateNumber != null && optionsChildName.value.length > 0) {
+        const childIndex = delegateNumber - 1;
+        const matchedChild = optionsChildName.value[childIndex];
+
+        if (matchedChild) {
+          console.log(`🎯 Delegate #${delegateNumber} -> Child:`, matchedChild);
+          model.value.child[index].delegateName = matchedChild.name;
+          model.value.child[index].delegateBirthDay = formatDateThaiSlash(matchedChild.birthday);
         } else {
-          child.delegateName = null;
-          child.delegateBirthDay = null;
+          console.warn(`⚠️ ไม่พบข้อมูลบุตรที่ delegateNumber = ${delegateNumber}`);
         }
       }
     });
-    await nextTick();
   },
-  { deep: true }
+  { immediate: true }
 );
 
 
@@ -1126,6 +1106,7 @@ const formattedChildBirthDay = computed(() => {
 
 
 
+
 watch(
   () => model.value.child.map(child => child.childName),
   async (newNames) => {
@@ -1148,6 +1129,9 @@ watch(
   },
   { deep: true }
 );
+
+
+
 
 
 
@@ -1222,24 +1206,25 @@ async function filterFnProvince(val, update) {
     Promise.reject(error);
   }
 }
-async function filterFnDistrict(val, update) {
+async function filterFnDistrict(val, update, index) {
   try {
-    setTimeout(async () => {
+    setTimeout(() => {
+      const provinceName = model.value.child[index].province;
+      const districts = getDistrictByProvince(provinceName);
+
       update(() => {
         if (val === '') {
-          optionsDistrict.value = getDistrict.value;
-        }
-        else {
-          optionsDistrict.value = getDistrict.value.filter(v => v.name_th.includes(val));
+          model.value.child[index].districtOptions = districts;
+        } else {
+          model.value.child[index].districtOptions = districts.filter(d => d.name_th.includes(val));
         }
       });
     }, 650);
-
-  }
-  catch (error) {
-    Promise.reject(error);
+  } catch (error) {
+    console.error(error);
   }
 }
+
 function abortFilterFnDistrict() {
   // console.log('delayed filter aborted')
 }
