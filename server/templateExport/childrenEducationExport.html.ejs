@@ -32,32 +32,32 @@
                 <tr>
                     <td>
                         <div class="d-flex">
-                            <div style="width: 60%">
+                            <div style="width: 70%">
                                 <div class="row" style="gap: 8px; flex-wrap: wrap">
                                     <div class="pl-sm font-semi-bold">๑.</div>
                                     <div class="col wrap pl-sm" style="gap:8px; flex-wrap: wrap">
-                                        <div class="row" style="gap: 8px; flex-wrap: wrap">
-                                            <div class="col-6">
+                                        <div class="d-flex" style="gap: 8px; flex-wrap: wrap;">
+                                            <div class="d-flex" style="width: 220px;flex-wrap: wrap;">
                                                 <span class="font-semi-bold ">ข้าพเจ้า</span>
-                                                <span class="text-dot pl-sm text-center">
+                                                <span class="<%= body?.user?.name ? 'text-dot text-center' : 'text-dot-no-value' %>">
                                                     <%= body?.user?.name %>
                                                 </span>
                                             </div>
-                                            <div class="col-6">
+                                            <div class="d-flex" style="width: 160px;flex-wrap: wrap;" >
                                                 <span class="font-semi-bold">ตำแหน่ง</span>
-                                                <span class="text-dot pl-sm text-center">
+                                                <span  class="<%= body?.user?.position ? 'text-dot text-center' : 'text-dot-no-value' %>">
                                                     <%= body?.user?.position %>
                                                 </span>
                                             </div>
                                         </div>
-                                        <div class="row pt-sm" style="gap: 8px; flex-wrap: wrap">
-                                            <div class="col-6">
+                                        <div class="d-flex pt-sm" style="gap: 8px; flex-wrap: wrap">
+                                            <div class="d-flex" style="width: 390px;flex-wrap: wrap;" >
                                                 <span class="font-semi-bold ">สังกัด</span>
                                                 <span class="text-dot pl-sm text-center">
-                                                    <%= body?.user?.sector %>
+                                                    <%= body?.user?.department %>
                                                 </span>
                                             </div>
-                                            <div class="col-6">
+                                            <div class="d-flex" style="width: 390px;flex-wrap: wrap;">
                                                 <span class="font-semi-bold">วันที่เริ่มบรรจุเข้าทำงาน</span>
                                                 <span class="text-dot pl-sm text-center">
                                                     <%= body?.user?.firstWorkingDate %>
@@ -67,7 +67,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div style="width: 40%">
+                            <div style="width: 50%">
                                 <input type="checkbox" id="1" name="ข้าราชการ / ลูกจ้างประจำ" value="1"
                                     <%=body?.user?.employeeTypeId==1 ? "checked" : "" %>
                                 />
