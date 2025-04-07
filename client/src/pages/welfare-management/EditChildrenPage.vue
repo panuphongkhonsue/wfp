@@ -71,7 +71,7 @@
                                 <p class="col-md-3 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
                                 <p class="col-md-3 col-12 q-mb-none">วันที่ร้องขอ : {{
                                     formatDateThaiSlash(model.requestDate) ?? "-"
-                                }}
+                                    }}
                                 </p>
                                 <p class="col-md-3 col-12 q-mb-none q-pl-sm">สถานะ : <span
                                         :class="textStatusColor(model.status)">{{
@@ -544,13 +544,14 @@
                                                     more-class="font-16 font-medium text-grey-9" is-require
                                                     label="อำเภอ" placeholder="" type="text" class="" :is-view="isView"
                                                     :error="!!isError?.district">
-                                                    <q-select hide-bottom-space @filter="filterFnDistrict"
+                                                    <q-select hide-bottom-space
+                                                        @filter="(val, update) => filterFnDistrict(val, update, index)"
                                                         @filter-abort="abortFilterFnDistrict" use-input
                                                         input-debounce="100" clearable
                                                         popup-content-class="font-14 font-regular"
                                                         class="font-14 font-regular" :loading="isLoading"
                                                         id="selected-district" outlined v-model="child.district"
-                                                        :options="optionsDistrict" dense option-value="name_th"
+                                                        :options="child.districtOptions" dense option-value="name_th"
                                                         emit-value map-options option-label="name_th"
                                                         :error="!!isError[index]?.district"
                                                         :error-message="isError[index]?.district"
@@ -729,7 +730,6 @@ let optionsUserName = ref([]);
 let optionsChildName = ref([]);
 let optionsSubCategory = ref([]);
 const optionProvinceSelected = ref([]);
-const optionsDistrict = ref([]);
 const optionPrefix = ref(['นาย', 'นาง', 'นางสาว'])
 const isEdit = computed(() => {
     return !isNaN(route.params.id);
@@ -747,14 +747,10 @@ const optionsProvince = computed(() => {
     if (!isView.value) return data;
     else return [];
 });
-const getDistrict = computed(() => {
-    if (!isView.value) {
-        const provinceName = model.value.child.find(c => c.province)?.province;
-        const findData = optionsProvince.value.filter((province) => province.name_th == provinceName);
-        return findData[0] ? findData[0].amphure : [];
-    }
-    return [];
-});
+function getDistrictByProvince(provinceName) {
+    const findData = optionsProvince.value.find(p => p.name_th === provinceName);
+    return findData ? findData.amphure : [];
+}
 
 const model = ref({
     createFor: null,
@@ -1008,22 +1004,22 @@ const displayedChildren = computed(() => {
 });
 
 watch(
-  () => model.value.child.map(child => child.delegateNumber),
-  async (newDelegateNumbers) => {
-    newDelegateNumbers.forEach((delegateNumber, index) => {
-      if (delegateNumber != null && optionsChildName.value.length > 0) {
-        const childIndex = delegateNumber - 1;
-        const matchedChild = optionsChildName.value[childIndex];
+    () => model.value.child.map(child => child.delegateNumber),
+    async (newDelegateNumbers) => {
+        newDelegateNumbers.forEach((delegateNumber, index) => {
+            if (delegateNumber != null && optionsChildName.value.length > 0) {
+                const childIndex = delegateNumber - 1;
+                const matchedChild = optionsChildName.value[childIndex];
 
-        if (matchedChild) {
-          model.value.child[index].delegateName = matchedChild.name;
-          model.value.child[index].delegateBirthDay = isView.value === true ? formatDateThaiSlash(matchedChild.birthday) : formatDateSlash(matchedChild.birthday);
+                if (matchedChild) {
+                    model.value.child[index].delegateName = matchedChild.name;
+                    model.value.child[index].delegateBirthDay = isView.value === true ? formatDateThaiSlash(matchedChild.birthday) : formatDateSlash(matchedChild.birthday);
 
-        }
-      }
-    });
-  },
-  { immediate: true }
+                }
+            }
+        });
+    },
+    { immediate: true }
 );
 
 
@@ -1156,7 +1152,7 @@ const formattedChildBirthDay = computed(() => {
     return model.value.child.map(child => ({
         ...child,
         formattedBirthDay: child.childBirthDay
-            ? isView.value === true ? formatDateThaiSlash(child.childBirthDay) : formatDateSlash(child.childBirthDay) 
+            ? isView.value === true ? formatDateThaiSlash(child.childBirthDay) : formatDateSlash(child.childBirthDay)
             : "",
     }));
 });
@@ -1205,22 +1201,22 @@ async function filterFnProvince(val, update) {
         Promise.reject(error);
     }
 }
-async function filterFnDistrict(val, update) {
+async function filterFnDistrict(val, update, index) {
     try {
-        setTimeout(async () => {
+        setTimeout(() => {
+            const provinceName = model.value.child[index].province;
+            const districts = getDistrictByProvince(provinceName);
+
             update(() => {
                 if (val === '') {
-                    optionsDistrict.value = getDistrict.value;
-                }
-                else {
-                    optionsDistrict.value = getDistrict.value.filter(v => v.name_th.includes(val));
+                    model.value.child[index].districtOptions = districts;
+                } else {
+                    model.value.child[index].districtOptions = districts.filter(d => d.name_th.includes(val));
                 }
             });
         }, 650);
-
-    }
-    catch (error) {
-        Promise.reject(error);
+    } catch (error) {
+        console.error(error);
     }
 }
 function abortFilterFnDistrict() {
@@ -1393,70 +1389,70 @@ let isFirstLoad = true;  // ตัวแปรเก็บสถานะกา�
 let isSettingFromChildName = false;
 
 watch(
-  () => model.value.child.map((child) => child.schoolType),
-  async (newSchoolTypes, oldSchoolTypes) => {
-    if (isFirstLoad) {
-      isFirstLoad = false;
-      return;
+    () => model.value.child.map((child) => child.schoolType),
+    async (newSchoolTypes, oldSchoolTypes) => {
+        if (isFirstLoad) {
+            isFirstLoad = false;
+            return;
+        }
+
+        if (isSettingFromChildName) return;
+
+        if (!oldSchoolTypes || JSON.stringify(newSchoolTypes) === JSON.stringify(oldSchoolTypes)) {
+            return;
+        }
+
+        newSchoolTypes.forEach((newSchoolType, index) => {
+            if (newSchoolType !== oldSchoolTypes[index]) {
+                model.value.child[index].schoolNameDemonstration = null;
+                model.value.child[index].schoolNamegeneral = null;
+                model.value.child[index].subCategoriesId = null;
+            }
+        });
     }
-
-    if (isSettingFromChildName) return;
-
-    if (!oldSchoolTypes || JSON.stringify(newSchoolTypes) === JSON.stringify(oldSchoolTypes)) {
-      return;
-    }
-
-    newSchoolTypes.forEach((newSchoolType, index) => {
-      if (newSchoolType !== oldSchoolTypes[index]) {
-        model.value.child[index].schoolNameDemonstration = null;
-        model.value.child[index].schoolNamegeneral = null;
-        model.value.child[index].subCategoriesId = null;
-      }
-    });
-  }
 );
 
 watch(
-  () => model.value.child.map(child => child.childName),
-  async (newNames) => {
-    isSettingFromChildName = true;
+    () => model.value.child.map(child => child.childName),
+    async (newNames) => {
+        isSettingFromChildName = true;
 
-    newNames.forEach((newName, index) => {
-      if (newName) {
-        if (Array.isArray(shcoolData.value)) {
-          const selectedChild = shcoolData.value.find(
-            (child) => child.childName === newName
-          );
+        newNames.forEach((newName, index) => {
+            if (newName) {
+                if (Array.isArray(shcoolData.value)) {
+                    const selectedChild = shcoolData.value.find(
+                        (child) => child.childName === newName
+                    );
 
-          if (selectedChild) {
-            model.value.child[index].schoolType = selectedChild.schoolType || " ";
+                    if (selectedChild) {
+                        model.value.child[index].schoolType = selectedChild.schoolType || " ";
 
-            const schoolName = (selectedChild.schoolName || "").trim();
+                        const schoolName = (selectedChild.schoolName || "").trim();
 
-            if (selectedChild.schoolType === 'ทั่วไป') {
-              model.value.child[index].schoolNamegeneral = schoolName || " ";
-              model.value.child[index].schoolNameDemonstration = null;
+                        if (selectedChild.schoolType === 'ทั่วไป') {
+                            model.value.child[index].schoolNamegeneral = schoolName || " ";
+                            model.value.child[index].schoolNameDemonstration = null;
+                        } else {
+                            model.value.child[index].schoolNamegeneral = null;
+                            model.value.child[index].schoolNameDemonstration = ['สาธิตพิบูลบําเพ็ญ', 'สาธิตพิบูลบําเพ็ญ นานาชาติ'].includes(schoolName)
+                                ? schoolName
+                                : '';
+                        }
+                    }
+                } else {
+                    console.warn("⚠️ shcoolData.value ไม่เป็นอาร์เรย์:", shcoolData.value);
+                }
             } else {
-              model.value.child[index].schoolNamegeneral = null;
-              model.value.child[index].schoolNameDemonstration = ['สาธิตพิบูลบําเพ็ญ', 'สาธิตพิบูลบําเพ็ญ นานาชาติ'].includes(schoolName)
-                ? schoolName
-                : '';
+                model.value.child[index].schoolNameDemonstration = "";
+                model.value.child[index].schoolNamegeneral = "";
+                model.value.child[index].schoolType = "";
             }
-          }
-        } else {
-          console.warn("⚠️ shcoolData.value ไม่เป็นอาร์เรย์:", shcoolData.value);
-        }
-      } else {
-        model.value.child[index].schoolNameDemonstration = "";
-        model.value.child[index].schoolNamegeneral = "";
-        model.value.child[index].schoolType = "";
-      }
-    });
+        });
 
-    await nextTick();
-    isSettingFromChildName = false;
-  },
-  { deep: true }
+        await nextTick();
+        isSettingFromChildName = false;
+    },
+    { deep: true }
 );
 
 watch(
