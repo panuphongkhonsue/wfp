@@ -405,13 +405,11 @@ q-btn<template>
                           <InputGroup for-id="delegateDeathDay" more-class="font-16 font-medium text-grey-9"
                             label="ถึงแก่กรรมเมื่อ" compclass="col-6 q-pr-none" clearable :is-view="isView"
                             :data="child.delegateDeathDay ?? '-'">
-
                             <DatePicker is-dense v-model:model="child.delegateDeathDay"
                               v-model:dateShow="child.delegateDeathDay" for-id="start-date"
                               :no-time="true" :rules="[(val) => !!val || 'กรุณากรอก วัน/เดือน/ปี วันที่ถึงแก่กรรม']"
                               :error="!!isError[index]?.delegateDeathDay"
                               :error-message="isError[index]?.delegateDeathDay" />
-
                           </InputGroup>
                         </div>
                       </div>
@@ -1096,7 +1094,7 @@ const formattedChildBirthDay = computed(() => {
   return model.value.child.map(child => ({
     ...child,
     formattedBirthDay: child.childBirthDay
-      ? isView.value === true ? formatDateThaiSlash(child.childBirthDay) : formatDateSlash(child.childBirthDay)   // แปลงเป็นรูปแบบไทย
+      ? isView.value === true ? formatDateThaiSlash(child.childBirthDay) : formatDateSlash(child.childBirthDay)
       : "",
   }));
 });

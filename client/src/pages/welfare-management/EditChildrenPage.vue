@@ -18,7 +18,7 @@
                                     ชื่อ-นามสกุล : <span class="font-medium font-16 text-grey-7">{{
                                         userData?.name ?? "-" }}</span>
                                 </p>
-                                
+
                             </div>
                             <p class="col-lg-3 col-xl-4 col-12 q-mb-none q-pr-sm text-no-wrap ellipsis"
                                 :title="userData?.position ?? '-'">
@@ -71,7 +71,7 @@
                                 <p class="col-md-3 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
                                 <p class="col-md-3 col-12 q-mb-none">วันที่ร้องขอ : {{
                                     formatDateThaiSlash(model.requestDate) ?? "-"
-                                    }}
+                                }}
                                 </p>
                                 <p class="col-md-3 col-12 q-mb-none q-pl-sm">สถานะ : <span
                                         :class="textStatusColor(model.status)">{{
@@ -308,12 +308,11 @@
                                 <q-card-section class="q-px-md q-pt-md q-pb-none font-14 q-gutter-y-md">
                                     <div v-for="(child, index) in model.child" :key="index">
                                         <div class="row items-center justify-between">
-                                            <p class="q-mb-lg">บุตรคนที่ {{ index + 1 }} <span
-                                                    v-if="isPassedAway(index)">(ถึงแก่กรรม)</span>
+                                            <p class="q-mb-lg font-18 font-bold ">บุตรคนที่ {{ index + 1 }}
                                             </p>
                                             <q-btn
                                                 v-if="(index > 0 && !isView && !isLoading) ||
-                                                    (isEdit && !isView && child?.id && !isLoading && model.child.length > 1 && !isPassedAway(index))"
+                                                    (isEdit && !isView && child?.id && !isLoading && model.child.length > 1)"
                                                 color="red" @click="removeChildForm(index)" class="q-ml-md">ลบ</q-btn>
                                         </div>
 
@@ -375,6 +374,9 @@
                                                 </InputGroup>
                                             </div>
                                         </div>
+                                        <div v-if="child.childPassedAway" class="q-py-md full-width q-mb-sm">
+                                            <q-separator v-if="child.childPassedAway" />
+                                        </div>
 
                                         <div v-if="isView">
 
@@ -415,13 +417,12 @@
 
                                             <div class="row q-mb-md">
                                                 <div class="col-12 col-md-5 q-mr-xl">
-                                                    <InputGroup for-id="delegateBirthDay"
-                                                        more-class="font-16 font-medium text-grey-9" label="เกิดเมื่อ"
-                                                        compclass="col-6 q-pr-none" clearable :is-view="isView"
-                                                        :data="child.delegateBirthDay ?? '-'">
-                                                        <DatePicker is-dense v-model:model="child.delegateBirthDay"
-                                                            v-model:dateShow="child.delegateBirthDay" for-id="date"
-                                                            :no-time="true" range-time />
+                                                    <InputGroup for-id="delegateBirthDay" is-dense
+                                                        v-model="child.delegateBirthDay"
+                                                        more-class="font-16 font-medium text-grey-9"
+                                                        :data="child.delegateBirthDay ?? '-'" label="เกิดเมื่อ"
+                                                        placeholder="" type="text" disable :is-view="isView"
+                                                        color="dark">
                                                     </InputGroup>
                                                 </div>
 
@@ -431,15 +432,18 @@
                                                         label="ถึงแก่กรรมเมื่อ" compclass="col-6 q-pr-none" clearable
                                                         :is-view="isView" :data="child.delegateDeathDay ?? '-'">
                                                         <DatePicker is-dense v-model:model="child.delegateDeathDay"
-                                                            v-model:dateShow="child.delegateDeathDay" for-id="date"
-                                                            :no-time="true" range-time
+                                                            v-model:dateShow="child.delegateDeathDay"
+                                                            for-id="start-date" :no-time="true"
+                                                            :rules="[(val) => !!val || 'กรุณากรอก วัน/เดือน/ปี วันที่ถึงแก่กรรม']"
                                                             :error="!!isError[index]?.delegateDeathDay"
-                                                            :error-message="isError[index]?.delegateDeathDay"
-                                                            :rules="[(val) => !!val || 'กรุณากรอกวันที่ถึงแก่กรรม']"
-                                                            lazy-rules />
+                                                            :error-message="isError[index]?.delegateDeathDay" />
                                                     </InputGroup>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        <div class="q-py-md full-width q-mb-sm">
+                                            <q-separator />
                                         </div>
 
                                         <div class="row q-mb-md">
@@ -563,6 +567,10 @@
 
                                         </div>
 
+                                        <div class="q-py-md full-width q-mb-sm">
+                                            <q-separator />
+                                        </div>
+
                                         <div class="row q-mb-md">
                                             <div class="col-md-5 col-12 q-mr-xl">
                                                 <InputGroup for-id="fundReceipt" is-dense v-model="child.fundReceipt"
@@ -672,16 +680,16 @@
         <template v-slot:action>
             <div class="justify-end row q-py-xs font-medium q-gutter-lg">
                 <q-btn id="button-back" class="text-white font-medium font-16 weight-8 q-px-lg" dense type="button"
-          style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'welfare_management_list' }" />
-        <q-btn :disable="validate" id="button-draft"
-          class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
-          label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
-        <q-btn id="button-approve"
-        class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #E52020"
-        label="ไม่อนุมัติ" no-caps @click="submit(4)" v-if="!isView && !isLoading" />
-        <q-btn :disable="validate" id="button-approve"
-          class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit" style="background-color: #43a047"
-          label="อนุมัติ" no-caps @click="submit(3)" v-if="!isView && !isLoading" />
+                    style="background : #BFBFBF;" label="ย้อนกลับ" no-caps :to="{ name: 'welfare_management_list' }" />
+                <q-btn :disable="validate" id="button-draft"
+                    class="text-white font-medium bg-blue-9 text-white font-16 weight-8 q-px-lg" dense type="submit"
+                    label="บันทึก" no-caps @click="submit()" v-if="!isView && !isLoading" />
+                <q-btn id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md" dense type="submit"
+                    style="background-color: #E52020" label="ไม่อนุมัติ" no-caps @click="submit(4)"
+                    v-if="!isView && !isLoading" />
+                <q-btn :disable="validate" id="button-approve" class="font-medium font-16 weight-8 text-white q-px-md"
+                    dense type="submit" style="background-color: #43a047" label="อนุมัติ" no-caps @click="submit(3)"
+                    v-if="!isView && !isLoading" />
             </div>
         </template>
     </PageLayout>
@@ -691,7 +699,7 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash } from "src/components/format";
+import { formatDateThaiSlash, formatDateSlash } from "src/components/format";
 import DatePicker from "src/components/DatePicker.vue";
 import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -853,17 +861,6 @@ let optionsparentalStatus = [
 
 ];
 
-const isPassedAway = (index) => {
-    if (!model.value || !Array.isArray(model.value.child)) return false;
-
-    const child = model.value.child[index];
-    if (!child || !child.childName) return false;
-
-    return model.value.child.some(
-        (c) => c.delegateName?.trim() === child.childName?.trim()
-    );
-};
-
 const fullNameSpouse = computed(() =>
     model.value.spouse ? `${model.value.prefix} ${model.value.spouse}` : 'ไม่พบข้อมูล'
 );
@@ -1010,47 +1007,23 @@ const displayedChildren = computed(() => {
     });
 });
 
-
-async function fetchDeadChildByDelegateNumber(delegateNumber, childItem) {
-    if (!delegateNumber) {
-        childItem.delegateName = null;
-        childItem.delegateBirthDay = null;
-        return;
-    }
-    isLoading.value = true;
-    try {
-        const fetchDeadChild = await reimbursementChildrenEducationService.getDeadChild({ delegateNumber });
-        const deadChildData = fetchDeadChild?.data?.datas?.[0]; // คาดว่า API จะคืนข้อมูลมาเป็น array
-
-        if (deadChildData) {
-            childItem.delegateName = deadChildData.childName ?? '-';
-            childItem.delegateBirthDay = deadChildData.childBirthDay ?? '-';
-        } else {
-            childItem.delegateName = null;
-            childItem.delegateBirthDay = null;
-        }
-    } catch (error) {
-        console.error("❌ Error in fetchDeadChildByDelegateNumber:", error);
-    } finally {
-        isLoading.value = false;
-    }
-}
 watch(
-    () => model.value.child.map(child => child.delegateNumber),
-    async (newDelegateNumbers, oldDelegateNumbers) => {
-        model.value.child.forEach(async (child, index) => {
-            if (newDelegateNumbers[index] !== oldDelegateNumbers[index]) {
-                if (child.childPassedAway) {
-                    await fetchDeadChildByDelegateNumber(newDelegateNumbers[index], child);
-                } else {
-                    child.delegateName = null;
-                    child.delegateBirthDay = null;
-                }
-            }
-        });
-        await nextTick();
-    },
-    { deep: true }
+  () => model.value.child.map(child => child.delegateNumber),
+  async (newDelegateNumbers) => {
+    newDelegateNumbers.forEach((delegateNumber, index) => {
+      if (delegateNumber != null && optionsChildName.value.length > 0) {
+        const childIndex = delegateNumber - 1;
+        const matchedChild = optionsChildName.value[childIndex];
+
+        if (matchedChild) {
+          model.value.child[index].delegateName = matchedChild.name;
+          model.value.child[index].delegateBirthDay = isView.value === true ? formatDateThaiSlash(matchedChild.birthday) : formatDateSlash(matchedChild.birthday);
+
+        }
+      }
+    });
+  },
+  { immediate: true }
 );
 
 
@@ -1183,7 +1156,7 @@ const formattedChildBirthDay = computed(() => {
     return model.value.child.map(child => ({
         ...child,
         formattedBirthDay: child.childBirthDay
-            ? formatDateThaiSlash(child.childBirthDay)  // แปลงเป็นรูปแบบไทย
+            ? isView.value === true ? formatDateThaiSlash(child.childBirthDay) : formatDateSlash(child.childBirthDay) 
             : "",
     }));
 });
@@ -1205,44 +1178,6 @@ watch(
             } else {
                 // เคลียร์ค่าถ้าชื่อถูกลบ
                 model.value.child[index].childBirthDay = "";
-            }
-        });
-
-        await nextTick(); // 🔥 บังคับ Vue อัปเดต UI
-    },
-    { deep: true }
-);
-
-
-
-watch(
-    () => model.value.child.map(child => child.childName),
-    async (newNames) => {
-        newNames.forEach((newName, index) => {
-            if (newName) {
-                // ตรวจสอบว่า shcoolData.value เป็นอาร์เรย์
-                if (Array.isArray(shcoolData.value)) {
-                    const selectedChild = shcoolData.value.find(
-                        (child) => child.childName === newName
-                    );
-                    if (selectedChild) {
-                        if (selectedChild.schoolType === 'ทั่วไป') {
-                            model.value.child[index].schoolNamegeneral = selectedChild.schoolName || " ";
-                            model.value.child[index].schoolType = selectedChild.schoolType
-                        } else {
-                            model.value.child[index].schoolNameDemonstration = selectedChild.schoolName || " ";
-                            model.value.child[index].schoolType = selectedChild.schoolType
-                        }
-
-
-                    }
-                } else {
-                    console.warn("⚠️ shcoolData.value ไม่เป็นอาร์เรย์:", shcoolData.value);
-                }
-            } else {
-                // เคลียร์ค่าถ้าชื่อถูกลบ
-                model.value.child[index].schoolNameDemonstration = "";
-                model.value.child[index].schoolNamegeneral = "";
             }
         });
 
@@ -1455,27 +1390,73 @@ watch(
 
 
 let isFirstLoad = true;  // ตัวแปรเก็บสถานะการโหลดครั้งแรก
+let isSettingFromChildName = false;
 
 watch(
-    () => model.value.child.map((child) => child.schoolType),
-    async (newSchoolTypes, oldSchoolTypes) => {
-        if (isFirstLoad) {
-            isFirstLoad = false;
-            return;
-        }
-
-        if (!oldSchoolTypes || JSON.stringify(newSchoolTypes) === JSON.stringify(oldSchoolTypes)) {
-            return;
-        }
-
-        newSchoolTypes.forEach((newSchoolType, index) => {
-            if (newSchoolType !== oldSchoolTypes[index]) { // ✅ เช็คว่ามีการเปลี่ยนจริง ๆ
-                model.value.child[index].schoolNameDemonstration = null;
-                model.value.child[index].schoolNamegeneral = null;
-                model.value.child[index].subCategoriesId = null;
-            }
-        });
+  () => model.value.child.map((child) => child.schoolType),
+  async (newSchoolTypes, oldSchoolTypes) => {
+    if (isFirstLoad) {
+      isFirstLoad = false;
+      return;
     }
+
+    if (isSettingFromChildName) return;
+
+    if (!oldSchoolTypes || JSON.stringify(newSchoolTypes) === JSON.stringify(oldSchoolTypes)) {
+      return;
+    }
+
+    newSchoolTypes.forEach((newSchoolType, index) => {
+      if (newSchoolType !== oldSchoolTypes[index]) {
+        model.value.child[index].schoolNameDemonstration = null;
+        model.value.child[index].schoolNamegeneral = null;
+        model.value.child[index].subCategoriesId = null;
+      }
+    });
+  }
+);
+
+watch(
+  () => model.value.child.map(child => child.childName),
+  async (newNames) => {
+    isSettingFromChildName = true;
+
+    newNames.forEach((newName, index) => {
+      if (newName) {
+        if (Array.isArray(shcoolData.value)) {
+          const selectedChild = shcoolData.value.find(
+            (child) => child.childName === newName
+          );
+
+          if (selectedChild) {
+            model.value.child[index].schoolType = selectedChild.schoolType || " ";
+
+            const schoolName = (selectedChild.schoolName || "").trim();
+
+            if (selectedChild.schoolType === 'ทั่วไป') {
+              model.value.child[index].schoolNamegeneral = schoolName || " ";
+              model.value.child[index].schoolNameDemonstration = null;
+            } else {
+              model.value.child[index].schoolNamegeneral = null;
+              model.value.child[index].schoolNameDemonstration = ['สาธิตพิบูลบําเพ็ญ', 'สาธิตพิบูลบําเพ็ญ นานาชาติ'].includes(schoolName)
+                ? schoolName
+                : '';
+            }
+          }
+        } else {
+          console.warn("⚠️ shcoolData.value ไม่เป็นอาร์เรย์:", shcoolData.value);
+        }
+      } else {
+        model.value.child[index].schoolNameDemonstration = "";
+        model.value.child[index].schoolNamegeneral = "";
+        model.value.child[index].schoolType = "";
+      }
+    });
+
+    await nextTick();
+    isSettingFromChildName = false;
+  },
+  { deep: true }
 );
 
 watch(
@@ -1488,12 +1469,12 @@ watch(
 );
 
 watch(
-  () => userData.value.userId,
-  async (newValue) => {
-    if (newValue != null) {
-      await fetchUserData(userData.value.userId);
+    () => userData.value.userId,
+    async (newValue) => {
+        if (newValue != null) {
+            await fetchUserData(userData.value.userId);
+        }
     }
-  }
 );
 
 const benefitsOptions = [
@@ -1581,7 +1562,7 @@ const validateForm = (modelValue) => {
 
     if (modelValue.child && modelValue.child.length > 0) {
         modelValue.child.forEach((c, index) => {
-            isError.value[index] = {}; 
+            isError.value[index] = {};
 
             if (!c.fundReceipt) {
                 isError.value[index].fundReceipt = "กรุณากรอกจำนวนเงินตามใบเสร็จ";
