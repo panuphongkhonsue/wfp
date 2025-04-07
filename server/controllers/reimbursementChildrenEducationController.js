@@ -366,31 +366,6 @@ class Controller extends BaseController {
                         individualHooks: true,
                     });
 
-                    // ตรวจสอบเด็กที่ต้องอัปเดตสถานะ Died ในใบเบิกเดียวกัน
-                    const childToBeMarkedAsDiedFiltered = updatedChildren
-                        .filter(child => child.delegate_number)  // คัดเฉพาะบุตรที่แทนที่คนอื่น
-                        .map(child => child.delegate_number);  // ดึงหมายเลขบุตรที่ถูกแทนที่
-
-                    if (childToBeMarkedAsDiedFiltered.length > 0) {
-                        await childrenInfomation.update(
-                            { child_type: childType.DIED }, // อัปเดตสถานะเป็น Died
-                            {
-                                where: {
-                                    child_number: childToBeMarkedAsDiedFiltered, // อัปเดตเฉพาะหมายเลขบุตรที่ถูกแทนที่
-                                    id: {
-                                        [Op.in]: sequelize.literal(`(
-                                                SELECT c.id FROM children_infomation c
-                                                JOIN reimbursements_children_education_has_children_infomation rc ON c.id = rc.children_infomation_id
-                                                WHERE rc.reimbursements_children_education_id = ${dataId}
-                                            )`)
-                                    }
-                                },
-                                transaction: t,
-                            }
-                        );
-                    }
-
-
 
                     // Check if there are any updates on the children data
                     const hasChildUpdated = existingChildren.some((existingChild, index) => {
