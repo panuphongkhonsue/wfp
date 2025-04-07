@@ -19,7 +19,6 @@ router.get('/remaining/', authPermission, getRemaining , reimbursementChildrenEd
 router.get('/subCategories', authPermission, reimbursementChildrenEducationController.getByCategories)
 router.get('/latest-school', authPermission, reimbursementChildrenEducationController.getLatestSchoolByChildName);
 router.get('/get-latest-school/latest-school', authPermissionEditor, reimbursementChildrenEducationController.getLatestSchoolByChildName);
-router.get('/DeadChild/', authPermission , reimbursementChildrenEducationController.getTheDeadChild);
 
 router.get('/:id',authPermission, byIdMiddleWare, reimbursementChildrenEducationController.getById);
 router.get('/get-welfare/:id',authPermissionEditor, byIdMiddleWare, reimbursementChildrenEducationController.getById);

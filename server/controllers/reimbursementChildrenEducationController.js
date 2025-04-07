@@ -149,11 +149,15 @@ class Controller extends BaseController {
         delete req.body.child
         const dataCreate = req.body;
         dataCreate.fund_receipt = isNaN(dataCreate.fund_receipt) ? 0 : parseFloat(dataCreate.fund_receipt);
+        if (child.length > 3) {
+            return res.status(400).json({ message: "ไม่สามารถเพิ่มข้อมูลบุตรได้เกิน 3 คน" });
+        }
 
         try {
             const results = await sequelize.transaction(async t => {
                 const newReimbursementsChild = await reimbursementsChildrenEducation.create(dataCreate, { transaction: t });
                 if (!isNullOrEmpty(child)) {
+                
                     var childData = child.map((childObj) => {
                         let data = {
                             reimbursements_children_education_id: newReimbursementsChild.id,
@@ -243,6 +247,12 @@ class Controller extends BaseController {
         var itemsReturned = null;
         dataUpdate.fund_receipt = isNaN(dataUpdate.fund_receipt) ? 0 : parseFloat(dataUpdate.fund_receipt);
         dataUpdate.fund_eligible = isNaN(dataUpdate.fund_eligible) ? 0 : parseFloat(dataUpdate.fund_eligible);
+
+
+
+        if (!isNullOrEmpty(child) && child.length > 3 ) {
+            return res.status(400).json({ message: "ไม่สามารถเพิ่มข้อมูลบุตรได้เกิน 3 คน" });
+        }
 
         try {
             const result = await sequelize.transaction(async t => {
@@ -358,31 +368,6 @@ class Controller extends BaseController {
                         returning: true,
                         individualHooks: true,
                     });
-
-                    // ตรวจสอบเด็กที่ต้องอัปเดตสถานะ Died ในใบเบิกเดียวกัน
-                    const childToBeMarkedAsDiedFiltered = updatedChildren
-                        .filter(child => child.delegate_number)  // คัดเฉพาะบุตรที่แทนที่คนอื่น
-                        .map(child => child.delegate_number);  // ดึงหมายเลขบุตรที่ถูกแทนที่
-
-                    if (childToBeMarkedAsDiedFiltered.length > 0) {
-                        await childrenInfomation.update(
-                            { child_type: childType.DIED }, // อัปเดตสถานะเป็น Died
-                            {
-                                where: {
-                                    child_number: childToBeMarkedAsDiedFiltered, // อัปเดตเฉพาะหมายเลขบุตรที่ถูกแทนที่
-                                    id: {
-                                        [Op.in]: sequelize.literal(`(
-                                                SELECT c.id FROM children_infomation c
-                                                JOIN reimbursements_children_education_has_children_infomation rc ON c.id = rc.children_infomation_id
-                                                WHERE rc.reimbursements_children_education_id = ${dataId}
-                                            )`)
-                                    }
-                                },
-                                transaction: t,
-                            }
-                        );
-                    }
-
 
 
                     // Check if there are any updates on the children data
@@ -505,72 +490,6 @@ class Controller extends BaseController {
             next(error);
         }
     };
-
-
-
-    getTheDeadChild = async (req, res, next) => {
-        const method = "getChildDeathBydelegateNumber";
-        const { id } = req.user;
-        let { delegateNumber } = req.query;
-
-        try {
-            // ดึงข้อมูล reimbursement ล่าสุด
-            const latestEducation = await reimbursementsChildrenEducation.findOne({
-                attributes: ["id"],
-                where: { created_by: id },
-                order: [["updated_at", "DESC"]],
-                limit: 1,
-            });
-
-            if (!latestEducation) {
-                return res.status(404).json({ message: "ไม่พบข้อมูลการเบิกค่าศึกษาของบุตรล่าสุด" });
-            }
-
-            // ตรวจสอบค่า delegateNumber ว่ามีข้อมูลหรือไม่
-            if (!delegateNumber) {
-                return res.status(400).json({ message: "กรุณาระบุ delegateNumber" });
-            }
-
-            // แปลงค่าให้เป็น array เสมอ
-            const delegateNumbers = Array.isArray(delegateNumber) ? delegateNumber : [delegateNumber];
-
-            // ดึงข้อมูลลูกที่มี delegateNumber ตรงกัน
-            const deadChildData = await childrenInfomation.findAll({
-                attributes: [
-                    [col("child_name"), "childName"],
-                    [col("child_birth_day"), "childBirthDay"],
-                    [col("child_number"), "delegateNumber"],
-                ],
-                include: [
-                    {
-                        model: reimbursementsChildrenEducationHasChildrenInfomation,
-                        as: "reimbursements_children_education_has_children_infomations",
-                        required: true,
-                        where: { reimbursements_children_education_id: latestEducation.id },
-                    },
-                ],
-                where: {
-                    child_number: {
-                        [Op.in]: delegateNumbers, // รองรับหลาย delegateNumber
-                    },
-                },
-            });
-
-            if (deadChildData.length > 0) {
-                return res.status(200).json({ datas: deadChildData });
-            } else {
-                return res.status(404).json({ message: "ไม่พบข้อมูลโรงเรียนของบุตร" });
-            }
-        } catch (error) {
-            console.error(`❌ Error: ${error.message}`, { method });
-            next(error);
-        }
-    };
-
-
-
-
-
 
     getById = async (req, res, next) => {
         const method = 'GetReimbursementsChildrenEducationbyId';

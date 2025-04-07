@@ -1,4 +1,4 @@
-const { permissionsHasRoles, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation, reimbursementsChildrenEducation } = require('../models/mariadb')
+const { permissionsHasRoles, childrenInfomation, subCategories, reimbursementsChildrenEducationHasChildrenInfomation, reimbursementsChildrenEducation, users } = require('../models/mariadb')
 const { isNullOrEmpty, getFiscalYear, getYear2Digits, formatNumber, isInvalidNumber } = require('../middleware/utility');
 const permissionType = require('../enum/permission')
 const { Op, literal, col, fn } = require("sequelize");
@@ -8,6 +8,7 @@ const roleType = require('../enum/role')
 const statusType = require('../enum/status')
 const statusText = require('../enum/statusText')
 const welfareType = require('../enum/welfareType');
+const { sendMail } = require('../helper/mail');
 
 const authPermission = async (req, res, next) => {
     const method = 'AuthPermission';
@@ -85,9 +86,9 @@ const getRemaining = async (req, res, next) => {
     try {
         const { id } = req.user || {};
         const { createFor } = req.query || {};
-        const { created_by, createByData, actionId } = req.body || {};
+        const { created_by, createByData} = req.body || {};
 
-        if (req.access && (actionId === statusType.NotApproved) && !isNullOrEmpty(actionId)) {
+        if(req.access && (req.body.status === statusType.NotApproved || req.body.status === statusType.approve) && !isNullOrEmpty(req.body.status)){
             return next();
         }
 
@@ -790,59 +791,6 @@ const checkNullValue = async (req, res, next) => {
     }
 };
 
-
-const checkFullPerTimes = async (req, res, next) => {
-    const method = 'CheckFullPerTimes';
-    try {
-        const { subCategoriesId } = req.body;
-        if (req.access && (actionId === statusType.NotApproved || actionId === statusType.approve) && !isNullOrEmpty(actionId)) {
-            return next();
-        }
-        const getFund = await subCategories.findAll({
-            attributes: [
-                [col("fund"), "fundRemaining"],
-                [col("per_times"), "perTimes"],
-            ],
-            where: { id: subCategoriesId }
-        })
-        let childFundRequest = 0;
-
-        if (!isNullOrEmpty(req.body.child)) {
-
-
-
-            childFundRequest = req.body.child.reduce((sum, child) => {
-                let sumRequest = (!isNaN(Number(child.fundUniversity)) ? Number(child.fundUniversity) : 0) +
-                    (!isNaN(Number(child.fundSubUniversity)) ? Number(child.fundSubUniversity) : 0);
-                return sum + (isNaN(sumRequest) ? 0 : sumRequest);
-
-            }, 0);
-
-
-        }
-
-        if (getFund) {
-            const datas = JSON.parse(JSON.stringify(getFund));
-            if (childFundRequest > datas.perTimes && !isNullOrEmpty(datas.perTimes)) {
-                return res.status(400).json({
-                    message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
-                });
-            }
-            if (childFundRequest > datas.fundRemaining && !isNullOrEmpty(datas.fundRemaining)) {
-                logger.info('Request Over', { method });
-                return res.status(400).json({
-                    message: "จำนวนที่ขอเบิกเกินเพดานเงินกรุณาลองใหม่อีกครั้ง",
-                });
-            }
-        }
-        next();
-    }
-    catch (error) {
-        logger.error(`Error ${error.message}`, { method });
-        next(error);
-    }
-}
-
 const checkUpdateRemaining = async (req, res, next) => {
     const method = 'CheckUpdateRemainingMiddleware';
     try {
@@ -850,8 +798,26 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         const userId = req.user?.id;
         var whereObj = { ...filter }
-        const { fund_sum_request, actionId } = req.body;
-        if (req.access && (actionId === statusType.NotApproved) && !isNullOrEmpty(actionId)) {
+        const { fund_sum_request} = req.body;
+        const welfareCheckData = await reimbursementsChildrenEducation.findOne({
+            attributes: ["fund_sum_request", "reim_number"],
+            include: [
+                {
+                  model: users,
+                  as: "created_by_user",
+                  attributes: ['name','email'],
+                }
+            ],
+            where: { id: dataId },
+        });
+        if (!welfareCheckData) {
+            return res.status(400).json({
+                message: "ไม่พบข้อมูล",
+            });
+        }
+        const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
+        if(req.access && (req.body.status === statusType.NotApproved || req.body.status === statusType.approve) && !isNullOrEmpty(req.body.status)){
+            sendMail(oldWelfareData.created_by_user.email,oldWelfareData.reim_number,req.body.status,oldWelfareData.created_by_user.name);
             return next();
         }
 
@@ -893,18 +859,10 @@ const checkUpdateRemaining = async (req, res, next) => {
             group: ["childrenInfomation.child_name",
                 "sub_category.id"]
         });
-        const welfareCheckData = await reimbursementsChildrenEducation.findOne({
-            attributes: ["fund_sum_request"],
-            where: { id: dataId },
-        });
-        if (!welfareCheckData) {
-            return res.status(400).json({
-                message: "ไม่พบข้อมูล",
-            });
-        }
+        
         if (results) {
             const datas = JSON.parse(JSON.stringify(results));
-            const oldWelfareData = JSON.parse(JSON.stringify(welfareCheckData));
+            
             if (fund_sum_request < oldWelfareData.fund_sum_request) {
                 return next();
             }
@@ -922,6 +880,7 @@ const checkUpdateRemaining = async (req, res, next) => {
                 }
             }
         };
+        sendMail(oldWelfareData.created_by_user.email,oldWelfareData.reim_number,req.body.status,oldWelfareData.created_by_user.name);
         next();
     }
     catch (error) {
@@ -941,6 +900,5 @@ module.exports = {
     byIdMiddleWare,
     authPermissionEditor,
     checkNullValue,
-    checkFullPerTimes,
     checkUpdateRemaining
 };
