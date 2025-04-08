@@ -806,7 +806,8 @@ const checkUpdateRemaining = async (req, res, next) => {
         const dataId = req.params['id'];
         const userId = req.user?.id;
         var whereObj = { ...filter }
-        const { fund_sum_request} = req.body;
+        const {child} = req.body;
+        console.log("child",child)
         const welfareCheckData = await reimbursementsChildrenEducation.findOne({
             attributes: ["fund_sum_request", "reim_number"],
             include: [
@@ -829,65 +830,131 @@ const checkUpdateRemaining = async (req, res, next) => {
             return next();
         }
 
-        const results = await childrenInfomation.findAll({
-            attributes: [
-                [
-                    literal("sub_category.fund - COALESCE(SUM(childrenInfomation.fund_sum_request), 0)"),
-                    "fundRemaining"
-                ],
-                [col("sub_category.per_times"), "perTimes"],
-                [
-                    literal("sub_category.per_years - COALESCE(COUNT(childrenInfomation.fund_sum_request), 0)"),
-                    "requestsRemaining"
-                ]
-            ],
-            include: [
-                {
-                    model: subCategories,
-                    as: "sub_category",
-                    attributes: []
-                },
-                {
-                    model: reimbursementsChildrenEducationHasChildrenInfomation,
-                    as: "reimbursements_children_education_has_children_infomations",
-                    required: true,
-                    attributes: [],
-                    include: [
-                        {
-                            model: reimbursementsChildrenEducation,
-                            as: "reimbursements_children_education",
-                            required: true,
-                            attributes: [],
-                            where: { created_by: userId }
-                        }
+        for (let i = 0; i < child.length; i++) {
+            const currentChild = child[i];
+            const childName = currentChild.childName;
+            const currentFundSumRequest = Number(currentChild.fundUniversity) + Number(currentChild.fundSubUniversity) || 0
+
+
+            // ค้นหาข้อมูลการเบิกของบุตรปัจจุบัน
+            const results = await childrenInfomation.findAll({
+                attributes: [
+                    [col("sub_category.id"), "subCategoryId"],
+                    [col("childrenInfomation.child_name"), "childName"],
+                    [col("sub_category.fund"), "fund"],
+                    [fn("SUM", col("childrenInfomation.fund_sum_request")), "totalSumRequested"],
+                    [
+                        literal("sub_category.fund - SUM(childrenInfomation.fund_sum_request)"),
+                        "fundRemaining"
+                    ],
+                    [col("sub_category.per_times"), "perTimes"],
+                    [fn("COUNT", col("childrenInfomation.fund_sum_request")), "totalCountRequested"],
+                    [col("sub_category.per_years"), "perYears"],
+                    [
+                        literal("sub_category.per_years - COUNT(childrenInfomation.fund_sum_request)"),
+                        "requestsRemaining"
                     ]
+                ],
+                include: [
+                    {
+                        model: subCategories,
+                        as: "sub_category",
+                        attributes: ['id', 'fund', 'per_times', 'per_years'],
+                    },
+                    {
+                        model: reimbursementsChildrenEducationHasChildrenInfomation,
+                        as: "reimbursements_children_education_has_children_infomations",
+                        required: true,
+                        attributes: [],
+                        include: [
+                            {
+                                model: reimbursementsChildrenEducation,
+                                as: "reimbursements_children_education",
+                                required: true,
+                                attributes: [],
+                                where: { created_by: userId, status: statusType.waitApprove }
+                            }
+                        ]
+                    }
+                ],
+                where: { ...whereObj, child_name: childName },
+                group: ["childrenInfomation.child_name", "sub_category.id"]
+            });
+
+            let fundRemaining = 0;
+            let requestsRemaining = 0;
+            let perTimes = 0;
+            let fund = 0;
+
+            if (results.length > 0) {
+                // หากบุตรมีประวัติการเบิก
+                const data = results[0].dataValues;
+                fundRemaining = data.fundRemaining || 0;
+                requestsRemaining = data.requestsRemaining || 0;
+                fund = data.fund || 0;
+                perTimes = data.perTimes || 0;
+                if (status !== statusType.draft) {
+                    if (fundRemaining === 0 || requestsRemaining === 0) {
+                        logger.info(`No Remaining for child ${childName}`, { method });
+                        return res.status(400).json({
+                            message: `บุตร ${childName} ไม่มีสิทธิ์ขอเบิก เนื่องจากสิทธิ์เต็มแล้ว`,
+                        });
+                    }
+
+                    if (currentFundSumRequest > perTimes && perTimes) {
+                        return res.status(400).json({
+                            message: `บุตร ${childName} สามารถเบิกได้สูงสุด ${perTimes} ต่อครั้ง`,
+                        });
+                    }
+
+                    if (currentFundSumRequest > fundRemaining && fundRemaining) {
+                        logger.info(`Request Over for child ${childName}`, { method });
+                        return res.status(400).json({
+                            message: `ยอดเงินคงเหลือของบุตร ${childName} สามารถเบิกเบิกได้ ${fundRemaining} กรุณาลองใหม่อีกครั้ง`,
+                        });
+                    }
+
+                    if (currentFundSumRequest > fund && fund) {
+                        logger.info(`Request Over for child ${childName}`, { method });
+                        return res.status(400).json({
+                            message: `ยอหเพดานเงินที่บุตร ${childName} สามารถเบิกเบิกได้ ${fund} กรุณาลองใหม่อีกครั้ง`,
+                        });
+                    }
                 }
-            ],
-            where: whereObj,
-            group: ["childrenInfomation.child_name",
-                "sub_category.id"]
-        });
-        
-        if (results) {
-            const datas = JSON.parse(JSON.stringify(results));
-            
-            if (fund_sum_request < oldWelfareData.fund_sum_request) {
-                return next();
-            }
-            else if (fund_sum_request > datas.perTimes) {
-                return res.status(400).json({
-                    message: "คุณสามารถเบิกได้สูงสุด " + datas.perTimes + " ต่อครั้ง",
+
+            } else {
+                // หากบุตรไม่เคยเบิก ใช้ข้อมูลจาก resultsSub
+                const resultsSub = await subCategories.findOne({
+                    attributes: [
+                        'id',
+                        [col("fund"), "fund"],
+                        [col("per_times"), "perTimes"]
+                    ],
+                    where: { id: Number(currentChild.subCategoriesId) }
                 });
-            }
-            else {
-                const diffFund = fund_sum_request - oldWelfareData.fund_sum_request;
-                if (datas.fundRemaining === 0 || datas.fundRemaining - diffFund < 0) {
-                    return res.status(400).json({
-                        message: "ไม่สามารถทำรายการได้เนื่องจากเกินเพดานเงินคงเหลือ",
-                    });
+
+                if (resultsSub) {
+                    fund = resultsSub.fund || 0;
+                    perTimes = resultsSub.dataValues?.perTimes || 0;
+
+                        if (currentFundSumRequest > perTimes && perTimes) {
+                            return res.status(400).json({
+                                message: `บุตร ${childName} สามารถเบิกได้สูงสุด ${perTimes} ต่อครั้ง`,
+                            });
+                        }
+
+                        if (currentFundSumRequest > fund && fund) {
+                            logger.info(`Request Over for child ${childName}`, { method });
+                            return res.status(400).json({
+                                message: `ยอดเงินคงเหลือของบุตร ${childName} สามารถเบิกเบิกได้ ${fund} กรุณาลองใหม่อีกครั้ง`,
+                            });
+                        }
+
+                    
                 }
             }
-        };
+
+        }
         sendMail(oldWelfareData.created_by_user.email,oldWelfareData.reim_number,req.body.status,oldWelfareData.created_by_user.name);
         next();
     }
