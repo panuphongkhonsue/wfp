@@ -280,12 +280,23 @@ const fetchDataMedical = async (req, res, next) => {
                 getFiscalYearWhere = getFiscalYear();
             }
             whereObj[Op.and].push(
-                { '$reimbursements_general.request_date$': getFiscalYearWhere },
-                { '$reimbursements_general.categories_id$': category.medicalWelfare },
-                { '$reimbursements_general.created_by$': datas.userId },
-                { '$reimbursements_general.id$': { [Op.lte]: datas.id } },
-                { '$sub_category.id$': 2 },
-                { '$reimbursements_general.status$': {  [Op.ne]: status.NotApproved } },
+                { "$reimbursements_general.request_date$": getFiscalYearWhere },
+                { "$reimbursements_general.categories_id$": category.medicalWelfare },
+                { "$reimbursements_general.created_by$": datas.userId },
+                { "$sub_category.id$": 2 },
+                {
+                    [Op.or]: [
+                        {
+                            [Op.and]: [
+                                { "$reimbursements_general.id$": { [Op.lte]: datas.id } },
+                                { "$reimbursements_general.status$": status.approve }
+                            ]
+                        },
+                        {
+                            "$reimbursements_general.id$": datas.id
+                        }
+                    ]
+                },
             );
             const getRequestData = await reimbursementsGeneralHasSubCategories.findAll({
                 attributes: [
@@ -444,11 +455,22 @@ const fetchDataDental = async (req, res, next) => {
             getFiscalYearWhere = getFiscalYear();
         }
         whereObj[Op.and].push(
-            { '$reimbursementsGeneral.request_date$': getFiscalYearWhere },
-            { '$reimbursementsGeneral.categories_id$': category.dentalWelfare },
-            { '$reimbursementsGeneral.created_by$': datas.userId },
-            { '$reimbursementsGeneral.id$': { [Op.lte]: datas.id } },
-            { '$reimbursementsGeneral.status$': {  [Op.ne]: status.NotApproved } },
+            { "$reimbursementsGeneral.request_date$": getFiscalYearWhere },
+            { "$reimbursementsGeneral.categories_id$": category.dentalWelfare },
+            { "$reimbursementsGeneral.created_by$": datas.userId },
+            {
+                [Op.or]: [
+                    {
+                        [Op.and]: [
+                            { "$reimbursementsGeneral.id$": { [Op.lte]: datas.id } },
+                            { "$reimbursementsGeneral.status$": status.approve }
+                        ]
+                    },
+                    {
+                        "$reimbursementsGeneral.id$": datas.id
+                    }
+                ]
+            }
         );
         const getRequestData = await reimbursementsGeneral.findAll({
             attributes: [
