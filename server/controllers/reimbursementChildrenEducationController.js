@@ -153,6 +153,17 @@ class Controller extends BaseController {
             return res.status(400).json({ message: "ไม่สามารถเพิ่มข้อมูลบุตรได้เกิน 3 คน" });
         }
 
+        for (let childObj of child) {
+            if (childObj.childPassedAway && childObj.delegateName) {
+                const matchedChild = child.find(c => c.childName === childObj.delegateName);
+                if (matchedChild) {
+                    return res.status(400).json({
+                        message: `บุตร (${matchedChild.childName}) ไม่สามารถเบิกได้เนื่องถูกแทนที่กรณีถึงแก้กรรม`,
+                    });
+                }
+            }
+        }
+
         try {
             const results = await sequelize.transaction(async t => {
                 const newReimbursementsChild = await reimbursementsChildrenEducation.create(dataCreate, { transaction: t });
@@ -248,6 +259,17 @@ class Controller extends BaseController {
 
         if (!isNullOrEmpty(child) && child.length > 3 ) {
             return res.status(400).json({ message: "ไม่สามารถเพิ่มข้อมูลบุตรได้เกิน 3 คน" });
+        }
+
+        for (let childObj of child) {
+            if (childObj.childPassedAway && childObj.delegateName) {
+                const matchedChild = child.find(c => c.childName === childObj.delegateName);
+                if (matchedChild) {
+                    return res.status(400).json({
+                        message: `บุตร (${matchedChild.childName}) ไม่สามารถเบิกได้เนื่องถูกแทนที่กรณีถึงแก้กรรม`,
+                    });
+                }
+            }
         }
 
         try {

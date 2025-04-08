@@ -356,7 +356,7 @@ const bindCreate = async (req, res, next) => {
 
         }
 
-
+        console.log("req.body.child",req.body.child)
         const dataBinding = {
             reim_number: reimNumber,
             fund_receipt: childFundReceipt,
@@ -490,9 +490,10 @@ const bindUpdate = async (req, res, next) => {
             }, 0);
 
             childfundOther = req.body.child.reduce((sum, child) => {
-                let sumOther = !isNaN(Number(child.fundOther)) ? Number(child.fundOther) : 0;
-                return sum + (isNaN(sumOther) ? 0 : sumOther);
+                const value = Number(child?.fundOther || 0); // แปลง "" หรือ null ให้เป็น 0
+                return sum + (isNaN(value) ? 0 : value);     // ถ้ายังเป็น NaN อยู่ ก็กันไว้อีกที
             }, 0);
+            
 
             childFundUniversity = req.body.child.reduce((sum, child) => {
                 let sumUniversity = (!isNaN(Number(child.fundUniversity)) ? Number(child.fundUniversity) : 0) +
@@ -521,7 +522,7 @@ const bindUpdate = async (req, res, next) => {
             parental_status: parentalStatus,
             child: req.body.child,
         };
-
+console.log("req.body.child",req.body.child)
         if (!isNullOrEmpty(deleteChild)) {
             req.deleteChild = deleteChild;
 
@@ -529,14 +530,22 @@ const bindUpdate = async (req, res, next) => {
         if (isNullOrEmpty(req.body.child)) {
             delete dataBinding.child;
         } else {
-            var hasNull = false;
             if (!isNullOrEmpty(dataBinding.child)) {
-                hasNull = req.body.child.some(item =>
-                    Object.values(item).some(value => value === null || value === "")
+                dataBinding.child = dataBinding.child.filter(item =>
+                    !Object.values(item).some(value => value.childName === null || value.childName === "" 
+                        || value.childFatherNumber === null || value.childFatherNumber === ""
+                        || value.childMotherNumber === null || value.childMotherNumber === ""
+                        || value.schoolName === null || value.schoolName === ""
+                        || value.schoolType === null || value.schoolType === ""
+                        || value.district === null || value.district === ""
+                        || value.province === null || value.province === ""
+                        || value.subCategoriesId === null || value.subCategoriesId === ""
+                        || value.fundUniversity === null || value.fundUniversity === ""
+                    )
                 );
-            }
-            if (hasNull) {
-                delete dataBinding.child;
+                if (dataBinding.child.length === 0) {
+					delete dataBinding.child;
+				}
             }
         }
         if (!isNullOrEmpty(actionId)) {
@@ -673,8 +682,8 @@ const checkNullValue = async (req, res, next) => {
                     });
                 }
 
-                if (isNullOrEmpty(c.fundOther) || c.fundOther === '') {
-                    errorObj["fundOther"] = "กรุณากรอกข้อมูลจำนวนเงินตามขอเบิกจากหน่วยงานอื่น";
+                if (isNullOrEmpty(c.fundOther)) {
+                    
                 } else if (isInvalidNumber(c.fundOther)) {
                     errorObj["fundOther"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
                 } else if (c.fundOther < 0) {
@@ -694,7 +703,7 @@ const checkNullValue = async (req, res, next) => {
                 }
 
                 if (isNullOrEmpty(c.fundSubUniversity) || c.fundSubUniversity === '') {
-                    errorObj["fundSubUniversity"] = "กรุณากรอกข้อมูลจำนวนเงินตามขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)";
+
                 } else if (isInvalidNumber(c.fundSubUniversity)) {
                     errorObj["fundSubUniversity"] = "ค่าที่กรอกไม่ใช่ตัวเลข";
                 } else if (c.fundSubUniversity < 0) {

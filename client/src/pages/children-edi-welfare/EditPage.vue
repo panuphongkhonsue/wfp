@@ -634,7 +634,7 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash, formatDateSlash } from "src/components/format";
+import { formatDateThaiSlash, formatDateSlash,formatDateServer } from "src/components/format";
 import DatePicker from "src/components/DatePicker.vue";
 import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -655,7 +655,6 @@ const isLoadings = ref(false);
 const router = useRouter();
 const userInitialData = ref([]);
 const route = useRoute();
-
 const userData = ref({});
 const remaining = ref({});
 const shcoolData = ref([]);
@@ -1638,7 +1637,7 @@ async function submit(actionId) {
         childNumber: c.childNumber,
         fundUniversity: c.fundUniversity ?? 0,
         fundSubUniversity: c.fundSubUniversity ?? 0,
-        childBirthDay: c.childBirthDay,
+        childBirthDay: formatDateServer(c.childBirthDay),
         childFatherNumber: c.childFatherNumber,
         childMotherNumber: c.childMotherNumber,
         schoolName: c.schoolNamegeneral ?? c.schoolNameDemonstration ?? null, // ✅ ป้องกัน undefined
