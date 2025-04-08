@@ -222,14 +222,23 @@
               <p class="q-mb-none">หลักฐานที่ต้องแนบ</p>
             </q-card-section>
             <q-separator />
-            <q-card-section class="row wrap q-col-gutter-y-md q-px-md q-py-md font-medium font-16 text-grey-7">
+            <q-card-section >
+              <div class="row wrap q-col-gutter-y-sm q-px-none q-py-md font-medium font-16 text-grey-7"  v-show="!thisStaff || canCreateFor">
               <p class="col-12 q-mb-none font-18 font-bold text-black ">บิดา-มารดา</p>
               <p class="col-12 q-mb-none">1. สำเนาทะเบียนบ้านผู้เบิก</p>
+              <p class="col-12 q-mb-none">2. สำเนาใบมรณะบัตร</p>
+              <p class="col-12 q-mb-none">3. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none font-18 font-bold text-black ">คู่สมรส</p>
               <p class="col-12 q-mb-none">1. สำเนาทะเบียนสมรส</p>
+              <p class="col-12 q-mb-none">2. สำเนาใบมรณะบัตร</p>
+              <p class="col-12 q-mb-none">3. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none font-18 font-bold text-black ">บุตร</p>
               <p class="col-12 q-mb-none">1. สำเนาสูติบัตร</p>
-              <p class="col-12 q-mb-none font-18 font-bold text-black ">ค่าสนับสนุนค่าพวงหรีด</p>
+              <p class="col-12 q-mb-none">2. สำเนาใบมรณะบัตร</p>
+              <p class="col-12 q-mb-none">3. ใบสำคัญรับเงิน</p>
+            </div>
+              <div class="row wrap q-col-gutter-y-md q-px-none q-py-md font-medium font-16 text-grey-7"  v-show="thisStaff && !canCreateFor">
+                <p class="col-12 q-mb-none font-18 font-bold text-black ">ค่าสนับสนุนค่าพวงหรีด</p>
               <p class="col-12 q-mb-none">1. ใบสำคัญรับเงิน</p>
               <p class="col-12 q-mb-none">2. ใบสำคัญรับเงิน
                 (โดยเจ้าหน้าที่ผู้รับผิดชอบ
@@ -241,6 +250,8 @@
                 ด้านบุคคล ลงนามรับเงิน)
               </p>
               <p class="col-12 q-mb-none">2.ใบสำคัญรับเงินหรือหลักฐานการจ่ายเงินอื่น</p>
+              </div>
+              
             </q-card-section>
           </q-card>
 

@@ -30,8 +30,14 @@
                     "ไม่จำกัดจำนวนเงิน"))
                     }}
                   </p>
-                  <p  class="q-mb-none text-white font-16">{{ items?.requestsRemaining ? "จำนวน " +
-                    items?.requestsRemaining + " ครั้ง" : 'ไม่จำกัดครั้ง' }}</p>
+                  <p class="q-mb-none text-white font-16">
+  {{ 
+    items?.perUsersRemaining !== undefined && items?.perUsersRemaining !== null 
+    ? "จำนวน " + items?.perUsersRemaining + " ครั้ง" 
+    : (items?.requestsRemaining ? "จำนวน " + items?.requestsRemaining + " ครั้ง" : 'ไม่จำกัดครั้ง') 
+  }}
+</p>
+
                 </div>
                 <!-- รูปภาพ -->
                 <q-img :src="items?.src" class="q-mt-xl" fit="fill" :ratio="16 / 9" width="4rem" height="4rem">
@@ -619,7 +625,7 @@ const columns = [
   { name: "index", label: "ลำดับ", align: "left", field: "index" },
   { name: "reimNumber", label: "เลขที่ใบเบิก", align: "left", field: (row) => row.reimNumber ?? "-" },
   { name: "createdBy", label: "ผู้ร้องขอ", align: "left", field: (row) => row.createdByName ?? "-" },
-  { name: "sendDate", label: "วันที่ร้องขอ", align: "left", field: (row) => row.requestDate ?? "-" },
+  { name: "sendDate", label: "วันที่ส่งใบเบิก", align: "left", field: (row) => row.requestDate ?? "-" },
   { name: "updatedAt", label: "วันที่บันทึก/อนุมัติ", align: "left", field: (row) => row.updatedAt ?? "-" },
   { name: "welfareType", label: "ประเภท", align: "left", field: (row) => row.welfareType ?? "-" },
   {
