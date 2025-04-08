@@ -515,7 +515,6 @@ const bindUpdate = async (req, res, next) => {
             role: role,
             position: position,
             department: department,
-            request_date: actionId === statusType.waitApprove ? new Date() : null,
             updated_by: id,
             eligible_benefits: eligibleBenefits,
             eligible_sub_benefits: eligibleSubSenefits,

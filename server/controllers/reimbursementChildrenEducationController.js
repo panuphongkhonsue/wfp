@@ -245,10 +245,6 @@ class Controller extends BaseController {
         delete req.body.child;
         const dataUpdate = req.body;
         var itemsReturned = null;
-        dataUpdate.fund_receipt = isNaN(dataUpdate.fund_receipt) ? 0 : parseFloat(dataUpdate.fund_receipt);
-        dataUpdate.fund_eligible = isNaN(dataUpdate.fund_eligible) ? 0 : parseFloat(dataUpdate.fund_eligible);
-
-
 
         if (!isNullOrEmpty(child) && child.length > 3 ) {
             return res.status(400).json({ message: "ไม่สามารถเพิ่มข้อมูลบุตรได้เกิน 3 คน" });

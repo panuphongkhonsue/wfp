@@ -71,7 +71,7 @@
                                 <p class="col-md-3 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
                                 <p class="col-md-3 col-12 q-mb-none">วันที่ร้องขอ : {{
                                     formatDateThaiSlash(model.requestDate) ?? "-"
-                                    }}
+                                }}
                                 </p>
                                 <p class="col-md-3 col-12 q-mb-none q-pl-sm">สถานะ : <span
                                         :class="textStatusColor(model.status)">{{
@@ -705,7 +705,6 @@ import DatePicker from "src/components/DatePicker.vue";
 import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import userManagementService from "src/boot/service/userManagementService";
-import { useAuthStore } from "src/stores/authStore";
 import reimbursementChildrenEducationService from "src/boot/service/reimbursementChildrenEducationService";
 import data from 'src/components/api_province_with_amphure_tambon.json';
 import { textStatusColor } from "src/components/status";
@@ -715,7 +714,6 @@ defineOptions({
     name: "childrenEduWelfareEdit",
 });
 const isLoading = ref(false);
-const authStore = useAuthStore();
 const isError = ref({});
 const isView = ref(false);
 const isLoadings = ref(false);
@@ -1271,7 +1269,9 @@ async function fetchDataEdit() {
                             childBirthDay: child.childBirthDay ?? "-",
                             subCategoriesName: child.sub_category?.name ?? null,
                             subCategoriesId: child.sub_category?.id ?? null, // ✅ ใช้ subCategoriesId แทน subCategoryName
-                            childPassedAway: child.childType === "DELEGATE"
+                            childPassedAway: child.childType === "DELEGATE",
+                            delegateBirthDay: isView.value === true ? formatDateThaiSlash(child.delegateBirthDay) : formatDateSlash(child.delegateBirthDay),
+                            delegateDeathDay: isView.value === true ? formatDateThaiSlash(child.delegateDeathDay) : formatDateSlash(child.delegateDeathDay)
                         }))
                         : []
                 };
@@ -1727,8 +1727,8 @@ async function submit(actionId) {
         eligible: model.value.eligible,
         position: spouseData.value.officer?.position || spouseData.value.enterprises?.position,
         department: spouseData.value.officer?.department || spouseData.value.enterprises?.department,
-        eligibleBenefits: model.value.eligibleBenefits[0],
-        eligibleSubSenefits: model.value.eligibleSubSenefits[0],
+        eligibleBenefits: model.value.eligibleBenefits[0] ?? null,
+        eligibleSubSenefits: model.value.eligibleSubSenefits[1] ?? null,
         deleteChild: model.value.deleteChild?.filter(c => c.id !== null) || [],
         child: model.value.child.map(c => {
             let childData = {
@@ -1829,11 +1829,9 @@ async function init() {
     try {
         if (isView.value) {
             fetchDataEdit();
-            fetchUserData(authStore.id);
         }
         else if (isEdit.value) {
             fetchRemaining();
-            fetchUserData(authStore.id);
             const result = await userManagementService.getUserInitialData({ keyword: null });
             userInitialData.value = result.data.datas;
             optionsUserName.value = result.data.datas;
@@ -1842,7 +1840,6 @@ async function init() {
         }
         else {
             fetchRemaining();
-            fetchUserData(authStore.id);
             const result = await userManagementService.getUserInitialData({ keyword: null });
             userInitialData.value = result.data.datas;
             fetchRemaining();

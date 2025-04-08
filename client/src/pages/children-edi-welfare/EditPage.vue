@@ -1233,7 +1233,9 @@ async function fetchDataEdit() {
               childBirthDay: child.childBirthDay ?? "-",
               subCategoriesName: child.sub_category?.name ?? null,
               subCategoriesId: child.sub_category?.id ?? null, // ✅ ใช้ subCategoriesId แทน subCategoryName
-              childPassedAway: child.childType === "DELEGATE"
+              childPassedAway: child.childType === "DELEGATE",
+              delegateBirthDay:isView.value === true ? formatDateThaiSlash(child.delegateBirthDay) : formatDateSlash(child.delegateBirthDay),
+              delegateDeathDay: isView.value === true ? formatDateThaiSlash(child.delegateDeathDay) : formatDateSlash(child.delegateDeathDay)
             }))
             : []
 
@@ -1364,6 +1366,7 @@ watch(
         model.value.child[index].schoolNameDemonstration = null;
         model.value.child[index].schoolNamegeneral = null;
         model.value.child[index].subCategoriesId = null;
+        model.value.child[index].fundSubUniversity = null;
       }
     });
   }
@@ -1622,8 +1625,8 @@ async function submit(actionId) {
     eligible: model.value.eligible,
     position: spouseData.value.officer?.position || spouseData.value.enterprises?.position,
     department: spouseData.value.officer?.department || spouseData.value.enterprises?.department,
-    eligibleBenefits: model.value.eligibleBenefits[0],
-    eligibleSubSenefits: model.value.eligibleSubSenefits[0],
+    eligibleBenefits: model.value.eligibleBenefits[0] ?? null,
+    eligibleSubSenefits: model.value.eligibleSubSenefits[1] ?? null,
     deleteChild: model.value.deleteChild?.filter(c => c.id !== null) || [],
     child: model.value.child.map(c => {
       let childData = {
@@ -1655,9 +1658,10 @@ async function submit(actionId) {
 
       return childData;
     })
+
   };
 
-
+  console.log("payload",payload)
 
   let fetch; // เปลี่ยนจาก var เป็น let
   Swal.fire({
