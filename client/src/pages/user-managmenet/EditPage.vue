@@ -87,11 +87,10 @@
               </InputGroup>
               <InputGroup for-id="sector" :data="model.sectorName ?? '-'" label="ภาควิชา" :is-view="isView">
                 <q-select hide-bottom-space popup-content-class="font-14 font-regular" class="font-14 font-regular"
-                  :loading="isLoading" id="selected-sector" outlined v-model="model.sectorId" :options="optionsSection" use-input
-                  input-debounce="0" new-value-mode="add-unique" hide-selected hide-dropdown-icon fill-input
+                  :loading="isLoading" id="selected-sector" outlined v-model="model.sectorId" :options="optionsSection"
+                  use-input input-debounce="0" new-value-mode="add-unique" hide-selected hide-dropdown-icon fill-input
                   @new-value="onNewSector" dense clearable option-value="id" emit-value map-options option-label="name"
-                  :error-message="isError?.sectorId" :error="!!isError?.sectorId"
-                  >
+                  :error-message="isError?.sectorId" :error="!!isError?.sectorId">
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey font-14 font-regular">
@@ -255,7 +254,7 @@ import DatePicker from 'src/components/DatePicker.vue'
 
 import Swal from 'sweetalert2'
 import { Notify } from 'quasar'
-import { formatDateThaiSlash, formatDateSlash } from 'src/components/format'
+import { formatDateThaiSlash, formatDateSlash, formatDateServer } from 'src/components/format'
 
 import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -544,15 +543,12 @@ async function submit() {
     })
     return
   }
-  if(model.value.sectorId == '-'){
+  if (model.value.sectorId == '-') {
     model.value.sectorId = null;
   }
   model.value.child = model.value.child.filter(
     (item) => !Object.values(item).some((value) => value === null || value === ''),
   )
-  if (model.value.child.length === 0) {
-    delete model.value.child
-  }
   let isValid = false
   var fetch
   Swal.fire({
@@ -570,6 +566,19 @@ async function submit() {
     },
     preConfirm: async () => {
       try {
+        if (model.value.firstWorkingDate) {
+          model.value.firstWorkingDate = formatDateServer(model.value.firstWorkingDate);
+        }
+        if (model.value.child.length === 0) {
+          delete model.value.child
+        }
+        else {
+          model.value.child.forEach(child => {
+            if (child.birthday) {
+              child.birthday = formatDateServer(child.birthday);
+            }
+          });
+        }
         if (isEdit.value) {
           fetch = await userManagementService.update(route.params.id, model.value)
         } else {
