@@ -207,7 +207,7 @@ const checkRemaining = async (req, res, next) => {
                 requestsRemaining = data.requestsRemaining || 0;
                 fund = data.fund || 0;
                 perTimes = data.perTimes || 0;
-                if (status !== statusType.draft) {
+
                     if (fundRemaining === 0 || requestsRemaining === 0) {
                         logger.info(`No Remaining for child ${childName}`, { method });
                         return res.status(400).json({
@@ -234,7 +234,6 @@ const checkRemaining = async (req, res, next) => {
                             message: `ยอหเพดานเงินที่บุตร ${childName} สามารถเบิกเบิกได้ ${fund} กรุณาลองใหม่อีกครั้ง`,
                         });
                     }
-                }
 
             } else {
                 // หากบุตรไม่เคยเบิก ใช้ข้อมูลจาก resultsSub
@@ -250,8 +249,6 @@ const checkRemaining = async (req, res, next) => {
                 if (resultsSub) {
                     fund = resultsSub.fund || 0;
                     perTimes = resultsSub.dataValues?.perTimes || 0;
-                    if (status !== statusType.draft) {
-
                         if (currentFundSumRequest > perTimes && perTimes) {
                             return res.status(400).json({
                                 message: `บุตร ${childName} สามารถเบิกได้สูงสุด ${perTimes} ต่อครั้ง`,
@@ -264,8 +261,6 @@ const checkRemaining = async (req, res, next) => {
                                 message: `ยอดเงินคงเหลือของบุตร ${childName} สามารถเบิกเบิกได้ ${fund} กรุณาลองใหม่อีกครั้ง`,
                             });
                         }
-
-                    }
                 }
             }
 
