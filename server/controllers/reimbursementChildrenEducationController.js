@@ -66,7 +66,7 @@ class Controller extends BaseController {
         const method = 'GetRemainingChildFund';
         const { id } = req.user;
         const { createFor} = req.query;
-        const { subCategoriesId } = req.body;
+        const { subCategoriesId } = req.query;
 
         try {
             const { filter } = req.query;
@@ -116,7 +116,7 @@ class Controller extends BaseController {
                 group: [
                     "childrenInfomation.child_name",
                     "sub_category.id"
-                ]
+                ],
             });
 
             if (results && results.length > 0) {

@@ -71,7 +71,7 @@
                                 <p class="col-md-3 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
                                 <p class="col-md-3 col-12 q-mb-none">วันที่ร้องขอ : {{
                                     formatDateThaiSlash(model.requestDate) ?? "-"
-                                }}
+                                    }}
                                 </p>
                                 <p class="col-md-3 col-12 q-mb-none q-pl-sm">สถานะ : <span
                                         :class="textStatusColor(model.status)">{{
@@ -504,11 +504,18 @@
                                                         :loading="isLoading" id="selected-status"
                                                         popup-content-class="font-14 font-regular"
                                                         class="font-14 font-regular" outlined
-                                                        :options="optionsSubCategory || []" dense clearable
+                                                        :options="child.subCategories || []" dense clearable
                                                         option-value="value" emit-value map-options option-label="label"
                                                         v-if="!isView" :error="!!isError[index]?.subCategoriesId"
                                                         :error-message="isError[index]?.subCategoriesId"
-                                                        :rules="[(val) => !!val || 'กรุณาเลือกระดับชั้น']" lazy-rules />
+                                                        :rules="[(val) => !!val || 'กรุณาเลือกระดับชั้น']" lazy-rules>
+                                                        <template v-slot:no-option>
+                                                            <q-item>
+                                                                <q-item-section class="text-grey font-14 font-regular">
+                                                                    ไม่มีตัวเลือก </q-item-section>
+                                                            </q-item>
+                                                        </template>
+                                                    </q-select>
                                                 </InputGroup>
                                             </div>
                                         </div>
@@ -700,7 +707,7 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash, formatDateSlash,formatDateServer} from "src/components/format";
+import { formatDateThaiSlash, formatDateSlash, formatDateServer } from "src/components/format";
 import DatePicker from "src/components/DatePicker.vue";
 import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -720,7 +727,8 @@ const isLoadings = ref(false);
 const router = useRouter();
 const userInitialData = ref([]);
 const route = useRoute();
-
+let isAddingChild = false;
+let isRemoveChild = false;
 const userData = ref({});
 const remaining = ref({});
 const shcoolData = ref([]);
@@ -799,6 +807,7 @@ const model = ref({
 });
 
 function addChildForm() {
+    isAddingChild = true;
     model.value.child.push({
         fundReceipt: null,
         fundEligible: 0,
@@ -822,6 +831,9 @@ function addChildForm() {
         delegateNumber: null,
         delegateBirthDay: null,
         delegateDeathDay: null
+    });
+    nextTick(() => {
+        isAddingChild = false; // รีเซ็ต flag หลังเพิ่มเสร็จ
     });
 }
 
@@ -887,9 +899,10 @@ watch(
                 (r) => r.childName
             );
 
-
+            const subCategoriesId = model.value.child[index]?.subCategoriesId;
             const item = dataArray.find(
-                (r) => r.childName?.trim().toLowerCase() === newValue.childName
+                (r) => r.childName?.trim().toLowerCase() === newValue.childName &&
+                    r.subCategoryId === subCategoriesId
             );
 
             const fundLimit = parseFloat(item?.fund || 0);
@@ -1113,7 +1126,7 @@ const getSubCategory = async () => {
 
 
             // เก็บค่า subCategories ไว้ในตัวเด็ก
-            optionsSubCategory.value = result.data.map(item => ({
+            child.subCategories = result.data.map(item => ({
                 value: item.id,
                 label: item.name
             }));
@@ -1312,6 +1325,7 @@ async function fetchDataEdit() {
 }
 
 function removeChildForm(index) {
+    isRemoveChild = true;
     Swal.fire({
         title: 'ยืนยันการทำรายการหรือไม่ ???',
         html: `ไม่ต้องห่วง ข้อมูลบุตรจะถูกลบเมื่อคุณคลิกปุ่ม "บันทึก"`,
@@ -1330,16 +1344,20 @@ function removeChildForm(index) {
                 if (!Array.isArray(model.value.deleteChild)) {
                     model.value.deleteChild = [];
                 }
-                if (model.value && Array.isArray(model.value.deleteChild)) {
-                    model.value.deleteChild.push({ id: model.value.child[index].id });
-                }
+                model.value.deleteChild.push({ id: model.value.child[index].id });
             }
             model.value.child.splice(index, 1);
-            if (model.value.child.length == 0) {
-                addChildForm()
+
+            if (model.value.child.length === 0) {
+                addChildForm();
             }
         }
-    })
+
+        // ✅ ย้ายมาตรงนี้ เพื่อให้ reset หลังจาก Swal เสร็จแล้วเท่านั้น
+        nextTick(() => {
+            isRemoveChild = false;
+        });
+    });
 }
 
 let loadRole = true;
@@ -1407,6 +1425,8 @@ watch(
                 model.value.child[index].schoolNameDemonstration = null;
                 model.value.child[index].schoolNamegeneral = null;
                 model.value.child[index].subCategoriesId = null;
+                model.value.child[index].fundSubUniversity = null;
+                optionsSubCategory.value = []
             }
         });
     }
@@ -1443,6 +1463,9 @@ watch(
                     console.warn("⚠️ shcoolData.value ไม่เป็นอาร์เรย์:", shcoolData.value);
                 }
             } else {
+                if (isAddingChild || isRemoveChild) {
+                    return;
+                }
                 model.value.child[index].schoolNameDemonstration = "";
                 model.value.child[index].schoolNamegeneral = "";
                 model.value.child[index].schoolType = "";

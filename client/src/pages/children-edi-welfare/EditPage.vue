@@ -406,8 +406,8 @@ q-btn<template>
                             label="ถึงแก่กรรมเมื่อ" compclass="col-6 q-pr-none" clearable :is-view="isView"
                             :data="child.delegateDeathDay ?? '-'">
                             <DatePicker is-dense v-model:model="child.delegateDeathDay"
-                              v-model:dateShow="child.delegateDeathDay" for-id="start-date"
-                              :no-time="true" :rules="[(val) => !!val || 'กรุณากรอก วัน/เดือน/ปี วันที่ถึงแก่กรรม']"
+                              v-model:dateShow="child.delegateDeathDay" for-id="start-date" :no-time="true"
+                              :rules="[(val) => !!val || 'กรุณากรอก วัน/เดือน/ปี วันที่ถึงแก่กรรม']"
                               :error="!!isError[index]?.delegateDeathDay"
                               :error-message="isError[index]?.delegateDeathDay" />
                           </InputGroup>
@@ -465,10 +465,16 @@ q-btn<template>
                           clearable :data="child.subCategoriesName ?? '-'" :is-view="isView">
                           <q-select hide-bottom-space v-model="child.subCategoriesId" :loading="isLoading"
                             id="selected-status" popup-content-class="font-14 font-regular" class="font-14 font-regular"
-                            outlined :options="optionsSubCategory || []" dense clearable option-value="value" emit-value
+                            outlined :options="child.subCategories || []" dense clearable option-value="value" emit-value
                             map-options option-label="label" v-if="!isView" :error="!!isError[index]?.subCategoriesId"
                             :error-message="isError[index]?.subCategoriesId"
-                            :rules="[(val) => !!val || 'กรุณาเลือกระดับชั้น']" lazy-rules />
+                            :rules="[(val) => !!val || 'กรุณาเลือกระดับชั้น']" lazy-rules>
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey font-14 font-regular"> ไม่มีตัวเลือก </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
                         </InputGroup>
                       </div>
                     </div>
@@ -634,7 +640,7 @@ import PageLayout from "src/layouts/PageLayout.vue";
 import InputGroup from "src/components/InputGroup.vue";
 import Swal from "sweetalert2";
 import { Notify } from "quasar";
-import { formatDateThaiSlash, formatDateSlash,formatDateServer } from "src/components/format";
+import { formatDateThaiSlash, formatDateSlash, formatDateServer } from "src/components/format";
 import DatePicker from "src/components/DatePicker.vue";
 import { ref, watch, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -649,6 +655,8 @@ defineOptions({
 });
 const isLoading = ref(false);
 const authStore = useAuthStore();
+let isAddingChild = false;
+let isRemoveChild = false;
 const isError = ref({});
 const isView = ref(false);
 const isLoadings = ref(false);
@@ -737,6 +745,7 @@ const model = ref({
 });
 
 function addChildForm() {
+  isAddingChild = true;
   model.value.child.push({
     fundReceipt: null,
     fundEligible: 0,
@@ -760,6 +769,9 @@ function addChildForm() {
     delegateNumber: null,
     delegateBirthDay: null,
     delegateDeathDay: null
+  });
+  nextTick(() => {
+    isAddingChild = false; // รีเซ็ต flag หลังเพิ่มเสร็จ
   });
 }
 
@@ -827,9 +839,10 @@ watch(
         (r) => r.childName
       );
 
-
+      const subCategoriesId = model.value.child[index]?.subCategoriesId;
       const item = dataArray.find(
-        (r) => r.childName?.trim().toLowerCase() === newValue.childName
+        (r) => r.childName?.trim().toLowerCase() === newValue.childName &&
+          r.subCategoryId === subCategoriesId
       );
 
       const fundLimit = parseFloat(item?.fund || 0);
@@ -894,6 +907,7 @@ async function fetchRemaining() {
       if (returnedData) {
         const dataArray = Object.values(returnedData);  // แปลงเป็น array
         remaining.value = dataArray.map(item => ({
+          subCategoryId: item.subCategoryId,
           childName: item.childName,
           fund: item?.fund,
           totalSumRequested: item?.totalSumRequested,
@@ -940,7 +954,6 @@ const displayedChildren = computed(() => {
     };
   });
 });
-
 
 watch(
   () => model.value.child.map(child => child.delegateNumber),
@@ -1056,7 +1069,7 @@ const getSubCategory = async () => {
 
 
       // เก็บค่า subCategories ไว้ในตัวเด็ก
-      optionsSubCategory.value = result.data.map(item => ({
+      child.subCategories = result.data.map(item => ({
         value: item.id,
         label: item.name
       }));
@@ -1188,12 +1201,6 @@ function abortFilterFn() {
   // console.log('delayed filter aborted')
 }
 
-watch(() => model.value.categoriesId, (newValue) => {
-  if (newValue) {
-    getSubCategory(); // เรียกฟังก์ชัน getSubCategory เมื่อ categories_id เปลี่ยน
-  }
-});
-
 async function fetchDataEdit() {
   setTimeout(async () => {
     try {
@@ -1233,7 +1240,7 @@ async function fetchDataEdit() {
               subCategoriesName: child.sub_category?.name ?? null,
               subCategoriesId: child.sub_category?.id ?? null, // ✅ ใช้ subCategoriesId แทน subCategoryName
               childPassedAway: child.childType === "DELEGATE",
-              delegateBirthDay:isView.value === true ? formatDateThaiSlash(child.delegateBirthDay) : formatDateSlash(child.delegateBirthDay),
+              delegateBirthDay: isView.value === true ? formatDateThaiSlash(child.delegateBirthDay) : formatDateSlash(child.delegateBirthDay),
               delegateDeathDay: isView.value === true ? formatDateThaiSlash(child.delegateDeathDay) : formatDateSlash(child.delegateDeathDay)
             }))
             : []
@@ -1270,6 +1277,7 @@ async function fetchDataEdit() {
 }
 
 function removeChildForm(index) {
+  isRemoveChild = true;
   Swal.fire({
     title: 'ยืนยันการทำรายการหรือไม่ ???',
     html: `ไม่ต้องห่วง ข้อมูลบุตรจะถูกลบเมื่อคุณคลิกปุ่ม "บันทึก"`,
@@ -1288,17 +1296,22 @@ function removeChildForm(index) {
         if (!Array.isArray(model.value.deleteChild)) {
           model.value.deleteChild = [];
         }
-        if (model.value && Array.isArray(model.value.deleteChild)) {
-          model.value.deleteChild.push({ id: model.value.child[index].id });
-        }
+        model.value.deleteChild.push({ id: model.value.child[index].id });
       }
       model.value.child.splice(index, 1);
-      if (model.value.child.length == 0) {
-        addChildForm()
+
+      if (model.value.child.length === 0) {
+        addChildForm();
       }
     }
-  })
+
+    // ✅ ย้ายมาตรงนี้ เพื่อให้ reset หลังจาก Swal เสร็จแล้วเท่านั้น
+    nextTick(() => {
+      isRemoveChild = false;
+    });
+  });
 }
+
 
 let loadRole = true;
 watch(
@@ -1354,22 +1367,32 @@ watch(
       return;
     }
 
-    if (isSettingFromChildName) return;
+    if (isSettingFromChildName || isAddingChild) return;
+    console.log("isAddingChild", isAddingChild)
 
     if (!oldSchoolTypes || JSON.stringify(newSchoolTypes) === JSON.stringify(oldSchoolTypes)) {
       return;
     }
 
     newSchoolTypes.forEach((newSchoolType, index) => {
+      // ถ้าเป็น index ที่เพิ่มใหม่ ยังไม่มีใน oldSchoolTypes ก็ไม่ต้องทำอะไร
+      if (index >= oldSchoolTypes.length) return;
+
       if (newSchoolType !== oldSchoolTypes[index]) {
         model.value.child[index].schoolNameDemonstration = null;
         model.value.child[index].schoolNamegeneral = null;
         model.value.child[index].subCategoriesId = null;
+        model.value.child[index].fundUniversity = null;
         model.value.child[index].fundSubUniversity = null;
+        optionsSubCategory.value = []
       }
     });
   }
 );
+
+
+
+
 
 watch(
   () => model.value.child.map(child => child.childName),
@@ -1402,6 +1425,9 @@ watch(
           console.warn("⚠️ shcoolData.value ไม่เป็นอาร์เรย์:", shcoolData.value);
         }
       } else {
+        if (isAddingChild || isRemoveChild) {
+          return;
+        }
         model.value.child[index].schoolNameDemonstration = "";
         model.value.child[index].schoolNamegeneral = "";
         model.value.child[index].schoolType = "";
@@ -1625,7 +1651,7 @@ async function submit(actionId) {
     position: spouseData.value.officer?.position || spouseData.value.enterprises?.position,
     department: spouseData.value.officer?.department || spouseData.value.enterprises?.department,
     eligibleBenefits: model.value.eligibleBenefits[0] ?? null,
-    eligibleSubSenefits: model.value.eligibleSubSenefits[1] ?? null,
+    eligibleSubSenefits: model.value.eligibleSubSenefits[0] ?? null,
     deleteChild: model.value.deleteChild?.filter(c => c.id !== null) || [],
     child: model.value.child.map(c => {
       let childData = {
@@ -1660,7 +1686,7 @@ async function submit(actionId) {
 
   };
 
-  console.log("payload",payload)
+  console.log("payload", payload)
 
   let fetch; // เปลี่ยนจาก var เป็น let
   Swal.fire({

@@ -9,6 +9,7 @@ const statusType = require('../enum/status')
 const statusText = require('../enum/statusText')
 const welfareType = require('../enum/welfareType');
 const { sendMail } = require('../helper/mail');
+const sub_categories = require('../models/mariadb/sub_categories');
 
 const authPermission = async (req, res, next) => {
     const method = 'AuthPermission';
@@ -145,6 +146,7 @@ const checkRemaining = async (req, res, next) => {
         for (let i = 0; i < child.length; i++) {
             const currentChild = child[i];
             const childName = currentChild.childName;
+            const subCategoriesId = currentChild.subCategoriesId
             const currentFundSumRequest = Number(currentChild.fundUniversity) + Number(currentChild.fundSubUniversity) || 0
 
 
@@ -189,7 +191,7 @@ const checkRemaining = async (req, res, next) => {
                         ]
                     }
                 ],
-                where: { ...whereObj, child_name: childName },
+                where: { ...whereObj, child_name: childName,sub_categories_id: subCategoriesId },
                 group: ["childrenInfomation.child_name", "sub_category.id"]
             });
 
