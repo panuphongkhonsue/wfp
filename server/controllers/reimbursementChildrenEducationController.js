@@ -149,25 +149,24 @@ class Controller extends BaseController {
         delete req.body.child
         const dataCreate = req.body;
         dataCreate.fund_receipt = isNaN(dataCreate.fund_receipt) ? 0 : parseFloat(dataCreate.fund_receipt);
-        if (child.length > 3) {
-            return res.status(400).json({ message: "ไม่สามารถเพิ่มข้อมูลบุตรได้เกิน 3 คน" });
-        }
-
-        for (let childObj of child) {
-            if (childObj.childPassedAway && childObj.delegateName) {
-                const matchedChild = child.find(c => c.childName === childObj.delegateName);
-                if (matchedChild) {
-                    return res.status(400).json({
-                        message: `บุตร (${matchedChild.childName}) ไม่สามารถเบิกได้เนื่องถูกแทนที่กรณีถึงแก้กรรม`,
-                    });
-                }
-            }
-        }
-
         try {
             const results = await sequelize.transaction(async t => {
                 const newReimbursementsChild = await reimbursementsChildrenEducation.create(dataCreate, { transaction: t });
                 if (!isNullOrEmpty(child)) {
+                    if (child.length > 3) {
+                        return res.status(400).json({ message: "ไม่สามารถเพิ่มข้อมูลบุตรได้เกิน 3 คน" });
+                    }
+            
+                    for (let childObj of child) {
+                        if (childObj.childPassedAway && childObj.delegateName) {
+                            const matchedChild = child.find(c => c.childName === childObj.delegateName);
+                            if (matchedChild) {
+                                return res.status(400).json({
+                                    message: `บุตร (${matchedChild.childName}) ไม่สามารถเบิกได้เนื่องถูกแทนที่กรณีถึงแก้กรรม`,
+                                });
+                            }
+                        }
+                    }
                 
                     var childData = child.map((childObj) => {
                         let data = {
@@ -257,21 +256,6 @@ class Controller extends BaseController {
         const dataUpdate = req.body;
         var itemsReturned = null;
 
-        if (!isNullOrEmpty(child) && child.length > 3 ) {
-            return res.status(400).json({ message: "ไม่สามารถเพิ่มข้อมูลบุตรได้เกิน 3 คน" });
-        }
-
-        for (let childObj of child) {
-            if (childObj.childPassedAway && childObj.delegateName) {
-                const matchedChild = child.find(c => c.childName === childObj.delegateName);
-                if (matchedChild) {
-                    return res.status(400).json({
-                        message: `บุตร (${matchedChild.childName}) ไม่สามารถเบิกได้เนื่องถูกแทนที่กรณีถึงแก้กรรม`,
-                    });
-                }
-            }
-        }
-
         try {
             const result = await sequelize.transaction(async t => {
             
@@ -317,6 +301,20 @@ class Controller extends BaseController {
                 }
 
                 if (!isNullOrEmpty(child)) {
+                    if (child.length > 3 ) {
+                        return res.status(400).json({ message: "ไม่สามารถเพิ่มข้อมูลบุตรได้เกิน 3 คน" });
+                    }
+            
+                    for (let childObj of child) {
+                        if (childObj.childPassedAway && childObj.delegateName) {
+                            const matchedChild = child.find(c => c.childName === childObj.delegateName);
+                            if (matchedChild) {
+                                return res.status(400).json({
+                                    message: `บุตร (${matchedChild.childName}) ไม่สามารถเบิกได้เนื่องถูกแทนที่กรณีถึงแก้กรรม`,
+                                });
+                            }
+                        }
+                    }
                     var childData = child.map((childObj) => {
                         let data = {
                             id: childObj.id,
