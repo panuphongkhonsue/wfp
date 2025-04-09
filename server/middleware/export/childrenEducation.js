@@ -176,6 +176,8 @@ const fetchDatareimChildrenEducation = async (req, res, next) => {
                 delegateNumber:c.delegateNumber,
                 delegateBirthDay:formatDateThaiSlash(c.delegateBirthDay),
                 delegateDeathDay:formatDateThaiSlash(c.delegateDeathDay),
+                district:c.district,
+                province:c.province,
                 SubCategoryName: c.SubCategoryName,
             })),
             receiptInfo: child.map(c => ({
