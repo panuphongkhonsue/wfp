@@ -30,7 +30,7 @@ class Controller extends BaseController {
                     ],
                     [
                         Sequelize.literal(`CASE 
-                            WHEN status = 'รอตรวจสอบ' THEN request_date
+                            WHEN status = 'รอตรวจสอบ' THEN id
                             ELSE NULL
                         END`), 'ASC'
                     ],
