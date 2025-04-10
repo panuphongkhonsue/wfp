@@ -87,7 +87,7 @@ class Controller extends BaseController {
             `, {
                 replacements: {
                     startDate: `${parseInt(year) - 1}-10-01`,
-                    endDate: `${year}-09-30`,
+                    endDate: `${parseInt(year)}-09-30`,
                 },
                 type: sequelize.QueryTypes.SELECT,
             });
@@ -130,7 +130,7 @@ class Controller extends BaseController {
             `, {
                 replacements: {
                     startDate: `${parseInt(year) - 1}-10-01`,
-                    endDate: `${year}-09-30`,
+                    endDate: `${parseInt(year)}-09-30`,
                 },
                 type: sequelize.QueryTypes.SELECT,
             });
