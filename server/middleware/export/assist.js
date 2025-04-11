@@ -293,7 +293,7 @@ const fetchDataFuneralFamily = async (req, res, next) => {
         if (hasDeceased) {
             const hasDeceaseddatas = JSON.parse(JSON.stringify(hasDeceased));
             welfareData.receiptInfo.push({
-                categoryName: hasDeceaseddatas.subCategoryName,
+                categoryName: "ค่าสงเคราะห์การเสียชีวิตของ" + hasDeceaseddatas.subCategoryName,
                 fundSumRequest: welfareData.fundSumRequest,
             });
         }
