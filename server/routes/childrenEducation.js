@@ -16,6 +16,7 @@ const { authPermission,
 
 router.get('/', authPermission, bindFilter, reimbursementChildrenEducationController.list);
 router.get('/remaining/', authPermission, getRemaining , reimbursementChildrenEducationController.getRemainingChildFund);
+router.get('/get-Count-Request/', authPermission, getRemaining , reimbursementChildrenEducationController.getTotalCountRequestedChildFund);
 router.get('/subCategories', authPermission, reimbursementChildrenEducationController.getByCategories)
 router.get('/latest-school', authPermission, reimbursementChildrenEducationController.getLatestSchoolByChildName);
 router.get('/get-latest-school/latest-school', authPermissionEditor, reimbursementChildrenEducationController.getLatestSchoolByChildName);

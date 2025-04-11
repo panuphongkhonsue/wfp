@@ -308,7 +308,7 @@
                                 <q-card-section class="q-px-md q-pt-md q-pb-none font-14 q-gutter-y-md">
                                     <div v-for="(child, index) in model.child" :key="index">
                                         <div class="row items-center justify-between">
-                                            <p class="q-mb-lg font-18 font-bold ">บุตรคนที่ {{ index + 1 }}
+                                            <p class="q-mb-lg font-18 font-bold ">{{ index + 1 }}.
                                             </p>
                                             <q-btn
                                                 v-if="(index > 0 && !isView && !isLoading) ||
@@ -731,6 +731,7 @@ let isAddingChild = false;
 let isRemoveChild = false;
 const userData = ref({});
 const remaining = ref({});
+const totalCount = ref({});
 const shcoolData = ref([]);
 let optionsUserName = ref([]);
 let optionsChildName = ref([]);
@@ -980,6 +981,36 @@ async function fetchRemaining() {
     }
 }
 
+async function fetchTotalCountRequested() {
+  try {
+    const subCategoriesId = model.value.child.map(child => child.subCategoriesId);
+
+    // Loop ผ่าน subCategoriesId แต่ละตัวและทำการ request แยก
+    for (const id of subCategoriesId) {
+      const fetchRemainingData = await reimbursementChildrenEducationService.getTotalCountRequested({
+        createFor: model.value.createFor,
+        subCategoriesId: [id]  // ส่งแค่หนึ่ง subCategoriesId ต่อครั้ง
+      });
+
+      const returnedData = fetchRemainingData.data.datas;
+
+      if (returnedData) {
+        const dataArray = Object.values(returnedData);  // แปลงเป็น array
+        totalCount.value = dataArray.map(item => ({
+          subCategoryId: item.subCategoryId,
+          childName: item.childName,
+          fund: item?.fund,
+          totalSumRequested: item?.totalSumRequested,
+          perTime: item?.perTime,
+          fundRemaining: item?.fundRemaining
+        }));
+      }
+    }
+  } catch (error) {
+    console.error("❌ Error fetching remaining:", error);
+  }
+}
+
 watch(
     () => ({
         createFor: model.value.createFor,
@@ -988,6 +1019,7 @@ watch(
     (newVal) => {
         if (newVal.subCategoriesId.length > 0) {
             fetchRemaining();
+            fetchTotalCountRequested()
         }
     },
     { deep: true }
@@ -996,22 +1028,25 @@ watch(
 
 // ฟังก์ชันในการจัดการการแสดงผลข้อมูลเด็ก
 const displayedChildren = computed(() => {
-    const dataArray = Array.isArray(remaining.value) ? remaining.value : [];
+  const dataArray = Array.isArray(totalCount.value) ? totalCount.value : [];
 
-    return optionsChildName.value.map((child, index) => {
-        const childNameToCompare = child.name?.trim().toLowerCase();  // ตรวจสอบก่อนใช้
+  return optionsChildName.value.map((child, index) => {
+    const childNameToCompare = child.name?.trim().toLowerCase();
 
-        const foundChild = dataArray.find(r =>
-            r.childName?.trim().toLowerCase() === childNameToCompare
-        ) || null;
+    const foundChild = dataArray.find(r =>
+      r.childName?.trim().toLowerCase() === childNameToCompare
+    ) || null;
 
+    const formattedTotalSum = foundChild && typeof foundChild.totalSumRequested === 'number'
+      ? new Intl.NumberFormat('en-US').format(foundChild.totalSumRequested)
+      : '-';
 
-        return {
-            index: index + 1,
-            childName: child.childName || `บุตรคนที่ ${index + 1}`,
-            fundRemaining: foundChild ? (foundChild.totalSumRequested || '-') : '-',
-        };
-    });
+    return {
+      index: index + 1,
+      childName: child.childName || `บุตรคนที่ ${index + 1}`,
+      fundRemaining: formattedTotalSum,
+    };
+  });
 });
 
 watch(
@@ -1860,12 +1895,13 @@ async function init() {
             optionsUserName.value = result.data.datas;
             fetchDataEdit();
             fetchRemaining();
+            fetchTotalCountRequested();
         }
         else {
-            fetchRemaining();
             const result = await userManagementService.getUserInitialData({ keyword: null });
             userInitialData.value = result.data.datas;
             fetchRemaining();
+            fetchTotalCountRequested();
         }
     }
     catch (error) {

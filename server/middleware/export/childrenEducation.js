@@ -4,7 +4,7 @@ const { Op, col } = require('sequelize');
 const statusText = require('../../enum/statusText');
 const category = require('../../enum/category');
 const status = require('../../enum/status');
-const { formatDateThaiSlash } = require('../../enum/formatDate');
+const { formatDateThaiSpace } = require('../../enum/formatDate');
 const { reimbursementsChildrenEducation,reimbursementsChildrenEducationHasChildrenInfomation,childrenInfomation, users, positions, categories, sector, employeeTypes, departments, subCategories, sequelize } = require('../../models/mariadb');
 const { getFiscalYearDynamic, getFiscalYear } = require('../../middleware/utility');
 
@@ -155,7 +155,7 @@ const fetchDatareimChildrenEducation = async (req, res, next) => {
                 street: datas.street,
                 district: datas.district,
                 province: datas.province,
-                firstWorkingDate: formatDateThaiSlash(datas.firstWorkingDate)
+                firstWorkingDate: formatDateThaiSpace(datas.firstWorkingDate)
 
             },
             children: child.map(c => ({
@@ -165,7 +165,7 @@ const fetchDatareimChildrenEducation = async (req, res, next) => {
                 childName:c.childName,
                 childNumber:c.childNumber,
                 childType:c.childType,
-                childBirthDay:formatDateThaiSlash(c.childBirthDay),
+                childBirthDay:formatDateThaiSpace(c.childBirthDay),
                 fundUniversity:c.fundUniversity,
                 fundSubUniversity:c.fundSubUniversity,
                 childFatherNumber:c.childFatherNumber,
@@ -174,8 +174,8 @@ const fetchDatareimChildrenEducation = async (req, res, next) => {
                 schoolType:c.schoolType,
                 delegateName:c.delegateName,
                 delegateNumber:c.delegateNumber,
-                delegateBirthDay:formatDateThaiSlash(c.delegateBirthDay),
-                delegateDeathDay:formatDateThaiSlash(c.delegateDeathDay),
+                delegateBirthDay:formatDateThaiSpace(c.delegateBirthDay),
+                delegateDeathDay:formatDateThaiSpace(c.delegateDeathDay),
                 district:c.district,
                 province:c.province,
                 SubCategoryName: c.SubCategoryName,
