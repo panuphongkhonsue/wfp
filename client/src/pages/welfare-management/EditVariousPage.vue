@@ -85,7 +85,7 @@
                 <q-option-group class="q-gutter-y-sm" v-model="model.categoryId" type="radio" :options="categoryOptions"
                   :disable="isView" :rules="[(val) => !!val || '']" />
               </div>
-              <div class="col-6 row q-col-gutter-y-md q-mb-none" style="padding-top: 22px;">
+              <div class="col-5 row q-col-gutter-y-md q-pl-md q-mb-none" style="padding-top: 22px;">
                 <p class="col-12 q-mb-none">({{ remaining[4]?.fund ? "จ่ายไม่เกินคนละ " + remaining[4]?.fund + " บาท" :
                   "ไม่จำกัดจำนวนเงินต่อปี" }})</p>
                 <p class="col-12 q-mb-none">({{ remaining[5]?.fund ? "จ่ายไม่เกินคนละ " + remaining[5]?.fund + " บาท" :
@@ -198,20 +198,20 @@ const model = ref({
 let options = ref([]);
 const categoryOptions =
   [
-    {
-      label: 'การเบิกค่าสมรสโดยนิตินัย',
+  {
+      label: 'สวัสดิการค่าสงเคราะห์การสมรสโดยนิตินัย',
       value: 4
     },
     {
-      label: 'การเบิกค่าอุปสมบทหรือการไปประกอบพิธีฮัจญ์',
+      label: 'สวัสดิการค่าสงเคราะห์การอุปสมบทหรือการไปประกอบพิธีฮัจญ์',
       value: 5
     },
     {
-      label: 'การเบิกค่ารับขวัญบุตรแรกเกิด',
+      label: 'สวัสดิการค่าสงเคราะห์การเบิกค่ารับขวัญบุตรแรกเกิด',
       value: 6
     },
     {
-      label: 'การเบิกสวัสดิการค่าสงเคราะห์ กรณีประสบภัยพิบัติ',
+      label: 'สวัสดิการค่าสงเคราะห์การเบิกสวัสดิการค่าสงเคราะห์ กรณีประสบภัยพิบัติ',
       value: 7
     }
   ]

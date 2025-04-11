@@ -32,14 +32,14 @@
     </template>
     <template v-slot:toolbar>
       <div class="col-12  row font-bold font-14 q-col-gutter-x-md full-width">
-        <p class="col-12 col-md-2 q-py-sm q-ma-none row  items-center ">
+        <p class="col-12 col-md-2 q-py-sm q-ma-none row q-pl-none items-center ">
           {{ remainingTextOneForUsers(remaining[4], remaining[4]?.categoryName) }} </p>
-            <p class="col-12 col-md-3 col-lg-grow q-py-sm q-ma-none row  items-center ">
+            <p class="col-12 col-md-3 col-lg-3 q-py-sm  q-ma-none row  items-center ">
               {{ remainingTextOneForUsers(remaining[5], remaining[5]?.categoryName) }} </p>
-                <p class="col-12 col-md-2 col-lg-3 q-py-sm q-ma-none row items-center ">
+                <p class="col-12 col-md-2 col-lg-2 q-py-sm q-ma-none  row items-center ">
                   {{ remainingText(remaining[6], remaining[6]?.categoryName) }}
                 </p>
-                <p class="col-12 col-md-3 col-lg-grow q-py-sm q-ma-none row  items-center">
+                <p class="col-12 col-md-3 col-lg-3 q-py-sm q-ma-none  row  items-center">
                   {{ remainingText(remaining[7], remaining[7]?.categoryName) }}
                 </p>
                 <div class="col-12 col-md-2 flex items-center justify-end">

@@ -15,7 +15,7 @@
             <q-card class="border-card bg-blue-9 q-ms-md">
               <q-card-section class="q-px-lg row items-center justify-between">
                 <!-- ข้อความ -->
-                <div>
+                <div class="col">
                   <p class="q-mb-none text-white font-20 font-bold q-pb-md ellipsis">{{ items.categoryName }}</p>
                   <p class="q-mb-none text-white font-16 q-pb-sm">
 
@@ -288,7 +288,7 @@ async function fetchRemainingVarious() {
     const fetchRemaining = await variousWelfareService.getRemaining({ createFor: model.value.createFor });
 
     if (Array.isArray(fetchRemaining.data?.datas)) {
-      const marriageData = fetchRemaining.data.datas.find(item => item.categoryName === "สมรส");
+      const marriageData = fetchRemaining.data.datas.find(item => item.categoryName === "สวัสดิการค่าสงเคราะห์การสมรสโดยนิตินัย");
 
       if (marriageData) {
         let remaining = {
