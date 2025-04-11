@@ -4,7 +4,7 @@ const { Op, col } = require('sequelize');
 const statusText = require('../../enum/statusText');
 const category = require('../../enum/category');
 const status = require('../../enum/status');
-const { formatDateThaiSlash } = require('../../enum/formatDate');
+const { formatDateThaiSpace } = require('../../enum/formatDate');
 const { reimbursementsGeneral, users, positions, categories, sector, employeeTypes, departments, subCategories, reimbursementsGeneralHasSubCategories, sequelize } = require('../../models/mariadb');
 const { getFiscalYearDynamic, getFiscalYear } = require('../../middleware/utility');
 const fetchDataHealthCheckup = async (req, res, next) => {
@@ -322,8 +322,8 @@ const fetchDataMedical = async (req, res, next) => {
             const getRequestJsonData = JSON.parse(JSON.stringify(getRequestData));
             const getRequestFormat = getRequestJsonData.map(item => ({
                 ...item,
-                startDate: formatDateThaiSlash(item.startDate),
-                endDate: formatDateThaiSlash(item.endDate),
+                startDate: formatDateThaiSpace(item.startDate),
+                endDate: formatDateThaiSpace(item.endDate),
             }));
             welfareData.requestData = getRequestFormat;
         }
@@ -483,7 +483,7 @@ const fetchDataDental = async (req, res, next) => {
         const getRequestJsonData = JSON.parse(JSON.stringify(getRequestData));
         const getRequestFormat = getRequestJsonData.map(item => ({
             ...item,
-            dateReceipt: formatDateThaiSlash(item.dateReceipt),
+            dateReceipt: formatDateThaiSpace(item.dateReceipt),
         }));
         welfareData.requestData = getRequestFormat;
         delete welfareData.categoryName;

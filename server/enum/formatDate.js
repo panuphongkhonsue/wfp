@@ -50,6 +50,16 @@ function formatDateThaiSlash(d) {
   return `${format(dateObj, "dd/MMM", { locale: th })}/${dateObj.getFullYear() + 543}`;
 }
 
+function formatDateThaiSpace(d) {
+  if (!d) return "-";
+
+  const dateObj = new Date(d);
+
+  if (isNaN(dateObj)) return "-";
+
+  return `${format(dateObj, "dd MMM", { locale: th })} ${dateObj.getFullYear() + 543}`;
+}
+
 function dateDiff(d1, d2) {
   if (!d1 || !d2) return null;
   const df = differenceInDays(d1, d2);
@@ -77,4 +87,5 @@ module.exports = {
   formatDateThaiSlash,
   dateDiff,
   formatNumber,
+  formatDateThaiSpace
 };

@@ -276,7 +276,7 @@
                                 <span class="mx-sm d-flex" style="max-width: 400px; width: 400px;">เมื่อ
                                   (วัน/เดือน/ปี)
                                   <span class="text-dot text-center">
-                                    <%= body.requestData[i].startDate + " - " + body.requestData[i].endDate %>
+                                    <%= toThaiNumber(body.requestData[i].startDate) + " ถึง " + toThaiNumber(body.requestData[i].endDate) %>
                                   </span>
                                 </span></span>
                               </div>
@@ -364,7 +364,7 @@
                                 </label>
                                 <span class="mx-sm d-flex text-center" style="max-width: 220px; width: 220px;">เมื่อ
                                   (วัน/เดือน/ปี)<span class="text-dot text-center">
-                                    <%= body.requestData[i].dateReceipt %>
+                                    <%= toThaiNumber(body.requestData[i].dateReceipt) %>
                                   </span></span>
                                 <span class="ml-sm d-flex text-center" style="max-width: 170px; width: 170px;">จำนวนเงิน 
                                   <span class="<%= body.requestData[i].fundSumRequest ? 'text-dot text-center' : '' %>">
