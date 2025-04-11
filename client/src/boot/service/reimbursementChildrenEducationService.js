@@ -29,6 +29,11 @@ export default {
       params: options,
     });
   },
+  getTotalCountRequested(options) {
+    return api.get(`${path}/get-Count-Request`, {
+      params: options,
+    });
+  },
   getDeadChild(options) {
     return api.get(`${path}/DeadChild`, {
       params: options,

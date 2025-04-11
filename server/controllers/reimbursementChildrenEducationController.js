@@ -140,6 +140,83 @@ class Controller extends BaseController {
         }
     };
 
+    getTotalCountRequestedChildFund = async (req, res, next) => {
+        const method = 'GetRemainingChildFund';
+        const { id } = req.user;
+        const { createFor} = req.query;
+        const { subCategoriesId } = req.query;
+
+        try {
+            const { filter } = req.query;
+            let whereObj = { ...filter };
+
+            const results = await childrenInfomation.findAll({
+                attributes: [
+                    [col("sub_category.id"), "subCategoryId"],
+                    [col("childrenInfomation.child_name"), "childName"],
+                    [col("sub_category.fund"), "fund"],
+                    [fn("SUM", col("childrenInfomation.fund_sum_request")), "totalSumRequested"],
+                    [
+                        literal("sub_category.fund - SUM(childrenInfomation.fund_sum_request)"),
+                        "fundRemaining"
+                    ],
+                    [col("sub_category.per_times"), "perTime"],
+                    [fn("COUNT", col("childrenInfomation.fund_sum_request")), "totalCountRequested"],
+                    [col("sub_category.per_years"), "perYears"],
+                    [
+                        literal("sub_category.per_years - COUNT(childrenInfomation.fund_sum_request)"),
+                        "requestsRemaining"
+                    ]
+                ],
+                include: [
+                    {
+                        model: subCategories,
+                        as: "sub_category",
+                        attributes: []
+                    },
+                    {
+                        model: reimbursementsChildrenEducationHasChildrenInfomation,
+                        as: "reimbursements_children_education_has_children_infomations",
+                        required: true,
+                        attributes: [],
+                        include: [
+                            {
+                                model: reimbursementsChildrenEducation,
+                                as: "reimbursements_children_education",
+                                required: true,
+                                attributes: [],
+                                where: { created_by: createFor ?? id }
+                            }
+                        ]
+                    }
+                ],
+                where: whereObj,
+                group: [
+                    "childrenInfomation.child_name",
+                ],
+            });
+
+            if (results && results.length > 0) {
+                const datas = JSON.parse(JSON.stringify(results));
+
+                if (dynamicCheckRemaining(datas)) datas.canRequest = false;
+                var reimChildrenEducation = {};
+                reimChildrenEducation.datas = {
+                    ...datas,
+                    canRequest: datas.canRequest ?? true
+                };
+
+                logger.info('Complete', { method, data: { id } });
+                return res.status(200).json(reimChildrenEducation);
+            }
+
+        } catch (error) {
+            console.error("Error:", error);
+            logger.error(`Error ${error.message}`, { method, data: { id } });
+            next(error);
+        }
+    };
+
 
 
     create = async (req, res, next) => {

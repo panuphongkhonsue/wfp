@@ -63,7 +63,7 @@
                                             <div class="d-flex" style="width: 390px;flex-wrap: wrap;">
                                                 <span class="font-semi-bold">วันที่เริ่มบรรจุเข้าทำงาน</span>
                                                 <span class="text-dot pl-sm text-center">
-                                                    <%= body?.user?.firstWorkingDate %>
+                                                    <%= toThaiNumber(body?.user?.firstWorkingDate) %>
                                                 </span>
                                             </div>
                                         </div>
@@ -393,7 +393,7 @@
                                                 </span>
                                                 <span class="font-semi-bold">เกิดเมื่อ</span>
                                                 <span class="text-dot pl-sm text-center">
-                                                    <%= child.childBirthDay ? child.childBirthDay : " " %>
+                                                    <%= toThaiNumber(child?.childBirthDay) %>
                                                 </span>
                                             </div>
 
@@ -401,11 +401,15 @@
                                                 style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
                                                 <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
                                                 <span class="text-dot pl-sm text-center">
-                                                    <%= child.childFatherNumber ? child.childFatherNumber : " " %>
+                                                    <%= toThaiNumber(Number(child?.childFatherNumber).toLocaleString('en-US',{
+                                                        minimumFractionDigits: child?.childFatherNumber % 1===0 ? 0 : 2,
+                                                        maximumFractionDigits: 2, })) %>
                                                 </span>
                                                 <span class="font-semi-bold">เป็นบุตรลำดับที่ (ของมารดา)</span>
                                                 <span class="text-dot pl-sm text-center">
-                                                    <%= child.childMotherNumber ? child.childMotherNumber : " " %>
+                                                    <%= toThaiNumber(Number(child?.childMotherNumber).toLocaleString('en-US',{
+                                                        minimumFractionDigits: child?.childMotherNumber % 1===0 ? 0 : 2,
+                                                        maximumFractionDigits: 2, })) %>
                                                 </span>
                                             </div>
 
@@ -427,13 +431,13 @@
                                                 <span class="font-semi-bold">เกิดเมื่อ</span>
                                                 <span class="text-dot pl-sm text-center">
                                                     <%= child.delegateBirthDay && child.delegateBirthDay !=="-" ?
-                                                        child.delegateBirthDay : " " %>
+                                                    toThaiNumber(child.delegateBirthDay) : " " %>
                                                 </span>
 
                                                 <span class="font-semi-bold">ถึงแก่กรรมเมื่อ</span>
                                                 <span class="text-dot pl-sm text-center">
                                                     <%= child.delegateDeathDay && child.delegateDeathDay !=="-" ?
-                                                        child.delegateDeathDay : " " %>
+                                                    toThaiNumber(child?.delegateDeathDay) : " " %>
                                                 </span>
                                             </div>
 
@@ -458,7 +462,8 @@
                                                 style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
                                                 <span class="font-semi-bold ">ชั้นที่ศึกษา</span>
                                                 <span class="text-dot pl-sm text-center">
-                                                    <%= child.SubCategoryName %>
+                                                    <%= toThaiNumber(child?.SubCategoryName) %>
+                                                    
                                                 </span>
                                                 <span class="font-semi-bold">จำนวน</span>
                                                 <span class="text-dot pl-sm text-center">
@@ -546,21 +551,25 @@
                                             </span>
                                             <span class="font-semi-bold">เกิดเมื่อ</span>
                                             <span class="text-dot pl-sm text-center">
-                                                <%= child.childBirthDay ? child.childBirthDay : " " %>
+                                                <%= toThaiNumber(child?.childBirthDay) %>
                                             </span>
                                         </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
-                                            <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= child.childFatherNumber ? child.childFatherNumber : " " %>
-                                            </span>
-                                            <span class="font-semi-bold">เป็นบุตรลำดับที่ (ของมารดา)</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= child.childMotherNumber ? child.childMotherNumber : " " %>
-                                            </span>
-                                        </div>
+                                        style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                        <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
+                                        <span class="text-dot pl-sm text-center">
+                                            <%= toThaiNumber(Number(child?.childFatherNumber).toLocaleString('en-US',{
+                                                minimumFractionDigits: child?.childFatherNumber % 1===0 ? 0 : 2,
+                                                maximumFractionDigits: 2, })) %>
+                                        </span>
+                                        <span class="font-semi-bold">เป็นบุตรลำดับที่ (ของมารดา)</span>
+                                        <span class="text-dot pl-sm text-center">
+                                            <%= toThaiNumber(Number(child?.childMotherNumber).toLocaleString('en-US',{
+                                                minimumFractionDigits: child?.childMotherNumber % 1===0 ? 0 : 2,
+                                                maximumFractionDigits: 2, })) %>
+                                        </span>
+                                    </div>
 
                                         <div class="row"
                                             style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
@@ -580,13 +589,14 @@
                                             <span class="font-semi-bold">เกิดเมื่อ</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.delegateBirthDay && child.delegateBirthDay !=="-" ?
-                                                    child.delegateBirthDay : " " %>
+                                                toThaiNumber(child?.delegateBirthDay) : " " %>
+                                                    
                                             </span>
 
                                             <span class="font-semi-bold">ถึงแก่กรรมเมื่อ</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.delegateDeathDay && child.delegateDeathDay !=="-" ?
-                                                    child.delegateDeathDay : " " %>
+                                                toThaiNumber(child?.delegateDeathDay) : " " %>
                                             </span>
                                         </div>
 
@@ -806,21 +816,25 @@
                                             </span>
                                             <span class="font-semi-bold">เกิดเมื่อ</span>
                                             <span class="text-dot pl-sm text-center">
-                                                <%= child.childBirthDay ? child.childBirthDay : " " %>
+                                                <%= toThaiNumber(child?.childBirthDay) %>
                                             </span>
                                         </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
-                                            <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= child.childFatherNumber ? child.childFatherNumber : " " %>
-                                            </span>
-                                            <span class="font-semi-bold">เป็นบุตรลำดับที่ (ของมารดา)</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= child.childMotherNumber ? child.childMotherNumber : " " %>
-                                            </span>
-                                        </div>
+                                        style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                        <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
+                                        <span class="text-dot pl-sm text-center">
+                                            <%= toThaiNumber(Number(child?.childFatherNumber).toLocaleString('en-US',{
+                                                minimumFractionDigits: child?.childFatherNumber % 1===0 ? 0 : 2,
+                                                maximumFractionDigits: 2, })) %>
+                                        </span>
+                                        <span class="font-semi-bold">เป็นบุตรลำดับที่ (ของมารดา)</span>
+                                        <span class="text-dot pl-sm text-center">
+                                            <%= toThaiNumber(Number(child?.childMotherNumber).toLocaleString('en-US',{
+                                                minimumFractionDigits: child?.childMotherNumber % 1===0 ? 0 : 2,
+                                                maximumFractionDigits: 2, })) %>
+                                        </span>
+                                    </div>
 
                                         <div class="row"
                                             style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
@@ -828,6 +842,7 @@
                                                 แทนบุตรลำดับที่</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.delegateNumber ? child.delegateNumber : " " %>
+
                                             </span>
                                         </div>
 
@@ -840,13 +855,13 @@
                                             <span class="font-semi-bold">เกิดเมื่อ</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.delegateBirthDay && child.delegateBirthDay !=="-" ?
-                                                    child.delegateBirthDay : " " %>
+                                                toThaiNumber(child?.delegateBirthDay) : " " %>
                                             </span>
 
                                             <span class="font-semi-bold">ถึงแก่กรรมเมื่อ</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.delegateDeathDay && child.delegateDeathDay !=="-" ?
-                                                    child.delegateDeathDay : " " %>
+                                                toThaiNumber(child?.delegateDeathDay) : " " %>
                                             </span>
                                         </div>
 
@@ -1202,7 +1217,7 @@
                             <div class="col-auto row justify-center">
                                 <div class="col-sign">
                                     (ลงชื่อ) <div class="text-dot-no-value" style="max-width: 200px;">
-                                    </div>ผู้ขอรับเงินสวัสดิการ
+                                    </div>ผู้ตรวจสอบ
                                 </div>
                                 <div class="col-sign py-sm">
                                     ( <div class="text-dot text-center" style="max-width: 220px;">
@@ -1250,7 +1265,7 @@
                                         <div class="col-auto row justify-center">
                                             <div class="col-sign">
                                                 (ลงชื่อ) <div class="text-dot-no-value" style="max-width: 200px;">
-                                                </div>ผู้ขอรับเงินสวัสดิการ
+                                                </div>
                                             </div>
                                             <div class="col-sign py-sm">
                                                 ( <div class="text-dot text-center" style="max-width: 220px;">
@@ -1316,10 +1331,10 @@
                                 <div class="col row justify-center">
                                     <div class="col-sign">
                                         (ลงชื่อ) <div class="text-dot-no-value" style="max-width: 200px;"></div>
-                                        ผู้จ่ายเงิน
+                                        ผู้รับเงิน
                                     </div>
                                     <div class="col-sign py-sm">
-                                        ( <div class="text-dot" style="max-width: 220px;"> </div> )
+                                        ( <div class="text-dot text-center" style="max-width: 220px;"><%= body?.user?.name %></div> )
                                     </div>
                                 </div>
                             </div>

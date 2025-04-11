@@ -352,8 +352,6 @@ const bindCreate = async (req, res, next) => {
             }, 0);
 
         }
-
-        console.log("req.body.child",req.body.child)
         const dataBinding = {
             reim_number: reimNumber,
             fund_receipt: childFundReceipt,
