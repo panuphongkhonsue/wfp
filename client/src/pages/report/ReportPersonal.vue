@@ -214,13 +214,13 @@ function onRequest(props) {
           allWelfareData[i].sub_category_name !== "บิดา" &&
           allWelfareData[i].sub_category_name !== "มารดา" &&
           allWelfareData[i].sub_category_name !== "คู่สมรส" &&
-          allWelfareData[i].sub_category_name !== "สนับสนุนพวงหรีดในนามส่วนบุคคล" &&
-          allWelfareData[i].sub_category_name !== "สนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
-          allWelfareData[i].category_name !== "สนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
-          allWelfareData[i].category_name !== "สนับสนุนพวงหรีดในนามส่วนบุคคล" &&
-          allWelfareData[i].category_name !== "พาหนะเหมาจ่าย" &&
-          allWelfareData[i].sub_category_name !== "พาหนะเหมาจ่าย" &&
-          allWelfareData[i].sub_category_name !== "ประสบอุบัติเหตุขณะปฏิบัติงาน" &&
+          allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพวงหรีดในนามส่วนบุคคล" &&
+          allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
+          allWelfareData[i].category_name !== "ค่าสนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
+          allWelfareData[i].category_name !== "ค่าสนับสนุนพวงหรีดในนามส่วนบุคคล" &&
+          allWelfareData[i].category_name !== "ค่าสนับสนุนพาหนะเหมาจ่าย" &&
+          allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพาหนะเหมาจ่าย" &&
+          allWelfareData[i].sub_category_name !== "ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่" &&
           allWelfareData[i].sub_category_name !== "ระดับปฐมวัย" &&
           allWelfareData[i].sub_category_name !== "ระดับประถมศึกษาปีที่ 1 - 6" &&
           allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาปีที่ 1 - 3" &&
@@ -240,10 +240,10 @@ function onRequest(props) {
         ) {
           if (allWelfareData[i].sub_category_name === "บุตร") {
             columns.value.push({
-              name: "เสียชีวิตคนในครอบครัว",
-              label: "เสียชีวิตคนในครอบครัว",
+              name: "สวัสดิการเสียชีวิตคนในครอบครัว",
+              label: "สวัสดิการเสียชีวิตคนในครอบครัว",
               align: "left",
-              field: "เสียชีวิตคนในครอบครัว" + "fund",
+              field: "สวัสดิการเสียชีวิตคนในครอบครัว" + "fund",
               format: (val) => {
                 const number = Number(val); // Convert to number
                 if (!isNaN(number)) {
@@ -257,29 +257,10 @@ function onRequest(props) {
               classes: "ellipsis",
             });
             columns.value.push({
-              name: "การศึกษาของบุตร",
-              label: "การศึกษาของบุตร",
+              name: "สวัสดิการการศึกษาของบุตร",
+              label: "สวัสดิการการศึกษาของบุตร",
               align: "left",
-              field: "การศึกษาของบุตร" + "fund",
-              format: (val) => {
-                const number = Number(val); // Convert to number
-                if (!isNaN(number)) {
-                  return number.toLocaleString("en-US", {
-                    minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
-                    maximumFractionDigits: 2, // Limit to 2 decimal places
-                  }); // Format as '3,000'
-                }
-                return `${val}`; // If conversion fails, return a fallback value
-              },
-              classes: "ellipsis",
-            });
-          }
-          else if (allWelfareData[i].sub_category_name === "เยี่ยมไข้") {
-            columns.value.push({
-              name: "กรณีเจ็บป่วย",
-              label: "กรณีเจ็บป่วย",
-              align: "left",
-              field: "กรณีเจ็บป่วย" + "fund",
+              field: "สวัสดิการการศึกษาของบุตร" + "fund",
               format: (val) => {
                 const number = Number(val); // Convert to number
                 if (!isNaN(number)) {
@@ -293,12 +274,31 @@ function onRequest(props) {
               classes: "ellipsis",
             });
           }
-          else if (allWelfareData[i].category_name === "ผู้ปฏิบัติงานเสียชีวิต") {
+          else if (allWelfareData[i].sub_category_name === "ค่าเยี่ยมไข้ผู้ปฏิบัติงาน กรณีเป็นผู้ป่วยใน") {
             columns.value.push({
-              name: "ผู้ปฏิบัติงานเสียชีวิต",
-              label: "ผู้ปฏิบัติงานเสียชีวิต",
+              name: "สวัสดิการกรณีเจ็บป่วย",
+              label: "สวัสดิการกรณีเจ็บป่วย",
               align: "left",
-              field: "ผู้ปฏิบัติงานเสียชีวิต" + "fund",
+              field: "สวัสดิการกรณีเจ็บป่วย" + "fund",
+              format: (val) => {
+                const number = Number(val); // Convert to number
+                if (!isNaN(number)) {
+                  return number.toLocaleString("en-US", {
+                    minimumFractionDigits: number % 1 === 0 ? 0 : 2, // No decimals for whole numbers, 2 decimals otherwise
+                    maximumFractionDigits: 2, // Limit to 2 decimal places
+                  }); // Format as '3,000'
+                }
+                return `${val}`; // If conversion fails, return a fallback value
+              },
+              classes: "ellipsis",
+            });
+          }
+          else if (allWelfareData[i].category_name === "สวัสดิการผู้ปฏิบัติงานเสียชีวิต") {
+            columns.value.push({
+              name: "สวัสดิการผู้ปฏิบัติงานเสียชีวิต",
+              label: "สวัสดิการผู้ปฏิบัติงานเสียชีวิต",
+              align: "left",
+              field: "สวัสดิการผู้ปฏิบัติงานเสียชีวิต" + "fund",
               format: (val) => {
                 const number = Number(val); // Convert to number
                 if (!isNaN(number)) {
@@ -350,12 +350,12 @@ function onRequest(props) {
             allWelfareData[i].sub_category_name !== "บิดา" &&
             allWelfareData[i].sub_category_name !== "มารดา" &&
             allWelfareData[i].sub_category_name !== "คู่สมรส" &&
-            allWelfareData[i].sub_category_name !== "สนับสนุนพวงหรีดในนามส่วนบุคคล" &&
-            allWelfareData[i].sub_category_name !== "สนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
-            allWelfareData[i].category_name !== "สนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
-            allWelfareData[i].category_name !== "สนับสนุนพวงหรีดในนามส่วนบุคคล" &&
-            allWelfareData[i].category_name !== "พาหนะเหมาจ่าย" &&
-            allWelfareData[i].sub_category_name !== "พาหนะเหมาจ่าย"
+            allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพวงหรีดในนามส่วนบุคคล" &&
+            allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
+            allWelfareData[i].category_name !== "ค่าสนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
+            allWelfareData[i].category_name !== "ค่าสนับสนุนพวงหรีดในนามส่วนบุคคล" &&
+            allWelfareData[i].category_name !== "ค่าสนับสนุนพาหนะเหมาจ่าย" &&
+            allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพาหนะเหมาจ่าย"
           ) {
             if (allWelfareData[i].sub_category_name !== "บุตร" && allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาปีที่ 1 - 3") {
               if (allWelfareData[i].category_fund == null) {
@@ -367,16 +367,16 @@ function onRequest(props) {
             }
             else {
               if (allWelfareData[i].sub_category_name !== "บุตร") {
-                newEntry["เสียชีวิตคนในครอบครัว" + "fund"] = '';  // Dynamically add category fund field
+                newEntry["สวัสดิการเสียชีวิตคนในครอบครัว" + "fund"] = '';  // Dynamically add category fund field
               }
               if (allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาปีที่ 1 - 3") {
-                newEntry["การศึกษาของบุตร" + "fund"] = '';
+                newEntry["สวัสดิการการศึกษาของบุตร" + "fund"] = '';
               }
-              if (allWelfareData[i].sub_category_name !== "เยี่ยมไข้") {
-                newEntry["กรณีเจ็บป่วย" + "fund"] = '';
+              if (allWelfareData[i].sub_category_name !== "ค่าเยี่ยมไข้ผู้ปฏิบัติงาน กรณีเป็นผู้ป่วยใน") {
+                newEntry["สวัสดิการกรณีเจ็บป่วย" + "fund"] = '';
               }
-              if (allWelfareData[i].category_name !== "ผู้ปฏิบัติงานเสียชีวิต") {
-                newEntry["ผู้ปฏิบัติงานเสียชีวิต" + "fund"] = '';
+              if (allWelfareData[i].category_name !== "สวัสดิการผู้ปฏิบัติงานเสียชีวิต") {
+                newEntry["สวัสดิการผู้ปฏิบัติงานเสียชีวิต" + "fund"] = '';
               }
             }
           }
@@ -396,8 +396,8 @@ function onRequest(props) {
                 continue;
               }
               else {
-                dataTable.value[i].ผู้ปฏิบัติงานเสียชีวิตfund
-                  = (Number(dataTable.value[i].ผู้ปฏิบัติงานเสียชีวิตfund) || 0) + viewDashboardData[j].fund_sum_request;
+                dataTable.value[i].สวัสดิการผู้ปฏิบัติงานเสียชีวิตfund
+                  = (Number(dataTable.value[i].สวัสดิการผู้ปฏิบัติงานเสียชีวิตfund) || 0) + viewDashboardData[j].fund_sum_request;
               }
             }
 
@@ -408,8 +408,8 @@ function onRequest(props) {
                 continue;
               }
               else {
-                dataTable.value[i].การศึกษาของบุตรfund
-                  = (Number(dataTable.value[i].การศึกษาของบุตรfund) || 0) + viewDashboardData[j].fund_sum_request;
+                dataTable.value[i].สวัสดิการการศึกษาของบุตรfund
+                  = (Number(dataTable.value[i].สวัสดิการการศึกษาของบุตรfund) || 0) + viewDashboardData[j].fund_sum_request;
               }
             }
             if (j > 0 && viewDashboardData[j].welfare_type == viewDashboardData[j - 1].welfare_type
@@ -564,16 +564,16 @@ async function fetchAllWelfare() {
 
 async function exportToExcel() {
   const selectedColumns = [
-    'ตรวจสุขภาพ',
-    'ทำฟัน',
-    'กรณีเจ็บป่วย',
-    'สมรส',
-    'อุปสมบทหรือประกอบพิธีฮัจน์',
-    'รับขวัญบุตร',
-    'ประสบภัยพิบัติ',
-    'เสียชีวิตคนในครอบครัว',
-    'การศึกษาของบุตร',
-    'ผู้ปฏิบัติงานเสียชีวิต'
+    'สวัสดิการค่าตรวจสุขภาพประจำปี',
+    'สวัสดิการค่าทำฟันเพื่อการรักษา ยกเว้นทันตกรรมเพื่อความสวยงาม',
+    'สวัสดิการกรณีเจ็บป่วย',
+    'สวัสดิการค่าสงเคราะห์การสมรสโดยนิตินัย',
+    'สวัสดิการค่าสงเคราะห์การอุปสมบทหรือการไปประกอบพิธีฮัจญ์',
+    'สวัสดิการค่าสงเคราะห์การรับขวัญบัตรแรกเกิด',
+    'สวัสดิการค่าสงเคราะห์กรณีประสบภัยพิบัติสำหรับผู้ปฏิบัติงานในมหาวิทยาลัย',
+    'สวัสดิการเสียชีวิตคนในครอบครัว',
+    'สวัสดิการการศึกษาของบุตร',
+    'สวัสดิการผู้ปฏิบัติงานเสียชีวิต'
   ];
 
   const workbook = new ExcelJS.Workbook();
@@ -613,17 +613,17 @@ async function exportToExcel() {
 
   // 🔹 **Set Column A width to 47 pixels (approx)**
   worksheet.getColumn(1).width = 56 / 7; // number
-  worksheet.getColumn(2).width = 182 / 7; // user name
-  worksheet.getColumn(3).width = 94 / 7; // health
-  worksheet.getColumn(4).width = 60 / 7; // dentist
-  worksheet.getColumn(5).width = 93 / 7; // In case of illness
-  worksheet.getColumn(6).width = 60 / 7; // marrige
-  worksheet.getColumn(7).width = 206 / 7; // ordain
-  worksheet.getColumn(8).width = 93 / 7; // Welcoming the Child
-  worksheet.getColumn(9).width = 106 / 7; // Suffer from disaster
-  worksheet.getColumn(10).width = 163 / 7; // Decease Family
-  worksheet.getColumn(11).width = 132 / 7; // Children's education
-  worksheet.getColumn(12).width = 139 / 7; // Decease
+  worksheet.getColumn(2).width = 200 / 7; // user name
+  worksheet.getColumn(3).width = 227 / 7; // health
+  worksheet.getColumn(4).width = 450 / 7; // dentist
+  worksheet.getColumn(5).width = 156 / 7; // In case of illness
+  worksheet.getColumn(6).width = 290 / 7; // marrige
+  worksheet.getColumn(7).width = 426 / 7; // ordain
+  worksheet.getColumn(8).width = 313 / 7; // Welcoming the Child
+  worksheet.getColumn(9).width = 513 / 7; // Suffer from disaster
+  worksheet.getColumn(10).width = 227 / 7; // Decease Family
+  worksheet.getColumn(11).width = 197 / 7; // Children's education
+  worksheet.getColumn(12).width = 200 / 7; // Decease
   worksheet.getColumn(13).width = 60 / 7; // Sum fund
 
   // 🔹 **Generate Excel File**
