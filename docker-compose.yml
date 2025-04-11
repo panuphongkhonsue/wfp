@@ -1,51 +1,54 @@
 services:
-  client:
-    container_name: WFP
-    build:
-      context: ./client
-    ports:
-      - "8003:80"
-    restart: always
+  # client:
+  #   container_name: WFP
+  #   build:
+  #     context: ./client
+  #   ports:
+  #     - "8003:80"
+  #   restart: always
 
   wfp_server:
     container_name: WFP_API
-    depends_on:
-      - db
+    # depends_on:
+    #   - db
     restart: always
     image: node:18-alpine
     working_dir: /usr/src/app
     volumes:
       - ./server:/usr/src/app
+      - /usr/src/app/node_modules
     command: sh -c "apk add --no-cache chromium nss freetype harfbuzz ttf-freefont curl && npm install -g html-pdf-node && npm install -g nodemon && npm install && nodemon app.js"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     ports:
       - "8004:3000"
     expose:
       - "3000"
 
-  db:
-    image: mariadb:latest
-    restart: always
-    container_name: wfpdb
-    environment:
-      MARIADB_ROOT_PASSWORD: rootpassword 
-      MARIADB_DATABASE: wfpdb
-      MARIADB_USER: user
-      MARIADB_PASSWORD: user
-      TZ: Asia/Bangkok
-    command: --default-authentication-plugin=mysql_native_password
-    volumes:
-      - ./WFB_Database_060468.sql:/docker-entrypoint-initdb.d/WFB_Database_060468.sql
-      - mysql_data:/var/lib/mysql
-    expose:
-      - "3306"
-    ports:
-      - "8005:3306"
-    networks:
-      - sql_network
+  # db:
+  #   image: mariadb:latest
+  #   restart: always
+  #   container_name: wfpdb
+  #   environment:
+  #     MARIADB_ROOT_PASSWORD: rootpassword 
+  #     MARIADB_DATABASE: wfpdb
+  #     MARIADB_USER: user
+  #     MARIADB_PASSWORD: user
+  #     TZ: Asia/Bangkok
+  #   command: --default-authentication-plugin=mysql_native_password
+  #   volumes:
+  #     - ./WFB_Database_060468.sql:/docker-entrypoint-initdb.d/WFB_Database_060468.sql
+  #     - mysql_data:/var/lib/mysql
+  #   expose:
+  #     - "3306"
+  #   ports:
+  #     - "8005:3306"
+  #   networks:
+  #     - sql_network
 
-networks:
-  sql_network:
-    driver: bridge
+# networks:
+#   sql_network:
+#     driver: bridge
 
-volumes:
-  mysql_data:
+# volumes:
+#   mysql_data:

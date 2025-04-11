@@ -16,7 +16,7 @@
               <q-card-section class="q-px-lg row items-center justify-between">
                 <!-- ข้อความ -->
                 <div>
-                  <p class="q-mb-none text-white font-20 font-bold q-pb-md">{{ items.categoryName }}</p>
+                  <p class="q-mb-none text-white font-20 font-bold q-pb-md ellipsis">{{ items.categoryName }}</p>
                   <p class="q-mb-none text-white font-16 q-pb-sm">
 
                     {{ items?.perUsersRemaining !== null && items?.perUsersRemaining !== undefined ?
@@ -31,10 +31,10 @@
                     }}
                   </p>
                   <p class="q-mb-none text-white font-16">
-  {{ 
-    items?.perUsersRemaining !== undefined && items?.perUsersRemaining !== null 
-    ? "จำนวน " + items?.perUsersRemaining + " ครั้ง" 
-    : (items?.requestsRemaining ? "จำนวน " + items?.requestsRemaining + " ครั้ง" : 'ไม่จำกัดครั้ง') 
+  {{
+    items?.perUsersRemaining !== undefined && items?.perUsersRemaining !== null
+    ? "จำนวน " + items?.perUsersRemaining + " ครั้ง"
+    : (items?.requestsRemaining ? "จำนวน " + items?.requestsRemaining + " ครั้ง" : 'ไม่จำกัดครั้ง')
   }}
 </p>
 
@@ -317,11 +317,11 @@ async function fetchRemainingVarious() {
 async function init() {
   pagination.value.rowsPerPage = listStore.getState();
   if (authStore.isEditor) await tableRef.value.requestServerInteraction();
+  await fetchRemainingHealthCheckup(),
+  await fetchRemainingDental(),
+  await fetchRemainingMedical(),
+  await fetchRemainingVarious(),
   await Promise.all([
-    fetchRemainingHealthCheckup(),
-    fetchRemainingDental(),
-    fetchRemainingMedical(),
-    fetchRemainingVarious(),
     fetchFile()
   ]);
 }
