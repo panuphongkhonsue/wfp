@@ -74,7 +74,15 @@ q-btn<template>
       <div class="row q-col-gutter-md q-pl-md q-pt-md ">
         <div class="col-md-9 col-12">
           <q-card flat bordered class="full-height">
-            <p class="q-mb-none font-18 font-bold q-px-md q-py-md">ข้อมูลการเบิกสวัสดิการ</p>
+            <q-card-section class="flex justify-between q-px-md q-pt-md q-pb-md font-18 font-bold">
+              <p class="q-mb-none font-18 font-bold">ข้อมูลการเบิกสวัสดิการ</p>
+              <a class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
+                v-if="isView && (model.status == 'รอตรวจสอบ')" @click.stop.prevent="
+                  downloadData()">
+                <q-icon :name="outlinedDownload" />
+                <span> Export</span>
+              </a>
+            </q-card-section>
 
             <q-card-section class="q-px-md q-pb-none font-18 font-bold q-pt-none">
 
@@ -465,9 +473,9 @@ q-btn<template>
                           clearable :data="child.subCategoriesName ?? '-'" :is-view="isView">
                           <q-select hide-bottom-space v-model="child.subCategoriesId" :loading="isLoading"
                             id="selected-status" popup-content-class="font-14 font-regular" class="font-14 font-regular"
-                            outlined :options="child.subCategories || []" dense clearable option-value="value" emit-value
-                            map-options option-label="label" v-if="!isView" :error="!!isError[index]?.subCategoriesId"
-                            :error-message="isError[index]?.subCategoriesId"
+                            outlined :options="child.subCategories || []" dense clearable option-value="value"
+                            emit-value map-options option-label="label" v-if="!isView"
+                            :error="!!isError[index]?.subCategoriesId" :error-message="isError[index]?.subCategoriesId"
                             :rules="[(val) => !!val || 'กรุณาเลือกระดับชั้น']" lazy-rules>
                             <template v-slot:no-option>
                               <q-item>
@@ -649,6 +657,7 @@ import { useAuthStore } from "src/stores/authStore";
 import reimbursementChildrenEducationService from "src/boot/service/reimbursementChildrenEducationService";
 import data from 'src/components/api_province_with_amphure_tambon.json';
 import { textStatusColor } from "src/components/status";
+import exportService from "src/boot/service/exportService";
 
 defineOptions({
   name: "childrenEduWelfareEdit",
@@ -890,6 +899,51 @@ watch(
   },
   { deep: true }
 );
+
+async function downloadData() {
+  const notify = Notify.create({
+    message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",
+    position: "top-right",
+    spinner: true,
+    type: 'info',
+  });
+  try {
+    const result = await exportService.childrenEnducation(route.params.id);
+    let filename = null;
+    const contentDisposition = result.headers["content-disposition"];
+    if (contentDisposition) {
+      const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (matches && matches[1]) {
+        filename = decodeURIComponent(matches[1]);
+      }
+    }
+
+    const blob = new Blob([result.data], { type: "application/pdf" });
+
+    const a = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  catch (error) {
+    console.log(error);
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "ดาวน์โหลดไม่สำเร็จกรุณาลองอีกครั้ง",
+      position: "top-right",
+      type: "primary",
+    });
+  }
+  finally {
+    notify();
+  }
+}
 
 
 async function fetchRemaining() {

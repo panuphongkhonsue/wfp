@@ -62,7 +62,15 @@
             <div class="row q-col-gutter-md q-pl-md q-pt-md ">
                 <div class="col-md-9 col-12">
                     <q-card flat bordered class="full-height">
-                        <p class="q-mb-none font-18 font-bold q-px-md q-py-md">ข้อมูลการเบิกสวัสดิการ</p>
+                        <q-card-section class="flex justify-between q-px-md q-pt-md q-pb-md font-18 font-bold">
+                            <p class="q-mb-none font-18 font-bold">ข้อมูลการเบิกสวัสดิการ</p>
+                            <a class="q-mb-none font-regular font-16 text-blue-7 cursor-pointer"
+                                v-if="isView && (model.status == 'รอตรวจสอบ')" @click.stop.prevent="
+                                    downloadData()">
+                                <q-icon :name="outlinedDownload" />
+                                <span> Export</span>
+                            </a>
+                        </q-card-section>
 
                         <q-card-section class="q-px-md q-pb-none font-18 font-bold q-pt-none">
 
@@ -71,7 +79,7 @@
                                 <p class="col-md-3 col-12 q-mb-none">เลขที่ใบเบิก : {{ model.reimNumber ?? "-" }}</p>
                                 <p class="col-md-3 col-12 q-mb-none">วันที่ร้องขอ : {{
                                     formatDateThaiSlash(model.requestDate) ?? "-"
-                                    }}
+                                }}
                                 </p>
                                 <p class="col-md-3 col-12 q-mb-none q-pl-sm">สถานะ : <span
                                         :class="textStatusColor(model.status)">{{
@@ -716,7 +724,7 @@ import reimbursementChildrenEducationService from "src/boot/service/reimbursemen
 import data from 'src/components/api_province_with_amphure_tambon.json';
 import { textStatusColor } from "src/components/status";
 import welfareManagementService from "src/boot/service/welfareManagementService";
-
+import exportService from "src/boot/service/exportService";
 defineOptions({
     name: "childrenEduWelfareEdit",
 });
@@ -879,6 +887,51 @@ const availableChildOptions = computed(() => {
     return optionsChildName.value.filter(option => !selectedChildNames.value.includes(option.name));
 });
 
+async function downloadData() {
+  const notify = Notify.create({
+    message: "กรุณารอสักครู่ ระบบกำลังทำการดาวน์โหลด",
+    position: "top-right",
+    spinner: true,
+    type: 'info',
+  });
+  try {
+    const result = await exportService.childrenEnducation(route.params.id);
+    let filename = null;
+    const contentDisposition = result.headers["content-disposition"];
+    if (contentDisposition) {
+      const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (matches && matches[1]) {
+        filename = decodeURIComponent(matches[1]);
+      }
+    }
+
+    const blob = new Blob([result.data], { type: "application/pdf" });
+
+    const a = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  catch (error) {
+    console.log(error);
+    Notify.create({
+      message:
+        error?.response?.data?.message ??
+        "ดาวน์โหลดไม่สำเร็จกรุณาลองอีกครั้ง",
+      position: "top-right",
+      type: "primary",
+    });
+  }
+  finally {
+    notify();
+  }
+}
+
 
 watch(
     () =>
@@ -982,33 +1035,33 @@ async function fetchRemaining() {
 }
 
 async function fetchTotalCountRequested() {
-  try {
-    const subCategoriesId = model.value.child.map(child => child.subCategoriesId);
+    try {
+        const subCategoriesId = model.value.child.map(child => child.subCategoriesId);
 
-    // Loop ผ่าน subCategoriesId แต่ละตัวและทำการ request แยก
-    for (const id of subCategoriesId) {
-      const fetchRemainingData = await reimbursementChildrenEducationService.getTotalCountRequested({
-        createFor: model.value.createFor,
-        subCategoriesId: [id]  // ส่งแค่หนึ่ง subCategoriesId ต่อครั้ง
-      });
+        // Loop ผ่าน subCategoriesId แต่ละตัวและทำการ request แยก
+        for (const id of subCategoriesId) {
+            const fetchRemainingData = await reimbursementChildrenEducationService.getTotalCountRequested({
+                createFor: model.value.createFor,
+                subCategoriesId: [id]  // ส่งแค่หนึ่ง subCategoriesId ต่อครั้ง
+            });
 
-      const returnedData = fetchRemainingData.data.datas;
+            const returnedData = fetchRemainingData.data.datas;
 
-      if (returnedData) {
-        const dataArray = Object.values(returnedData);  // แปลงเป็น array
-        totalCount.value = dataArray.map(item => ({
-          subCategoryId: item.subCategoryId,
-          childName: item.childName,
-          fund: item?.fund,
-          totalSumRequested: item?.totalSumRequested,
-          perTime: item?.perTime,
-          fundRemaining: item?.fundRemaining
-        }));
-      }
+            if (returnedData) {
+                const dataArray = Object.values(returnedData);  // แปลงเป็น array
+                totalCount.value = dataArray.map(item => ({
+                    subCategoryId: item.subCategoryId,
+                    childName: item.childName,
+                    fund: item?.fund,
+                    totalSumRequested: item?.totalSumRequested,
+                    perTime: item?.perTime,
+                    fundRemaining: item?.fundRemaining
+                }));
+            }
+        }
+    } catch (error) {
+        console.error("❌ Error fetching remaining:", error);
     }
-  } catch (error) {
-    console.error("❌ Error fetching remaining:", error);
-  }
 }
 
 watch(
@@ -1028,25 +1081,25 @@ watch(
 
 // ฟังก์ชันในการจัดการการแสดงผลข้อมูลเด็ก
 const displayedChildren = computed(() => {
-  const dataArray = Array.isArray(totalCount.value) ? totalCount.value : [];
+    const dataArray = Array.isArray(totalCount.value) ? totalCount.value : [];
 
-  return optionsChildName.value.map((child, index) => {
-    const childNameToCompare = child.name?.trim().toLowerCase();
+    return optionsChildName.value.map((child, index) => {
+        const childNameToCompare = child.name?.trim().toLowerCase();
 
-    const foundChild = dataArray.find(r =>
-      r.childName?.trim().toLowerCase() === childNameToCompare
-    ) || null;
+        const foundChild = dataArray.find(r =>
+            r.childName?.trim().toLowerCase() === childNameToCompare
+        ) || null;
 
-    const formattedTotalSum = foundChild && typeof foundChild.totalSumRequested === 'number'
-      ? new Intl.NumberFormat('en-US').format(foundChild.totalSumRequested)
-      : '-';
+        const formattedTotalSum = foundChild && typeof foundChild.totalSumRequested === 'number'
+            ? new Intl.NumberFormat('en-US').format(foundChild.totalSumRequested)
+            : '-';
 
-    return {
-      index: index + 1,
-      childName: child.childName || `บุตรคนที่ ${index + 1}`,
-      fundRemaining: formattedTotalSum,
-    };
-  });
+        return {
+            index: index + 1,
+            childName: child.childName || `บุตรคนที่ ${index + 1}`,
+            fundRemaining: formattedTotalSum,
+        };
+    });
 });
 
 watch(
