@@ -42,7 +42,7 @@ const getpathMenu = (e) => {
             };
         case 4:
             return {
-                title: "สวัสดิการค่าสงเคราะห์การเสียชีวิต",
+                title: "สวัสดิการค่าสงเคราะห์การเสียชีวิตผู้ปฏิบัติงาน",
                 icon: "outlinedDescription",
                 to: 'funeral_welfare_list',
             };
