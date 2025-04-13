@@ -78,7 +78,7 @@ const getpathMenuEditor = (e) => {
                         to: { name: "report_compare-expenses" },
                     },
                     {
-                        title: "รายละเอียดการเบิกจ่ายสวัสดิการรายบุคคลของปีงบประมาณ",
+                        title: "รายงานรายละเอียดการเบิกจ่ายสวัสดิการรายบุคคล",
                         to: { name: "report_personal" },
                     },
                     {
