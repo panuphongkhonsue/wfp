@@ -224,7 +224,7 @@ const fetchDataFuneralDeceaseEmployee = async (req, res, next) => {
         }
         if (hasDeceased) {
             welfareData.receiptInfoFuneral.push({
-                deceasedName: deceasedUser.name,
+                deceasedName: "สวัสดิการค่าสงเคราะห์การเสียชีวิตของ" + deceasedUser.name,
                 fundRequest: welfareData.fundRequest,
             });
         }

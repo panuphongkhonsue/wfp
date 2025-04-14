@@ -545,22 +545,29 @@
                   </div>
                 </div>
                 <div class="row px-md ml-md pt-sm" style="gap: 8px">
-                  <div style="flex: 1" class="pl-md ml-md d-flex">
-                    <span>
-                      จำนวนเงิน
-                    </span>
-                    <span style="max-width: 150px; width: 150px;" class="<%= body?.fundSumRequest ? 'text-dot text-center' : 'text-dot-no-value' %>">
-                      <%= toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US',{ minimumFractionDigits:
-                        body?.fundSumRequest % 1===0 ? 0 : 2, maximumFractionDigits: 2, })) %>
-                    </span>
-                    <span>
-                      บาท
-                    </span>
-                    ( <span style="max-width: 200px; width: 200px;" class="<%= body?.fundSumRequest ? 'text-dot text-center' : 'text-dot-no-value' %>">
-                      <%= bahttext(Number(body?.fundSumRequest)) %>
-                    </span> ) ไว้ถูกต้องแล้ว/ครบถ้วนแล้ว
+                  <div style="flex: 1" class="pl-md ml-md d-flex wrap">
+                      <div class="row">
+                          <span>จำนวนเงิน</span>
+                          <span style="max-width: 150px; width: 150px;" 
+                                class="<%= body?.fundSumRequest ? 'text-dot text-center' : 'text-dot-no-value' %>">
+                              <%= toThaiNumber(Number(body?.fundSumRequest).toLocaleString('en-US',{
+                                  minimumFractionDigits: body?.fundSumRequest % 1 === 0 ? 0 : 2,
+                                  maximumFractionDigits: 2
+                              })) %>
+                          </span>
+                          <span>บาท</span>
+                          <span>(</span>
+                          <span style="max-width: 200px; width: 200px;"
+                                class="<%= body?.fundSumRequest ? 'text-dot text-center' : 'text-dot-no-value' %>">
+                              <%= bahttext(Number(body?.fundSumRequest)) %>
+                          </span>
+                          <span>)</span>
+                          <span class="line-break <%= (bahttext(Number(body?.fundSumRequest)).length > 40) ? 'dynamic-line-break' : '' %>">
+                            ไว้ถูกต้องแล้ว/ครบถ้วนแล้ว
+                        </span>
+                      </div>
                   </div>
-                </div>
+              </div>
               </div>
             </div>
             <div class="row px-md py-md" style="gap: 8px; align-items: flex-end">
