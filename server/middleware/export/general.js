@@ -260,14 +260,14 @@ const fetchDataMedical = async (req, res, next) => {
         if (hasAccident) {
             const hasAccidentdatas = JSON.parse(JSON.stringify(hasAccident));
             welfareData.receiptInfo.push({
-                categoryName: hasAccidentdatas.subCategoryName,
+                categoryName: 'สวัสดิการกรณีเจ็บป่วย (' + hasAccidentdatas.subCategoryName + ')',
                 fundSumRequest: welfareData.fundEligible,
             });
         }
         if (hasPatientVisit) {
             const hasPatientVisitdatas = JSON.parse(JSON.stringify(hasPatientVisit));
             welfareData.receiptInfo.push({
-                categoryName: hasPatientVisitdatas.subCategoryName,
+                categoryName: 'สวัสดิการกรณีเจ็บป่วย (' + hasPatientVisitdatas.subCategoryName + ')',
                 fundSumRequest: welfareData.fundSumRequestPatientVisit,
             });
             var whereObj = {};
