@@ -214,12 +214,12 @@ function onRequest(props) {
           allWelfareData[i].sub_category_name !== "บิดา" &&
           allWelfareData[i].sub_category_name !== "มารดา" &&
           allWelfareData[i].sub_category_name !== "คู่สมรส" &&
-          allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพวงหรีดในนามส่วนบุคคล" &&
-          allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
-          allWelfareData[i].category_name !== "ค่าสนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
-          allWelfareData[i].category_name !== "ค่าสนับสนุนพวงหรีดในนามส่วนบุคคล" &&
-          allWelfareData[i].category_name !== "ค่าสนับสนุนพาหนะเหมาจ่าย" &&
-          allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพาหนะเหมาจ่าย" &&
+          allWelfareData[i].sub_category_name !== "ค่าสนับสนุนค่าพวงหรีดในนามส่วนบุคคล" &&
+          allWelfareData[i].sub_category_name !== "ค่าสนับสนุนค่าพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
+          allWelfareData[i].category_name !== "ค่าสนับสนุนค่าพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
+          allWelfareData[i].category_name !== "ค่าสนับสนุนค่าพวงหรีดในนามส่วนบุคคล" &&
+          allWelfareData[i].category_name !== "ค่าสนับสนุนค่าพาหนะเหมาจ่ายเพื่อไปร่วมงานศพ" &&
+          allWelfareData[i].sub_category_name !== "ค่าสนับสนุนค่าพาหนะเหมาจ่ายเพื่อไปร่วมงานศพ" &&
           allWelfareData[i].sub_category_name !== "ประสบอุบัติเหตุขณะปฏิบัติงานในหน้าที่" &&
           allWelfareData[i].sub_category_name !== "ระดับปฐมวัย" &&
           allWelfareData[i].sub_category_name !== "ระดับประถมศึกษาปีที่ 1 - 6" &&
@@ -350,12 +350,12 @@ function onRequest(props) {
             allWelfareData[i].sub_category_name !== "บิดา" &&
             allWelfareData[i].sub_category_name !== "มารดา" &&
             allWelfareData[i].sub_category_name !== "คู่สมรส" &&
-            allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพวงหรีดในนามส่วนบุคคล" &&
-            allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
-            allWelfareData[i].category_name !== "ค่าสนับสนุนพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
-            allWelfareData[i].category_name !== "ค่าสนับสนุนพวงหรีดในนามส่วนบุคคล" &&
-            allWelfareData[i].category_name !== "ค่าสนับสนุนพาหนะเหมาจ่าย" &&
-            allWelfareData[i].sub_category_name !== "ค่าสนับสนุนพาหนะเหมาจ่าย"
+            allWelfareData[i].sub_category_name !== "ค่าสนับสนุนค่าพวงหรีดในนามส่วนบุคคล" &&
+            allWelfareData[i].sub_category_name !== "ค่าสนับสนุนค่าพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
+            allWelfareData[i].category_name !== "ค่าสนับสนุนค่าพวงหรีดในนามมหาวิทยาลัยบูรพา" &&
+            allWelfareData[i].category_name !== "ค่าสนับสนุนค่าพวงหรีดในนามส่วนบุคคล" &&
+            allWelfareData[i].category_name !== "ค่าสนับสนุนค่าพาหนะเหมาจ่ายเพื่อไปร่วมงานศพ" &&
+            allWelfareData[i].sub_category_name !== "ค่าสนับสนุนค่าพาหนะเหมาจ่ายเพื่อไปร่วมงานศพ"
           ) {
             if (allWelfareData[i].sub_category_name !== "บุตร" && allWelfareData[i].sub_category_name !== "ระดับมัธยมศึกษาปีที่ 1 - 3") {
               if (allWelfareData[i].category_fund == null) {
