@@ -383,8 +383,8 @@
                                     <% if (body?.children && body?.children.length> 0) { %>
                                         <% let child=body.children[0] %>
                                             <div class="row pl-md"
-                                                style="gap: 8px; flex-wrap: wrap; width: 675px; font-size: 12px;">
-                                                <div class=" px-sm  font-semi-bold col-2">
+                                                style="gap: 8px; flex-wrap: wrap; width: 680px; font-size: 12px;">
+                                                <div class=" px-xsfont-semi-bold col-2">
                                                     ๑.
                                                 </div>
                                                 <span class="font-semi-bold ">ชื่อ</span>
@@ -398,7 +398,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
                                                 <span class="text-dot pl-sm text-center">
                                                     <%= toThaiNumber(Number(child?.childFatherNumber).toLocaleString('en-US',{
@@ -414,7 +414,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">(กรณีเป็นบุตรแทนที่บุตรซึ่งถึงแก่กรรมแล้ว)
                                                     แทนบุตรลำดับที่</span>
                                                 <span class="text-dot pl-sm text-center">
@@ -423,7 +423,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">ชื่อ</span>
                                                 <span class="text-dot pl-sm text-center">
                                                     <%= child.delegateName ? child.delegateName : " " %>
@@ -431,18 +431,18 @@
                                                 <span class="font-semi-bold">เกิดเมื่อ</span>
                                                 <span class="text-dot pl-sm text-center">
                                                     <%= child.delegateBirthDay && child.delegateBirthDay !=="-" ?
-                                                    toThaiNumber(child.delegateBirthDay) : " " %>
+                                                        toThaiNumber(child.delegateBirthDay) : " " %>
                                                 </span>
 
                                                 <span class="font-semi-bold">ถึงแก่กรรมเมื่อ</span>
                                                 <span class="text-dot pl-sm text-center">
                                                     <%= child.delegateDeathDay && child.delegateDeathDay !=="-" ?
-                                                    toThaiNumber(child?.delegateDeathDay) : " " %>
+                                                        toThaiNumber(child?.delegateDeathDay) : " " %>
                                                 </span>
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">สถานศึกษา</span>
                                                 <span class="text-dot pl-sm text-center">
                                                     <%= child.schoolName ? child.schoolName : " " %>
@@ -459,11 +459,11 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">ชั้นที่ศึกษา</span>
                                                 <span class="text-dot pl-sm text-center">
                                                     <%= toThaiNumber(child?.SubCategoryName) %>
-                                                    
+
                                                 </span>
                                                 <span class="font-semi-bold">จำนวน</span>
                                                 <span class="text-dot pl-sm text-center">
@@ -475,18 +475,22 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 660px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 400px; font-size: 12px;">
                                                 <span class="font-semi-bold ">ใช้สิทธิเบิกจากหน่วยงานอื่นแล้ว
                                                     จำนวนเงิน</span>
-                                                <span class="text-dot pl-sm text-center">
+                                                <span class="text-dot text-center">
                                                     <%= toThaiNumber(Number(child?.fundOther).toLocaleString('en-US',{
                                                         minimumFractionDigits: child?.fundOther % 1===0 ? 0 : 2,
                                                         maximumFractionDigits: 2, })) %>
                                                 </span>
                                                 <span class="font-semi-bold">บาท</span>
-                                                <span class="font-semi-bold pr-xl">ขอเบิกจากสวัสดิการมหาวิทยาลัย
+                                            </div>
+
+                                            <div class="row"
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 47%; width: 358px; font-size: 12px;">
+                                                <span class="font-semi-bold ">ขอเบิกจากสวัสดิการมหาวิทยาลัย
                                                     5(8)</span>
-                                                <span class="font-semi-bold">จำนวน</span>
+                                                <span class="font-semi-bold" style="margin-left: 20px;">จำนวน</span>
                                                 <span class="text-dot pl-sm text-center">
                                                     <%= toThaiNumber(Number(child?.fundUniversity).toLocaleString('en-US',{
                                                         minimumFractionDigits: child?.fundUniversity % 1===0 ? 0 : 2,
@@ -494,8 +498,9 @@
                                                 </span>
                                                 <span class="font-semi-bold">บาท</span>
                                             </div>
+
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 49%; width: 358px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left:47%; width: 358px; font-size: 12px;">
                                                 <span class="font-semi-bold">ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)
                                                 </span>
                                                 <span class="font-semi-bold">จำนวน</span>
@@ -508,7 +513,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 60%; width: 278px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 58%; width: 278px; font-size: 12px;">
                                                 <span class="font-semi-bold">รวมเป็นเงินจำนวนเงิน</span>
                                                 <span class="text-dot pl-sm text-center">
                                                     <%= toThaiNumber(Number(child?.fundSumRequest).toLocaleString('en-US',{
@@ -541,8 +546,8 @@
                                 <% let child=body.children[1] %>
                                     <% if (child) { %>
                                         <div class="row pl-md"
-                                            style="gap: 8px; flex-wrap: wrap; width: 675px; font-size: 12px;">
-                                            <div class=" px-sm  font-semi-bold col-2">
+                                            style="gap: 8px; flex-wrap: wrap; width: 680px; font-size: 12px;">
+                                            <div class=" font-semi-bold col-2">
                                                 ๒.
                                             </div>
                                             <span class="font-semi-bold ">ชื่อ</span>
@@ -556,23 +561,23 @@
                                         </div>
 
                                         <div class="row"
-                                        style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
-                                        <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
-                                        <span class="text-dot pl-sm text-center">
-                                            <%= toThaiNumber(Number(child?.childFatherNumber).toLocaleString('en-US',{
-                                                minimumFractionDigits: child?.childFatherNumber % 1===0 ? 0 : 2,
-                                                maximumFractionDigits: 2, })) %>
-                                        </span>
-                                        <span class="font-semi-bold">เป็นบุตรลำดับที่ (ของมารดา)</span>
-                                        <span class="text-dot pl-sm text-center">
-                                            <%= toThaiNumber(Number(child?.childMotherNumber).toLocaleString('en-US',{
-                                                minimumFractionDigits: child?.childMotherNumber % 1===0 ? 0 : 2,
-                                                maximumFractionDigits: 2, })) %>
-                                        </span>
-                                    </div>
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
+                                            <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
+                                            <span class="text-dot pl-sm text-center">
+                                                <%= toThaiNumber(Number(child?.childFatherNumber).toLocaleString('en-US',{
+                                                    minimumFractionDigits: child?.childFatherNumber % 1===0 ? 0 : 2,
+                                                    maximumFractionDigits: 2, })) %>
+                                            </span>
+                                            <span class="font-semi-bold">เป็นบุตรลำดับที่ (ของมารดา)</span>
+                                            <span class="text-dot pl-sm text-center">
+                                                <%= toThaiNumber(Number(child?.childMotherNumber).toLocaleString('en-US',{
+                                                    minimumFractionDigits: child?.childMotherNumber % 1===0 ? 0 : 2,
+                                                    maximumFractionDigits: 2, })) %>
+                                            </span>
+                                        </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                             <span class="font-semi-bold ">(กรณีเป็นบุตรแทนที่บุตรซึ่งถึงแก่กรรมแล้ว)
                                                 แทนบุตรลำดับที่</span>
                                             <span class="text-dot pl-sm text-center">
@@ -581,7 +586,7 @@
                                         </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                             <span class="font-semi-bold ">ชื่อ</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.delegateName ? child.delegateName : " " %>
@@ -589,19 +594,19 @@
                                             <span class="font-semi-bold">เกิดเมื่อ</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.delegateBirthDay && child.delegateBirthDay !=="-" ?
-                                                toThaiNumber(child?.delegateBirthDay) : " " %>
-                                                    
+                                                    toThaiNumber(child?.delegateBirthDay) : " " %>
+
                                             </span>
 
                                             <span class="font-semi-bold">ถึงแก่กรรมเมื่อ</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.delegateDeathDay && child.delegateDeathDay !=="-" ?
-                                                toThaiNumber(child?.delegateDeathDay) : " " %>
+                                                    toThaiNumber(child?.delegateDeathDay) : " " %>
                                             </span>
                                         </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                             <span class="font-semi-bold ">สถานศึกษา</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.schoolName ? child.schoolName : " " %>
@@ -618,10 +623,10 @@
                                         </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                             <span class="font-semi-bold ">ชั้นที่ศึกษา</span>
                                             <span class="text-dot pl-sm text-center">
-                                                <%= child.SubCategoryName ? child.SubCategoryName : " " %>
+                                                <%= toThaiNumber(child?.SubCategoryName) %>
                                             </span>
                                             <span class="font-semi-bold">จำนวน</span>
                                             <span class="text-dot pl-sm text-center">
@@ -633,52 +638,57 @@
                                         </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 660px; font-size: 12px;">
-                                            <span class="font-semi-bold ">ใช้สิทธิเบิกจากหน่วยงานอื่นแล้ว
-                                                จำนวนเงิน</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= toThaiNumber(Number(child?.fundOther).toLocaleString('en-US',{
-                                                    minimumFractionDigits: child?.fundOther % 1===0 ? 0 : 2,
-                                                    maximumFractionDigits: 2, })) %>
-                                            </span>
-                                            <span class="font-semi-bold">บาท</span>
-                                            <span class="font-semi-bold pr-xl">ขอเบิกจากสวัสดิการมหาวิทยาลัย
-                                                5(8)</span>
-                                            <span class="font-semi-bold">จำนวน</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= toThaiNumber(Number(child?.fundUniversity).toLocaleString('en-US',{
-                                                    minimumFractionDigits: child?.fundUniversity % 1===0 ? 0 : 2,
-                                                    maximumFractionDigits: 2, })) %>
-                                            </span>
-                                            <span class="font-semi-bold">บาท</span>
-                                        </div>
-                                        <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 50%; width: 358px; font-size: 12px;">
-                                            <span class="font-semi-bold">ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)
-                                            </span>
-                                            <span class="font-semi-bold">จำนวน</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= toThaiNumber(Number(child?.fundSubUniversity).toLocaleString('en-US',{
-                                                    minimumFractionDigits: child?.fundSubUniversity % 1===0 ? 0 : 2,
-                                                    maximumFractionDigits: 2, })) %>
-                                            </span>
-                                            <span class="font-semi-bold">บาท</span>
-                                        </div>
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 400px; font-size: 12px;">
+                                                <span class="font-semi-bold ">ใช้สิทธิเบิกจากหน่วยงานอื่นแล้ว
+                                                    จำนวนเงิน</span>
+                                                <span class="text-dot text-center">
+                                                    <%= toThaiNumber(Number(child?.fundOther).toLocaleString('en-US',{
+                                                        minimumFractionDigits: child?.fundOther % 1===0 ? 0 : 2,
+                                                        maximumFractionDigits: 2, })) %>
+                                                </span>
+                                                <span class="font-semi-bold">บาท</span>
+                                            </div>
 
-                                        <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 60%; width: 288px; font-size: 12px;">
-                                            <span class="font-semi-bold">รวมเป็นเงินจำนวนเงิน</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= toThaiNumber(Number(child?.fundSumRequest).toLocaleString('en-US',{
-                                                    minimumFractionDigits: child?.fundSumRequest % 1===0 ? 0 : 2,
-                                                    maximumFractionDigits: 2, })) %>
-                                            </span>
-                                            <span class="font-semi-bold">บาท</span>
-                                        </div>
+                                            <div class="row"
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 47%; width: 358px; font-size: 12px;">
+                                                <span class="font-semi-bold ">ขอเบิกจากสวัสดิการมหาวิทยาลัย
+                                                    5(8)</span>
+                                                <span class="font-semi-bold" style="margin-left: 20px;">จำนวน</span>
+                                                <span class="text-dot pl-sm text-center">
+                                                    <%= toThaiNumber(Number(child?.fundUniversity).toLocaleString('en-US',{
+                                                        minimumFractionDigits: child?.fundUniversity % 1===0 ? 0 : 2,
+                                                        maximumFractionDigits: 2, })) %>
+                                                </span>
+                                                <span class="font-semi-bold">บาท</span>
+                                            </div>
+
+                                            <div class="row"
+                                                style="gap: 8px; flex-wrap: wrap; padding-left:47%; width: 358px; font-size: 12px;">
+                                                <span class="font-semi-bold">ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)
+                                                </span>
+                                                <span class="font-semi-bold">จำนวน</span>
+                                                <span class="text-dot pl-sm text-center">
+                                                    <%= toThaiNumber(Number(child?.fundSubUniversity).toLocaleString('en-US',{
+                                                        minimumFractionDigits: child?.fundSubUniversity % 1===0 ? 0 : 2,
+                                                        maximumFractionDigits: 2, })) %>
+                                                </span>
+                                                <span class="font-semi-bold">บาท</span>
+                                            </div>
+
+                                            <div class="row"
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 58%; width: 278px; font-size: 12px;">
+                                                <span class="font-semi-bold">รวมเป็นเงินจำนวนเงิน</span>
+                                                <span class="text-dot pl-sm text-center">
+                                                    <%= toThaiNumber(Number(child?.fundSumRequest).toLocaleString('en-US',{
+                                                        minimumFractionDigits: child?.fundSumRequest % 1===0 ? 0 : 2,
+                                                        maximumFractionDigits: 2, })) %>
+                                                </span>
+                                                <span class="font-semi-bold">บาท</span>
+                                            </div>
                                         <% } else { %>
                                             <div class="row pl-md"
-                                                style="gap: 8px; flex-wrap: wrap; width: 675px; font-size: 12px;">
-                                                <div class=" px-sm  font-semi-bold col-2">
+                                                style="gap: 8px; flex-wrap: wrap; width: 680px; font-size: 12px;">
+                                                <div class=" font-semi-bold col-2">
                                                     ๒.
                                                 </div>
                                                 <span class="font-semi-bold ">ชื่อ</span>
@@ -692,7 +702,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
                                                 <span class="text-dot-no-value pl-sm text-center">
 
@@ -704,7 +714,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">(กรณีเป็นบุตรแทนที่บุตรซึ่งถึงแก่กรรมแล้ว)
                                                     แทนบุตรลำดับที่</span>
                                                 <span class="text-dot-no-value pl-sm text-center">
@@ -713,7 +723,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">ชื่อ</span>
                                                 <span class="text-dot-no-value pl-sm text-center">
 
@@ -730,7 +740,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">สถานศึกษา</span>
                                                 <span class="text-dot-no-value pl-sm text-center">
 
@@ -747,7 +757,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">ชั้นที่ศึกษา</span>
                                                 <span class="text-dot-no-value pl-sm text-center">
 
@@ -760,40 +770,45 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 660px; font-size: 12px;">
-                                                <span class="font-semi-bold ">ใช้สิทธิเบิกจากหน่วยงานอื่นแล้ว
-                                                    จำนวนเงิน</span>
-                                                <span class="text-dot-no-value pl-sm text-center">
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 400px; font-size: 12px;">
+                                            <span class="font-semi-bold ">ใช้สิทธิเบิกจากหน่วยงานอื่นแล้ว
+                                                จำนวนเงิน</span>
+                                            <span class="text-dot text-center">
 
-                                                </span>
-                                                <span class="font-semi-bold">บาท</span>
-                                                <span class="font-semi-bold pr-xl">ขอเบิกจากสวัสดิการมหาวิทยาลัย
-                                                    5(8)</span>
-                                                <span class="font-semi-bold">จำนวน</span>
-                                                <span class="text-dot-no-value pl-sm text-center">
+                                            </span>
+                                            <span class="font-semi-bold">บาท</span>
+                                        </div>
 
-                                                </span>
-                                                <span class="font-semi-bold">บาท</span>
-                                            </div>
-                                            <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 49%; width: 355px; font-size: 12px;">
-                                                <span class="font-semi-bold">ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)
-                                                </span>
-                                                <span class="font-semi-bold">จำนวน</span>
-                                                <span class="text-dot-no-value pl-sm text-center">
+                                        <div class="row"
+                                        style="gap: 8px; flex-wrap: wrap; padding-left: 47%; width: 358px; font-size: 12px;">
+                                            <span class="font-semi-bold ">ขอเบิกจากสวัสดิการมหาวิทยาลัย
+                                                5(8)</span>
+                                            <span class="font-semi-bold" style="margin-left: 20px;">จำนวน</span>
+                                            <span class="text-dot pl-sm text-center">
 
-                                                </span>
-                                                <span class="font-semi-bold">บาท</span>
-                                            </div>
+                                            </span>
+                                            <span class="font-semi-bold">บาท</span>
+                                        </div>
 
-                                            <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 60%; width: 275px; font-size: 12px;">
-                                                <span class="font-semi-bold">รวมเป็นเงินจำนวนเงิน</span>
-                                                <span class="text-dot-no-value pl-sm text-center">
+                                        <div class="row"
+                                            style="gap: 8px; flex-wrap: wrap; padding-left:47%; width: 358px; font-size: 12px;">
+                                            <span class="font-semi-bold">ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)
+                                            </span>
+                                            <span class="font-semi-bold">จำนวน</span>
+                                            <span class="text-dot pl-sm text-center">
 
-                                                </span>
-                                                <span class="font-semi-bold">บาท</span>
-                                            </div>
+                                            </span>
+                                            <span class="font-semi-bold">บาท</span>
+                                        </div>
+
+                                        <div class="row"
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 58%; width: 278px; font-size: 12px;">
+                                            <span class="font-semi-bold">รวมเป็นเงินจำนวนเงิน</span>
+                                            <span class="text-dot pl-sm text-center">
+
+                                            </span>
+                                            <span class="font-semi-bold">บาท</span>
+                                        </div>
                                             <% } %>
 
                                                 <% } else { %>
@@ -806,8 +821,8 @@
                                 <% let child=body.children[2] %>
                                     <% if (child) { %>
                                         <div class="row pl-md"
-                                            style="gap: 8px; flex-wrap: wrap; width: 675px; font-size: 12px;">
-                                            <div class=" px-sm  font-semi-bold col-2">
+                                            style="gap: 8px; flex-wrap: wrap; width: 680px; font-size: 12px;">
+                                            <div class="font-semi-bold col-2">
                                                 ๓.
                                             </div>
                                             <span class="font-semi-bold ">ชื่อ</span>
@@ -821,23 +836,23 @@
                                         </div>
 
                                         <div class="row"
-                                        style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
-                                        <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
-                                        <span class="text-dot pl-sm text-center">
-                                            <%= toThaiNumber(Number(child?.childFatherNumber).toLocaleString('en-US',{
-                                                minimumFractionDigits: child?.childFatherNumber % 1===0 ? 0 : 2,
-                                                maximumFractionDigits: 2, })) %>
-                                        </span>
-                                        <span class="font-semi-bold">เป็นบุตรลำดับที่ (ของมารดา)</span>
-                                        <span class="text-dot pl-sm text-center">
-                                            <%= toThaiNumber(Number(child?.childMotherNumber).toLocaleString('en-US',{
-                                                minimumFractionDigits: child?.childMotherNumber % 1===0 ? 0 : 2,
-                                                maximumFractionDigits: 2, })) %>
-                                        </span>
-                                    </div>
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
+                                            <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
+                                            <span class="text-dot pl-sm text-center">
+                                                <%= toThaiNumber(Number(child?.childFatherNumber).toLocaleString('en-US',{
+                                                    minimumFractionDigits: child?.childFatherNumber % 1===0 ? 0 : 2,
+                                                    maximumFractionDigits: 2, })) %>
+                                            </span>
+                                            <span class="font-semi-bold">เป็นบุตรลำดับที่ (ของมารดา)</span>
+                                            <span class="text-dot pl-sm text-center">
+                                                <%= toThaiNumber(Number(child?.childMotherNumber).toLocaleString('en-US',{
+                                                    minimumFractionDigits: child?.childMotherNumber % 1===0 ? 0 : 2,
+                                                    maximumFractionDigits: 2, })) %>
+                                            </span>
+                                        </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                             <span class="font-semi-bold ">(กรณีเป็นบุตรแทนที่บุตรซึ่งถึงแก่กรรมแล้ว)
                                                 แทนบุตรลำดับที่</span>
                                             <span class="text-dot pl-sm text-center">
@@ -847,7 +862,7 @@
                                         </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                             <span class="font-semi-bold ">ชื่อ</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.delegateName ? child.delegateName : " " %>
@@ -855,18 +870,18 @@
                                             <span class="font-semi-bold">เกิดเมื่อ</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.delegateBirthDay && child.delegateBirthDay !=="-" ?
-                                                toThaiNumber(child?.delegateBirthDay) : " " %>
+                                                    toThaiNumber(child?.delegateBirthDay) : " " %>
                                             </span>
 
                                             <span class="font-semi-bold">ถึงแก่กรรมเมื่อ</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.delegateDeathDay && child.delegateDeathDay !=="-" ?
-                                                toThaiNumber(child?.delegateDeathDay) : " " %>
+                                                    toThaiNumber(child?.delegateDeathDay) : " " %>
                                             </span>
                                         </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                             <span class="font-semi-bold ">สถานศึกษา</span>
                                             <span class="text-dot pl-sm text-center">
                                                 <%= child.schoolName ? child.schoolName : " " %>
@@ -883,63 +898,72 @@
                                         </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                             <span class="font-semi-bold ">ชั้นที่ศึกษา</span>
                                             <span class="text-dot pl-sm text-center">
-                                                <%= child.SubCategoryName ? child.SubCategoryName : " " %>
+                                                <%= toThaiNumber(child?.SubCategoryName) %>
                                             </span>
                                             <span class="font-semi-bold">จำนวน</span>
                                             <span class="text-dot pl-sm text-center">
-                                                <%= child.fundReceipt ? child.fundReceipt : " " %>
+                                                <%= toThaiNumber(Number(child?.fundReceipt).toLocaleString('en-US',{
+                                                    minimumFractionDigits: child?.fundReceipt % 1===0 ? 0 : 2,
+                                                    maximumFractionDigits: 2, })) %>
                                             </span>
                                             <span class="font-semi-bold">บาท (จำนวนเงินที่จ่ายจริงตามใบเสร็จ)</span>
                                         </div>
 
                                         <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 660px; font-size: 12px;">
-                                            <span class="font-semi-bold ">ใช้สิทธิเบิกจากหน่วยงานอื่นแล้ว
-                                                จำนวนเงิน</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= child.fundOther ? child.fundOther : " " %>
-                                            </span>
-                                            <span class="font-semi-bold">บาท</span>
-                                            <span class="font-semi-bold pr-xl">ขอเบิกจากสวัสดิการมหาวิทยาลัย
-                                                5(8)</span>
-                                            <span class="font-semi-bold">จำนวน</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= toThaiNumber(Number(child?.fundUniversity).toLocaleString('en-US',{
-                                                    minimumFractionDigits: child?.fundUniversity % 1===0 ? 0 : 2,
-                                                    maximumFractionDigits: 2, })) %>
-                                            </span>
-                                            <span class="font-semi-bold">บาท</span>
-                                        </div>
-                                        <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 49%; width: 365px; font-size: 12px;">
-                                            <span class="font-semi-bold">ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)
-                                            </span>
-                                            <span class="font-semi-bold">จำนวน</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= toThaiNumber(Number(child?.fundSubUniversity).toLocaleString('en-US',{
-                                                    minimumFractionDigits: child?.fundSubUniversity % 1===0 ? 0 : 2,
-                                                    maximumFractionDigits: 2, })) %>
-                                            </span>
-                                            <span class="font-semi-bold">บาท</span>
-                                        </div>
+                                        style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 400px; font-size: 12px;">
+                                        <span class="font-semi-bold ">ใช้สิทธิเบิกจากหน่วยงานอื่นแล้ว
+                                            จำนวนเงิน</span>
+                                        <span class="text-dot text-center">
+                                            <%= toThaiNumber(Number(child?.fundOther).toLocaleString('en-US',{
+                                                minimumFractionDigits: child?.fundOther % 1===0 ? 0 : 2,
+                                                maximumFractionDigits: 2, })) %>
+                                        </span>
+                                        <span class="font-semi-bold">บาท</span>
+                                    </div>
 
-                                        <div class="row"
-                                            style="gap: 8px; flex-wrap: wrap; padding-left: 60%; width: 288px; font-size: 12px;">
-                                            <span class="font-semi-bold">รวมเป็นเงินจำนวนเงิน</span>
-                                            <span class="text-dot pl-sm text-center">
-                                                <%= toThaiNumber(Number(child?.fundSumRequest).toLocaleString('en-US',{
-                                                    minimumFractionDigits: child?.fundSumRequest % 1===0 ? 0 : 2,
-                                                    maximumFractionDigits: 2, })) %>
-                                            </span>
-                                            <span class="font-semi-bold">บาท</span>
-                                        </div>
+                                    <div class="row"
+                                    style="gap: 8px; flex-wrap: wrap; padding-left: 47%; width: 358px; font-size: 12px;">
+                                        <span class="font-semi-bold ">ขอเบิกจากสวัสดิการมหาวิทยาลัย
+                                            5(8)</span>
+                                        <span class="font-semi-bold" style="margin-left: 20px;">จำนวน</span>
+                                        <span class="text-dot pl-sm text-center">
+                                            <%= toThaiNumber(Number(child?.fundUniversity).toLocaleString('en-US',{
+                                                minimumFractionDigits: child?.fundUniversity % 1===0 ? 0 : 2,
+                                                maximumFractionDigits: 2, })) %>
+                                        </span>
+                                        <span class="font-semi-bold">บาท</span>
+                                    </div>
+
+                                    <div class="row"
+                                        style="gap: 8px; flex-wrap: wrap; padding-left:47%; width: 358px; font-size: 12px;">
+                                        <span class="font-semi-bold">ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)
+                                        </span>
+                                        <span class="font-semi-bold">จำนวน</span>
+                                        <span class="text-dot pl-sm text-center">
+                                            <%= toThaiNumber(Number(child?.fundSubUniversity).toLocaleString('en-US',{
+                                                minimumFractionDigits: child?.fundSubUniversity % 1===0 ? 0 : 2,
+                                                maximumFractionDigits: 2, })) %>
+                                        </span>
+                                        <span class="font-semi-bold">บาท</span>
+                                    </div>
+
+                                    <div class="row"
+                                        style="gap: 8px; flex-wrap: wrap; padding-left: 58%; width: 278px; font-size: 12px;">
+                                        <span class="font-semi-bold">รวมเป็นเงินจำนวนเงิน</span>
+                                        <span class="text-dot pl-sm text-center">
+                                            <%= toThaiNumber(Number(child?.fundSumRequest).toLocaleString('en-US',{
+                                                minimumFractionDigits: child?.fundSumRequest % 1===0 ? 0 : 2,
+                                                maximumFractionDigits: 2, })) %>
+                                        </span>
+                                        <span class="font-semi-bold">บาท</span>
+                                    </div>
                                         <% } else { %>
                                             <div class="row pl-md"
-                                                style="gap: 8px; flex-wrap: wrap; width: 675px; font-size: 12px;">
-                                                <div class=" px-sm  font-semi-bold col-2">
+                                                style="gap: 8px; flex-wrap: wrap; width: 680px; font-size: 12px;">
+                                                <div class="font-semi-bold col-2">
                                                     ๓.
                                                 </div>
                                                 <span class="font-semi-bold ">ชื่อ</span>
@@ -953,7 +977,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">เป็นบุตรลำดับที่ (ของบิดา)</span>
                                                 <span class="text-dot-no-value pl-sm text-center">
 
@@ -965,7 +989,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">(กรณีเป็นบุตรแทนที่บุตรซึ่งถึงแก่กรรมแล้ว)
                                                     แทนบุตรลำดับที่</span>
                                                 <span class="text-dot-no-value pl-sm text-center">
@@ -974,7 +998,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">ชื่อ</span>
                                                 <span class="text-dot-no-value pl-sm text-center">
 
@@ -991,7 +1015,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">สถานศึกษา</span>
                                                 <span class="text-dot-no-value pl-sm text-center">
 
@@ -1008,7 +1032,7 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 640px; font-size: 12px;">
+                                                style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 660px; font-size: 12px;">
                                                 <span class="font-semi-bold ">ชั้นที่ศึกษา</span>
                                                 <span class="text-dot-no-value pl-sm text-center">
 
@@ -1021,40 +1045,45 @@
                                             </div>
 
                                             <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 7%; width: 660px; font-size: 12px;">
-                                                <span class="font-semi-bold ">ใช้สิทธิเบิกจากหน่วยงานอื่นแล้ว
-                                                    จำนวนเงิน</span>
-                                                <span class="text-dot-no-value pl-sm text-center">
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 5%; width: 400px; font-size: 12px;">
+                                            <span class="font-semi-bold ">ใช้สิทธิเบิกจากหน่วยงานอื่นแล้ว
+                                                จำนวนเงิน</span>
+                                            <span class="text-dot text-center">
 
-                                                </span>
-                                                <span class="font-semi-bold">บาท</span>
-                                                <span class="font-semi-bold pr-xl">ขอเบิกจากสวัสดิการมหาวิทยาลัย
-                                                    5(8)</span>
-                                                <span class="font-semi-bold">จำนวน</span>
-                                                <span class="text-dot-no-value pl-sm text-center">
+                                            </span>
+                                            <span class="font-semi-bold">บาท</span>
+                                        </div>
 
-                                                </span>
-                                                <span class="font-semi-bold">บาท</span>
-                                            </div>
-                                            <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 49%; width: 355px; font-size: 12px;">
-                                                <span class="font-semi-bold">ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)
-                                                </span>
-                                                <span class="font-semi-bold">จำนวน</span>
-                                                <span class="text-dot-no-value pl-sm text-center">
+                                        <div class="row"
+                                        style="gap: 8px; flex-wrap: wrap; padding-left: 47%; width: 358px; font-size: 12px;">
+                                            <span class="font-semi-bold ">ขอเบิกจากสวัสดิการมหาวิทยาลัย
+                                                5(8)</span>
+                                            <span class="font-semi-bold" style="margin-left: 20px;">จำนวน</span>
+                                            <span class="text-dot pl-sm text-center">
 
-                                                </span>
-                                                <span class="font-semi-bold">บาท</span>
-                                            </div>
+                                            </span>
+                                            <span class="font-semi-bold">บาท</span>
+                                        </div>
 
-                                            <div class="row"
-                                                style="gap: 8px; flex-wrap: wrap; padding-left: 60%; width: 275px; font-size: 12px;">
-                                                <span class="font-semi-bold">รวมเป็นเงินจำนวนเงิน</span>
-                                                <span class="text-dot-no-value pl-sm text-center">
+                                        <div class="row"
+                                            style="gap: 8px; flex-wrap: wrap; padding-left:47%; width: 358px; font-size: 12px;">
+                                            <span class="font-semi-bold">ขอเบิกจากสวัสดิการมหาวิทยาลัย 5(9),(10)
+                                            </span>
+                                            <span class="font-semi-bold">จำนวน</span>
+                                            <span class="text-dot pl-sm text-center">
 
-                                                </span>
-                                                <span class="font-semi-bold">บาท</span>
-                                            </div>
+                                            </span>
+                                            <span class="font-semi-bold">บาท</span>
+                                        </div>
+
+                                        <div class="row"
+                                            style="gap: 8px; flex-wrap: wrap; padding-left: 58%; width: 278px; font-size: 12px;">
+                                            <span class="font-semi-bold">รวมเป็นเงินจำนวนเงิน</span>
+                                            <span class="text-dot pl-sm text-center">
+
+                                            </span>
+                                            <span class="font-semi-bold">บาท</span>
+                                        </div>
                                             <% } %>
 
                                                 <% } else { %>
@@ -1163,7 +1192,8 @@
                                         </div>
                                         <div class="col-auto row justify-center pb-sm">
                                             <span class="text-center">
-                                                ข้าพเจ้าขอรับรองว่า ข้าพเจ้ามีสิทธิได้รับเงินตามประกาศคณะกรรมการสวัสดิการมหาวิทยาลัยบูรพา
+                                                ข้าพเจ้าขอรับรองว่า
+                                                ข้าพเจ้ามีสิทธิได้รับเงินตามประกาศคณะกรรมการสวัสดิการมหาวิทยาลัยบูรพา
                                             </span>
                                         </div>
                                         <div class="row px-md py-sm"
@@ -1196,53 +1226,54 @@
                         </div>
                     </td>
                 </tr>
-                <tr>
-                    <td>
-                        <div class="row" style="gap: 8px">
-                            <div class=" px-sm  font-semi-bold">
-                                ๗.
-                            </div>
-                            <span class="font-semi-bold " class="col-12">การตรวจสอบ</span>
-                        </div>
-                        <div class="row">
-                            <span style="padding-left: 7%;"
-                                class="font-semi-bold">ข้าพเจ้าได้ตรวจสอบใบขอเบิกสวัสดิการฉบับนี้แล้ว
-                                ขอรับรองว่าผู้ขอรับเงินสวัสดิการฯ มีสิทธิเบิกเงินสวัสดิการ
-                            </span><br />
-                            <span style="padding-left: 2%;" class="font-semi-bold py-sm">ได้ตามประกาศ
-                                คณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา</span>
-
-                        </div>
-                        <div class="row px-md py-sm" style="gap: 8px; align-items: center; justify-content: center;">
-                            <div class="col-auto row justify-center">
-                                <div class="col-sign">
-                                    (ลงชื่อ) <div class="text-dot-no-value" style="max-width: 200px;">
-                                    </div>ผู้ตรวจสอบ
-                                </div>
-                                <div class="col-sign py-sm">
-                                    ( <div class="text-dot text-center" style="max-width: 220px;">
-                                    </div> )
-                                </div>
-                                <div class="col-position px-md">
-                                    ตำแหน่ง <div class="text-dot text-center" style="width: 230px;">
-                                        นักวิชาการเงินและบัญชีชำนาญการ
-                                    </div>
-                                </div>
-                                <div class="col-sign py-sm">
-                                    วันที่<div class="text-dot-no-value" style="max-width: 50px;">
-                                    </div>เดือน <div class="text-dot-no-value" style="max-width: 50px;">
-                                    </div> พ.ศ. <div class="text-dot-no-value" style="max-width: 50px;">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
+                
             </table>
             <div class="page-break"></div>
             <div class="py-sm"></div>
             <div class="content">
                 <table>
+                    <tr>
+                        <td>
+                            <div class="row" style="gap: 8px">
+                                <div class=" px-sm  font-semi-bold">
+                                    ๗.
+                                </div>
+                                <span class="font-semi-bold " class="col-12">การตรวจสอบ</span>
+                            </div>
+                            <div class="row">
+                                <span style="padding-left: 7%;"
+                                    class="font-semi-bold">ข้าพเจ้าได้ตรวจสอบใบขอเบิกสวัสดิการฉบับนี้แล้ว
+                                    ขอรับรองว่าผู้ขอรับเงินสวัสดิการฯ มีสิทธิเบิกเงินสวัสดิการ
+                                </span><br />
+                                <span style="padding-left: 2%;" class="font-semi-bold py-sm">ได้ตามประกาศ
+                                    คณะกรรมการสวัสดิการ มหาวิทยาลัยบูรพา</span>
+    
+                            </div>
+                            <div class="row px-md py-sm" style="gap: 8px; align-items: center; justify-content: center;">
+                                <div class="col-auto row justify-center">
+                                    <div class="col-sign">
+                                        (ลงชื่อ) <div class="text-dot-no-value" style="max-width: 200px;">
+                                        </div>ผู้ตรวจสอบ
+                                    </div>
+                                    <div class="col-sign py-sm">
+                                        ( <div class="text-dot text-center" style="max-width: 220px;">
+                                        </div> )
+                                    </div>
+                                    <div class="col-position px-md">
+                                        ตำแหน่ง <div class="text-dot text-center" style="width: 230px;">
+                                            นักวิชาการเงินและบัญชีชำนาญการ
+                                        </div>
+                                    </div>
+                                    <div class="col-sign py-sm">
+                                        วันที่<div class="text-dot-no-value" style="max-width: 50px;">
+                                        </div>เดือน <div class="text-dot-no-value" style="max-width: 50px;">
+                                        </div> พ.ศ. <div class="text-dot-no-value" style="max-width: 50px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
                     <tr>
                         <td>
                             <div class="row" style="gap: 10px">
@@ -1333,7 +1364,9 @@
                                         ผู้รับเงิน
                                     </div>
                                     <div class="col-sign py-sm">
-                                        ( <div class="text-dot text-center" style="max-width: 220px;"><%= body?.user?.name %></div> )
+                                        ( <div class="text-dot text-center" style="max-width: 220px;">
+                                            <%= body?.user?.name %>
+                                        </div> )
                                     </div>
                                 </div>
                             </div>
