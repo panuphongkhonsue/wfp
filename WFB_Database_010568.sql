@@ -302,7 +302,7 @@ CREATE TABLE `permissions_has_roles` (
 
 LOCK TABLES `permissions_has_roles` WRITE;
 /*!40000 ALTER TABLE `permissions_has_roles` DISABLE KEYS */;
-INSERT INTO `permissions_has_roles` VALUES (1,2),(2,2),(3,2),(4,2),(5,2),(6,2),(7,2),(8,2),(7,4);
+INSERT INTO `permissions_has_roles` VALUES (1,1),(2,1),(3,1),(1,2),(2,2),(3,2),(4,2),(5,2),(6,2),(8,2),(1,3),(2,3),(3,3),(4,3),(7,4);
 /*!40000 ALTER TABLE `permissions_has_roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -645,7 +645,7 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (2,'เจ้าหน้าที่การเงิน','2025-01-25 10:58:31','2025-03-07 08:02:32'),(4,'ผู้ดูแลระบบ','2025-01-28 07:00:56','2025-01-28 07:00:56');
+INSERT INTO `roles` VALUES (1,'บุคลากรทั่วไป','2025-05-01 08:52:30','2025-05-01 08:52:30'),(2,'เจ้าหน้าที่การเงิน','2025-01-25 10:58:31','2025-03-07 08:02:32'),(3,'เจ้าหน้าที่รับผิดชอบด้านบุคคล','2025-05-01 08:52:30','2025-05-01 08:52:30'),(4,'ผู้ดูแลระบบ','2025-01-28 07:00:56','2025-01-28 07:00:56');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -759,7 +759,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'นาย แอดมินจ้า เอาไว้ทดสอบ','64160289@buu.ac.th','admin','$2a$12$uwYPIKhfw0dtYNC36DOuAu0aJ2J11Tt.O1jJLW3fuc5XBjgDTWEd.','2025-01-24',0,0,'2025-01-24 10:10:32','2025-02-25 14:10:21',NULL,'205','-','เมืองชลบุรี','แสนสุข','ชลบุรี','12345',1,1,1,4,1),(2,'นาย เจ้าหน้าที่ฝ่ายการเงิน','64160284@go.buu.ac.th','financial','$2a$12$uwYPIKhfw0dtYNC36DOuAu0aJ2J11Tt.O1jJLW3fuc5XBjgDTWEd.','2025-01-29',0,34,'2025-02-02 05:27:58','2025-04-09 08:18:16',NULL,'111','-','สนามชัยเขต','ท่ากระดาน','ฉะเชิงเทรา','24160',1,1,1,2,1);
+INSERT INTO `users` VALUES (1,'นาย แอดมินจ้า เอาไว้ทดสอบ','64160289@buu.ac.th','admin','$2y$12$Sh7lfGBRiEe5yspam6bc9.XTpYPYnRl1Hr35IkN3nqOEX2OndNFFi','2025-01-24',0,0,'2025-01-24 10:10:32','2025-05-01 04:12:31',NULL,'205','-','เมืองชลบุรี','แสนสุข','ชลบุรี','12345',1,1,1,4,1),(2,'นาย เจ้าหน้าที่ฝ่ายการเงิน','64160284@go.buu.ac.th','financial','$2y$12$lD7pIgjemlUfV9gVPsvzcOsZ7.srIaIiXif0LVzU294tLm3yiQPs.','2025-01-29',0,34,'2025-02-02 05:27:58','2025-05-01 04:13:06',NULL,'111','-','สนามชัยเขต','ท่ากระดาน','ฉะเชิงเทรา','24160',1,1,1,2,1);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -927,4 +927,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-23 13:41:33
+-- Dump completed on 2025-05-01 15:56:57
